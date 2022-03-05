@@ -204,14 +204,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LogisimFileReader.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LogisimFileReader.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CommonLibraries\BaseLib\BaseLib.vcxproj">
       <Project>{e25d2dac-0e80-42b2-8fa7-99b837cf7588}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CommonLibraries\CoreLib\CoreLib.vcxproj">
+      <Project>{5918ec20-07c3-485f-80bb-bed4f96ea48f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CommonLibraries\StandardLib\StandardLib.vcxproj">
+      <Project>{2cfa23fa-6565-4744-8b75-9790b21cc0e5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CommonLibraries\ThreadLib\ThreadLib.vcxproj">
+      <Project>{7269d64f-994a-4233-9add-bad415a07b64}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

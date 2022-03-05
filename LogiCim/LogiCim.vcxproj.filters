@@ -4,10 +4,21 @@
     <Filter Include="Source">
       <UniqueIdentifier>{19a11c92-712a-405a-b033-6fa19aa658c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Logisim">
+      <UniqueIdentifier>{4725fce9-3852-4424-80dd-276dbb3d8229}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimFileReader.cpp">
+      <Filter>Source\Logisim</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LogisimFileReader.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
