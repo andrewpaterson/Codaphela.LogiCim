@@ -20,6 +20,24 @@ void CLogisimFileReader::Init(void)
 	if (bResult)
 	{ 
 		pcRoot = cFile.mcMarkup.GetRootTag();
+		pcRoot->GetName();
+		pcRoot->GetTag()->GetName();
+		
+
+		STagIterator	sIter;
+		CMarkupTag*		pcTag;
+		CChars			sz;
+
+		pcTag = pcRoot->GetTag(&sIter);
+		while (pcTag)
+		{
+			sz.Init(pcTag->GetName());
+			sz.AppendNewLine();
+			sz.DumpKill();
+			pcTag = pcRoot->GetNextTag(&sIter);
+		}
+		
+		//pcRoot->Dump();
 	}
 
 	cFile.Kill();
