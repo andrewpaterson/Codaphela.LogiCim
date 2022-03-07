@@ -148,13 +148,19 @@ BOOL CLogisimFileReader::ConvertCircuit(CMarkupTag* pcCircuitTag)
 		szTagName = pcTag->GetName();
 		if (StringCompare(szTagName, "wire") == 0)
 		{
-			bResult = ConvertWire(pcTag);
+			bResult = ConvertWire(pcTag, pcCircuit);
 			ReturnOnFalse(bResult);
 		}
 		else if (StringCompare(szTagName, "comp") == 0)
 		{
-			bResult = ConvertComponent(pcTag);
+			bResult = ConvertComponent(pcTag, pcCircuit);
 			ReturnOnFalse(bResult);
+		}
+		else if (StringCompare(szTagName, "appear") == 0)
+		{
+		}
+		else if (StringCompare(szTagName, "a") == 0)
+		{
 		}
 		else
 		{
@@ -220,8 +226,36 @@ BOOL CLogisimFileReader::ConvertLibrary(CMarkupTag* pcMainTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag)
+BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcCircuit)
 {
+	CLogisimWire*	pcWire;
+	char*			szFromPair;
+	char*			szToPair;
+	SInt2			sFrom;
+	SInt2			sTo;
+	BOOL			bResult;
+
+	szFromPair = pcWireTag->GetAttribute("from");
+	if (szFromPair == NULL)
+	{
+		return gcLogger.Error2(__METHOD__, " Attribute [from] not found during 'wire' conversion.", NULL);
+	}
+
+	szToPair = pcWireTag->GetAttribute("to");
+	if (szToPair == NULL)
+	{
+		return gcLogger.Error2(__METHOD__, " Attribute [to] not found during 'wire' conversion.", NULL);
+	}
+
+	bResult = ParseInt2(&sFrom, szFromPair);
+	ReturnOnFalse(bResult);
+
+	bResult = ParseInt2(&sTo, szToPair);
+	ReturnOnFalse(bResult);
+
+	pcWire = pcCircuit->AddWire();
+	pcWire->Init(sFrom, sTo);
+
 	return TRUE;
 }
 
@@ -230,8 +264,61 @@ BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag)
+BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit* pcCircuit)
 {
+	//<comp lib="0" loc="(2200,3500)" name="Tunnel">
+	//  <a name="label" val="CH_3_D"/>
+	//  <a name="labelfont" val="SansSerif bold 10"/>
+	//  <a name="width" val="8"/>
+	//</comp>
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::ParseInt2(SInt2* ps, char* sz)
+{
+	TRISTATE		tResult;
+	int				iX;
+	int				iY;
+	CTextParser		cParser;
+
+	cParser.Init(sz);
+
+	tResult = cParser.GetExactCharacter('(');
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected '(' parsing Int2.", NULL);
+	}
+	tResult = cParser.GetInteger(&iX);
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int2.", NULL);
+	}
+	tResult = cParser.GetExactCharacter(',');
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected ',' parsing Int2.", NULL);
+	}
+	tResult = cParser.GetInteger(&iY);
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int2.", NULL);
+	}
+	tResult = cParser.GetExactCharacter(')');
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected ')' parsing Int2.", NULL);
+	}
+
+	cParser.Kill();
+
+	ps->Init(iX, iY);
+
 	return TRUE;
 }
 

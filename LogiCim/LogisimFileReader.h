@@ -27,9 +27,11 @@ public:
 protected:
 	BOOL			ConvertCircuit(CMarkupTag* pcCircuitTag);
 	BOOL			ConvertMain(CMarkupTag* pcMainTag);
-	BOOL			ConvertWire(CMarkupTag* pcWireTag);
-	BOOL			ConvertComponent(CMarkupTag* pcCompTag);
+	BOOL			ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcCircuit);
+	BOOL			ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit* pcCircuit);
 	BOOL			ConvertLibrary(CMarkupTag* pcMainTag);
+
+	BOOL			ParseInt2(SInt2* ps, char* sz);
 };
 
 

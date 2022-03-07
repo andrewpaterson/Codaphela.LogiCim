@@ -5,9 +5,10 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimWire::Init(void)
+void CLogisimWire::Init(SInt2 sFrom, SInt2 sTo)
 {
-
+	msFrom.Init(sFrom);
+	msTo.Init(sTo);
 }
 
 
@@ -17,6 +18,5 @@ void CLogisimWire::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimWire::Kill(void)
 {
-
 }
 
