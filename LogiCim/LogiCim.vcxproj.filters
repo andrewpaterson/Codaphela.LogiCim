@@ -7,6 +7,15 @@
     <Filter Include="Source\Logisim">
       <UniqueIdentifier>{4725fce9-3852-4424-80dd-276dbb3d8229}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Simulation">
+      <UniqueIdentifier>{5044a0cc-4079-420f-a59f-38dc6a4b0bf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Simulation\Common">
+      <UniqueIdentifier>{badc7a18-c1f8-41cf-a1ee-5d716d2f0996}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Logisim\Component">
+      <UniqueIdentifier>{957105ea-ee66-464b-84c2-4587bec0063e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -15,9 +24,39 @@
     <ClCompile Include="LogisimFileReader.cpp">
       <Filter>Source\Logisim</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimCircuit.cpp">
+      <Filter>Source\Logisim</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimComponent.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimWire.cpp">
+      <Filter>Source\Logisim</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimPullResistor.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimLibrary.cpp">
+      <Filter>Source\Logisim</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimCircuit.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimComponent.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimWire.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimPullResistor.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimLibrary.h">
       <Filter>Source\Logisim</Filter>
     </ClInclude>
   </ItemGroup>
