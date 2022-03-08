@@ -39,6 +39,12 @@
     <ClCompile Include="LogisimLibrary.cpp">
       <Filter>Source\Logisim</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimComponentList.cpp">
+      <Filter>Source\Logisim</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimTunnel.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -57,6 +63,15 @@
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
     <ClInclude Include="LogisimLibrary.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimComponentList.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimTunnel.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimFacing.h">
       <Filter>Source\Logisim</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,3 +1,4 @@
+#include "LogisimFacing.h"
 #include "LogisimFileReader.h"
 
 
@@ -14,6 +15,8 @@ void CLogisimFileReader::Init(char* szDirectory, char* szFileName)
 	mlCircuits.Init();
 	mlLibraries.Init();
 	mszMainCircuitName.Init();
+
+	mcComponents.Init();
 }
 
 
@@ -27,6 +30,8 @@ void CLogisimFileReader::Kill(void)
 	int					i;
 	CLogisimCircuit*	pcCircuit;
 	CLogisimLibrary*	pcLibrary;
+
+	mcComponents.Kill();
 
 	mszMainCircuitName.Kill();
 
@@ -266,6 +271,42 @@ BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcC
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit* pcCircuit)
 {
+	char*				szLib;
+	char*				szLoc;
+	char*				szName;
+	SInt2				sLoc;
+	BOOL				bResult;
+
+	szLib = pcCompTag->GetAttribute("lib");
+	if (szLib == NULL)
+	{
+		return gcLogger.Error2(__METHOD__, " Attribute [lib] not found during 'comp' conversion.", NULL);
+	}
+
+	szLoc = pcCompTag->GetAttribute("loc");
+	if (szLoc == NULL)
+	{
+		return gcLogger.Error2(__METHOD__, " Attribute [loc] not found during 'comp' conversion.", NULL);
+	}
+
+	szName = pcCompTag->GetAttribute("name");
+	if (szLoc == NULL)
+	{
+		return gcLogger.Error2(__METHOD__, " Attribute [name] not found during 'comp' conversion.", NULL);
+	}
+
+	bResult = ParseInt2(&sLoc, szLoc);
+	ReturnOnFalse(bResult);
+
+	if (StringCompare(szName, "Tunnel") == 0)
+	{
+		return CreateTunnel(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Pull Resistor") == 0)
+	{
+		return CreatePullResistor(pcCompTag, sLoc);
+	}
+	
 	//<comp lib="0" loc="(2200,3500)" name="Tunnel">
 	//  <a name="label" val="CH_3_D"/>
 	//  <a name="labelfont" val="SansSerif bold 10"/>
@@ -280,14 +321,177 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag* pcCompTag)
+{
+	STagIterator	sIter;
+	char*			szTagName;
+	char*			szName;
+	char*			szValue;
+	CMarkupTag*		pcTag;
+
+	pcDest->Init();
+	pcTag = pcCompTag->GetTag(&sIter);
+	while (pcTag)
+	{
+		szTagName = pcTag->GetName();
+		if (StringCompare(szTagName, "a") == 0)
+		{
+			szName = pcTag->GetAttribute("name");
+			if (szName == NULL)
+			{
+				return gcLogger.Error2(__METHOD__, " Attribute [name] not found during 'comp.a' conversion.", NULL);
+			}
+
+			szValue = pcTag->GetAttribute("val");
+			if (szValue == NULL)
+			{
+				return gcLogger.Error2(__METHOD__, " Attribute [val] not found during 'comp.a' conversion.", NULL);
+			}
+
+			pcDest->Put(szName, szValue);
+		}
+		else
+		{
+			return gcLogger.Error2(__METHOD__, " Unknown tag [", szTagName, "] during 'comp' conversion.", NULL);
+		}
+		pcTag = pcTag->GetNextTag(&sIter);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault)
+{
+	char*			szValue;
+	BOOL			bResult;
+	CTextParser		cParser;
+	TRISTATE		tResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	bResult = cParser.Init(szValue);
+	if (!bResult)
+	{
+		return gcLogger.Error2(__METHOD__, " Could not initialise text parser.", NULL);
+	}
+
+	tResult = cParser.GetInteger(piValue);
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault)
+{
+	char* szValue;
+
+	szValue = pcMap->Get(szKey);
+	if (szDefault == NULL)
+	{
+		if (szValue)
+		{
+			*pszValue = szValue;
+		}
+		else
+		{
+			return gcLogger.Error2(__METHOD__, " Map value [", szKey, "] not found.", NULL);
+		}
+	}
+	else
+	{
+		if (szValue)
+		{
+			*pszValue = szValue;
+		}
+		else
+		{
+			*pszValue = szDefault;
+		}
+	}
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimTunnel*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+	int					iWidth;
+	char*				szLabel;
+	//ELogisimFacing		eFacing;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateTunnel();
+	pcComp->Init(sLoc);
+
+	bResult = GetMapValueAsInt(&cMap, "width", &iWidth, "1");
+	bResult = GetMapValue(&cMap, "label", &szLabel);
+	//bResult = GetMapValueAsFacing(&cMap, "facing", &eFacing);
+
+	cMap.Kill();
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimPullResistor* pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreatePullResistor();
+	pcComp->Init(sLoc);
+
+	cMap.Kill();
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::ParseInt2(SInt2* ps, char* sz)
 {
 	TRISTATE		tResult;
 	int				iX;
 	int				iY;
 	CTextParser		cParser;
-
-	cParser.Init(sz);
+	BOOL			bResult;
+	
+	bResult = cParser.Init(sz);
+	if (!bResult)
+	{
+		return gcLogger.Error2(__METHOD__, " Could not initialise text parser.", NULL);
+	}
 
 	tResult = cParser.GetExactCharacter('(');
 	if (NotTrue(tResult))

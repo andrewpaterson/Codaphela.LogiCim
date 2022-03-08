@@ -206,18 +206,23 @@
   <ItemGroup>
     <ClCompile Include="LogisimCircuit.cpp" />
     <ClCompile Include="LogisimComponent.cpp" />
+    <ClCompile Include="LogisimComponentList.cpp" />
     <ClCompile Include="LogisimFileReader.cpp" />
     <ClCompile Include="LogisimLibrary.cpp" />
     <ClCompile Include="LogisimPullResistor.cpp" />
+    <ClCompile Include="LogisimTunnel.cpp" />
     <ClCompile Include="LogisimWire.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimCircuit.h" />
     <ClInclude Include="LogisimComponent.h" />
+    <ClInclude Include="LogisimComponentList.h" />
+    <ClInclude Include="LogisimFacing.h" />
     <ClInclude Include="LogisimFileReader.h" />
     <ClInclude Include="LogisimLibrary.h" />
     <ClInclude Include="LogisimPullResistor.h" />
+    <ClInclude Include="LogisimTunnel.h" />
     <ClInclude Include="LogisimWire.h" />
   </ItemGroup>
   <ItemGroup>

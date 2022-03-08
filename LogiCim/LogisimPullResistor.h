@@ -7,7 +7,7 @@ class CLogisimPullResistor : public CLogisimComponent
 {
 protected:
 public:
-	void Init(void);
+	void Init(SInt2 sPosition);
 	void Kill(void);
 };
 

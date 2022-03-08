@@ -5,9 +5,9 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimPullResistor::Init(void)
+void CLogisimPullResistor::Init(SInt2 sPosition)
 {
-	CLogisimComponent::Init();
+	CLogisimComponent::Init(sPosition);
 }
 
 

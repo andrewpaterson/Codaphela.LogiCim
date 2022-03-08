@@ -1,13 +1,13 @@
-#include "LogisimComponent.h"
+#include "LogisimTunnel.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimComponent::Init(SInt2 sPosition)
+void CLogisimTunnel::Init(SInt2 sPosition)
 {
-	msPosition.Init(sPosition);
+	CLogisimComponent::Init(sPosition);
 }
 
 
@@ -15,7 +15,8 @@ void CLogisimComponent::Init(SInt2 sPosition)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimComponent::Kill(void)
+void CLogisimTunnel::Kill(void)
 {
+	CLogisimComponent::Kill();
 }
 
