@@ -14,4 +14,3 @@ public:
 
 #endif // !__LOGISIM_PULL_RESISTOR_H__
 
-

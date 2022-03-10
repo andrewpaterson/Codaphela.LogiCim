@@ -45,6 +45,66 @@
     <ClCompile Include="LogisimTunnel.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimConstant.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimANDGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimNANDGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimNORGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimORGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimNOTGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimXORGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimClock.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimControlledBuffer.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimCounter.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimDecoder.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimDigitalOscilloscope.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimLED.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimPin.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimProbe.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimRAM.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimROM.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimSplitter.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimText.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogisimDFlipFlop.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -73,6 +133,66 @@
     </ClInclude>
     <ClInclude Include="LogisimFacing.h">
       <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimConstant.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimANDGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimNANDGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimNORGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimORGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimNOTGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimXORGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimClock.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimControlledBuffer.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimCounter.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimDecoder.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimDigitalOscilloscope.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimLED.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimPin.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimProbe.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimRAM.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimROM.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimSplitter.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimText.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimDFlipFlop.h">
+      <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

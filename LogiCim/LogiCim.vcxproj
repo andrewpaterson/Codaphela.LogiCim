@@ -204,26 +204,66 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LogisimCounter.cpp" />
+    <ClCompile Include="LogisimDecoder.cpp" />
+    <ClCompile Include="LogisimDFlipFlop.cpp" />
+    <ClCompile Include="LogisimDigitalOscilloscope.cpp" />
+    <ClCompile Include="LogisimLED.cpp" />
+    <ClCompile Include="LogisimPin.cpp" />
+    <ClCompile Include="LogisimProbe.cpp" />
+    <ClCompile Include="LogisimRAM.cpp" />
+    <ClCompile Include="LogisimROM.cpp" />
+    <ClCompile Include="LogisimSplitter.cpp" />
+    <ClCompile Include="LogisimText.cpp" />
+    <ClCompile Include="LogisimClock.cpp" />
+    <ClCompile Include="LogisimControlledBuffer.cpp" />
+    <ClCompile Include="LogisimNOTGate.cpp" />
+    <ClCompile Include="LogisimANDGate.cpp" />
     <ClCompile Include="LogisimCircuit.cpp" />
     <ClCompile Include="LogisimComponent.cpp" />
     <ClCompile Include="LogisimComponentList.cpp" />
+    <ClCompile Include="LogisimConstant.cpp" />
     <ClCompile Include="LogisimFileReader.cpp" />
     <ClCompile Include="LogisimLibrary.cpp" />
+    <ClCompile Include="LogisimNANDGate.cpp" />
+    <ClCompile Include="LogisimNORGate.cpp" />
+    <ClCompile Include="LogisimORGate.cpp" />
     <ClCompile Include="LogisimPullResistor.cpp" />
     <ClCompile Include="LogisimTunnel.cpp" />
     <ClCompile Include="LogisimWire.cpp" />
+    <ClCompile Include="LogisimXORGate.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LogisimCounter.h" />
+    <ClInclude Include="LogisimDecoder.h" />
+    <ClInclude Include="LogisimDFlipFlop.h" />
+    <ClInclude Include="LogisimDigitalOscilloscope.h" />
+    <ClInclude Include="LogisimLED.h" />
+    <ClInclude Include="LogisimPin.h" />
+    <ClInclude Include="LogisimProbe.h" />
+    <ClInclude Include="LogisimRAM.h" />
+    <ClInclude Include="LogisimROM.h" />
+    <ClInclude Include="LogisimSplitter.h" />
+    <ClInclude Include="LogisimText.h" />
+    <ClInclude Include="LogisimClock.h" />
+    <ClInclude Include="LogisimControlledBuffer.h" />
+    <ClInclude Include="LogisimNOTGate.h" />
+    <ClInclude Include="LogisimANDGate.h" />
     <ClInclude Include="LogisimCircuit.h" />
     <ClInclude Include="LogisimComponent.h" />
     <ClInclude Include="LogisimComponentList.h" />
+    <ClInclude Include="LogisimConstant.h" />
     <ClInclude Include="LogisimFacing.h" />
     <ClInclude Include="LogisimFileReader.h" />
     <ClInclude Include="LogisimLibrary.h" />
+    <ClInclude Include="LogisimNANDGate.h" />
+    <ClInclude Include="LogisimNORGate.h" />
+    <ClInclude Include="LogisimORGate.h" />
     <ClInclude Include="LogisimPullResistor.h" />
     <ClInclude Include="LogisimTunnel.h" />
     <ClInclude Include="LogisimWire.h" />
+    <ClInclude Include="LogisimXORGate.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CommonLibraries\BaseLib\BaseLib.vcxproj">

@@ -40,14 +40,35 @@ protected:
 	BOOL			GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
 	BOOL			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
+	BOOL			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault = NULL);
+	BOOL			CheckMap(char* szComponentName, CMapStringString* pcMap, const char* szFirst, ...);
 
 	BOOL			CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateNANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateNORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateNOTGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateXORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateControlledBuffer(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateDecoder(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateLED(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
 
 	BOOL			ParseInt2(SInt2* ps, char* sz);
 };
 
 
 #endif // !__LOGISIM_FILE_READER_H__
-
 

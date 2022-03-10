@@ -22,4 +22,3 @@ public:
 
 #endif // !__LOGISIM_TUNNEL_H__
 
-

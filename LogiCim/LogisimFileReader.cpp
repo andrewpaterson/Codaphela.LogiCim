@@ -277,10 +277,6 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	BOOL				bResult;
 
 	szLib = pcCompTag->GetAttribute("lib");
-	if (szLib == NULL)
-	{
-		return gcLogger.Error2(__METHOD__, " Attribute [lib] not found during 'comp' conversion.", NULL);
-	}
 
 	szLoc = pcCompTag->GetAttribute("loc");
 	if (szLoc == NULL)
@@ -305,15 +301,128 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	{
 		return CreatePullResistor(pcCompTag, sLoc);
 	}
-	
-	//<comp lib="0" loc="(2200,3500)" name="Tunnel">
-	//  <a name="label" val="CH_3_D"/>
-	//  <a name="labelfont" val="SansSerif bold 10"/>
-	//  <a name="width" val="8"/>
-	//</comp>
+	else if (StringCompare(szName, "Constant") == 0)
+	{
+		return CreateConstant(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "AND Gate") == 0)
+	{
+		return CreateANDGate(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "NAND Gate") == 0)
+	{
+		return CreateNANDGate(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "NOR Gate") == 0)
+	{
+		return CreateNORGate(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "OR Gate") == 0)
+	{
+		return CreateORGate(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "NOT Gate") == 0)
+	{
+		return CreateNOTGate(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "XOR Gate") == 0)
+	{
+		return CreateXORGate(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Clock") == 0)
+	{
+		return CreateClock(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Controlled Buffer") == 0)
+	{
+		return CreateControlledBuffer(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Counter") == 0)
+	{
+		return CreateCounter(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Decoder") == 0)
+	{
+		return CreateDecoder(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Digital Oscilloscope") == 0)
+	{
+		return CreateDigitalOscilloscope(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "LED") == 0)
+	{
+		return CreateLED(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Pin") == 0)
+	{
+		return CreatePin(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Probe") == 0)
+	{
+		return CreateProbe(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "RAM") == 0)
+	{
+		return CreateRAM(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "ROM") == 0)
+	{
+		return CreateROM(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Splitter") == 0)
+	{
+		return CreateSplitter(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "Text") == 0)
+	{
+		return CreateText(pcCompTag, sLoc);
+	}
+	else if (StringCompare(szName, "D Flip-Flop") == 0)
+	{
+		return CreateDFlipFlop(pcCompTag, sLoc);
+	}
+	else
+	{
+		if (szLib != NULL)
+		{
+			return gcLogger.Error2(__METHOD__, " Unknown component name [", szName, "] not found during 'comp' conversion.", NULL);
+		}
+	}
 
+	
 	return TRUE;
 }
+
+
+/*
+1-of-8 Data Selector(F251)
+10-to-4 Encoder(HC147)
+12-bit Up Counter(HC4040)
+16-bit Latch(LVC16373)
+16-bit Line Driver(LVC16244)
+2-to-4 Decoder(LVC139)
+3-to-8 Decoder(LVC138)
+4-bit Line Driver(LVC125)
+4-bit Multiplexer(LVC157)
+4-bit Multiplexer(LVC257)
+4-bit Up Counter(LVC161)
+4-bit Up Counter(LVC163)
+4-bit Up Counter(VHC161)
+4-bit Up / Down Counter(HCT193)
+8-bit Bi-latch(LVC543)
+8-bit Bus Transceiver(LVC4245)
+8-bit Comparator(F521)
+8-bit Latch(LVC273)
+8-bit Latch(LVC573)
+8-bit Latch(LVC574)
+8-bit Line Driver(LVC541)
+8-bit Up Counter(HC590)
+8-bit serial in shift(LVC595)
+D-type Flip Flop(LVC74)
+EconoReset(DS1813)
+Helper(W65C816 Timing)
+Microprocessor(W65C816)
+*/
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -364,6 +473,45 @@ BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag*
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CheckMap(char* szComponentName, CMapStringString* pcMap, const char* szFirstKey, ...)
+{
+	va_list		vaMarker;
+	char*		szKey;
+	CChars		szUnknownKeys;
+
+	if (szFirstKey != NULL)
+	{
+		pcMap->Remove(szFirstKey);
+
+		va_start(vaMarker, szFirstKey);
+		szKey = va_arg(vaMarker, char*);
+		while (szKey != NULL)
+		{
+			pcMap->Remove(szKey);
+			szKey = va_arg(vaMarker, char*);
+		}
+		va_end(vaMarker);
+	}
+
+	if (pcMap->NumElements() != 0)
+	{
+		szUnknownKeys.Init();
+		pcMap->GetKeysAsString(&szUnknownKeys, ", ");
+		gcLogger.Error2(__METHOD__, " Unknown 'a' tag name [", szUnknownKeys.Text(), "] creating ", szComponentName, ".", NULL);
+		szUnknownKeys.Kill();
+		pcMap->Kill();
+		return FALSE;
+	}
+
+	pcMap->Kill();
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault)
 {
 	char* szValue;
@@ -381,6 +529,37 @@ BOOL CLogisimFileReader::GetMapValueAsInt(CMapStringString* pcMap, char* szKey, 
 	}
 
 	tResult = cParser.GetInteger(piValue);
+	if (NotTrue(tResult))
+	{
+		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault)
+{
+	char* szValue;
+	BOOL			bResult;
+	CTextParser		cParser;
+	TRISTATE		tResult;
+	int				iNumDigits;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	bResult = cParser.Init(szValue);
+	if (!bResult)
+	{
+		return gcLogger.Error2(__METHOD__, " Could not initialise text parser.", NULL);
+	}
+
+	tResult = cParser.GetHexadecimalPart(pulliValue, &iNumDigits);
 	if (NotTrue(tResult))
 	{
 		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int.", NULL);
@@ -440,8 +619,7 @@ BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char*
 	{
 		if (szValue)
 		{
-			//pcMap->Remove(szKey);
-			*pszValue = szValue;
+			SafeAssign(pszValue, szValue);
 		}
 		else
 		{
@@ -452,8 +630,7 @@ BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char*
 	{
 		if (szValue)
 		{
-			//pcMap->Remove(szKey);
-			*pszValue = szValue;
+			SafeAssign(pszValue, szValue);
 		}
 		else
 		{
@@ -476,7 +653,6 @@ BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
 	int					iWidth;
 	char*				szLabel;
 	ELogisimFacing		eFacing;
-	CChars				szUnknownKeys;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
@@ -493,23 +669,7 @@ BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetLabel(szLabel);
 	pcComp->SetFacing(eFacing);
 
-	cMap.Remove("width");
-	cMap.Remove("label");
-	cMap.Remove("facing");
-	cMap.Remove("labelfont");
-
-	if (cMap.NumElements() != 0)
-	{
-		szUnknownKeys.Init();
-		cMap.GetKeysAsString(&szUnknownKeys, ", ");
-		gcLogger.Error2(__METHOD__, " Unknown 'a' tag name [", szUnknownKeys.Text(),"] creating tunnel.", NULL);
-		szUnknownKeys.Kill();
-		cMap.Kill();
-		return FALSE;
-	}
-
-	cMap.Kill();
-	return TRUE;
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "width", "label", "facing", "labelfont", NULL);
 }
 
 
@@ -519,9 +679,9 @@ BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
-	CLogisimPullResistor* pcComp;
-	CMapStringString	cMap;
-	BOOL				bResult;
+	CLogisimPullResistor*	pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
@@ -529,8 +689,412 @@ BOOL CLogisimFileReader::CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp = mcComponents.CreatePullResistor();
 	pcComp->Init(sLoc);
 
-	cMap.Kill();
-	return TRUE;
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimConstant*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+	int					iWidth;
+	uint64				ulliValue;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateConstant();
+	pcComp->Init(sLoc);
+
+	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, "1");
+	bResult = GetMapValueAsInt(&cMap, "width", &iWidth, "1");
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "value", "width", NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateANDGate(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimANDGate*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateANDGate();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateNANDGate(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimNANDGate*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateNANDGate();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateNORGate(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimNORGate*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateNORGate();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateORGate(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimORGate*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateORGate();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateNOTGate(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimNOTGate*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateNOTGate();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateXORGate(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimXORGate*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateXORGate();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimClock*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateClock();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateControlledBuffer(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimControlledBuffer*	pcComp;
+	CMapStringString			cMap;
+	BOOL						bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateControlledBuffer();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimCounter*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateCounter();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateDecoder(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimDecoder*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateDecoder();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimDigitalOscilloscope*	pcComp;
+	CMapStringString				cMap;
+	BOOL							bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateDigitalOscilloscope();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateLED(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimLED*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateLED();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimPin*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreatePin();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimProbe*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateProbe();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimRAM*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateRAM();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimROM*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateROM();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimSplitter*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateSplitter();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateText(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimText*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateText();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimDTypeFlipFlop*	pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateDTypeFlipFlop();
+	pcComp->Init(sLoc);
+
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
 }
 
 
