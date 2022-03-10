@@ -3,6 +3,7 @@
 #include "BaseLib/MapStringString.h"
 #include "CoreLib/XMLFile.h"
 #include "CoreLib/Files.h"
+#include "LogisimFacing.h"
 #include "LogisimCircuit.h"
 #include "LogisimLibrary.h"
 #include "LogisimComponentList.h"
@@ -38,6 +39,7 @@ protected:
 	BOOL			ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag* pcCompTag);
 	BOOL			GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
 	BOOL			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
+	BOOL			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
 
 	BOOL			CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc);

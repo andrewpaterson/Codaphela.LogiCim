@@ -1,6 +1,7 @@
 #ifndef __LOGISIM_COMPONENT_H__
 #define __LOGISIM_COMPONENT_H__
 #include "BaseLib/Int2.h"
+#include "LogisimFacing.h"
 
 
 class CLogisimComponent

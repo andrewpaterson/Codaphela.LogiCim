@@ -7,7 +7,8 @@ enum ELogisimFacing
 	LF_North,
 	LF_East,
 	LF_South,
-	LF_West
+	LF_West,
+	LF_NotSet,
 };
 
 

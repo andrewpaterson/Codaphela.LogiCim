@@ -1,4 +1,3 @@
-#include "LogisimFacing.h"
 #include "LogisimFileReader.h"
 
 
@@ -367,7 +366,7 @@ BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag*
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault)
 {
-	char*			szValue;
+	char* szValue;
 	BOOL			bResult;
 	CTextParser		cParser;
 	TRISTATE		tResult;
@@ -395,6 +394,43 @@ BOOL CLogisimFileReader::GetMapValueAsInt(CMapStringString* pcMap, char* szKey, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault)
+{
+	char*			szValue;
+	BOOL			bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (StringCompare(szValue, "east") == 0)
+	{
+		*peFacing = LF_East;
+	}
+	else if (StringCompare(szValue, "west") == 0)
+	{
+		*peFacing = LF_West;
+	}
+	else if (StringCompare(szValue, "north") == 0)
+	{
+		*peFacing = LF_North;
+	}
+	else if (StringCompare(szValue, "south") == 0)
+	{
+		*peFacing = LF_South;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [north, east, south or west] parsing Facing.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault)
 {
 	char* szValue;
@@ -404,6 +440,7 @@ BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char*
 	{
 		if (szValue)
 		{
+			//pcMap->Remove(szKey);
 			*pszValue = szValue;
 		}
 		else
@@ -415,11 +452,12 @@ BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char*
 	{
 		if (szValue)
 		{
+			//pcMap->Remove(szKey);
 			*pszValue = szValue;
 		}
 		else
 		{
-			*pszValue = szDefault;
+			SafeAssign(pszValue, szDefault);
 		}
 	}
 	return TRUE;
@@ -437,17 +475,38 @@ BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
 	BOOL				bResult;
 	int					iWidth;
 	char*				szLabel;
-	//ELogisimFacing		eFacing;
+	ELogisimFacing		eFacing;
+	CChars				szUnknownKeys;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsInt(&cMap, "width", &iWidth, "1");
+	bResult = GetMapValue(&cMap, "label", &szLabel, "");
+	bResult = GetMapValueAsFacing(&cMap, "facing", &eFacing, "west");
+	bResult = GetMapValue(&cMap, "labelfont", NULL, "");
+
 	pcComp = mcComponents.CreateTunnel();
 	pcComp->Init(sLoc);
 
-	bResult = GetMapValueAsInt(&cMap, "width", &iWidth, "1");
-	bResult = GetMapValue(&cMap, "label", &szLabel);
-	//bResult = GetMapValueAsFacing(&cMap, "facing", &eFacing);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetLabel(szLabel);
+	pcComp->SetFacing(eFacing);
+
+	cMap.Remove("width");
+	cMap.Remove("label");
+	cMap.Remove("facing");
+	cMap.Remove("labelfont");
+
+	if (cMap.NumElements() != 0)
+	{
+		szUnknownKeys.Init();
+		cMap.GetKeysAsString(&szUnknownKeys, ", ");
+		gcLogger.Error2(__METHOD__, " Unknown 'a' tag name [", szUnknownKeys.Text(),"] creating tunnel.", NULL);
+		szUnknownKeys.Kill();
+		cMap.Kill();
+		return FALSE;
+	}
 
 	cMap.Kill();
 	return TRUE;
