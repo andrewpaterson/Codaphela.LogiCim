@@ -40,6 +40,7 @@ protected:
 	BOOL			GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
 	BOOL			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
+	BOOL			GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, CLogisimSplitterAppearance* peAppear, char* szDefault);
 	BOOL			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault = NULL);
 	BOOL			CheckMap(char* szComponentName, CMapStringString* pcMap, const char* szFirst, ...);
 

@@ -575,8 +575,8 @@ BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szK
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault)
 {
-	char*			szValue;
-	BOOL			bResult;
+	char*	szValue;
+	BOOL	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -600,6 +600,43 @@ BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKe
 	else
 	{
 		return gcLogger.Error2(__METHOD__, " Expected [north, east, south or west] parsing Facing.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, CLogisimSplitterAppearance* peValue, char* szDefault)
+{
+	char*	szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (StringCompare(szValue, "center") == 0)
+	{
+		*peValue = LSA_Centered;
+	}
+	else if (StringCompare(szValue, "left") == 0)
+	{
+		*peValue = LSA_Left;
+	}
+	else if (StringCompare(szValue, "right") == 0)
+	{
+		*peValue = LSA_Right;
+	}
+	else if (StringCompare(szValue, "legacy") == 0)
+	{
+		*peValue = LSA_Legacy;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [center, left, right or legacy] parsing Appear.", NULL);
 	}
 
 	return TRUE;
@@ -658,9 +695,10 @@ BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
 	ReturnOnFalse(bResult);
 
 	bResult = GetMapValueAsInt(&cMap, "width", &iWidth, "1");
-	bResult = GetMapValue(&cMap, "label", &szLabel, "");
-	bResult = GetMapValueAsFacing(&cMap, "facing", &eFacing, "west");
-	bResult = GetMapValue(&cMap, "labelfont", NULL, "");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "west");
+	bResult &= GetMapValue(&cMap, "labelfont", NULL, "");
+	ReturnOnFalse(bResult);
 
 	pcComp = mcComponents.CreateTunnel();
 	pcComp->Init(sLoc);
@@ -708,11 +746,14 @@ BOOL CLogisimFileReader::CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, "1");
+	bResult &= GetMapValueAsInt(&cMap, "width", &iWidth, "1");
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreateConstant();
 	pcComp->Init(sLoc);
-
-	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, "1");
-	bResult = GetMapValueAsInt(&cMap, "width", &iWidth, "1");
+	pcComp->SetValue(ulliValue);
+	pcComp->SetWidth(iWidth);
 
 	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "value", "width", NULL);
 }
@@ -1044,17 +1085,34 @@ BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
-	CLogisimSplitter*	pcComp;
-	CMapStringString	cMap;
-	BOOL				bResult;
+	CLogisimSplitter*			pcComp;
+	CMapStringString			cMap;
+	BOOL						bResult;
+	int							iSpacing;
+	int							iFanOut;
+	int							iIncoming;
+	ELogisimFacing				eFacing;
+	CLogisimSplitterAppearance	eAppear;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsInt(&cMap, "spacing", &iSpacing, "1");
+	bResult &= GetMapValueAsInt(&cMap, "fanout", &iFanOut, "2");
+	bResult &= GetMapValueAsInt(&cMap, "incoming", &iIncoming, "2");
+	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	bResult &= GetMapValueAsSplitterAppear(&cMap, "appear", &eAppear, "left");
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreateSplitter();
 	pcComp->Init(sLoc);
+	pcComp->SetAppear(eAppear);
+	pcComp->SetFacing(eFacing);
+	pcComp->SetFanOut(iFanOut);
+	pcComp->SetIncoming(iIncoming);
+	pcComp->SetSpacing(iSpacing);
 
-	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "spacing", "fanout", "incoming", "facing", "appear", NULL);
 }
 
 

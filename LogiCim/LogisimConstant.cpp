@@ -8,6 +8,8 @@
 void CLogisimConstant::Init(SInt2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
+	miWidth = 0;
+	mlliValue = -1;
 }
 
 
@@ -19,4 +21,12 @@ void CLogisimConstant::Kill(void)
 {
 	CLogisimComponent::Kill();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimConstant::SetWidth(int iWidth) { miWidth = iWidth;  }
+void CLogisimConstant::SetValue(int64 lliValue) { mlliValue = lliValue;  }
 
