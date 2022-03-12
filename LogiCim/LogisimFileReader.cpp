@@ -1118,19 +1118,23 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CLogisimProbe*		pcComp;
 	CMapStringString	cMap;
 	BOOL				bResult;
+	int					iRadix;
+	ELogisimFacing		eFacing;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
-	/*      <a name="appearance" val="classic"/>
-      <a name="facing" val="west"/>
-      <a name="radix" val="16"/>
-*/
+
 	bResult = GetMapValueAsAppearance(&cMap, "appearance");
+	bResult &= GetMapValueAsInt(&cMap, "radix", &iRadix, "8");
+	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	ReturnOnFalse(bResult);
 
 	pcComp = mcComponents.CreateProbe();
 	pcComp->Init(sLoc);
+	pcComp->SetFacing(eFacing);
+	pcComp->SetRadix(iRadix);
 
-	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "appearance", "radix", "facing", NULL);
 }
 
 
