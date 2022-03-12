@@ -8,6 +8,11 @@
 void CLogisimPin::Init(SInt2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
+	mszLabel.Init();
+	meFacing = LF_NotSet;
+	miWidth = 0;
+	mbOutput = FALSE;
+	mbTristate = FALSE;
 }
 
 
@@ -17,6 +22,18 @@ void CLogisimPin::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimPin::Kill(void)
 {
+	mszLabel.Kill();
 	CLogisimComponent::Kill();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimPin::SetFacing(ELogisimFacing eFacing) { meFacing = eFacing; }
+void CLogisimPin::SetWidth(int iWidth) { miWidth = iWidth; }
+void CLogisimPin::SetOutput(BOOL bOutput) { mbOutput = bOutput; }
+void CLogisimPin::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
+void CLogisimPin::SetTristate(BOOL bTristate) { mbTristate = bTristate; }
 

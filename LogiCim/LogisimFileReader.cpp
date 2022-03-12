@@ -90,28 +90,28 @@ BOOL CLogisimFileReader::Convert(CMarkupTag* pcContainer)
 	while (pcTag)
 	{
 		szTagName = pcTag->GetName();
-		if (StringCompare(szTagName, "circuit") == 0)
+		if (IsString(szTagName, "circuit"))
 		{
 			bResult = ConvertCircuit(pcTag);
 			ReturnOnFalse(bResult);
 		}
-		else if (StringCompare(szTagName, "main") == 0)
+		else if (IsString(szTagName, "main"))
 		{
 			bResult = ConvertMain(pcTag);
 			ReturnOnFalse(bResult);
 		}
-		else if (StringCompare(szTagName, "lib") == 0)
+		else if (IsString(szTagName, "lib"))
 		{
 			bResult = ConvertLibrary(pcTag);
 			ReturnOnFalse(bResult);
 		}
-		else if (StringCompare(szTagName, "options") == 0)
+		else if (IsString(szTagName, "options"))
 		{
 		}
-		else if (StringCompare(szTagName, "mappings") == 0)
+		else if (IsString(szTagName, "mappings"))
 		{
 		}
-		else if (StringCompare(szTagName, "toolbar") == 0)
+		else if (IsString(szTagName, "toolbar"))
 		{
 		}
 		else
@@ -150,20 +150,20 @@ BOOL CLogisimFileReader::ConvertCircuit(CMarkupTag* pcCircuitTag)
 	while (pcTag)
 	{
 		szTagName = pcTag->GetName();
-		if (StringCompare(szTagName, "wire") == 0)
+		if (IsString(szTagName, "wire"))
 		{
 			bResult = ConvertWire(pcTag, pcCircuit);
 			ReturnOnFalse(bResult);
 		}
-		else if (StringCompare(szTagName, "comp") == 0)
+		else if (IsString(szTagName, "comp"))
 		{
 			bResult = ConvertComponent(pcTag, pcCircuit);
 			ReturnOnFalse(bResult);
 		}
-		else if (StringCompare(szTagName, "appear") == 0)
+		else if (IsString(szTagName, "appear"))
 		{
 		}
-		else if (StringCompare(szTagName, "a") == 0)
+		else if (IsString(szTagName, "a"))
 		{
 		}
 		else
@@ -293,91 +293,91 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	bResult = ParseInt2(&sLoc, szLoc);
 	ReturnOnFalse(bResult);
 
-	if (StringCompare(szName, "Tunnel") == 0)
+	if (IsString(szName, "Tunnel"))
 	{
 		return CreateTunnel(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Pull Resistor") == 0)
+	else if (IsString(szName, "Pull Resistor"))
 	{
 		return CreatePullResistor(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Constant") == 0)
+	else if (IsString(szName, "Constant"))
 	{
 		return CreateConstant(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "AND Gate") == 0)
+	else if (IsString(szName, "AND Gate"))
 	{
 		return CreateANDGate(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "NAND Gate") == 0)
+	else if (IsString(szName, "NAND Gate"))
 	{
 		return CreateNANDGate(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "NOR Gate") == 0)
+	else if (IsString(szName, "NOR Gate"))
 	{
 		return CreateNORGate(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "OR Gate") == 0)
+	else if (IsString(szName, "OR Gate"))
 	{
 		return CreateORGate(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "NOT Gate") == 0)
+	else if (IsString(szName, "NOT Gate"))
 	{
 		return CreateNOTGate(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "XOR Gate") == 0)
+	else if (IsString(szName, "XOR Gate"))
 	{
 		return CreateXORGate(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Clock") == 0)
+	else if (IsString(szName, "Clock"))
 	{
 		return CreateClock(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Controlled Buffer") == 0)
+	else if (IsString(szName, "Controlled Buffer"))
 	{
 		return CreateControlledBuffer(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Counter") == 0)
+	else if (IsString(szName, "Counter"))
 	{
 		return CreateCounter(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Decoder") == 0)
+	else if (IsString(szName, "Decoder"))
 	{
 		return CreateDecoder(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Digital Oscilloscope") == 0)
+	else if (IsString(szName, "Digital Oscilloscope"))
 	{
 		return CreateDigitalOscilloscope(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "LED") == 0)
+	else if (IsString(szName, "LED"))
 	{
 		return CreateLED(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Pin") == 0)
+	else if (IsString(szName, "Pin"))
 	{
 		return CreatePin(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Probe") == 0)
+	else if (IsString(szName, "Probe"))
 	{
 		return CreateProbe(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "RAM") == 0)
+	else if (IsString(szName, "RAM"))
 	{
 		return CreateRAM(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "ROM") == 0)
+	else if (IsString(szName, "ROM"))
 	{
 		return CreateROM(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Splitter") == 0)
+	else if (IsString(szName, "Splitter"))
 	{
 		return CreateSplitter(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "Text") == 0)
+	else if (IsString(szName, "Text"))
 	{
 		return CreateText(pcCompTag, sLoc);
 	}
-	else if (StringCompare(szName, "D Flip-Flop") == 0)
+	else if (IsString(szName, "D Flip-Flop"))
 	{
 		return CreateDFlipFlop(pcCompTag, sLoc);
 	}
@@ -442,7 +442,7 @@ BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag*
 	while (pcTag)
 	{
 		szTagName = pcTag->GetName();
-		if (StringCompare(szTagName, "a") == 0)
+		if (IsString(szTagName, "a"))
 		{
 			szName = pcTag->GetAttribute("name");
 			if (szName == NULL)
@@ -505,6 +505,16 @@ BOOL CLogisimFileReader::CheckMap(char* szComponentName, CMapStringString* pcMap
 
 	pcMap->Kill();
 	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::IsString(char* szLeft, char* szRight)
+{
+	return StringCompare(szLeft, szRight) == 0;
 }
 
 
@@ -581,19 +591,19 @@ BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKe
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
 
-	if (StringCompare(szValue, "east") == 0)
+	if (IsString(szValue, "east"))
 	{
 		*peFacing = LF_East;
 	}
-	else if (StringCompare(szValue, "west") == 0)
+	else if (IsString(szValue, "west"))
 	{
 		*peFacing = LF_West;
 	}
-	else if (StringCompare(szValue, "north") == 0)
+	else if (IsString(szValue, "north"))
 	{
 		*peFacing = LF_North;
 	}
-	else if (StringCompare(szValue, "south") == 0)
+	else if (IsString(szValue, "south"))
 	{
 		*peFacing = LF_South;
 	}
@@ -618,19 +628,19 @@ BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szK
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
 
-	if (StringCompare(szValue, "high") == 0)
+	if (IsString(szValue, "high"))
 	{
 		*peTrigger = LT_High;
 	}
-	else if (StringCompare(szValue, "low") == 0)
+	else if (IsString(szValue, "low"))
 	{
 		*peTrigger = LT_Low;
 	}
-	else if (StringCompare(szValue, "rising") == 0)
+	else if (IsString(szValue, "rising"))
 	{
 		*peTrigger = LT_Rising;
 	}
-	else if (StringCompare(szValue, "falling") == 0)
+	else if (IsString(szValue, "falling"))
 	{
 		*peTrigger = LT_Falling;
 	}
@@ -655,7 +665,7 @@ BOOL CLogisimFileReader::GetMapValueAsAppearance(CMapStringString* pcMap, char* 
 	bResult = GetMapValue(pcMap, szKey, &szValue, "classic");
 	ReturnOnFalse(bResult);
 
-	if (StringCompare(szValue, "classic") == 0)
+	if (IsString(szValue, "classic"))
 	{
 	}
 	else
@@ -679,19 +689,19 @@ BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, ch
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
 
-	if (StringCompare(szValue, "center") == 0)
+	if (IsString(szValue, "center"))
 	{
 		*peValue = LSA_Centered;
 	}
-	else if (StringCompare(szValue, "left") == 0)
+	else if (IsString(szValue, "left"))
 	{
 		*peValue = LSA_Left;
 	}
-	else if (StringCompare(szValue, "right") == 0)
+	else if (IsString(szValue, "right"))
 	{
 		*peValue = LSA_Right;
 	}
-	else if (StringCompare(szValue, "legacy") == 0)
+	else if (IsString(szValue, "legacy"))
 	{
 		*peValue = LSA_Legacy;
 	}
@@ -716,11 +726,11 @@ BOOL CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szK
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
 
-	if (StringCompare(szValue, "bidir") == 0)
+	if (IsString(szValue, "bidir"))
 	{
 		*peValue = LRDB_Bidirectional;
 	}
-	else if (StringCompare(szValue, "separate") == 0)
+	else if (IsString(szValue, "separate"))
 	{
 		*peValue = LRDB_Separate;
 	}
@@ -1098,14 +1108,33 @@ BOOL CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CLogisimPin*		pcComp;
 	CMapStringString	cMap;
 	BOOL				bResult;
+	int					iWidth;
+	ELogisimFacing		eFacing;
+	char*				szOutput;
+	char*				szLabel;
+	char*				szTristate;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsAppearance(&cMap, "appearance");
+	bResult &= GetMapValueAsInt(&cMap, "width", &iWidth, "8");
+	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	bResult &= GetMapValue(&cMap, "labelfont", NULL, ""); 
+	bResult &= GetMapValue(&cMap, "output", &szOutput, "false");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValue(&cMap, "tristate", &szTristate, "false");
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreatePin();
 	pcComp->Init(sLoc);
+	pcComp->SetFacing(eFacing);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetLabel(szLabel);
+	pcComp->SetOutput(IsString(szOutput, "true"));
+	pcComp->SetTristate(IsString(szTristate, "true"));
 
-	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "appearance", "width", "facing", "labelfont", "output", "label", "tristate", NULL);
 }
 
 
@@ -1170,9 +1199,9 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->Init(sLoc);
 	pcComp->SetAddressWidth(iAddressWidth);
 	pcComp->SetDataBus(eDataBus);
-	pcComp->SetLineEnables(StringCompare(szEnables, "line") == 0);
+	pcComp->SetLineEnables(IsString(szEnables, "line"));
 	pcComp->SetTrigger(eTrigger);
-	pcComp->SetVolatile(StringCompare(szType, "volatile") == 0);
+	pcComp->SetVolatile(IsString(szType, "volatile"));
 
 	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "appearance", "type", "addrWidth", "trigger", "trigger", "enables", "labelvisible", "databus", NULL);
 }

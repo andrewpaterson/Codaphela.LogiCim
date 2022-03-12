@@ -47,6 +47,7 @@ protected:
 	BOOL			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsAppearance(CMapStringString* pcMap, char* szKey);
 	BOOL			CheckMap(char* szComponentName, CMapStringString* pcMap, const char* szFirst, ...);
+	BOOL			IsString(char* szLeft, char* szRight);
 
 	BOOL			CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc);
