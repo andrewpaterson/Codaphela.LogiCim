@@ -261,6 +261,7 @@
     <ClInclude Include="LogisimNORGate.h" />
     <ClInclude Include="LogisimORGate.h" />
     <ClInclude Include="LogisimPullResistor.h" />
+    <ClInclude Include="LogisimTrigger.h" />
     <ClInclude Include="LogisimTunnel.h" />
     <ClInclude Include="LogisimWire.h" />
     <ClInclude Include="LogisimXORGate.h" />

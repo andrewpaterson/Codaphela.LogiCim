@@ -4,6 +4,7 @@
 #include "CoreLib/XMLFile.h"
 #include "CoreLib/Files.h"
 #include "LogisimFacing.h"
+#include "LogisimTrigger.h"
 #include "LogisimCircuit.h"
 #include "LogisimLibrary.h"
 #include "LogisimComponentList.h"
@@ -40,8 +41,11 @@ protected:
 	BOOL			GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
 	BOOL			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
-	BOOL			GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, CLogisimSplitterAppearance* peAppear, char* szDefault);
+	BOOL			GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault = NULL);
+	BOOL			GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, CLogisimSplitterAppearance* peAppear, char* szDefault = NULL);
+	BOOL			GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault = NULL);
+	BOOL			GetMapValueAsAppearance(CMapStringString* pcMap, char* szKey);
 	BOOL			CheckMap(char* szComponentName, CMapStringString* pcMap, const char* szFirst, ...);
 
 	BOOL			CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);

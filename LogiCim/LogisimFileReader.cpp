@@ -610,9 +610,70 @@ BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKe
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault)
+{
+	char* szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (StringCompare(szValue, "high") == 0)
+	{
+		*peTrigger = LT_High;
+	}
+	else if (StringCompare(szValue, "low") == 0)
+	{
+		*peTrigger = LT_Low;
+	}
+	else if (StringCompare(szValue, "rising") == 0)
+	{
+		*peTrigger = LT_Rising;
+	}
+	else if (StringCompare(szValue, "falling") == 0)
+	{
+		*peTrigger = LT_Falling;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [high, low, rising or falling] parsing Trigger.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsAppearance(CMapStringString* pcMap, char* szKey)
+{
+	char* szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, "classic");
+	ReturnOnFalse(bResult);
+
+	if (StringCompare(szValue, "classic") == 0)
+	{
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [classic] parsing Appearance.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, CLogisimSplitterAppearance* peValue, char* szDefault)
 {
-	char*	szValue;
+	char* szValue;
 	BOOL	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
@@ -637,6 +698,35 @@ BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, ch
 	else
 	{
 		return gcLogger.Error2(__METHOD__, " Expected [center, left, right or legacy] parsing Appear.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault)
+{
+	char* szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (StringCompare(szValue, "bidir") == 0)
+	{
+		*peValue = LRDB_Bidirectional;
+	}
+	else if (StringCompare(szValue, "separate") == 0)
+	{
+		*peValue = LRDB_Separate;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [bidir or separate] parsing Appear.", NULL);
 	}
 
 	return TRUE;
@@ -1031,6 +1121,11 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
+	/*      <a name="appearance" val="classic"/>
+      <a name="facing" val="west"/>
+      <a name="radix" val="16"/>
+*/
+	bResult = GetMapValueAsAppearance(&cMap, "appearance");
 
 	pcComp = mcComponents.CreateProbe();
 	pcComp->Init(sLoc);
@@ -1048,14 +1143,34 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CLogisimRAM*		pcComp;
 	CMapStringString	cMap;
 	BOOL				bResult;
+	int					iAddressWidth;
+	char*				szType;
+	ELogisimTrigger		eTrigger;
+	char*				szEnables;
+	char*				szLabelVisible;
+	ELogisimRAMDataBus	eDataBus;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsAppearance(&cMap, "appearance");
+	bResult &= GetMapValue(&cMap, "type", &szType, "volatile");
+	bResult &= GetMapValueAsInt(&cMap, "addrWidth", &iAddressWidth, "8");
+	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
+	bResult &= GetMapValue(&cMap, "enables", &szEnables, "byte");
+	bResult &= GetMapValue(&cMap, "labelvisible", &szLabelVisible, "");
+	bResult &= GetMapValueAsDataBus(&cMap, "databus", &eDataBus, "separate");
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreateRAM();
 	pcComp->Init(sLoc);
+	pcComp->SetAddressWidth(iAddressWidth);
+	pcComp->SetDataBus(eDataBus);
+	pcComp->SetLineEnables(StringCompare(szEnables, "line") == 0);
+	pcComp->SetTrigger(eTrigger);
+	pcComp->SetVolatile(StringCompare(szType, "volatile") == 0);
 
-	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, NULL);
+	return CheckMap(pcCompTag->GetAttribute("name"), &cMap, "appearance", "type", "addrWidth", "trigger", "trigger", "enables", "labelvisible", "databus", NULL);
 }
 
 

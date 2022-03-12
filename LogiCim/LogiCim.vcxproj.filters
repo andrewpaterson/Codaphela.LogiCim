@@ -194,5 +194,8 @@
     <ClInclude Include="LogisimDFlipFlop.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
+    <ClInclude Include="LogisimTrigger.h">
+      <Filter>Source\Logisim</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
