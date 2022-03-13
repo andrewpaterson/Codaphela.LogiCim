@@ -1,9 +1,9 @@
 #ifndef __LOGISIM_NAND_GATE_H__
 #define __LOGISIM_NAND_GATE_H__
-#include "LogisimComponent.h"
+#include "LogisimGate.h"
 
 
-class CLogisimNANDGate : public CLogisimComponent
+class CLogisimNANDGate : public CLogisimGate
 {
 protected:
 public:

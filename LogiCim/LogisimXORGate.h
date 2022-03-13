@@ -1,9 +1,9 @@
 #ifndef __LOGISIM_XOR_GATE_H__
 #define __LOGISIM_XOR_GATE_H__
-#include "LogisimComponent.h"
+#include "LogisimGate.h"
 
 
-class CLogisimXORGate : public CLogisimComponent
+class CLogisimXORGate : public CLogisimGate
 {
 protected:
 public:

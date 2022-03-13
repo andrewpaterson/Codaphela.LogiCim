@@ -105,6 +105,9 @@
     <ClCompile Include="LogisimDFlipFlop.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimGate.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -196,6 +199,9 @@
     </ClInclude>
     <ClInclude Include="LogisimTrigger.h">
       <Filter>Source\Logisim</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimGate.h">
+      <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

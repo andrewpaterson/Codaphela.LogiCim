@@ -204,6 +204,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LogisimGate.cpp" />
     <ClCompile Include="LogisimCounter.cpp" />
     <ClCompile Include="LogisimDecoder.cpp" />
     <ClCompile Include="LogisimDFlipFlop.cpp" />
@@ -235,6 +236,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LogisimGate.h" />
     <ClInclude Include="LogisimCounter.h" />
     <ClInclude Include="LogisimDecoder.h" />
     <ClInclude Include="LogisimDFlipFlop.h" />

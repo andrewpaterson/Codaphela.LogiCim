@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CLogisimORGate::Init(SInt2 sPosition)
 {
-	CLogisimComponent::Init(sPosition);
+	CLogisimGate::Init(sPosition);
 }
 
 
@@ -17,6 +17,6 @@ void CLogisimORGate::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimORGate::Kill(void)
 {
-	CLogisimComponent::Kill();
+	CLogisimGate::Kill();
 }
 

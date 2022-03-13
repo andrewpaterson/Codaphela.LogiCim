@@ -1,9 +1,9 @@
 #ifndef __LOGISIM_NOR_GATE_H__
 #define __LOGISIM_NOR_GATE_H__
-#include "LogisimComponent.h"
+#include "LogisimGate.h"
 
 
-class CLogisimNORGate : public CLogisimComponent
+class CLogisimNORGate : public CLogisimGate
 {
 protected:
 public:

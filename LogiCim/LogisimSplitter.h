@@ -3,7 +3,7 @@
 #include "LogisimComponent.h"
 
 
-enum CLogisimSplitterAppearance
+enum ELogisimSplitterAppearance
 {
 	LSA_Left,
 	LSA_Right,
@@ -20,7 +20,7 @@ protected:
 	int							miFanOut;
 	int							miIncoming;
 	ELogisimFacing				meFacing;
-	CLogisimSplitterAppearance	meAppear;
+	ELogisimSplitterAppearance	meAppear;
 
 public:
 	void Init(SInt2 sPosition);
@@ -30,7 +30,7 @@ public:
 	void SetFanOut(int miFanOut);
 	void SetIncoming(int iIncoming);
 	void SetFacing(ELogisimFacing eFacing);
-	void SetAppear(CLogisimSplitterAppearance eAppear);
+	void SetAppear(ELogisimSplitterAppearance eAppear);
 };
 
 
