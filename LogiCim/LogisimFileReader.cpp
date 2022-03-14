@@ -1535,7 +1535,7 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetTrigger(eTrigger);
 	pcComp->SetVolatile(IsString(szType, "volatile"));
 
-	return CheckMap(pcCompTag, &cMap, "appearance", "type", "addrWidth", "trigger", "trigger", "enables", "labelvisible", "databus", NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", "type", "addrWidth", "trigger", "trigger", "enables", "label", "labelvisible", "databus", NULL);
 }
 
 
@@ -1550,17 +1550,53 @@ BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	BOOL				bResult;
 	char*				szLabel;
 	int					iAddressWidth;
+	int					iDataWidth;
 	char*				szContents;
 	uint8*				pvMemory;
+	CTextParser			cParser;
+	TRISTATE			tResult;
+	int					iContentsAddressWidth;
+	int					iContentsDataWidth;
+
+	int					iData1;
+	uint64				iData2;
+	int					iPosition;
+	int					i;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
 	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "addrWidth", &iAddressWidth, "8");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "dataWidth", &iDataWidth, "8");
 	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
 	bResult &= GetMapValue(&cMap, "contents", &szContents, "");
 	ReturnOnFalse(bResult);
+
+	cParser.Init(szContents);
+	tResult = cParser.GetExactCharacterSequence("addr/data:");
+	if (NotTrue(tResult))
+	{
+		cParser.Kill();
+		return gcLogger.Error2(__METHOD__, " Expected ROM contents to begin 'addr/data:'.", NULL);
+	}
+	tResult = cParser.GetInteger(&iContentsAddressWidth);
+	if (NotTrue(tResult))
+	{
+		cParser.Kill();
+		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} as ROM address width.", NULL);
+	}
+	tResult = cParser.GetInteger(&iContentsDataWidth);
+	if (NotTrue(tResult))
+	{
+		cParser.Kill();
+		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} as ROM data width.", NULL);
+	}
+	if ((iAddressWidth != iContentsAddressWidth) || (iDataWidth != iContentsDataWidth))
+	{
+		cParser.Kill();
+		return gcLogger.Error2(__METHOD__, " Content data and address widths do not match.", NULL);
+	}
 
 	pcComp = mcComponents.CreateROM();
 	pcComp->Init(sLoc);
@@ -1569,7 +1605,59 @@ BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 
 	pvMemory = pcComp->GetMemory();
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	iPosition = 0;
+
+	for (;;)
+	{
+		cParser.PushPosition();
+		tResult = cParser.GetInteger(&iData1);
+		if (tResult == TRITRUE)
+		{
+			tResult = cParser.GetExactCharacter('*', FALSE);
+			if (tResult == TRITRUE)
+			{
+				cParser.PassPosition();
+				tResult = cParser.GetHexadecimalPart(&iData2, NULL);
+				for (i = 0; i < iData1; i++, iPosition++)
+				{
+					pvMemory[iPosition] = (uint8)iData2;
+				}
+			}
+			else
+			{
+				cParser.PopPosition();
+				cParser.SkipWhiteSpace();
+				tResult = cParser.GetHexadecimalPart(&iData2, NULL);
+				if (tResult == TRITRUE)
+				{
+					pvMemory[iPosition] = (uint8)iData2;
+					iPosition++;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		else
+		{
+			cParser.PopPosition();
+			cParser.SkipWhiteSpace();
+			tResult = cParser.GetHexadecimalPart(&iData2, NULL);
+			if (tResult == TRITRUE)
+			{
+				pvMemory[iPosition] = (uint8)iData2;
+				iPosition++;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	cParser.Kill();
+
+	return CheckMap(pcCompTag, &cMap, "addrWidth", "appearance", "contents", "label", NULL);
 }
 
 

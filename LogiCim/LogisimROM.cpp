@@ -20,6 +20,8 @@ void CLogisimROM::Init(SInt2 sPosition)
 void CLogisimROM::Kill(void)
 {
 	CLogisimMemory::Kill();
+	SafeFree(mpvMemory);
+	muiSize = 0;
 }
 
 
