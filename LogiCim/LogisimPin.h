@@ -1,12 +1,11 @@
 #ifndef __LOGISIM_PIN_H__
 #define __LOGISIM_PIN_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
-class CLogisimPin : public CLogisimComponent
+class CLogisimPin : public CLogisimFacing
 {
 protected:
-	ELogisimFacing		meFacing; 
 	int					miWidth;
 	BOOL				mbOutput;
 	CChars				mszLabel;
@@ -16,7 +15,6 @@ public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
-	void SetFacing(ELogisimFacing eFacing);
 	void SetWidth(int iWidth);
 	void SetOutput(BOOL bOutput);
 	void SetLabel(char* szLabel);

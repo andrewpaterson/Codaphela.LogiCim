@@ -1,15 +1,14 @@
-#include "LogisimTunnel.h"
+#include "LogisimFacing.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimTunnel::Init(SInt2 sPosition)
+void CLogisimFacing::Init(SInt2 sPosition)
 {
-	CLogisimFacing::Init(sPosition);
-	mszLabel.Init();
-	miWidth = 0;
+	CLogisimComponent::Init(sPosition);
+	meFacing = LF_NotSet;
 }
 
 
@@ -17,10 +16,9 @@ void CLogisimTunnel::Init(SInt2 sPosition)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimTunnel::Kill(void)
+void CLogisimFacing::Kill(void)
 {
-	mszLabel.Kill();
-	CLogisimFacing::Kill();
+	CLogisimComponent::Kill();
 }
 
 
@@ -28,6 +26,8 @@ void CLogisimTunnel::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimTunnel::SetWidth(int iWidth) { miWidth = iWidth; }
-void CLogisimTunnel::SetLabel(char* szLabel) { 	mszLabel.Set(szLabel); }
+void CLogisimFacing::SetFacing(ELogisimFacing eFacing) 
+{ 
+	meFacing = eFacing; 
+}
 

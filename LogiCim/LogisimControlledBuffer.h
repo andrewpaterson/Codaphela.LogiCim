@@ -1,9 +1,9 @@
 #ifndef __LOGISIM_CONTROLLED_BUFFER_H__
 #define __LOGISIM_CONTROLLED_BUFFER_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
-class CLogisimControlledBuffer : public CLogisimComponent
+class CLogisimControlledBuffer : public CLogisimFacing
 {
 protected:
 public:

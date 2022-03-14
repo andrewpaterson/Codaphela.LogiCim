@@ -1,20 +1,18 @@
 #ifndef __LOGISIM_PROBE_H__
 #define __LOGISIM_PROBE_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
-class CLogisimProbe : public CLogisimComponent
+class CLogisimProbe : public CLogisimFacing
 {
 protected:
 	int					miRadix;
-	ELogisimFacing		meFacing;
 
 public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
 	void SetRadix(int iRadix);
-	void SetFacing(ELogisimFacing eFacing);
 };
 
 

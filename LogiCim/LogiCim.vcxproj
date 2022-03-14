@@ -204,6 +204,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LogisimFacing.cpp" />
     <ClCompile Include="LogisimGate.cpp" />
     <ClCompile Include="LogisimCounter.cpp" />
     <ClCompile Include="LogisimDecoder.cpp" />

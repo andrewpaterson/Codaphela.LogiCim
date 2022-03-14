@@ -1,6 +1,6 @@
 #ifndef __LOGISIM_PULL_RESISTOR_H__
 #define __LOGISIM_PULL_RESISTOR_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
 enum ELogisimPullResistorPull
@@ -12,17 +12,15 @@ enum ELogisimPullResistorPull
 };
 
 
-class CLogisimPullResistor : public CLogisimComponent
+class CLogisimPullResistor : public CLogisimFacing
 {
 protected:
-	ELogisimFacing				meFacing;
 	ELogisimPullResistorPull	mePull;
 
 public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
-	void SetFacing(ELogisimFacing eFacing);
 	void SetPull(ELogisimPullResistorPull ePull);
 };
 

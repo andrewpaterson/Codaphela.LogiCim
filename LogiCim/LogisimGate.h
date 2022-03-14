@@ -1,7 +1,7 @@
 #ifndef __LOGISIM_GATE_H__
 #define __LOGISIM_GATE_H__
 #include "BaseLib/ArrayBit.h"
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
 enum ELogisimGateOut
@@ -13,10 +13,9 @@ enum ELogisimGateOut
 };
 
 
-class CLogisimGate : public CLogisimComponent
+class CLogisimGate : public CLogisimFacing
 {
 protected:
-	ELogisimFacing		meFacing;
 	int					miInputs;
 	ELogisimGateOut		meOut;
 	int					miSize;
@@ -28,7 +27,6 @@ public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
-	void SetFacing(ELogisimFacing eFacing);
 	void SetInputs(int iInputs);
 	void SetOut(ELogisimGateOut eOut);
 	void SetSize(int iSize);

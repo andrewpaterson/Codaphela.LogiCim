@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CLogisimConstant::Init(SInt2 sPosition)
 {
-	CLogisimComponent::Init(sPosition);
+	CLogisimFacing::Init(sPosition);
 	miWidth = 0;
 	mlliValue = -1;
 }
@@ -19,7 +19,7 @@ void CLogisimConstant::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimConstant::Kill(void)
 {
-	CLogisimComponent::Kill();
+	CLogisimFacing::Kill();
 }
 
 

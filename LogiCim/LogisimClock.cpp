@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CLogisimClock::Init(SInt2 sPosition)
 {
-	CLogisimComponent::Init(sPosition);
+	CLogisimFacing::Init(sPosition);
 }
 
 
@@ -17,6 +17,6 @@ void CLogisimClock::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimClock::Kill(void)
 {
-	CLogisimComponent::Kill();
+	CLogisimFacing::Kill();
 }
 

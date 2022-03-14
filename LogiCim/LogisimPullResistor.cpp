@@ -8,7 +8,6 @@
 void CLogisimPullResistor::Init(SInt2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
-	meFacing = LF_NotSet;
 	mePull = LPRP_Notset;
 }
 
@@ -27,6 +26,5 @@ void CLogisimPullResistor::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimPullResistor::SetFacing(ELogisimFacing eFacing) { meFacing = eFacing; }
 void CLogisimPullResistor::SetPull(ELogisimPullResistorPull ePull) { mePull = ePull; }
 

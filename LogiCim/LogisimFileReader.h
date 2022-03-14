@@ -48,8 +48,9 @@ protected:
 	BOOL			GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsAppearance(CMapStringString* pcMap, char* szKey);
-	BOOL			CheckMap(char* szComponentName, CMapStringString* pcMap, const char* szFirst, ...);
-	BOOL			CheckMap(char* szComponentName, CMapStringString* pcMap, CArrayChars* paszKeys);
+	BOOL			CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, const char* szFirst, ...);
+	BOOL			CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, CArrayChars* paszKeys);
+	BOOL			UnknownTagError(CMarkupTag* pcTag, CMapStringString* pcMap);
 	BOOL			IsString(char* szLeft, char* szRight);
 
 	BOOL			CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);

@@ -10,7 +10,6 @@ void CLogisimProbe::Init(SInt2 sPosition)
 	CLogisimComponent::Init(sPosition);
 
 	miRadix = 0;
-	meFacing = LF_NotSet;
 }
 
 
@@ -29,5 +28,5 @@ void CLogisimProbe::Kill(void)
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogisimProbe::SetRadix(int iRadix) { miRadix = iRadix; }
-void CLogisimProbe::SetFacing(ELogisimFacing eFacing) { meFacing = eFacing; }
+
 

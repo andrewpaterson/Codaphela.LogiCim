@@ -1,6 +1,6 @@
 #ifndef __LOGISIM_SPLITTER_H__
 #define __LOGISIM_SPLITTER_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
 enum ELogisimSplitterAppearance
@@ -13,13 +13,12 @@ enum ELogisimSplitterAppearance
 };
 
 
-class CLogisimSplitter : public CLogisimComponent
+class CLogisimSplitter : public CLogisimFacing
 {
 protected:
 	int							miSpacing;
 	int							miFanOut;
 	int							miIncoming;
-	ELogisimFacing				meFacing;
 	ELogisimSplitterAppearance	meAppear;
 
 public:
@@ -29,7 +28,6 @@ public:
 	void SetSpacing(int iSpacing);
 	void SetFanOut(int miFanOut);
 	void SetIncoming(int iIncoming);
-	void SetFacing(ELogisimFacing eFacing);
 	void SetAppear(ELogisimSplitterAppearance eAppear);
 };
 

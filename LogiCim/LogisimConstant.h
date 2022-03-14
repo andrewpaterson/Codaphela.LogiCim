@@ -1,9 +1,9 @@
 #ifndef __LOGISIM_CONSTANT_H__
 #define __LOGISIM_CONSTANT_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
-class CLogisimConstant : public CLogisimComponent
+class CLogisimConstant : public CLogisimFacing
 {
 protected:
 	int		miWidth;

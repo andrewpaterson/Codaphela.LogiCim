@@ -1,9 +1,9 @@
 #ifndef __LOGISIM_CLOCK_H__
 #define __LOGISIM_CLOCK_H__
-#include "LogisimComponent.h"
+#include "LogisimFacing.h"
 
 
-class CLogisimClock : public CLogisimComponent
+class CLogisimClock : public CLogisimFacing
 {
 protected:
 public:

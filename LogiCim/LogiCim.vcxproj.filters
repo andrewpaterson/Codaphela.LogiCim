@@ -108,6 +108,9 @@
     <ClCompile Include="LogisimGate.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimFacing.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -133,9 +136,6 @@
     </ClInclude>
     <ClInclude Include="LogisimTunnel.h">
       <Filter>Source\Logisim\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="LogisimFacing.h">
-      <Filter>Source\Logisim</Filter>
     </ClInclude>
     <ClInclude Include="LogisimConstant.h">
       <Filter>Source\Logisim\Component</Filter>
@@ -201,6 +201,9 @@
       <Filter>Source\Logisim</Filter>
     </ClInclude>
     <ClInclude Include="LogisimGate.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimFacing.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,8 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CLogisimGate::Init(SInt2 sPosition)
 {
-	CLogisimComponent::Init(sPosition);
-	meFacing = LF_NotSet;
+	CLogisimFacing::Init(sPosition);
 	miInputs = 0;
 	meOut = LGO_NotSet;
 	miSize = 0;
@@ -24,7 +23,7 @@ void CLogisimGate::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimGate::Kill(void)
 {
-	CLogisimComponent::Kill();
+	CLogisimFacing::Kill();
 	mabNegate.Kill();
 	mszLabel.Kill();
 }
@@ -47,7 +46,6 @@ void CLogisimGate::SetWidth(int iWidth)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimGate::SetFacing(ELogisimFacing eFacing) { meFacing = eFacing; }
 void CLogisimGate::SetInputs(int iInputs) { miInputs = iInputs; }
 void CLogisimGate::SetOut(ELogisimGateOut eOut) { meOut = eOut; }
 void CLogisimGate::SetSize(int iSize) { miSize = iSize; }
