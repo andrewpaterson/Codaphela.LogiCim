@@ -6,9 +6,13 @@
 class CLogisimNOTGate : public CLogisimFacing
 {
 protected:
+	int		miSize;
+
 public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
+
+	void SetSize(int iSize);
 };
 
 

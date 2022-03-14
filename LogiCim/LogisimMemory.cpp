@@ -1,13 +1,15 @@
-#include "LogisimNOTGate.h"
+#include "LogisimMemory.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimNOTGate::Init(SInt2 sPosition)
+void CLogisimMemory::Init(SInt2 sPosition)
 {
-	CLogisimFacing::Init(sPosition);
+	CLogisimComponent::Init(sPosition);
+	miAddressWidth = 0;
+	mszLabel.Init();
 }
 
 
@@ -15,9 +17,10 @@ void CLogisimNOTGate::Init(SInt2 sPosition)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimNOTGate::Kill(void)
+void CLogisimMemory::Kill(void)
 {
-	CLogisimFacing::Kill();
+	mszLabel.Kill();
+	CLogisimComponent::Kill();
 }
 
 
@@ -25,5 +28,6 @@ void CLogisimNOTGate::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimNOTGate::SetSize(int iSize) { miSize = iSize; }
+void CLogisimMemory::SetAddressWidth(int iAddressWidth) { miAddressWidth = iAddressWidth; }
+void CLogisimMemory::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
 

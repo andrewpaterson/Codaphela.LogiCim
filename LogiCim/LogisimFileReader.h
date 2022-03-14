@@ -8,20 +8,22 @@
 #include "LogisimCircuit.h"
 #include "LogisimLibrary.h"
 #include "LogisimComponentList.h"
+#include "LogisimCustomComponent.h"
 
 
 class CLogisimComponent;
 class CLogisimFileReader
 {
 protected:
-	CChars					mszFileName;
-	CChars					mszDirectory;
-	CXMLFile				mcFile;
+	CChars							mszFileName;
+	CChars							mszDirectory;
+	CXMLFile						mcFile;
 
-	CLogisimCircuitList		mlCircuits;
-	CLogisimLibraryList		mlLibraries;
-	CChars					mszMainCircuitName;
-	CLogisimComponentList	mcComponents;
+	CLogisimCircuitList				mlCircuits;
+	CLogisimLibraryList				mlLibraries;
+	CChars							mszMainCircuitName;
+	CLogisimComponentList			mcComponents;
+	CLogisimCustomComponentList		mcCustomComponentList;
 
 public:
 	void			Init(char* szDirectory, char* szFileName);
@@ -38,7 +40,7 @@ protected:
 	BOOL			ConvertLibrary(CMarkupTag* pcMainTag);
 
 	BOOL			ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag* pcCompTag);
-	BOOL			GetMapValueAsInt(CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
+	BOOL			GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
 	BOOL			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
 	BOOL			GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault = NULL);
@@ -48,6 +50,7 @@ protected:
 	BOOL			GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey);
+	BOOL			GetMapValueAsRGB(CMapStringString* pcMap, char* szKey, uint32* puiRGB, char* szDefault = NULL);
 	BOOL			CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, const char* szFirst, ...);
 	BOOL			CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, CArrayChars* paszKeys);
 	BOOL			UnknownTagError(CMarkupTag* pcTag, CMapStringString* pcMap);
@@ -75,6 +78,10 @@ protected:
 	BOOL			CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
+
+	BOOL			PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
+
+	BOOL			CreateCustomComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
 
 	BOOL			ParseInt2(SInt2* ps, char* sz);
 };

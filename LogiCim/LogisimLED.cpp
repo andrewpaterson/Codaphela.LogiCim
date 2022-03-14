@@ -20,3 +20,11 @@ void CLogisimLED::Kill(void)
 	CLogisimComponent::Kill();
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimLED::SetColour(uint32 uiColour) { muiColour = uiColour; }
+void CLogisimLED::SetOffColour(uint32 uiOffColour) { muiOffColour = uiOffColour; }
+

@@ -1,14 +1,20 @@
 #ifndef __LOGISIM_ROM_H__
 #define __LOGISIM_ROM_H__
-#include "LogisimComponent.h"
+#include "LogisimMemory.h"
 
 
-class CLogisimROM : public CLogisimComponent
+class CLogisimROM : public CLogisimMemory
 {
 protected:
+	uint8*	mpvMemory;
+	uint32	muiSize;
+
 public:
-	void Init(SInt2 sPosition);
-	void Kill(void);
+	void	Init(SInt2 sPosition);
+	void	Kill(void);
+
+	void	SetAddressWidth(int iAddressWidth);
+	uint8*	GetMemory(void);
 };
 
 

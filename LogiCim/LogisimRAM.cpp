@@ -13,6 +13,7 @@ void CLogisimRAM::Init(SInt2 sPosition)
 	meTrigger = LT_NotSet;
 	mbLineEnables = FALSE;
 	meDataBus = LRDB_NotSet;
+	mszLabel.Init();
 }
 
 
@@ -22,6 +23,7 @@ void CLogisimRAM::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimRAM::Kill(void)
 {
+	mszLabel.Kill();
 	CLogisimComponent::Kill();
 }
 
@@ -30,7 +32,6 @@ void CLogisimRAM::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimRAM::SetAddressWidth(int iAddressWidth) { miAddressWidth = iAddressWidth; }
 void CLogisimRAM::SetVolatile(BOOL bVolatile) { mbVolatile = bVolatile; }
 void CLogisimRAM::SetTrigger(ELogisimTrigger eTrigger) { meTrigger = eTrigger; }
 void CLogisimRAM::SetLineEnables(BOOL bLineEnables) { mbLineEnables = bLineEnables; }

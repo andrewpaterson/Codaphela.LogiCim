@@ -247,3 +247,13 @@ CLogisimDTypeFlipFlop* CLogisimComponentList::CreateDTypeFlipFlop(void)
 	return New<CLogisimDTypeFlipFlop>((CLogisimDTypeFlipFlop*)mcList.Add(sizeof(CLogisimDTypeFlipFlop)));
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
+{
+	return mcList.Remove(pcComp);
+}
+

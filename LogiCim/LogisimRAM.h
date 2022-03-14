@@ -1,7 +1,7 @@
 #ifndef __LOGISIM_RAM_H__
 #define __LOGISIM_RAM_H__
+#include "LogisimMemory.h"
 #include "LogisimTrigger.h"
-#include "LogisimComponent.h"
 
 
 enum ELogisimRAMDataBus
@@ -12,10 +12,9 @@ enum ELogisimRAMDataBus
 };
 
 
-class CLogisimRAM : public CLogisimComponent
+class CLogisimRAM : public CLogisimMemory
 {
 protected:
-	int					miAddressWidth;
 	BOOL				mbVolatile;
 	ELogisimTrigger		meTrigger;
 	BOOL				mbLineEnables;
@@ -25,7 +24,6 @@ public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
-	void SetAddressWidth(int iAddressWidth);
 	void SetVolatile(BOOL bVolatile);
 	void SetTrigger(ELogisimTrigger eTrigger);
 	void SetLineEnables(BOOL bLineEnables);
@@ -34,5 +32,4 @@ public:
 
 
 #endif // !__LOGISIM_RAM_H__
-
 

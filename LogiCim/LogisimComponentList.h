@@ -28,6 +28,7 @@ class CLogisimComponentList
 {
 protected:
 	CListVariable	mcList;
+
 public:
 	void							Init(void);
 	void							Kill(void);
@@ -54,6 +55,8 @@ public:
 	CLogisimSplitter*				CreateSplitter(void);
 	CLogisimText*					CreateText(void);
 	CLogisimDTypeFlipFlop*			CreateDTypeFlipFlop(void);
+
+	BOOL							Remove(CLogisimComponent* pcComp);
 };
 
 
