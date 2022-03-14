@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CLogisimNOTGate::Init(SInt2 sPosition)
 {
-	CLogisimComponent::Init(sPosition);
+	CLogisimFacing::Init(sPosition);
 }
 
 
@@ -17,6 +17,6 @@ void CLogisimNOTGate::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimNOTGate::Kill(void)
 {
-	CLogisimComponent::Kill();
+	CLogisimFacing::Kill();
 }
 

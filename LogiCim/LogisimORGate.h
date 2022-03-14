@@ -14,4 +14,3 @@ public:
 
 #endif // !__LOGISIM_OR_GATE_H__
 
-

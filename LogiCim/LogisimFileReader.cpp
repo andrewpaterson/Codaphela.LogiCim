@@ -696,10 +696,11 @@ BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szK
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsAppearance(CMapStringString* pcMap, char* szKey)
+BOOL CLogisimFileReader::GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey)
 {
-	char* szValue;
+	char*	szValue;
 	BOOL	bResult;
+	char*	szComponentName;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, "classic");
 	ReturnOnFalse(bResult);
@@ -709,7 +710,8 @@ BOOL CLogisimFileReader::GetMapValueAsAppearance(CMapStringString* pcMap, char* 
 	}
 	else
 	{
-		return gcLogger.Error2(__METHOD__, " Expected [classic] parsing Appearance.", NULL);
+		szComponentName = pcTag->GetAttribute("name");
+		return gcLogger.Error2(__METHOD__, " Component [", szComponentName, "], Line [", IntToString(pcTag->GetLine() + 1), "]:  Expected [classic] parsing Appearance.", NULL);
 	}
 
 	return TRUE;
@@ -971,7 +973,7 @@ BOOL CLogisimFileReader::CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetWidth(iWidth);
 	pcComp->SetFacing(eFacing);
 
-	return CheckMap(pcCompTag, &cMap, "value", "width", NULL);
+	return CheckMap(pcCompTag, &cMap, "value", "width", "facing", NULL);
 }
 
 
@@ -1291,7 +1293,7 @@ BOOL CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
-	bResult = GetMapValueAsAppearance(&cMap, "appearance");
+	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
 	bResult &= GetMapValueAsInt(&cMap, "width", &iWidth, "8");
 	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
 	bResult &= GetMapValue(&cMap, "labelfont", NULL, ""); 
@@ -1323,11 +1325,12 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 	BOOL				bResult;
 	int					iRadix;
 	ELogisimFacing		eFacing;
+	char*				szAppearance;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
-	bResult = GetMapValueAsAppearance(&cMap, "appearance");
+	bResult = GetMapValue(&cMap, "appearance", &szAppearance, "classic");
 	bResult &= GetMapValueAsInt(&cMap, "radix", &iRadix, "8");
 	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
 	ReturnOnFalse(bResult);
@@ -1336,6 +1339,7 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->Init(sLoc);
 	pcComp->SetFacing(eFacing);
 	pcComp->SetRadix(iRadix);
+	pcComp->SetClassicApearance(!IsString(szAppearance, "NewPins"));
 
 	return CheckMap(pcCompTag, &cMap, "appearance", "radix", "facing", NULL);
 }
@@ -1360,7 +1364,7 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
-	bResult = GetMapValueAsAppearance(&cMap, "appearance");
+	bResult = GetMapValueAsAppearance(pcCompTag , &cMap, "appearance");
 	bResult &= GetMapValue(&cMap, "type", &szType, "volatile");
 	bResult &= GetMapValueAsInt(&cMap, "addrWidth", &iAddressWidth, "8");
 	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");

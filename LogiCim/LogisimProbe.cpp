@@ -28,5 +28,5 @@ void CLogisimProbe::Kill(void)
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogisimProbe::SetRadix(int iRadix) { miRadix = iRadix; }
-
+void CLogisimProbe::SetClassicApearance(BOOL bClassicAppearance) { mbClassicAppearance = bClassicAppearance;  }
 

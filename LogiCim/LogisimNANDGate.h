@@ -14,4 +14,3 @@ public:
 
 #endif // !__LOGISIM_NAND_GATE_H__
 
-
