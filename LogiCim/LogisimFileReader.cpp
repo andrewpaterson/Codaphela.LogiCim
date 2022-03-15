@@ -1916,11 +1916,14 @@ BOOL CLogisimFileReader::CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc)
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
+	
+	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
+	ReturnOnFalse(bResult);
 
 	pcComp = mcComponents.CreateDTypeFlipFlop();
 	pcComp->Init(sLoc);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", NULL);
 }
 
 
