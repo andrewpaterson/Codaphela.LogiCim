@@ -652,7 +652,7 @@ BOOL CLogisimFileReader::GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* p
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, char* szDefault)
+BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, BOOL bInclude0x, char* szDefault)
 {
 	char* szValue;
 	BOOL			bResult;
@@ -670,11 +670,23 @@ BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szK
 		return gcLogger.Error2(__METHOD__, " Could not initialise text parser.", NULL);
 	}
 
-	tResult = cParser.GetHexadecimalPart(pulliValue, &iNumDigits);
-	if (NotTrue(tResult))
+	if (!bInclude0x)
 	{
-		cParser.Kill();
-		return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int.", NULL);
+		tResult = cParser.GetHexadecimalPart(pulliValue, &iNumDigits);
+		if (NotTrue(tResult))
+		{
+			cParser.Kill();
+			return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int.", NULL);
+		}
+	}
+	else
+	{
+		tResult = cParser.GetHexadecimal(pulliValue, &iNumDigits);
+		if (NotTrue(tResult))
+		{
+			cParser.Kill();
+			return gcLogger.Error2(__METHOD__, " Expected ${INTEGER} parsing Int.", NULL);
+		}
 	}
 
 	cParser.Kill();
@@ -961,6 +973,51 @@ BOOL CLogisimFileReader::GetMapValueAsGateOut(CMapStringString* pcMap, char* szK
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsAlignment(CMapStringString* pcMap, char* szKey, ELogisimAlignment* peValue, char* szDefault)
+{
+	char*	szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (IsString(szValue, "left"))
+	{
+		*peValue = LA_Left;
+	}
+	else if (IsString(szValue, "right"))
+	{
+		*peValue = LA_Right;
+	}
+	else if (IsString(szValue, "center"))
+	{
+		*peValue = LA_Centered;
+	}
+	else if (IsString(szValue, "top"))
+	{
+		*peValue = LA_Top;
+	}
+	else if (IsString(szValue, "bottom"))
+	{
+		*peValue = LA_Bottom;
+	}
+	else if (IsString(szValue, "base"))
+	{
+		*peValue = LA_Base;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [left, right, center top, bottom or base] parsing Alignment.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault)
 {
 	char* szValue;
@@ -1098,7 +1155,7 @@ BOOL CLogisimFileReader::CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
-	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, "1");
+	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, FALSE, "1");
 	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "1");
 	ReturnOnFalse(bResult);
@@ -1388,14 +1445,23 @@ BOOL CLogisimFileReader::CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CLogisimCounter*	pcComp;
 	CMapStringString	cMap;
 	BOOL				bResult;
+	int					iWidth;
+	uint64				ulliMax;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
+	bResult &= GetMapValueAsHexLong(&cMap, "max", &ulliMax, TRUE, "0xff");
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreateCounter();
 	pcComp->Init(sLoc);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetMax(ulliMax);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", "width", "max", NULL);
 }
 
 
@@ -1480,6 +1546,7 @@ BOOL CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CMapStringString	cMap;
 	BOOL				bResult;
 	int					iWidth;
+	int					iRadix;
 	ELogisimFacing		eFacing;
 	char*				szOutput;
 	char*				szLabel;
@@ -1494,6 +1561,7 @@ BOOL CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult &= GetMapValue(&cMap, "labelfont", NULL, ""); 
 	bResult &= GetMapValue(&cMap, "output", &szOutput, "false");
 	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "radix", &iRadix, "2");
 	bResult &= GetMapValue(&cMap, "tristate", &szTristate, "false");
 	ReturnOnFalse(bResult);
 
@@ -1504,8 +1572,9 @@ BOOL CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetLabel(szLabel);
 	pcComp->SetOutput(IsString(szOutput, "true"));
 	pcComp->SetTristate(IsString(szTristate, "true"));
+	pcComp->SetRadix(iRadix);
 
-	return CheckMap(pcCompTag, &cMap, "appearance", "width", "facing", "labelfont", "output", "label", "tristate", NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", "width", "facing", "labelfont", "output", "label", "tristate", "radix", NULL);
 }
 
 
@@ -1550,6 +1619,7 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CMapStringString	cMap;
 	BOOL				bResult;
 	int					iAddressWidth;
+	int					iDataWidth;
 	char*				szType;
 	ELogisimTrigger		eTrigger;
 	char*				szEnables;
@@ -1563,6 +1633,7 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult = GetMapValueAsAppearance(pcCompTag , &cMap, "appearance");
 	bResult &= GetMapValue(&cMap, "type", &szType, "volatile");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "addrWidth", &iAddressWidth, "8");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "dataWidth", &iDataWidth, "8");
 	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
 	bResult &= GetMapValue(&cMap, "enables", &szEnables, "byte");
 	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
@@ -1573,13 +1644,14 @@ BOOL CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp = mcComponents.CreateRAM();
 	pcComp->Init(sLoc);
 	pcComp->SetAddressWidth(iAddressWidth);
+	pcComp->SetDataWidth(iDataWidth);
 	pcComp->SetDataBus(eDataBus);
 	pcComp->SetLineEnables(IsString(szEnables, "line"));
 	pcComp->SetLabel(szLabel);
 	pcComp->SetTrigger(eTrigger);
 	pcComp->SetVolatile(IsString(szType, "volatile"));
 
-	return CheckMap(pcCompTag, &cMap, "appearance", "type", "addrWidth", "trigger", "trigger", "enables", "label", "labelvisible", "databus", NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", "type", "addrWidth", "dataWidth", "trigger", "trigger", "enables", "label", "labelvisible", "databus", NULL);
 }
 
 
@@ -1596,7 +1668,7 @@ BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 	int					iAddressWidth;
 	int					iDataWidth;
 	char*				szContents;
-	uint8*				pvMemory;
+	uint32*				pvMemory;
 	CTextParser			cParser;
 	TRISTATE			tResult;
 	int					iContentsAddressWidth;
@@ -1664,7 +1736,7 @@ BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 				tResult = cParser.GetHexadecimalPart(&iData2, NULL);
 				for (i = 0; i < iData1; i++, iPosition++)
 				{
-					pvMemory[iPosition] = (uint8)iData2;
+					pvMemory[iPosition] = (uint32)iData2;
 				}
 			}
 			else
@@ -1674,7 +1746,7 @@ BOOL CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 				tResult = cParser.GetHexadecimalPart(&iData2, NULL);
 				if (tResult == TRITRUE)
 				{
-					pvMemory[iPosition] = (uint8)iData2;
+					pvMemory[iPosition] = (uint32)iData2;
 					iPosition++;
 				}
 				else
@@ -1795,17 +1867,40 @@ BOOL CLogisimFileReader::CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc)
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::CreateText(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
-	CLogisimText*		pcComp;
-	CMapStringString	cMap;
-	BOOL				bResult;
+	CLogisimText*			pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+	char*					szText;
+	char*					szFont;
+	ELogisimAlignment		eHorizontalAlignment;
+	ELogisimAlignment		eVerticalAlignment;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValue(&cMap, "text", &szText);
+	bResult &= GetMapValueAsAlignment(&cMap, "halign", &eHorizontalAlignment, "center");
+	bResult &= GetMapValueAsAlignment(&cMap, "valign", &eVerticalAlignment, "base");
+	bResult &= GetMapValue(&cMap, "font", &szFont, "");
+	ReturnOnFalse(bResult);
+
+	if ((eHorizontalAlignment != LA_Left) && (eHorizontalAlignment != LA_Right) && (eHorizontalAlignment != LA_Centered))
+	{
+		return gcLogger.Error2(__METHOD__, " Only left, right and centered allowed for horizontal alignment.");
+	}
+
+	if ((eVerticalAlignment != LA_Top) && (eVerticalAlignment != LA_Bottom) && (eVerticalAlignment != LA_Centered) && (eVerticalAlignment != LA_Base))
+	{
+		return gcLogger.Error2(__METHOD__, " Only top, bottom, base, and centered allowed for vertical alignment.");
+	}
+
 	pcComp = mcComponents.CreateText();
 	pcComp->Init(sLoc);
+	pcComp->SetText(szText);
+	pcComp->SetHorizontalAlignment(eHorizontalAlignment);
+	pcComp->SetVerticalAlignment(eVerticalAlignment);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	return CheckMap(pcCompTag, &cMap, "text", "halign", "valign", "font", NULL);
 }
 
 

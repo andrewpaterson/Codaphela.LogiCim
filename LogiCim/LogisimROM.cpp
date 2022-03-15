@@ -36,8 +36,8 @@ void CLogisimROM::SetAddressWidth(int iAddressWidth)
 	SafeFree(mpvMemory);
 
 	muiSize = 1 << iAddressWidth;
-	mpvMemory = (uint8*)malloc(muiSize);
-	memset(mpvMemory, 0, muiSize);
+	mpvMemory = (uint32*)malloc(muiSize * sizeof(uint32));
+	memset(mpvMemory, 0, muiSize * sizeof(uint32));
 }
 
 
@@ -45,7 +45,7 @@ void CLogisimROM::SetAddressWidth(int iAddressWidth)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-uint8* CLogisimROM::GetMemory(void)
+uint32* CLogisimROM::GetMemory(void)
 {
 	return mpvMemory;
 }

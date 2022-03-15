@@ -7,6 +7,7 @@ class CLogisimMemory : public CLogisimComponent
 {
 protected:
 	int		miAddressWidth;
+	int		miDataWidth;
 	CChars	mszLabel;
 
 public:
@@ -14,6 +15,7 @@ public:
 	void Kill(void);
 
 	void SetAddressWidth(int iAddressWidth);
+	void SetDataWidth(int iDataWidth);
 	void SetLabel(char* szLabel);
 };
 

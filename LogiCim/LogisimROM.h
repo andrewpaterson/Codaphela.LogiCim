@@ -6,7 +6,7 @@
 class CLogisimROM : public CLogisimMemory
 {
 protected:
-	uint8*	mpvMemory;
+	uint32*	mpvMemory;
 	uint32	muiSize;
 
 public:
@@ -14,7 +14,7 @@ public:
 	void	Kill(void);
 
 	void	SetAddressWidth(int iAddressWidth);
-	uint8*	GetMemory(void);
+	uint32*	GetMemory(void);
 };
 
 

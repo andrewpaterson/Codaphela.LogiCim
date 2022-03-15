@@ -239,6 +239,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LogisimAlignment.h" />
     <ClInclude Include="LogisimCustomComponent.h" />
     <ClInclude Include="LogisimGate.h" />
     <ClInclude Include="LogisimCounter.h" />

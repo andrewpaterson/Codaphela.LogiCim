@@ -8,6 +8,7 @@
 void CLogisimText::Init(SInt2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
+	mszText.Init();
 }
 
 
@@ -17,6 +18,17 @@ void CLogisimText::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimText::Kill(void)
 {
+	mszText.Kill();
 	CLogisimComponent::Kill();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimText::SetText(char* szText) { mszText.Set(szText); }
+void CLogisimText::SetHorizontalAlignment(ELogisimAlignment eHorizontalAlignment) { meHorizontalAlignment = eHorizontalAlignment; }
+void CLogisimText::SetVerticalAlignment(ELogisimAlignment eVerticalAlignment) { meVerticalAlignment = eVerticalAlignment; }
+
 

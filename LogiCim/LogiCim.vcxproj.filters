@@ -218,5 +218,8 @@
     <ClInclude Include="LogisimMemory.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
+    <ClInclude Include="LogisimAlignment.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

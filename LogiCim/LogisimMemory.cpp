@@ -29,5 +29,6 @@ void CLogisimMemory::Kill(void)
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogisimMemory::SetAddressWidth(int iAddressWidth) { miAddressWidth = iAddressWidth; }
+void CLogisimMemory::SetDataWidth(int iDataWidth) { miDataWidth = iDataWidth; }
 void CLogisimMemory::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
 
