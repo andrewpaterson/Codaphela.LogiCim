@@ -20,3 +20,11 @@ void CLogisimDigitalOscilloscope::Kill(void)
 	CLogisimComponent::Kill();
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimDigitalOscilloscope::SetNumberOfStates(int iNumberOfStates) { miNumberOfStates = iNumberOfStates; }
+void CLogisimDigitalOscilloscope::SetNumberOfInputs(int iNumberOfInputs) { miNumberOfInputs = iNumberOfInputs; }
+

@@ -1494,14 +1494,21 @@ BOOL CLogisimFileReader::CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt2 
 	CLogisimDigitalOscilloscope*	pcComp;
 	CMapStringString				cMap;
 	BOOL							bResult;
+	int								iNumberOfStates;
+	int								iNumberOfInputs;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsInt(pcCompTag, &cMap, "nState", &iNumberOfStates, "8");
+	bResult = GetMapValueAsInt(pcCompTag, &cMap, "inputs", &iNumberOfInputs, "8");
+
 	pcComp = mcComponents.CreateDigitalOscilloscope();
 	pcComp->Init(sLoc);
+	pcComp->SetNumberOfInputs(iNumberOfInputs);
+	pcComp->SetNumberOfStates(iNumberOfStates);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	return CheckMap(pcCompTag, &cMap, "nState", "inputs", NULL);
 }
 
 

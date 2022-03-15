@@ -6,9 +6,15 @@
 class CLogisimDigitalOscilloscope : public CLogisimComponent
 {
 protected:
+	int		miNumberOfStates;
+	int		miNumberOfInputs;
+
 public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
+
+	void SetNumberOfStates(int iNumberOfStates);
+	void SetNumberOfInputs(int iNumberOfInputs);
 };
 
 
