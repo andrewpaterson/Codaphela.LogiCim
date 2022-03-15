@@ -20,3 +20,12 @@ void CLogisimControlledBuffer::Kill(void)
 	CLogisimFacing::Kill();
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimControlledBuffer::SetWidth(int iWidth) { miWidth = iWidth; }
+void CLogisimControlledBuffer::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
+void CLogisimControlledBuffer::SetControl(ELogisimControlledBufferControl eControl) { meControl = eControl; }
+

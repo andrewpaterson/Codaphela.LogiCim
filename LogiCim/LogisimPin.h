@@ -7,8 +7,8 @@ class CLogisimPin : public CLogisimFacing
 {
 protected:
 	int					miWidth;
-	BOOL				mbOutput;
 	CChars				mszLabel;
+	BOOL				mbOutput;
 	BOOL				mbTristate;
 
 public:
@@ -16,8 +16,8 @@ public:
 	void Kill(void);
 
 	void SetWidth(int iWidth);
-	void SetOutput(BOOL bOutput);
 	void SetLabel(char* szLabel);
+	void SetOutput(BOOL bOutput);
 	void SetTristate(BOOL bTristate);
 };
 

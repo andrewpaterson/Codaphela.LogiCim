@@ -866,6 +866,35 @@ BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, ch
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsControlledBufferControl(CMapStringString* pcMap, char* szKey, ELogisimControlledBufferControl* peValue, char* szDefault)
+{
+	char* szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (IsString(szValue, "left"))
+	{
+		*peValue = LCBC_Left;
+	}
+	else if (IsString(szValue, "right"))
+	{
+		*peValue = LCBC_Right;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [left or right] parsing Control.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsPullResistorPull(CMapStringString* pcMap, char* szKey, ELogisimPullResistorPull* pePull, char* szDefault)
 {
 	char*	szValue;
@@ -1321,17 +1350,32 @@ BOOL CLogisimFileReader::CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc)
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::CreateControlledBuffer(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
-	CLogisimControlledBuffer*	pcComp;
-	CMapStringString			cMap;
-	BOOL						bResult;
+	CLogisimControlledBuffer*			pcComp;
+	CMapStringString					cMap;
+	BOOL								bResult;
+	int									iWidth;
+	ELogisimFacing						eFacing;
+	char*								szLabel;
+	ELogisimControlledBufferControl		eControl;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
+	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValueAsControlledBufferControl(&cMap, "control", &eControl, "right");
+	
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreateControlledBuffer();
 	pcComp->Init(sLoc);
+	pcComp->SetFacing(eFacing);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetLabel(szLabel);
+	pcComp->SetControl(eControl);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	return CheckMap(pcCompTag, &cMap, "width", "facing", "label", "control", NULL);
 }
 
 

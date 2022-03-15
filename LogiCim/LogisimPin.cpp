@@ -31,7 +31,7 @@ void CLogisimPin::Kill(void)
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogisimPin::SetWidth(int iWidth) { miWidth = iWidth; }
-void CLogisimPin::SetOutput(BOOL bOutput) { mbOutput = bOutput; }
 void CLogisimPin::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
+void CLogisimPin::SetOutput(BOOL bOutput) { mbOutput = bOutput; }
 void CLogisimPin::SetTristate(BOOL bTristate) { mbTristate = bTristate; }
 
