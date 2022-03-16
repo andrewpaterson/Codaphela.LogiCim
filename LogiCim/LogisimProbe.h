@@ -8,6 +8,7 @@ class CLogisimProbe : public CLogisimFacing
 protected:
 	int		miRadix;
 	BOOL	mbClassicAppearance;
+	CChars	mszLabel;
 
 public:
 	void Init(SInt2 sPosition);
@@ -15,6 +16,7 @@ public:
 
 	void SetRadix(int iRadix);
 	void SetClassicApearance(BOOL bClassicAppearance);
+	void SetLabel(char* szlabel);
 };
 
 

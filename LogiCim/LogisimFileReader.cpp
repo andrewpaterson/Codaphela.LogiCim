@@ -1390,14 +1390,29 @@ BOOL CLogisimFileReader::CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CLogisimClock*		pcComp;
 	CMapStringString	cMap;
 	BOOL				bResult;
+	ELogisimFacing		eFacing;
+	int					iHighDuration;
+	int					iLowDuration;
+	int					iPhaseOffset;
+	char*				szLabel;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "high", &iHighDuration, "1");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "low", &iLowDuration, "1");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "offset", &iPhaseOffset, "0");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+
 	pcComp = mcComponents.CreateClock();
 	pcComp->Init(sLoc);
+	pcComp->SetHighDuration(iHighDuration);
+	pcComp->SetPhaseOffset(iPhaseOffset);
+	pcComp->SetLowDuration(iLowDuration);
+	pcComp->SetLabel(szLabel);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+	return CheckMap(pcCompTag, &cMap, "facing", "high", "low", "offset", "label", NULL);
 }
 
 
@@ -1597,6 +1612,8 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 	int					iRadix;
 	ELogisimFacing		eFacing;
 	char*				szAppearance;
+	char*				szLabel;
+	char*				szLabelLocation;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
@@ -1604,6 +1621,9 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult = GetMapValue(&cMap, "appearance", &szAppearance, "classic");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "radix", &iRadix, "8");
 	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValue(&cMap, "labelloc", &szLabelLocation, "");
+	
 	ReturnOnFalse(bResult);
 
 	pcComp = mcComponents.CreateProbe();
@@ -1611,8 +1631,9 @@ BOOL CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetFacing(eFacing);
 	pcComp->SetRadix(iRadix);
 	pcComp->SetClassicApearance(!IsString(szAppearance, "NewPins"));
+	pcComp->SetLabel(szLabel);
 
-	return CheckMap(pcCompTag, &cMap, "appearance", "radix", "facing", NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", "radix", "facing", "label", "labelloc", NULL);
 }
 
 

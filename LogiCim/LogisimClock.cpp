@@ -8,6 +8,10 @@
 void CLogisimClock::Init(SInt2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
+	miHighDuration = 0;
+	miLowDuration = 0;
+	miPhaseOffset = 0;
+	mszLabel.Init();
 }
 
 
@@ -17,6 +21,17 @@ void CLogisimClock::Init(SInt2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimClock::Kill(void)
 {
+	mszLabel.Kill();
 	CLogisimFacing::Kill();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimClock::SetHighDuration(int iHighDuration) { miHighDuration = iHighDuration; }
+void CLogisimClock::SetLowDuration(int iLowDuration) { miLowDuration = iLowDuration; }
+void CLogisimClock::SetPhaseOffset(int iPhaseOffset) { miPhaseOffset = iPhaseOffset; }
+void CLogisimClock::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
 
