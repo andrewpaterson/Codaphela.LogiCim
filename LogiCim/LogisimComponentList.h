@@ -25,6 +25,7 @@
 #include "LogisimDFlipFlop.h"			
 #include "LogisimRandom.h"
 #include "LogisimComparator.h"
+#include "LogisimShiftRegister.h"
 
 class CLogisimComponentList
 {
@@ -59,6 +60,7 @@ public:
 	CLogisimDTypeFlipFlop*			CreateDTypeFlipFlop(void);
 	CLogisimRandom*					CreateRandom(void);
 	CLogisimComparator*				CreateComparator(void);
+	CLogisimShiftRegsiter*			CreateShiftRegsiter(void);
 
 	BOOL							Remove(CLogisimComponent* pcComp);
 };

@@ -272,6 +272,16 @@ CLogisimComparator* CLogisimComponentList::CreateComparator(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CLogisimShiftRegsiter* CLogisimComponentList::CreateShiftRegsiter(void)
+{
+	return New<CLogisimShiftRegsiter>((CLogisimShiftRegsiter*)mcList.Add(sizeof(CLogisimShiftRegsiter)));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
 {
 	return mcList.Remove(pcComp);

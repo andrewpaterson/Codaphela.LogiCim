@@ -123,6 +123,9 @@
     <ClCompile Include="LogisimComparator.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimShiftRegister.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -237,6 +240,9 @@
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
     <ClInclude Include="LogisimNumericType.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimShiftRegister.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>

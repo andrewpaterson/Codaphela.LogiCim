@@ -86,6 +86,7 @@ protected:
 	BOOL			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
 
 	BOOL			PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
 

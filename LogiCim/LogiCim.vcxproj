@@ -219,6 +219,7 @@
     <ClCompile Include="LogisimRAM.cpp" />
     <ClCompile Include="LogisimRandom.cpp" />
     <ClCompile Include="LogisimROM.cpp" />
+    <ClCompile Include="LogisimShiftRegister.cpp" />
     <ClCompile Include="LogisimSplitter.cpp" />
     <ClCompile Include="LogisimText.cpp" />
     <ClCompile Include="LogisimClock.cpp" />
@@ -258,6 +259,7 @@
     <ClInclude Include="LogisimRandom.h" />
     <ClInclude Include="LogisimROM.h" />
     <ClInclude Include="LogisimSelectLocation.h" />
+    <ClInclude Include="LogisimShiftRegister.h" />
     <ClInclude Include="LogisimSplitter.h" />
     <ClInclude Include="LogisimText.h" />
     <ClInclude Include="LogisimClock.h" />

@@ -421,11 +421,17 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	{
 		return CreateComparator(pcCompTag, sLoc);
 	}
-	
+	else if (IsString(szName, "Shift Register"))
+	{
+		return CreateShiftRegister(pcCompTag, sLoc);
+	}
+
 	else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
 			 IsString(szName, "2-to-4 Decoder (LVC139)") ||
 			 IsString(szName, "3-to-8 Decoder (LVC138)") ||
+			 IsString(szName, "3-to-8 Decoder (VHC238)") ||
 			 IsString(szName, "4-bit Line Driver (LVC125)") ||
+			 IsString(szName, "4-bit Line Driver (LVC126)") ||
 			 IsString(szName, "4-bit Multiplexer (LVC157)") ||
 			 IsString(szName, "4-bit Multiplexer (LVC257)") ||
 			 IsString(szName, "4-bit Up Counter (LVC161)") ||
@@ -436,6 +442,7 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 			 IsString(szName, "8-bit Bus Transceiver (LVC4245)") ||
 			 IsString(szName, "8-bit Comparator (F521)") ||
 			 IsString(szName, "8-bit Latch (LVC273)") ||
+			 IsString(szName, "8-bit Latch (LVC373)") ||
 			 IsString(szName, "8-bit Latch (LVC573)") ||
 			 IsString(szName, "8-bit Latch (LVC574)") ||
 			 IsString(szName, "8-bit Line Driver (LVC541)") ||
@@ -445,8 +452,21 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 			 IsString(szName, "12-bit Up Counter (HC4040)") ||
 			 IsString(szName, "16-bit Latch (LVC16373)") ||
 			 IsString(szName, "16-bit Line Driver (LVC16244)") ||
+			 IsString(szName, "16-bit Bus Transceiver (LVC164245)") ||
 			 IsString(szName, "D-type Flip Flop (LVC74)") ||
 			 IsString(szName, "EconoReset (DS1813)") ||
+			 IsString(szName, "4-to-1 Multiplexer (QS3253)") ||
+			 IsString(szName, "8-bit parallel in shift (LV165)") ||
+			 IsString(szName, "8-to-3 Encoder (LS148)") ||
+			 IsString(szName, "8-to-1 Multiplexer (B3251)") ||
+			 IsString(szName, "8-to-1 Multiplexer (F251)") ||
+			 IsString(szName, "2-bit Translator (LSF0102)") ||
+			 IsString(szName, "4-bit Translator (LSF0204)") ||
+			 IsString(szName, "8-bit Translator (LSF0108)") ||
+			 IsString(szName, "4-bit Full Adder (F283)") ||
+			 IsString(szName, "8-bit Down Counter (HCT40103)") ||
+			 IsString(szName, "16-bit Latch (LVC162373)") ||
+			 IsString(szName, "512 Byte FIFO (IDT7201)") ||
 			 IsString(szName, "Helper (W65C816 Timing)") ||
 			 IsString(szName, "Microprocessor (W65C816)"))
 	{
@@ -2095,6 +2115,44 @@ BOOL CLogisimFileReader::CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetWidth(iWidth);
 
 	return CheckMap(pcCompTag, &cMap, "mode", "width", NULL);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimShiftRegsiter*	pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+	int						iNumberOfStages;
+	int						iDataBits;
+	char*					szLabel;
+	char*					szParallelLoad;
+	ELogisimTrigger			eTrigger;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "length", &iNumberOfStages, "8");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iDataBits, "1");
+	bResult &= GetMapValue(&cMap, "labelfont", NULL, "");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValue(&cMap, "parallel", &szParallelLoad, "true");
+	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateShiftRegsiter();
+	pcComp->Init(sLoc);
+	pcComp->SetDataBits(iDataBits);
+	pcComp->SetNumberOfStages(iNumberOfStages);
+	pcComp->SetLabel(szLabel);
+	pcComp->SetTrigger(eTrigger);
+	pcComp->SetParallelLoad(IsString(szParallelLoad, "true"));
+
+	return CheckMap(pcCompTag, &cMap, "appearance", "length", "width", "labelfont", "label", "parallel", "trigger", NULL);
 }
 
 
