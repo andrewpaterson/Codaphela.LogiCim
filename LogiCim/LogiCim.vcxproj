@@ -216,6 +216,7 @@
     <ClCompile Include="LogisimPin.cpp" />
     <ClCompile Include="LogisimProbe.cpp" />
     <ClCompile Include="LogisimRAM.cpp" />
+    <ClCompile Include="LogisimRandom.cpp" />
     <ClCompile Include="LogisimROM.cpp" />
     <ClCompile Include="LogisimSplitter.cpp" />
     <ClCompile Include="LogisimText.cpp" />
@@ -251,6 +252,7 @@
     <ClInclude Include="LogisimPin.h" />
     <ClInclude Include="LogisimProbe.h" />
     <ClInclude Include="LogisimRAM.h" />
+    <ClInclude Include="LogisimRandom.h" />
     <ClInclude Include="LogisimROM.h" />
     <ClInclude Include="LogisimSelectLocation.h" />
     <ClInclude Include="LogisimSplitter.h" />

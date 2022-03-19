@@ -117,6 +117,9 @@
     <ClCompile Include="LogisimMemory.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimRandom.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -222,6 +225,9 @@
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
     <ClInclude Include="LogisimSelectLocation.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimRandom.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>

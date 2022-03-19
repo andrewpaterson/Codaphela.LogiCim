@@ -413,6 +413,10 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	{
 		return CreateDFlipFlop(pcCompTag, sLoc);
 	}
+	else if (IsString(szName, "Random"))
+	{
+		return CreateRandom(pcCompTag, sLoc);
+	}
 
 	else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
 			 IsString(szName, "2-to-4 Decoder (LVC139)") ||
@@ -455,37 +459,6 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	
 	return TRUE;
 }
-
-
-/*
-1-of-8 Data Selector(F251)
-10-to-4 Encoder(HC147)
-12-bit Up Counter(HC4040)
-16-bit Latch(LVC16373)
-16-bit Line Driver(LVC16244)
-2-to-4 Decoder(LVC139)
-3-to-8 Decoder(LVC138)
-4-bit Line Driver(LVC125)
-4-bit Multiplexer(LVC157)
-4-bit Multiplexer(LVC257)
-4-bit Up Counter(LVC161)
-4-bit Up Counter(LVC163)
-4-bit Up Counter(VHC161)
-4-bit Up / Down Counter(HCT193)
-8-bit Bi-latch(LVC543)
-8-bit Bus Transceiver(LVC4245)
-8-bit Comparator(F521)
-8-bit Latch(LVC273)
-8-bit Latch(LVC573)
-8-bit Latch(LVC574)
-8-bit Line Driver(LVC541)
-8-bit Up Counter(HC590)
-8-bit serial in shift(LVC595)
-D-type Flip Flop(LVC74)
-EconoReset(DS1813)
-Helper(W65C816 Timing)
-Microprocessor(W65C816)
-*/
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1152,7 +1125,6 @@ BOOL CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc)
 
 	pcComp = mcComponents.CreateTunnel();
 	pcComp->Init(sLoc);
-
 	pcComp->SetWidth(iWidth);
 	pcComp->SetLabel(szLabel);
 	pcComp->SetFacing(eFacing);
@@ -2009,17 +1981,59 @@ BOOL CLogisimFileReader::CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc)
 	CLogisimDTypeFlipFlop*	pcComp;
 	CMapStringString		cMap;
 	BOOL					bResult;
+	char*					szLabel;
+	ELogisimTrigger			eTrigger;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 	
 	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
+	bResult &= GetMapValue(&cMap, "labelfont", NULL, "");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
 	ReturnOnFalse(bResult);
 
 	pcComp = mcComponents.CreateDTypeFlipFlop();
 	pcComp->Init(sLoc);
+	pcComp->SetLabel(szLabel);
 
-	return CheckMap(pcCompTag, &cMap, "appearance", NULL);
+	return CheckMap(pcCompTag, &cMap, "appearance", "labelfont", "label", "trigger", NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimRandom*			pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+	char*					szLabel;
+	int						iSeed;
+	ELogisimTrigger			eTrigger;
+	int						iWidth;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
+	bResult &= GetMapValue(&cMap, "labelfont", NULL, "");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "seed", &iSeed, "0");
+	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "9");
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateRandom();
+	pcComp->Init(sLoc);
+	pcComp->SetLabel(szLabel);
+	pcComp->SetTrigger(eTrigger);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetSeed(iSeed);
+
+	return CheckMap(pcCompTag, &cMap, "appearance", "labelfont", "label", "seed", "trigger", "width", NULL);
 }
 
 

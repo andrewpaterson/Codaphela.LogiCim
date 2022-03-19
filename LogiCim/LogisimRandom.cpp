@@ -1,15 +1,17 @@
-#include "LogisimDFlipFlop.h"
+#include "LogisimRandom.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimDTypeFlipFlop::Init(SInt2 sPosition)
+void CLogisimRandom::Init(SInt2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	mszLabel.Init();
 	meTrigger = LT_NotSet;
+	miSeed = -1;
+	miWidth = 0;
 }
 
 
@@ -17,7 +19,7 @@ void CLogisimDTypeFlipFlop::Init(SInt2 sPosition)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimDTypeFlipFlop::Kill(void)
+void CLogisimRandom::Kill(void)
 {
 	mszLabel.Kill();
 	CLogisimComponent::Kill();
@@ -28,5 +30,8 @@ void CLogisimDTypeFlipFlop::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimDTypeFlipFlop::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
-void CLogisimDTypeFlipFlop::SetTrigger(ELogisimTrigger eTrigger) { meTrigger = eTrigger; }
+void CLogisimRandom::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
+void CLogisimRandom::SetSeed(int iSeed) { miSeed = iSeed;  }
+void CLogisimRandom::SetTrigger(ELogisimTrigger eTrigger) { meTrigger = eTrigger; }
+void CLogisimRandom::SetWidth(int iWidth) { miWidth = iWidth;  }
+

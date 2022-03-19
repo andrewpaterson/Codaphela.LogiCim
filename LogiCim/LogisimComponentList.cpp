@@ -252,6 +252,16 @@ CLogisimDTypeFlipFlop* CLogisimComponentList::CreateDTypeFlipFlop(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CLogisimRandom* CLogisimComponentList::CreateRandom(void)
+{
+	return New<CLogisimRandom>((CLogisimRandom*)mcList.Add(sizeof(CLogisimRandom)));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
 {
 	return mcList.Remove(pcComp);

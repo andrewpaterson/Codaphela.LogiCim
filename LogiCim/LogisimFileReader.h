@@ -83,6 +83,7 @@ protected:
 	BOOL			CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc);
 
 	BOOL			PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
 

@@ -14,7 +14,7 @@ int __cdecl main(void)
 	gcLogger.Init();
 	gcLogger.SetBreakOnWarning(FALSE);
 
-	bFileExists = cReader.Init("D:\\Work\\658 - Computer\\logi65816", "Test.circ");
+	bFileExists = cReader.Init("D:\\Work\\658-Computer\\logi65816", "Test.circ");
 	//bFileExists = cReader.Init("D:\\Work\\658-Computer\\Logisim", "658_Computer.bak.circ");
 	if (bFileExists)
 	{
