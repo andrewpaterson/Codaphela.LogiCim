@@ -18,6 +18,7 @@ protected:
 	CChars							mszFileName;
 	CChars							mszDirectory;
 	CXMLFile						mcFile;
+	CChars							mszFullPathName;
 
 	CLogisimCircuitList				mlCircuits;
 	CLogisimLibraryList				mlLibraries;
@@ -26,11 +27,12 @@ protected:
 	CLogisimCustomComponentList		mcCustomComponentList;
 
 public:
-	void			Init(char* szDirectory, char* szFileName);
+	BOOL			Init(char* szDirectory, char* szFileName);
 	void			Kill(void);
 
 	CMarkupTag*		Read(void);
 	BOOL			Convert(CMarkupTag* pcContainer);
+	char*			GetFileName(void);
 
 protected:
 	BOOL			ConvertCircuit(CMarkupTag* pcCircuitTag);
@@ -47,6 +49,7 @@ protected:
 	BOOL			GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, ELogisimSplitterAppearance* peAppear, char* szDefault = NULL);
 	BOOL			GetMapValueAsControlledBufferControl(CMapStringString* pcMap, char* szKey, ELogisimControlledBufferControl* peValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsPullResistorPull(CMapStringString* pcMap, char* szKey, ELogisimPullResistorPull* pePull, char* szDefault = NULL);
+	BOOL			GetMapValueAsSelectLocation(CMapStringString* pcMap, char* szKey, ELogisimSelectLocation* peSelectLocation, char* szDefault = NULL);
 	BOOL			GetMapValueAsGateOut(CMapStringString* pcMap, char* szKey, ELogisimGateOut* peOut, char* szDefault = NULL);
 	BOOL			GetMapValueAsAlignment(CMapStringString* pcMap, char* szKey, ELogisimAlignment* peValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault = NULL);

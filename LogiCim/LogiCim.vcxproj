@@ -252,6 +252,7 @@
     <ClInclude Include="LogisimProbe.h" />
     <ClInclude Include="LogisimRAM.h" />
     <ClInclude Include="LogisimROM.h" />
+    <ClInclude Include="LogisimSelectLocation.h" />
     <ClInclude Include="LogisimSplitter.h" />
     <ClInclude Include="LogisimText.h" />
     <ClInclude Include="LogisimClock.h" />

@@ -221,5 +221,8 @@
     <ClInclude Include="LogisimAlignment.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
+    <ClInclude Include="LogisimSelectLocation.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,3 +1,4 @@
+#include "BaseLib/FileUtil.h"
 #include "LogisimFileReader.h"
 
 
@@ -5,8 +6,11 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimFileReader::Init(char* szDirectory, char* szFileName)
+BOOL CLogisimFileReader::Init(char* szDirectory, char* szFileName)
 {
+	CFileUtil	cFileUtil;
+	BOOL		bExists;
+
 	mszFileName.Init(szFileName);
 	mszDirectory.Init(szDirectory);
 	mcFile.Init();
@@ -17,6 +21,13 @@ void CLogisimFileReader::Init(char* szDirectory, char* szFileName)
 
 	mcComponents.Init();
 	mcCustomComponentList.Init();
+
+	mszFullPathName.Init();
+	cFileUtil.AppendToPath(&mszFullPathName, szDirectory);
+	cFileUtil.AppendToPath(&mszFullPathName, szFileName);
+
+	bExists = cFileUtil.Exists(mszFullPathName.Text());
+	return bExists;
 }
 
 
@@ -61,6 +72,7 @@ void CLogisimFileReader::Kill(void)
 	}
 	mlLibraries.Kill();
 
+	mszFullPathName.Kill();
 	mcFile.Kill();
 	mszDirectory.Kill();
 	mszFileName.Kill();
@@ -132,6 +144,15 @@ BOOL CLogisimFileReader::Convert(CMarkupTag* pcContainer)
 		pcTag = pcContainer->GetNextTag(&sIter);
 	}
 	return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+char* CLogisimFileReader::GetFileName(void)
+{
+	return mszFullPathName.Text();
 }
 
 
@@ -940,6 +961,35 @@ BOOL CLogisimFileReader::GetMapValueAsPullResistorPull(CMapStringString* pcMap, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsSelectLocation(CMapStringString* pcMap, char* szKey, ELogisimSelectLocation* peSelectLocation, char* szDefault)
+{
+	char* szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (IsString(szValue, "tr"))
+	{
+		*peSelectLocation = LSL_TopRight;
+	}
+	else if (IsString(szValue, "bl"))
+	{
+		*peSelectLocation = LSL_BottomLeft;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [tr or bl] parsing Select Location.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::GetMapValueAsGateOut(CMapStringString* pcMap, char* szKey, ELogisimGateOut* peOut, char* szDefault)
 {
 	char*	szValue;
@@ -1486,17 +1536,35 @@ BOOL CLogisimFileReader::CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc)
 //////////////////////////////////////////////////////////////////////////
 BOOL CLogisimFileReader::CreateDecoder(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
-	CLogisimDecoder*	pcComp;
-	CMapStringString	cMap;
-	BOOL				bResult;
+	CLogisimDecoder*		pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+	char*					szIncludeEnabled;
+	int						iSelectBits;
+	char*					szDisabledZero;
+	ELogisimSelectLocation	eSelectLocation;
+	char*					szTristate;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnOnFalse(bResult);
 
+	bResult = GetMapValueAsInt(pcCompTag, &cMap, "select", &iSelectBits, "8");
+	bResult &= GetMapValueAsSelectLocation(&cMap, "selloc", &eSelectLocation, "bl");
+	bResult &= GetMapValue(&cMap, "tristate", &szTristate, "false");
+	bResult &= GetMapValue(&cMap, "enable", &szIncludeEnabled, "true");
+	bResult &= GetMapValue(&cMap, "disabled", &szDisabledZero, "0");
+	ReturnOnFalse(bResult);
+
 	pcComp = mcComponents.CreateDecoder();
 	pcComp->Init(sLoc);
+	pcComp->SetTristate(IsString(szTristate, "true"));
+	pcComp->SetDisabledZero(IsString(szDisabledZero, "0"));
+	pcComp->SetDisabledZero(IsString(szIncludeEnabled, "true"));
+	pcComp->SetSelectBits(iSelectBits);
+	pcComp->SetSelectLocation(eSelectLocation);
 
-	return CheckMap(pcCompTag, &cMap, (char*)NULL);
+
+	return CheckMap(pcCompTag, &cMap, "select", "selloc", "tristate", "enable", "disabled", NULL);
 }
 
 
