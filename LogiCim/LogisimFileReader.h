@@ -46,6 +46,7 @@ protected:
 	BOOL			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
 	BOOL			GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault = NULL);
+	BOOL			GetMapValueAsNumericType(CMapStringString* pcMap, char* szKey, ELogisimNumericType* peTrigger, char* szDefault = NULL);
 	BOOL			GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, ELogisimSplitterAppearance* peAppear, char* szDefault = NULL);
 	BOOL			GetMapValueAsControlledBufferControl(CMapStringString* pcMap, char* szKey, ELogisimControlledBufferControl* peValue, char* szDefault = NULL);
 	BOOL			GetMapValueAsPullResistorPull(CMapStringString* pcMap, char* szKey, ELogisimPullResistorPull* pePull, char* szDefault = NULL);
@@ -84,6 +85,7 @@ protected:
 	BOOL			CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
 	BOOL			CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc);
+	BOOL			CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc);
 
 	BOOL			PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
 

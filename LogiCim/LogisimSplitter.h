@@ -34,4 +34,3 @@ public:
 
 #endif // !__LOGISIM_SPLITTER_H__
 
-

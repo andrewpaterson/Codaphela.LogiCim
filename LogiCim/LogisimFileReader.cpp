@@ -417,7 +417,11 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	{
 		return CreateRandom(pcCompTag, sLoc);
 	}
-
+	else if (IsString(szName, "Comparator"))
+	{
+		return CreateComparator(pcCompTag, sLoc);
+	}
+	
 	else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
 			 IsString(szName, "2-to-4 Decoder (LVC139)") ||
 			 IsString(szName, "3-to-8 Decoder (LVC138)") ||
@@ -799,6 +803,36 @@ BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szK
 	else
 	{
 		return gcLogger.Error2(__METHOD__, " Expected [high, low, rising or falling] parsing Trigger.", NULL);
+	}
+
+	return TRUE;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::GetMapValueAsNumericType(CMapStringString* pcMap, char* szKey, ELogisimNumericType* peNumericType, char* szDefault)
+{
+	char*	szValue;
+	BOOL	bResult;
+
+	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
+	ReturnOnFalse(bResult);
+
+	if (IsString(szValue, "signed"))
+	{
+		*peNumericType = LNT_TwosComplement;
+	}
+	else if (IsString(szValue, "unsigned"))
+	{
+		*peNumericType = LNT_Unsigned;
+	}
+	else
+	{
+		return gcLogger.Error2(__METHOD__, " Expected [signed or unsigned] parsing Numeric Type.", NULL);
 	}
 
 	return TRUE;
@@ -2023,7 +2057,7 @@ BOOL CLogisimFileReader::CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "seed", &iSeed, "0");
 	bResult &= GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
-	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "9");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
 	ReturnOnFalse(bResult);
 
 	pcComp = mcComponents.CreateRandom();
@@ -2034,6 +2068,33 @@ BOOL CLogisimFileReader::CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetSeed(iSeed);
 
 	return CheckMap(pcCompTag, &cMap, "appearance", "labelfont", "label", "seed", "trigger", "width", NULL);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CLogisimFileReader::CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimComparator*		pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+	ELogisimNumericType		eNumericType;
+	int						iWidth;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnOnFalse(bResult);
+
+	bResult = GetMapValueAsNumericType(&cMap, "mode", &eNumericType, "signed");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
+	ReturnOnFalse(bResult);
+
+	pcComp = mcComponents.CreateComparator();
+	pcComp->Init(sLoc);
+	pcComp->SetNumericType(eNumericType);
+	pcComp->SetWidth(iWidth);
+
+	return CheckMap(pcCompTag, &cMap, "mode", "width", NULL);
 }
 
 

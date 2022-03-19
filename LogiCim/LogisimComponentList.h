@@ -23,7 +23,8 @@
 #include "LogisimSplitter.h"			
 #include "LogisimText.h"				
 #include "LogisimDFlipFlop.h"			
-#include "LogisimRandom.h"			
+#include "LogisimRandom.h"
+#include "LogisimComparator.h"
 
 class CLogisimComponentList
 {
@@ -57,6 +58,7 @@ public:
 	CLogisimText*					CreateText(void);
 	CLogisimDTypeFlipFlop*			CreateDTypeFlipFlop(void);
 	CLogisimRandom*					CreateRandom(void);
+	CLogisimComparator*				CreateComparator(void);
 
 	BOOL							Remove(CLogisimComponent* pcComp);
 };

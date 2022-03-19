@@ -21,4 +21,3 @@ public:
 
 #endif // !__LOGISIM_D_TYPE_FLIP_FLOP_H__
 
-

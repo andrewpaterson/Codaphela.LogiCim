@@ -23,4 +23,3 @@ public:
 
 #endif // !__LOGISIM_TEXT_H__
 
-

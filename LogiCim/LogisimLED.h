@@ -20,4 +20,3 @@ public:
 
 #endif // !__LOGISIM_LED_H__
 
-

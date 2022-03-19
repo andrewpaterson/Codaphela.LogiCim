@@ -262,6 +262,16 @@ CLogisimRandom* CLogisimComponentList::CreateRandom(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CLogisimComparator* CLogisimComponentList::CreateComparator(void)
+{
+	return New<CLogisimComparator>((CLogisimComparator*)mcList.Add(sizeof(CLogisimComparator)));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
 {
 	return mcList.Remove(pcComp);

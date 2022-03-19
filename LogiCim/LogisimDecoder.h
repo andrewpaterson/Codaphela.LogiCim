@@ -27,4 +27,3 @@ public:
 
 #endif // !__LOGISIM_DECODER_H__
 
-
