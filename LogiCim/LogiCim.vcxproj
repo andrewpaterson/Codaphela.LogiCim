@@ -204,6 +204,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LogisimCircuitComponent.cpp" />
     <ClCompile Include="LogisimComparator.cpp" />
     <ClCompile Include="LogisimCustomComponent.cpp" />
     <ClCompile Include="LogisimFacing.cpp" />
@@ -261,6 +262,7 @@
     <ClInclude Include="LogisimSelectLocation.h" />
     <ClInclude Include="LogisimShiftRegister.h" />
     <ClInclude Include="LogisimSplitter.h" />
+    <ClInclude Include="LogisimCircuitComponent.h" />
     <ClInclude Include="LogisimText.h" />
     <ClInclude Include="LogisimClock.h" />
     <ClInclude Include="LogisimControlledBuffer.h" />

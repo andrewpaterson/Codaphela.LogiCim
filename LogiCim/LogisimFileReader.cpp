@@ -21,6 +21,7 @@ BOOL CLogisimFileReader::Init(char* szDirectory, char* szFileName)
 
 	mcComponents.Init();
 	mcCustomComponentList.Init();
+	mcCircuitComponentList.Init();
 
 	mszFullPathName.Init();
 	cFileUtil.AppendToPath(&mszFullPathName, szDirectory);
@@ -42,9 +43,17 @@ void CLogisimFileReader::Kill(void)
 	CLogisimCircuit*			pcCircuit;
 	CLogisimLibrary*			pcLibrary;
 	CLogisimCustomComponent*	pcCustom;
+	CLogisimCircuitComponent*	pcCircuitComponent;
+
+	iNum = mcCircuitComponentList.NumElements();
+	for (i = 0; i < iNum; i++)
+	{
+		pcCircuitComponent = mcCircuitComponentList.Get(i);
+		pcCircuitComponent->Kill();
+	}
+	mcCircuitComponentList.Kill();
 
 	iNum = mcCustomComponentList.NumElements();
-
 	for (i = 0; i < iNum; i++)
 	{
 		pcCustom = mcCustomComponentList.Get(i);
@@ -321,7 +330,6 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	CLogisimComponent*	pcComponent;
 
 	szLib = pcCompTag->GetAttribute("lib");
-	//If szLib is NULL then it's a sub-circuit.
 
 	szLoc = pcCompTag->GetAttribute("loc");
 	if (szLoc == NULL)
@@ -339,159 +347,163 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	ReturnOnFalse(bResult);
 
 	pcComponent = NULL;
-	if (IsString(szName, "Tunnel"))
+	if (szLib)
 	{
-		pcComponent = CreateTunnel(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Pull Resistor"))
-	{
-		pcComponent = CreatePullResistor(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Constant"))
-	{
-		pcComponent = CreateConstant(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "AND Gate"))
-	{
-		pcComponent = CreateANDGate(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "NAND Gate"))
-	{
-		pcComponent = CreateNANDGate(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "NOR Gate"))
-	{
-		pcComponent = CreateNORGate(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "OR Gate"))
-	{
-		pcComponent = CreateORGate(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "NOT Gate"))
-	{
-		pcComponent = CreateNOTGate(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "XOR Gate"))
-	{
-		pcComponent = CreateXORGate(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Clock"))
-	{
-		pcComponent = CreateClock(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Controlled Buffer"))
-	{
-		pcComponent = CreateControlledBuffer(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Counter"))
-	{
-		pcComponent = CreateCounter(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Decoder"))
-	{
-		pcComponent = CreateDecoder(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Digital Oscilloscope"))
-	{
-		pcComponent = CreateDigitalOscilloscope(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "LED"))
-	{
-		pcComponent = CreateLED(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Pin"))
-	{
-		pcComponent = CreatePin(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Probe"))
-	{
-		pcComponent = CreateProbe(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "RAM"))
-	{
-		pcComponent = CreateRAM(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "ROM"))
-	{
-		pcComponent = CreateROM(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Splitter"))
-	{
-		pcComponent = CreateSplitter(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Text"))
-	{
-		pcComponent = CreateText(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "D Flip-Flop"))
-	{
-		pcComponent = CreateDFlipFlop(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Random"))
-	{
-		pcComponent = CreateRandom(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Comparator"))
-	{
-		pcComponent = CreateComparator(pcCompTag, sLoc);
-	}
-	else if (IsString(szName, "Shift Register"))
-	{
-		pcComponent = CreateShiftRegister(pcCompTag, sLoc);
-	}
+		if (IsString(szName, "Tunnel"))
+		{
+			pcComponent = CreateTunnel(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Pull Resistor"))
+		{
+			pcComponent = CreatePullResistor(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Constant"))
+		{
+			pcComponent = CreateConstant(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "AND Gate"))
+		{
+			pcComponent = CreateANDGate(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "NAND Gate"))
+		{
+			pcComponent = CreateNANDGate(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "NOR Gate"))
+		{
+			pcComponent = CreateNORGate(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "OR Gate"))
+		{
+			pcComponent = CreateORGate(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "NOT Gate"))
+		{
+			pcComponent = CreateNOTGate(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "XOR Gate"))
+		{
+			pcComponent = CreateXORGate(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Clock"))
+		{
+			pcComponent = CreateClock(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Controlled Buffer"))
+		{
+			pcComponent = CreateControlledBuffer(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Counter"))
+		{
+			pcComponent = CreateCounter(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Decoder"))
+		{
+			pcComponent = CreateDecoder(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Digital Oscilloscope"))
+		{
+			pcComponent = CreateDigitalOscilloscope(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "LED"))
+		{
+			pcComponent = CreateLED(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Pin"))
+		{
+			pcComponent = CreatePin(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Probe"))
+		{
+			pcComponent = CreateProbe(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "RAM"))
+		{
+			pcComponent = CreateRAM(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "ROM"))
+		{
+			pcComponent = CreateROM(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Splitter"))
+		{
+			pcComponent = CreateSplitter(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Text"))
+		{
+			pcComponent = CreateText(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "D Flip-Flop"))
+		{
+			pcComponent = CreateDFlipFlop(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Random"))
+		{
+			pcComponent = CreateRandom(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Comparator"))
+		{
+			pcComponent = CreateComparator(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Shift Register"))
+		{
+			pcComponent = CreateShiftRegister(pcCompTag, sLoc);
+		}
 
-	else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
-			 IsString(szName, "2-to-4 Decoder (LVC139)") ||
-			 IsString(szName, "3-to-8 Decoder (LVC138)") ||
-			 IsString(szName, "3-to-8 Decoder (VHC238)") ||
-			 IsString(szName, "4-bit Line Driver (LVC125)") ||
-			 IsString(szName, "4-bit Line Driver (LVC126)") ||
-			 IsString(szName, "4-bit Multiplexer (LVC157)") ||
-			 IsString(szName, "4-bit Multiplexer (LVC257)") ||
-			 IsString(szName, "4-bit Up Counter (LVC161)") ||
-			 IsString(szName, "4-bit Up Counter (LVC163)") ||
-			 IsString(szName, "4-bit Up Counter (VHC161)") ||
-			 IsString(szName, "4-bit Up/Down Counter (HCT193)") ||
-			 IsString(szName, "8-bit Bi-latch (LVC543)") ||
-			 IsString(szName, "8-bit Bus Transceiver (LVC4245)") ||
-			 IsString(szName, "8-bit Comparator (F521)") ||
-			 IsString(szName, "8-bit Latch (LVC273)") ||
-			 IsString(szName, "8-bit Latch (LVC373)") ||
-			 IsString(szName, "8-bit Latch (LVC573)") ||
-			 IsString(szName, "8-bit Latch (LVC574)") ||
-			 IsString(szName, "8-bit Line Driver (LVC541)") ||
-			 IsString(szName, "8-bit serial in shift (LVC595)") ||
-			 IsString(szName, "8-bit Up Counter (HC590)") ||
-			 IsString(szName, "10-to-4 Encoder (HC147)") ||
-			 IsString(szName, "12-bit Up Counter (HC4040)") ||
-			 IsString(szName, "16-bit Latch (LVC16373)") ||
-			 IsString(szName, "16-bit Line Driver (LVC16244)") ||
-			 IsString(szName, "16-bit Bus Transceiver (LVC164245)") ||
-			 IsString(szName, "D-type Flip Flop (LVC74)") ||
-			 IsString(szName, "EconoReset (DS1813)") ||
-			 IsString(szName, "4-to-1 Multiplexer (QS3253)") ||
-			 IsString(szName, "8-bit parallel in shift (LV165)") ||
-			 IsString(szName, "8-to-3 Encoder (LS148)") ||
-			 IsString(szName, "8-to-1 Multiplexer (B3251)") ||
-			 IsString(szName, "8-to-1 Multiplexer (F251)") ||
-			 IsString(szName, "2-bit Translator (LSF0102)") ||
-			 IsString(szName, "4-bit Translator (LSF0204)") ||
-			 IsString(szName, "8-bit Translator (LSF0108)") ||
-			 IsString(szName, "4-bit Full Adder (F283)") ||
-			 IsString(szName, "8-bit Down Counter (HCT40103)") ||
-			 IsString(szName, "16-bit Latch (LVC162373)") ||
-			 IsString(szName, "512 Byte FIFO (IDT7201)") ||
-			 IsString(szName, "Helper (W65C816 Timing)") ||
-			 IsString(szName, "Microprocessor (W65C816)"))
-	{
-		pcComponent = CreateCustomComponent(pcCompTag, sLoc, szName);
+		else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
+			IsString(szName, "2-to-4 Decoder (LVC139)") ||
+			IsString(szName, "3-to-8 Decoder (LVC138)") ||
+			IsString(szName, "3-to-8 Decoder (VHC238)") ||
+			IsString(szName, "4-bit Line Driver (LVC125)") ||
+			IsString(szName, "4-bit Line Driver (LVC126)") ||
+			IsString(szName, "4-bit Multiplexer (LVC157)") ||
+			IsString(szName, "4-bit Multiplexer (LVC257)") ||
+			IsString(szName, "4-bit Up Counter (LVC161)") ||
+			IsString(szName, "4-bit Up Counter (LVC163)") ||
+			IsString(szName, "4-bit Up Counter (VHC161)") ||
+			IsString(szName, "4-bit Up/Down Counter (HCT193)") ||
+			IsString(szName, "8-bit Bi-latch (LVC543)") ||
+			IsString(szName, "8-bit Bus Transceiver (LVC4245)") ||
+			IsString(szName, "8-bit Comparator (F521)") ||
+			IsString(szName, "8-bit Latch (LVC273)") ||
+			IsString(szName, "8-bit Latch (LVC373)") ||
+			IsString(szName, "8-bit Latch (LVC573)") ||
+			IsString(szName, "8-bit Latch (LVC574)") ||
+			IsString(szName, "8-bit Line Driver (LVC541)") ||
+			IsString(szName, "8-bit serial in shift (LVC595)") ||
+			IsString(szName, "8-bit Up Counter (HC590)") ||
+			IsString(szName, "10-to-4 Encoder (HC147)") ||
+			IsString(szName, "12-bit Up Counter (HC4040)") ||
+			IsString(szName, "16-bit Latch (LVC16373)") ||
+			IsString(szName, "16-bit Line Driver (LVC16244)") ||
+			IsString(szName, "16-bit Bus Transceiver (LVC164245)") ||
+			IsString(szName, "D-type Flip Flop (LVC74)") ||
+			IsString(szName, "EconoReset (DS1813)") ||
+			IsString(szName, "4-to-1 Multiplexer (QS3253)") ||
+			IsString(szName, "8-bit parallel in shift (LV165)") ||
+			IsString(szName, "8-to-3 Encoder (LS148)") ||
+			IsString(szName, "8-to-1 Multiplexer (B3251)") ||
+			IsString(szName, "8-to-1 Multiplexer (F251)") ||
+			IsString(szName, "2-bit Translator (LSF0102)") ||
+			IsString(szName, "4-bit Translator (LSF0204)") ||
+			IsString(szName, "8-bit Translator (LSF0108)") ||
+			IsString(szName, "4-bit Full Adder (F283)") ||
+			IsString(szName, "8-bit Down Counter (HCT40103)") ||
+			IsString(szName, "16-bit Latch (LVC162373)") ||
+			IsString(szName, "512 Byte FIFO (IDT7201)") ||
+			IsString(szName, "Helper (W65C816 Timing)") ||
+			IsString(szName, "Microprocessor (W65C816)"))
+		{
+			pcComponent = CreateCustomComponent(pcCompTag, sLoc, szName);
+		}
+		else
+		{
+		return gcLogger.Error2(__METHOD__, "  Line [", IntToString(pcCompTag->GetLine() + 1), "],  Unknown component name [", szName, "] not found during 'comp' conversion.", NULL);
+		}
 	}
  	else
 	{
-		if (szLib != NULL)
-		{
-			return gcLogger.Error2(__METHOD__, "  Line [", IntToString(pcCompTag->GetLine() + 1), "],  Unknown component name [", szName, "] not found during 'comp' conversion.", NULL);
-		}
+		pcComponent = CreateCircuitComponent(pcCompTag, sLoc, szName);
 	}
 
 	if (pcComponent)
@@ -2403,7 +2415,31 @@ CLogisimCustomComponent* CLogisimFileReader::CreateCustomComponent(CMarkupTag* p
 	pcCustom = mcCustomComponentList.Add(&cCustom);
 
 	return pcCustom;
+}
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CLogisimCircuitComponent* CLogisimFileReader::CreateCircuitComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName)
+{
+	CMarkupTag*					pcTag;
+	STagIterator				sIter;
+	CLogisimCircuitComponent	cCustom;
+	CLogisimCircuitComponent*	pcCustom;
+
+	pcTag = pcCompTag->GetTag(&sIter);
+	if (pcTag)
+	{
+		gcLogger.Error2(__METHOD__, " Circuit components should have no sub tag.", NULL);
+		return NULL;
+	}
+
+	cCustom.Init(sLoc, szName);
+	pcCustom = mcCircuitComponentList.Add(&cCustom);
+
+	return pcCustom;
 }
 
 

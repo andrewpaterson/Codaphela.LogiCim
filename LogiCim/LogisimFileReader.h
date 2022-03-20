@@ -9,6 +9,7 @@
 #include "LogisimLibrary.h"
 #include "LogisimComponentList.h"
 #include "LogisimCustomComponent.h"
+#include "LogisimCircuitComponent.h"
 
 
 class CLogisimComponent;
@@ -25,6 +26,7 @@ protected:
 	CChars							mszMainCircuitName;
 	CLogisimComponentList			mcComponents;
 	CLogisimCustomComponentList		mcCustomComponentList;
+	CLogisimCircuitComponentList	mcCircuitComponentList;
 
 public:
 	BOOL								Init(char* szDirectory, char* szFileName);
@@ -92,6 +94,7 @@ protected:
 	CLogisimShiftRegsiter*			CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
 
 	CLogisimCustomComponent*		CreateCustomComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
+	CLogisimCircuitComponent*		CreateCircuitComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
 
 protected:
 	BOOL					PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
