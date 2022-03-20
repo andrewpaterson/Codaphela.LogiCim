@@ -132,6 +132,9 @@
     <ClCompile Include="LogisimBuffer.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimBitAdder.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -255,6 +258,9 @@
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
     <ClInclude Include="LogisimBuffer.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimBitAdder.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>

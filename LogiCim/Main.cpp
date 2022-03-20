@@ -40,6 +40,10 @@ int __cdecl main(void)
 				sz.DumpKill();
 			}
 		}
+		else
+		{
+			gcLogger.Error2(__METHOD__, " Failed to read [", cReader.GetFileName(), "].", NULL);
+		}
 	}
 	else
 	{

@@ -453,6 +453,16 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 		{
 			pcComponent = CreateBuffer(pcCompTag, sLoc);
 		}
+		else if (IsString(szName, "BitAdder"))
+		{
+		pcComponent = CreateBitAdder(pcCompTag, sLoc);
+		}
+		else if (IsString(szName, "Register"))
+		{
+		}
+		else if (IsString(szName, "Multiplexer"))
+		{
+		}
 
 		else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
 			IsString(szName, "2-to-4 Decoder (LVC139)") ||
@@ -2406,11 +2416,11 @@ CLogisimShiftRegsiter* CLogisimFileReader::CreateShiftRegister(CMarkupTag* pcCom
 //////////////////////////////////////////////////////////////////////////
 CLogisimBuffer* CLogisimFileReader::CreateBuffer(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
-	CLogisimBuffer*						pcComp;
-	CMapStringString					cMap;
-	BOOL								bResult;
-	ELogisimFacing						eFacing;
-	char*								szLabel;
+	CLogisimBuffer*		pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+	ELogisimFacing		eFacing;
+	char*				szLabel;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -2429,6 +2439,43 @@ CLogisimBuffer* CLogisimFileReader::CreateBuffer(CMarkupTag* pcCompTag, SInt2 sL
 	if (!bResult)
 	{
 		return (CLogisimBuffer*)KillComponent(pcComp);
+	}
+	else
+	{
+		return pcComp;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CLogisimBitAdder* CLogisimFileReader::CreateBitAdder(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimBitAdder*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+	int					iInputs;
+	int					iWidth;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnNullOnFalse(bResult);
+
+	bResult = GetMapValueAsInt(pcCompTag, &cMap, "inputs", &iInputs, "1");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
+
+	ReturnNullOnFalse(bResult);
+
+	pcComp = mcComponents.CreateBitAdder();
+	pcComp->Init(sLoc);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetInputs(iInputs);
+
+	bResult = CheckMap(pcCompTag, &cMap, "inputs", "width", NULL);
+	if (!bResult)
+	{
+		return (CLogisimBitAdder*)KillComponent(pcComp);
 	}
 	else
 	{

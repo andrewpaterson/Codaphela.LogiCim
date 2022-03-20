@@ -292,8 +292,19 @@ CLogisimBuffer* CLogisimComponentList::CreateBuffer(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CLogisimBitAdder* CLogisimComponentList::CreateBitAdder(void)
+{
+	return New<CLogisimBitAdder>((CLogisimBitAdder*)mcList.Add(sizeof(CLogisimBitAdder)));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
 {
 	return mcList.Remove(pcComp);
 }
+
 

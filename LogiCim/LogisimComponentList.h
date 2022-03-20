@@ -27,6 +27,7 @@
 #include "LogisimComparator.h"
 #include "LogisimShiftRegister.h"
 #include "LogisimBuffer.h"
+#include "LogisimBitAdder.h"
 
 
 class CLogisimComponentList
@@ -64,6 +65,7 @@ public:
 	CLogisimComparator*				CreateComparator(void);
 	CLogisimShiftRegsiter*			CreateShiftRegsiter(void);
 	CLogisimBuffer*					CreateBuffer(void);
+	CLogisimBitAdder*				CreateBitAdder(void);
 
 	BOOL							Remove(CLogisimComponent* pcComp);
 };

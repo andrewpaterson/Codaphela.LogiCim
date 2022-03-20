@@ -1,6 +1,6 @@
 #ifndef __LOGISIM_D_TYPE_FLIP_FLOP_H__
 #define __LOGISIM_D_TYPE_FLIP_FLOP_H__
-#include"LogisimTrigger.h"
+#include "LogisimTrigger.h"
 #include "LogisimComponent.h"
 
 
