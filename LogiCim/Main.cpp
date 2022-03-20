@@ -7,19 +7,39 @@
 //////////////////////////////////////////////////////////////////////////
 int __cdecl main(void)
 {
-	CLogisimFileReader	cReader;
-	CMarkupTag*			pcRoot;
-	BOOL				bFileExists;
+	CLogisimFileReader					cReader;
+	CMarkupTag*							pcRoot;
+	BOOL								bFileExists;
+	BOOL								bResult;
 
 	gcLogger.Init();
 	gcLogger.SetBreakOnWarning(FALSE);
 
-	bFileExists = cReader.Init("D:\\Work\\658-Computer\\logi65816", "Test.circ");
-	//bFileExists = cReader.Init("D:\\Work\\658-Computer\\Logisim", "658_Computer.bak.circ");
+	bFileExists = cReader.Init("D:\\Work\\658-Computer\\Logisim", "658_Computer.bak.circ");
 	if (bFileExists)
 	{
 		pcRoot = cReader.Read();
-		cReader.Convert(pcRoot);
+		bResult = cReader.Convert(pcRoot);
+		if (bResult)
+		{
+			CListTemplate<CLogisimCircuit>*		plCircuits;
+			int									i;
+			int									iNumElements;
+			CLogisimCircuit*					pcCircuit;
+			CChars								sz;
+
+			plCircuits = cReader.GetCircuits();
+			iNumElements = plCircuits->NumElements();
+			for (i = 0; i < iNumElements; i++)
+			{
+				pcCircuit = plCircuits->Get(i);
+
+				sz.Init();
+				sz.Append(pcCircuit->GetName());
+				sz.AppendNewLine();
+				sz.DumpKill();
+			}
+		}
 	}
 	else
 	{

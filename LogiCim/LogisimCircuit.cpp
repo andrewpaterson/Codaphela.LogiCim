@@ -10,6 +10,7 @@ void CLogisimCircuit::Init(char* szName)
 	mszName.Init(szName);
 
 	mlWires.Init();
+	mapComponents.Init();
 }
 
 
@@ -22,6 +23,8 @@ void CLogisimCircuit::Kill(void)
 	int				iNum;
 	int				i;
 	CLogisimWire*	pcWire;
+
+	mapComponents.Kill();
 
 	iNum = mlWires.NumElements();
 	for (i = 0; i < iNum; i++)
@@ -42,5 +45,26 @@ void CLogisimCircuit::Kill(void)
 CLogisimWire* CLogisimCircuit::AddWire(void)
 {
 	return mlWires.Add();
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogisimCircuit::AddComponent(CLogisimComponent* pcComponent)
+{
+	mapComponents.Add(pcComponent);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+char* CLogisimCircuit::GetName(void)
+{
+	return mszName.Text();
 }
 

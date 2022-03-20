@@ -27,12 +27,14 @@ protected:
 	CLogisimCustomComponentList		mcCustomComponentList;
 
 public:
-	BOOL			Init(char* szDirectory, char* szFileName);
-	void			Kill(void);
+	BOOL								Init(char* szDirectory, char* szFileName);
+	void								Kill(void);
 
-	CMarkupTag*		Read(void);
-	BOOL			Convert(CMarkupTag* pcContainer);
-	char*			GetFileName(void);
+	CMarkupTag*							Read(void);
+	BOOL								Convert(CMarkupTag* pcContainer);
+	char*								GetFileName(void);
+
+	CListTemplate<CLogisimCircuit>*		GetCircuits(void);
 
 protected:
 	BOOL			ConvertCircuit(CMarkupTag* pcCircuitTag);
@@ -62,37 +64,39 @@ protected:
 	BOOL			UnknownTagError(CMarkupTag* pcTag, CMapStringString* pcMap);
 	BOOL			IsString(char* szLeft, char* szRight);
 
-	BOOL			CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateNANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateNORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateNOTGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateXORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateControlledBuffer(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateDecoder(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateLED(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc);
-	BOOL			CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
+protected:
+	CLogisimTunnel*					CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimPullResistor*			CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimConstant*				CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimANDGate*				CreateANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimNANDGate*				CreateNANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimNORGate*				CreateNORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimORGate*					CreateORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimXORGate*				CreateXORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimNOTGate*				CreateNOTGate(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimClock*					CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimControlledBuffer*		CreateControlledBuffer(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimCounter*				CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimDecoder*				CreateDecoder(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimDigitalOscilloscope*	CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimLED*					CreateLED(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimPin*					CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimProbe*					CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimRAM*					CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimROM*					CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimSplitter*				CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimText*					CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimDTypeFlipFlop*			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimRandom*					CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimComparator*				CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimShiftRegsiter*			CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
 
-	BOOL			PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
+	CLogisimCustomComponent*		CreateCustomComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
 
-	BOOL			CreateCustomComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
-
-	BOOL			ParseInt2(SInt2* ps, char* sz);
+protected:
+	BOOL					PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
+	BOOL					ParseInt2(SInt2* ps, char* sz);
+	CLogisimComponent*		KillComponent(CLogisimComponent* pcComp);
 };
 
 
