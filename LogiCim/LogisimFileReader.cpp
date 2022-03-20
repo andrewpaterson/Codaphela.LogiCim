@@ -449,6 +449,10 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 		{
 			pcComponent = CreateShiftRegister(pcCompTag, sLoc);
 		}
+		else if (IsString(szName, "Buffer"))
+		{
+			pcComponent = CreateBuffer(pcCompTag, sLoc);
+		}
 
 		else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
 			IsString(szName, "2-to-4 Decoder (LVC139)") ||
@@ -2189,6 +2193,7 @@ CLogisimText* CLogisimFileReader::CreateText(CMarkupTag* pcCompTag, SInt2 sLoc)
 	char*					szFont;
 	ELogisimAlignment		eHorizontalAlignment;
 	ELogisimAlignment		eVerticalAlignment;
+	uint32					uiColour;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -2197,6 +2202,8 @@ CLogisimText* CLogisimFileReader::CreateText(CMarkupTag* pcCompTag, SInt2 sLoc)
 	bResult &= GetMapValueAsAlignment(&cMap, "halign", &eHorizontalAlignment, "center");
 	bResult &= GetMapValueAsAlignment(&cMap, "valign", &eVerticalAlignment, "base");
 	bResult &= GetMapValue(&cMap, "font", &szFont, "");
+	bResult &= GetMapValueAsRGB(&cMap, "color", &uiColour, "#000000");
+	
 	ReturnNullOnFalse(bResult);
 
 	if ((eHorizontalAlignment != LA_Left) && (eHorizontalAlignment != LA_Right) && (eHorizontalAlignment != LA_Centered))
@@ -2217,7 +2224,7 @@ CLogisimText* CLogisimFileReader::CreateText(CMarkupTag* pcCompTag, SInt2 sLoc)
 	pcComp->SetHorizontalAlignment(eHorizontalAlignment);
 	pcComp->SetVerticalAlignment(eVerticalAlignment);
 
-	bResult = CheckMap(pcCompTag, &cMap, "text", "halign", "valign", "font", NULL);
+	bResult = CheckMap(pcCompTag, &cMap, "text", "halign", "valign", "font", "color", NULL);
 	if (!bResult)
 	{
 		return (CLogisimText*)KillComponent(pcComp);
@@ -2385,6 +2392,43 @@ CLogisimShiftRegsiter* CLogisimFileReader::CreateShiftRegister(CMarkupTag* pcCom
 	if (!bResult)
 	{
 		return (CLogisimShiftRegsiter*)KillComponent(pcComp);
+	}
+	else
+	{
+		return pcComp;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CLogisimBuffer* CLogisimFileReader::CreateBuffer(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimBuffer*						pcComp;
+	CMapStringString					cMap;
+	BOOL								bResult;
+	ELogisimFacing						eFacing;
+	char*								szLabel;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnNullOnFalse(bResult);
+
+	bResult = GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
+	bResult &= GetMapValue(&cMap, "label", &szLabel, "");
+
+	ReturnNullOnFalse(bResult);
+
+	pcComp = mcComponents.CreateBuffer();
+	pcComp->Init(sLoc);
+	pcComp->SetFacing(eFacing);
+	pcComp->SetLabel(szLabel);
+
+	bResult = CheckMap(pcCompTag, &cMap, "facing", "label", NULL);
+	if (!bResult)
+	{
+		return (CLogisimBuffer*)KillComponent(pcComp);
 	}
 	else
 	{

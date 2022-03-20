@@ -129,6 +129,9 @@
     <ClCompile Include="LogisimCircuitComponent.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="LogisimBuffer.cpp">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -249,6 +252,9 @@
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
     <ClInclude Include="LogisimCircuitComponent.h">
+      <Filter>Source\Logisim\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="LogisimBuffer.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
   </ItemGroup>

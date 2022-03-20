@@ -282,6 +282,16 @@ CLogisimShiftRegsiter* CLogisimComponentList::CreateShiftRegsiter(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CLogisimBuffer* CLogisimComponentList::CreateBuffer(void)
+{
+	return New<CLogisimBuffer>((CLogisimBuffer*)mcList.Add(sizeof(CLogisimBuffer)));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
 {
 	return mcList.Remove(pcComp);

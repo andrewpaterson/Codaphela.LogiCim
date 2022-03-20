@@ -26,6 +26,8 @@
 #include "LogisimRandom.h"
 #include "LogisimComparator.h"
 #include "LogisimShiftRegister.h"
+#include "LogisimBuffer.h"
+
 
 class CLogisimComponentList
 {
@@ -61,6 +63,7 @@ public:
 	CLogisimRandom*					CreateRandom(void);
 	CLogisimComparator*				CreateComparator(void);
 	CLogisimShiftRegsiter*			CreateShiftRegsiter(void);
+	CLogisimBuffer*					CreateBuffer(void);
 
 	BOOL							Remove(CLogisimComponent* pcComp);
 };
