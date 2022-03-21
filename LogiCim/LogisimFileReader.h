@@ -94,6 +94,8 @@ protected:
 	CLogisimShiftRegsiter*			CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
 	CLogisimBuffer*					CreateBuffer(CMarkupTag* pcCompTag, SInt2 sLoc);
 	CLogisimBitAdder*				CreateBitAdder(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimRegister*				CreateRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimMultiplexer*			CreateMultiplexer(CMarkupTag* pcCompTag, SInt2 sLoc);
 
 	CLogisimCustomComponent*		CreateCustomComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
 	CLogisimCircuitComponent*		CreateCircuitComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);

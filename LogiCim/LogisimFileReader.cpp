@@ -455,13 +455,15 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 		}
 		else if (IsString(szName, "BitAdder"))
 		{
-		pcComponent = CreateBitAdder(pcCompTag, sLoc);
+			pcComponent = CreateBitAdder(pcCompTag, sLoc);
 		}
 		else if (IsString(szName, "Register"))
 		{
+			pcComponent = CreateRegister(pcCompTag, sLoc);
 		}
 		else if (IsString(szName, "Multiplexer"))
 		{
+			pcComponent = CreateMultiplexer(pcCompTag, sLoc);
 		}
 
 		else if (IsString(szName, "1-of-8 Data Selector (F251)") ||
@@ -1466,7 +1468,7 @@ BOOL CLogisimFileReader::PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcCom
 	BOOL				bResult;
 	int					iSize;
 	int					iInputs;
-	char* szLabel;
+	char*				szLabel;
 	int					iWidth;
 	ELogisimGateOut		eOut;
 	ELogisimFacing		eFacing;
@@ -1725,10 +1727,9 @@ CLogisimDecoder* CLogisimFileReader::CreateDecoder(CMarkupTag* pcCompTag, SInt2 
 	pcComp->Init(sLoc);
 	pcComp->SetTristate(IsString(szTristate, "true"));
 	pcComp->SetDisabledZero(IsString(szDisabledZero, "0"));
-	pcComp->SetDisabledZero(IsString(szIncludeEnabled, "true"));
+	pcComp->SetIncludeEnabled(IsString(szIncludeEnabled, "true"));
 	pcComp->SetSelectBits(iSelectBits);
 	pcComp->SetSelectLocation(eSelectLocation);
-
 
 	bResult = CheckMap(pcCompTag, &cMap, "select", "selloc", "tristate", "enable", "disabled", NULL);
 	if (!bResult)
@@ -2476,6 +2477,96 @@ CLogisimBitAdder* CLogisimFileReader::CreateBitAdder(CMarkupTag* pcCompTag, SInt
 	if (!bResult)
 	{
 		return (CLogisimBitAdder*)KillComponent(pcComp);
+	}
+	else
+	{
+		return pcComp;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CLogisimRegister* CLogisimFileReader::CreateRegister(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimRegister*	pcComp;
+	CMapStringString	cMap;
+	BOOL				bResult;
+	int					iWidth;
+	ELogisimTrigger		eTrigger;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnNullOnFalse(bResult);
+
+	bResult = GetMapValueAsTrigger(&cMap, "trigger", &eTrigger, "rising");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
+	bResult &= GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
+
+	ReturnNullOnFalse(bResult);
+
+	pcComp = mcComponents.CreateRegister();
+	pcComp->Init(sLoc);
+	pcComp->SetWidth(iWidth);
+	pcComp->SetTrigger(eTrigger);
+
+	bResult = CheckMap(pcCompTag, &cMap, "trigger", "width", "appearance", NULL);
+	if (!bResult)
+	{
+		return (CLogisimRegister*)KillComponent(pcComp);
+	}
+	else
+	{
+		return pcComp;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CLogisimMultiplexer* CLogisimFileReader::CreateMultiplexer(CMarkupTag* pcCompTag, SInt2 sLoc)
+{
+	CLogisimMultiplexer*	pcComp;
+	CMapStringString		cMap;
+	BOOL					bResult;
+	int						iSelectBits;
+	int						iDataBits;
+	ELogisimSelectLocation	eSelectLocation;
+	int						iSize;
+	char*					szDisabledZero;
+	ELogisimFacing			eFacing;
+	char*					szIncludeEnabled;
+
+	bResult = ConvertATagsToMap(&cMap, pcCompTag);
+	ReturnNullOnFalse(bResult);
+
+	bResult = GetMapValueAsSelectLocation(&cMap, "selloc", &eSelectLocation, "bl");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iDataBits, "1");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "select", &iSelectBits, "1");
+	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "size", &iSize, "50");
+	bResult &= GetMapValue(&cMap, "disabled", &szDisabledZero, "0");
+	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "west");
+	bResult &= GetMapValue(&cMap, "enable", &szIncludeEnabled, "true");
+
+	ReturnNullOnFalse(bResult);
+
+	pcComp = mcComponents.CreateMultiplexer();
+	pcComp->Init(sLoc);
+	pcComp->SetDataBits(iDataBits);
+	pcComp->SetDisabledZero(IsString(szDisabledZero, "0"));
+	pcComp->SetIncludeEnabled(IsString(szIncludeEnabled, "true"));
+	pcComp->SetSelectBits(iSelectBits);
+	pcComp->SetSelectLocation(eSelectLocation);
+	pcComp->SetFacing(eFacing);
+	pcComp->SetSize(iSize);
+
+	bResult = CheckMap(pcCompTag, &cMap, "selloc", "width", "select", "size", "disabled", "enable", "facing", NULL);
+	if (!bResult)
+	{
+		return (CLogisimMultiplexer*)KillComponent(pcComp);
 	}
 	else
 	{

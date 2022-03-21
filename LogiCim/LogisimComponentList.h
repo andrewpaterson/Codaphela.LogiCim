@@ -28,6 +28,8 @@
 #include "LogisimShiftRegister.h"
 #include "LogisimBuffer.h"
 #include "LogisimBitAdder.h"
+#include "LogisimMultiplexer.h"
+#include "LogisimRegister.h"
 
 
 class CLogisimComponentList
@@ -66,6 +68,8 @@ public:
 	CLogisimShiftRegsiter*			CreateShiftRegsiter(void);
 	CLogisimBuffer*					CreateBuffer(void);
 	CLogisimBitAdder*				CreateBitAdder(void);
+	CLogisimMultiplexer*			CreateMultiplexer(void);
+	CLogisimRegister*				CreateRegister(void);
 
 	BOOL							Remove(CLogisimComponent* pcComp);
 };

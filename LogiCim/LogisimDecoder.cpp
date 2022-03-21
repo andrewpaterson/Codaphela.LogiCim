@@ -27,7 +27,7 @@ void CLogisimDecoder::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogisimDecoder::SetIncludeEnabled(BOOL bIncludeEnabled) { mbIncludeEnabled = bIncludeEnabled; }
 void CLogisimDecoder::SetSelectBits(int iSelectBits) { miSelectBits = iSelectBits; }
-void CLogisimDecoder::SetDisabledZero(BOOL bDisabledZero) { mbDisabledZero = bDisabledZero; };
-void CLogisimDecoder::SetSelectLocation(ELogisimSelectLocation eSelectLocation) { meSelectLocation = eSelectLocation; };
-void CLogisimDecoder::SetTristate(BOOL bTristate) { mbTristate = bTristate; };
+void CLogisimDecoder::SetDisabledZero(BOOL bDisabledZero) { mbDisabledZero = bDisabledZero; }
+void CLogisimDecoder::SetSelectLocation(ELogisimSelectLocation eSelectLocation) { meSelectLocation = eSelectLocation; }
+void CLogisimDecoder::SetTristate(BOOL bTristate) { mbTristate = bTristate; }
 

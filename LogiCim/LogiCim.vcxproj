@@ -217,10 +217,12 @@
     <ClCompile Include="LogisimDigitalOscilloscope.cpp" />
     <ClCompile Include="LogisimLED.cpp" />
     <ClCompile Include="LogisimMemory.cpp" />
+    <ClCompile Include="LogisimMultiplexer.cpp" />
     <ClCompile Include="LogisimPin.cpp" />
     <ClCompile Include="LogisimProbe.cpp" />
     <ClCompile Include="LogisimRAM.cpp" />
     <ClCompile Include="LogisimRandom.cpp" />
+    <ClCompile Include="LogisimRegister.cpp" />
     <ClCompile Include="LogisimROM.cpp" />
     <ClCompile Include="LogisimShiftRegister.cpp" />
     <ClCompile Include="LogisimSplitter.cpp" />
@@ -257,11 +259,13 @@
     <ClInclude Include="LogisimDigitalOscilloscope.h" />
     <ClInclude Include="LogisimLED.h" />
     <ClInclude Include="LogisimMemory.h" />
+    <ClInclude Include="LogisimMultiplexer.h" />
     <ClInclude Include="LogisimNumericType.h" />
     <ClInclude Include="LogisimPin.h" />
     <ClInclude Include="LogisimProbe.h" />
     <ClInclude Include="LogisimRAM.h" />
     <ClInclude Include="LogisimRandom.h" />
+    <ClInclude Include="LogisimRegister.h" />
     <ClInclude Include="LogisimROM.h" />
     <ClInclude Include="LogisimSelectLocation.h" />
     <ClInclude Include="LogisimShiftRegister.h" />
