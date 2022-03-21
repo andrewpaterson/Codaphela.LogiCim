@@ -81,7 +81,6 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <StringPooling>false</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -245,6 +244,9 @@
     <ClCompile Include="LogisimWire.cpp" />
     <ClCompile Include="LogisimXORGate.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Port.cpp" />
+    <ClCompile Include="Trace.cpp" />
+    <ClCompile Include="TraceNet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimBitAdder.h" />
@@ -291,6 +293,10 @@
     <ClInclude Include="LogisimTunnel.h" />
     <ClInclude Include="LogisimWire.h" />
     <ClInclude Include="LogisimXORGate.h" />
+    <ClInclude Include="Port.h" />
+    <ClInclude Include="Trace.h" />
+    <ClInclude Include="TraceNet.h" />
+    <ClInclude Include="TraceValue.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CommonLibraries\BaseLib\BaseLib.vcxproj">

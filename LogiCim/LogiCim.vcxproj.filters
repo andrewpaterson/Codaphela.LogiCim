@@ -141,6 +141,13 @@
     <ClCompile Include="LogisimMultiplexer.cpp">
       <Filter>Source\Logisim\Component</Filter>
     </ClCompile>
+    <ClCompile Include="Trace.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="TraceNet.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Port.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -275,5 +282,15 @@
     <ClInclude Include="LogisimMultiplexer.h">
       <Filter>Source\Logisim\Component</Filter>
     </ClInclude>
+    <ClInclude Include="Trace.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TraceNet.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TraceValue.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Port.h" />
   </ItemGroup>
 </Project>
