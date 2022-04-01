@@ -117,9 +117,9 @@ protected:
 		return  NULL;//StringUtil.toEnumString(value);
 	}
 
-	char GetStringValue(void)
+	char GetStringChar(void)
 	{
-		return CTraceValue::GetStringValue(mpcNet->GetValue());
+		return CTraceValue::GetCharValue(mpcNet->GetValue());
 	}
 
 	Ptr<CPort> Get_DEBUG_lastPortThatUpdated()

@@ -1,6 +1,10 @@
 #ifndef __PORT_H__
 #define __PORT_H__
 #include "StandardLib\Object.h"
+#include "StandardLib\Pointer.h"
+#include "StandardLib\Collection.h"
+#include "StandardLib\Array.h"
+#include "Trace.h"
 #include "TransmissionState.h"
 #include "TickablePins.h"
 
@@ -18,132 +22,140 @@ protected:
 public:
     void Init(Ptr<CTickablePins> pcTickable, char* szName)
     {
-        this.tickable = tickable;
-        this.name = name;
-        this.state = NotSet;
-        tickable.addPort(this);
+        mpcTickable = pcTickable;
+        mszName.Init(szName);
+        meState = TS_NotSet;
+        mpcTickable->AddPort(this);
     }
 
-    String getName()
+    char* GetName(void)
     {
-        return name;
+        return mszName.Text();
     }
 
-    void resetConnections()
+    void ResetConnections()
     {
-        state = NotSet;
+        meState = TS_NotSet;
     }
 
-    virtual void addTraceValues(List<TraceValue> traceValues);
+    virtual void AddTraceValues(Ptr<CArray<CTraceValue>> pacTraceValues) =0;
 
-    virtual void updateConnection();
+    virtual void UpdateConnection(void) =0;
 
-    virtual TraceValue read();
+    virtual ETraceValue Read(void) =0;
 
-    static TraceValue readStates(Collection< ? extends Port> ports)
+    static ETraceValue ReadStates(Ptr<CArray<CPort>> pacPorts)
     {
-        boolean high = false;
-        boolean low = false;
-        boolean error = false;
-        boolean unsettled = false;
-        boolean connected = false;
+        BOOL bHigh = FALSE;
+        BOOL bLow = FALSE;
+        BOOL bError = FALSE;
+        BOOL bUnsettled = FALSE;
+        BOOL bConnected = FALSE;
 
-        for (Port port : ports)
+        int iNumElements = pacPorts->NumElements();
+
+        for (int i = 0; i < iNumElements; i++)
         {
-            TraceValue value = port.read();
-            if (value.isConnected())
+            Ptr<CPort> pcPort = pacPorts->Get(i);
+            ETraceValue eValue = pcPort->Read();
+            if (CTraceValue::IsConnected(eValue))
             {
-                connected = true;
+                bConnected = TRUE;
             }
 
-            if (value.isError())
+            if (CTraceValue::IsError(eValue))
             {
-                error = true;
+                bError = TRUE;
             }
-            else if (value.isUnsettled())
+            else if (CTraceValue::IsUnsettled(eValue))
             {
-                unsettled = true;
+                bUnsettled = TRUE;
             }
-            else if (value.isHigh())
+            else if (CTraceValue::IsHigh(eValue))
             {
-                high = true;
+                bHigh = TRUE;
             }
-            else if (value.isLow())
+            else if (CTraceValue::IsLow(eValue))
             {
-                low = true;
+                bLow = TRUE;
             }
         }
 
-        return translatePortValue(high, low, error, unsettled, connected);
+        return TranslatePortValue(bHigh, bLow, bError, bUnsettled, bConnected);
     }
 
-    static TraceValue translatePortValue(boolean high, boolean low, boolean error, boolean unsettled, boolean connected)
+    static ETraceValue TranslatePortValue(BOOL bHigh, BOOL bLow, BOOL bError, BOOL bUnsettled, BOOL bConnected)
     {
-        if (connected)
+        if (bConnected)
         {
-            if (error)
+            if (bError)
             {
-                return Error;
+                return TV_Error;
             }
-            else if (unsettled)
+            else if (bUnsettled)
             {
-                return Unsettled;
+                return TV_Unsettled;
             }
-            else if (high && low)
+            else if (bHigh && bLow)
             {
-                return HighAndLow;
+                return TV_HighAndLow;
             }
-            else if (high)
+            else if (bHigh)
             {
-                return High;
+                return TV_High;
             }
-            else if (low)
+            else if (bLow)
             {
-                return Low;
+                return TV_Low;
             }
         }
-        return NotConnected;
+        return TV_NotConnected;
     }
 
-    String getPortTransmissionStateAsString()
+    char* GetPortTransmissionStateAsString(CChars* pszDest)
     {
-        String portStateString = "  ";
-        if (state.isInput())
+        pszDest->Append(&mszName);
+        pszDest->Append("  [");
+        if (CTransmissionState::IsInput(meState))
         {
-            portStateString = "<-";
+            pszDest->Append("<-");
         }
-        else if (state.isOutput())
+        else if (CTransmissionState::IsOutput(meState))
         {
-            portStateString = "->";
+            pszDest->Append("->");
         }
-        else if (state.isNotSet())
+        else if (CTransmissionState::IsNotSet(meState))
         {
-            portStateString = "..";
+            pszDest->Append("..");
         }
-        else if (state.isImpedance())
+        else if (CTransmissionState::IsImpedance(meState))
         {
-            portStateString = "xx";
+            pszDest->Append("xx");
         }
-        return getName() + "[" + portStateString + "]";
+        pszDest->Append("]");
+        return pszDest->Text();
     }
 
-    String getDescription()
+    char* GetDescription(CChars* pszDest)
     {
-        return getTickable().getDescription() + "." + getName();
+        GetTickable()->GetDescription(pszDest);
+        pszDest->Append(".");
+        pszDest->Append(&mszName);
+        return pszDest->Text();
     }
 
-    TickablePins getTickable()
+    Ptr<CTickablePins> GetTickable(void)
     {
-        return tickable;
+        return mpcTickable;
     }
 
-    virtual List<Trace> getConnections();
+    virtual void GetConnections(Ptr<CArray<CTrace>> pcDest);
 
-    virtual String getTraceValuesAsString();
+    virtual char* GetTraceValuesAsString(CChars* pszDest) =0;
 
-    virtual String getWireValuesAsString();
+    virtual char* getWireValuesAsString(CChars* pszDest) =0;
 
-    virtual String getConnectionValuesAsString();
+    virtual char* getConnectionValuesAsString(CChars* pszDest) =0;
 };
 
 

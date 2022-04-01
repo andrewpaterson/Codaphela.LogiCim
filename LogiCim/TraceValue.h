@@ -21,6 +21,7 @@ public:
 	static BOOL IsHigh(ETraceValue e);
 	static BOOL IsLow(ETraceValue e);
 	static BOOL IsUnsettled(ETraceValue e);
+	static BOOL IsConnected(ETraceValue e);
     static BOOL IsError(ETraceValue e);
     static char GetCharValue(ETraceValue e);
 };
