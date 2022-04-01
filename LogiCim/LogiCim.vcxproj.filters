@@ -147,7 +147,16 @@
     <ClCompile Include="TraceNet.cpp">
       <Filter>Source\Simulation\Common</Filter>
     </ClCompile>
-    <ClCompile Include="Port.cpp" />
+    <ClCompile Include="Port.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="TransmissionState.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="TickablePins.cpp" />
+    <ClCompile Include="TraceValue.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -291,6 +300,12 @@
     <ClInclude Include="TraceValue.h">
       <Filter>Source\Simulation\Common</Filter>
     </ClInclude>
-    <ClInclude Include="Port.h" />
+    <ClInclude Include="Port.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TransmissionState.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TickablePins.h" />
   </ItemGroup>
 </Project>

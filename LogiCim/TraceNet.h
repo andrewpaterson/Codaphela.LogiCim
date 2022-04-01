@@ -58,7 +58,7 @@ public:
         }
         else
         {
-            gcLogger.Warning2(__METHOD__, " Trace conflict: [", mpc_DEBUG_LastPortThatUpdated.getDescription(), "] set net value [", meValue.getStringValue(), "] but [", pcPort.getDescription(), "] set net value [", value.getStringValue(), "].", NULL);
+            gcLogger.Warning2(__METHOD__, " Trace conflict: [", mpc_DEBUG_LastPortThatUpdated->GetDescription(), "] set net value [", CharToString(CTraceValue::GetCharValue(meValue)), "] but [", pcPort->getDescription(), "] set net value [", CharToString(CTraceValue::GetCharValue(eValue), "].", NULL);
             mpc_DEBUG_LastPortThatUpdated = pcPort;
             meValue = eValue;
             return TV_Error;
