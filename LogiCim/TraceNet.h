@@ -20,10 +20,16 @@ protected:
 public:
     Ptr<CTraceNet>  Init(Ptr<CArray<CTrace>> apcConnected);
     Ptr<CTraceNet>  Init(Ptr<CTrace> pcTrace);
+
+    void            Free(void);
+
     void            Reset(void);
     ETraceValue     Update(ETraceValue eValue, Ptr<CPort> pcPort);
     ETraceValue     GetValue(void);
     Ptr<CPort>      Get_DEBUG_lastPortThatUpdated(void);
+
+protected:
+    void			Class(void);
 };
 
 

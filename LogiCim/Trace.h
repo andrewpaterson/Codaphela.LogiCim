@@ -24,6 +24,10 @@ public:
 		mpcNet = OMalloc<CTraceNet>(Ptr<CTrace>(this));
 	}
 
+	void Free(void)
+	{
+	}
+
 	void Connect(Ptr<CTrace> pcTrace)
 	{
 		mapcTraces.Add(pcTrace);
@@ -158,6 +162,9 @@ protected:
 	{
 		return mpcNet.IsNull();
 	}
+
+	protected:
+	void			Class(void);
 };
 
 

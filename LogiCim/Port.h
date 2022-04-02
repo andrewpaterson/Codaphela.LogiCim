@@ -149,13 +149,16 @@ public:
         return mpcTickable;
     }
 
-    virtual void GetConnections(Ptr<CArray<CTrace>> pcDest);
+    virtual void GetConnections(Ptr<CArray<CTrace>> pcDest) =0;
 
     virtual char* GetTraceValuesAsString(CChars* pszDest) =0;
 
     virtual char* getWireValuesAsString(CChars* pszDest) =0;
 
     virtual char* getConnectionValuesAsString(CChars* pszDest) =0;
+
+protected:
+     void			Class(void);
 };
 
 
