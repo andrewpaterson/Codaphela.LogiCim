@@ -153,8 +153,10 @@
     <ClCompile Include="TransmissionState.cpp">
       <Filter>Source\Simulation\Common</Filter>
     </ClCompile>
-    <ClCompile Include="TickablePins.cpp" />
     <ClCompile Include="TraceValue.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="TickablePins.cpp">
       <Filter>Source\Simulation\Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -306,6 +308,8 @@
     <ClInclude Include="TransmissionState.h">
       <Filter>Source\Simulation\Common</Filter>
     </ClInclude>
-    <ClInclude Include="TickablePins.h" />
+    <ClInclude Include="TickablePins.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

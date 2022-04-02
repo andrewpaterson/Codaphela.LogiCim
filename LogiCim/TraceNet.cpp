@@ -13,6 +13,8 @@ Ptr<CTraceNet> CTraceNet::Init(Ptr<CArray<CTrace>> apcConnected)
     meValue = TV_Unsettled;
 
     mpc_DEBUG_LastPortThatUpdated = NULL;
+
+    return Ptr<CTraceNet>(this);
 }
 
 
@@ -27,6 +29,20 @@ Ptr<CTraceNet> CTraceNet::Init(Ptr<CTrace> pcTrace)
     meValue = TV_Unsettled;
 
     mpc_DEBUG_LastPortThatUpdated = NULL;
+
+    return Ptr<CTraceNet>(this);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceNet::Class(void)
+{
+    Embedded(&macTraces, "macTraces");
+    UnmanagedEnum(&meValue, "meValue");
+    Pointer(mpc_DEBUG_LastPortThatUpdated.This(), "mpc_DEBUG_LastPortThatUpdated");
 }
 
 
@@ -70,12 +86,16 @@ ETraceValue CTraceNet::Update(ETraceValue eValue, Ptr<CPort> pcPort)
     }
     else
     {
-        CChars  sz;
+        CChars  szDebugPort;
+        CChars  szThisPort;
 
-        sz.Init();
-        mpc_DEBUG_LastPortThatUpdated->GetDescription(&sz);
-        gcLogger.Warning2(__METHOD__, " Trace conflict: [", sz.Text(), "] set net value [", CharToString(CTraceValue::GetCharValue(meValue)), "] but [", pcPort->getDescription(), "] set net value [", CharToString(CTraceValue::GetCharValue(eValue)), "].", NULL);
-        sz.Kill();
+        szThisPort.Init();
+        szDebugPort.Init();
+        mpc_DEBUG_LastPortThatUpdated->GetDescription(&szDebugPort);
+        pcPort->GetDescription(&szThisPort);
+        gcLogger.Warning2(__METHOD__, " Trace conflict: [", szDebugPort.Text(), "] set net value [", CharToString(CTraceValue::GetCharValue(meValue)), "] but [", szThisPort.Text(), "] set net value [", CharToString(CTraceValue::GetCharValue(eValue)), "].", NULL);
+        szDebugPort.Kill();
+        szThisPort.Kill();
         mpc_DEBUG_LastPortThatUpdated = pcPort;
         meValue = eValue;
         return TV_Error;
@@ -100,17 +120,5 @@ ETraceValue CTraceNet::GetValue(void)
 Ptr<CPort> CTraceNet::Get_DEBUG_lastPortThatUpdated(void)
 {
     return mpc_DEBUG_LastPortThatUpdated;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CTraceNet::Class(void)
-{
-    Embedded(&macTraces, "macTraces");
-    UnmanagedEnum(&meValue, "meValue");
-    Pointer(mpc_DEBUG_LastPortThatUpdated.This(), "mpc_DEBUG_LastPortThatUpdated");
 }
 
