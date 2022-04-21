@@ -159,6 +159,9 @@
     <ClCompile Include="TickablePins.cpp">
       <Filter>Source\Simulation\Common</Filter>
     </ClCompile>
+    <ClCompile Include="IntegratedCircuit.cpp">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogisimFileReader.h">
@@ -309,6 +312,12 @@
       <Filter>Source\Simulation\Common</Filter>
     </ClInclude>
     <ClInclude Include="TickablePins.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegratedCircuit.h">
+      <Filter>Source\Simulation\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Tickables.h">
       <Filter>Source\Simulation\Common</Filter>
     </ClInclude>
   </ItemGroup>

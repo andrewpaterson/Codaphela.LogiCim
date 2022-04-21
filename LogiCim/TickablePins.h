@@ -2,210 +2,226 @@
 #define __TICKABLE_PINS_H__
 #include "StandardLib\Object.h"
 #include "StandardLib\Array.h"
-#include "Port.h"
+#include "IntegratedCircuit.h"
+#include "Tickables.h"
 
 
+class CPort;
 class CTickablePins : public CObject
 {
+CONSTRUCTABLE(CTickablePins);
+DESTRUCTABLE(CTickablePins);
     //SNAPSHOT extends Snapshot,
     //PINS extends Pins<SNAPSHOT, PINS, ? extends IntegratedCircuit<SNAPSHOT, PINS>>,
     //INTEGRATED_CIRCUIT extends IntegratedCircuit<SNAPSHOT, PINS>>
 
 protected:
-    INTEGRATED_CIRCUIT integratedCircuit;
+    Ptr<CIntegratedCircuit> mpcIntegratedCircuit;
 
-    Ptr<CTickables>   mpcTickables;
-    CArray<CPort>     macPorts;
+    Ptr<CTickables>         mpcTickables;
+    Ptr<CArray<CPort>>      mpacPorts;
 
-    uint64            muiTickCount;
+    uint64                  muiTickCount;
 
 public:
     Ptr<CTickablePins> Init(Ptr<CTickables> pcTickables)
     {
         mpcTickables = pcTickables;
-        mpcTickables.Add(Ptr<CTickablePins>(this));
-        macPorts.Init();
+        mpcTickables->Add(Ptr<CTickablePins>(this));
+
+        mpacPorts = OMalloc<CArray<CPort>>()->Init();
+
         muiTickCount = 0LL;
+    }
+
+    void Class(void)
+    {
+        Pointer(mpcIntegratedCircuit.This(), "mpcIntegratedCircuit");
+        Pointer(mpcTickables.This(), "mpcTickables");
+        Pointer(mpacPorts.This(), "mpacPorts");
+    }
+
+    void Free(void)
+    {
     }
 
     void AddPort(Ptr<CPort> pcPort)
     {
-        macPorts.Add(pcPort);
+        mpacPorts->Add(pcPort);
     }
 
-    final void StartPropagation(void)
-    {
-        snapshot = integratedCircuit.createSnapshot();
-        getIntegratedCircuit().startTick();
-    }
+    //void StartPropagation(void)
+    //{
+    //    getIntegratedCircuit().startTick();
+    //}
 
-    void Propagate(void)
-    {
-        undoPropagation();
-        getIntegratedCircuit().tick();
-    }
+    //void Propagate(void)
+    //{
+    //    undoPropagation();
+    //    getIntegratedCircuit().tick();
+    //}
 
 
-    List<TraceValue> GetTraceValues(void)
-    {
-        List<TraceValue> traceValues = new ArrayList<>();
-        for (Port port : ports)
-        {
-            port.addTraceValues(traceValues);
-        }
-        return traceValues;
-    }
+    //Ptr<CArray<ETraceValue>> GetTraceValues(void)
+    //{
+    //    CArray<CTraceValue> traceValues = new ArrayList<>();
+    //    for (Port port : ports)
+    //    {
+    //        port.addTraceValues(traceValues);
+    //    }
+    //    return traceValues;
+    //}
 
-    void UpdateConnections(void)
-    {
-        for (Port port : ports)
-        {
-            port.updateConnection();
-        }
-    }
+    //void UpdateConnections(void)
+    //{
+    //    for (Port port : ports)
+    //    {
+    //        port.updateConnection();
+    //    }
+    //}
 
-    void ResetConnections(void)
-    {
-        for (Port port : ports)
-        {
-            port.resetConnections();
-        }
-    }
+    //void ResetConnections(void)
+    //{
+    //    for (Port port : ports)
+    //    {
+    //        port.resetConnections();
+    //    }
+    //}
 
-    String GetName(void)
-    {
-        return getIntegratedCircuit().getName();
-    }
+    //String GetName(void)
+    //{
+    //    return getIntegratedCircuit().getName();
+    //}
 
-    String GetDescription(void)
-    {
-        String name = getName();
-        if (StringUtil.isEmptyOrNull(name))
-        {
-            return getType();
-        }
-        else
-        {
-            return getType() + " \"" + name + "\"";
-        }
-    }
+    //String GetDescription(void)
+    //{
+    //    String name = getName();
+    //    if (StringUtil.isEmptyOrNull(name))
+    //    {
+    //        return getType();
+    //    }
+    //    else
+    //    {
+    //        return getType() + " \"" + name + "\"";
+    //    }
+    //}
 
-    protected BusValue GetBusValue(Ptr<COmniport> pcOmniport)
-    {
-        TraceValue value = omniport.read();
-        if (value.isError())
-        {
-            return BusValue.error();
-        }
-        else if (value.isNotConnected())
-        {
-            return BusValue.notConnected();
-        }
-        else if (value.isUnsettled())
-        {
-            return BusValue.unknown();
-        }
-        else
-        {
-            return new BusValue(omniport.getPinsAsBoolAfterRead());
-        }
-    }
+    //protected BusValue GetBusValue(Ptr<COmniport> pcOmniport)
+    //{
+    //    TraceValue value = omniport.read();
+    //    if (value.isError())
+    //    {
+    //        return BusValue.error();
+    //    }
+    //    else if (value.isNotConnected())
+    //    {
+    //        return BusValue.notConnected();
+    //    }
+    //    else if (value.isUnsettled())
+    //    {
+    //        return BusValue.unknown();
+    //    }
+    //    else
+    //    {
+    //        return new BusValue(omniport.getPinsAsBoolAfterRead());
+    //    }
+    //}
 
-    protected PinValue GetPinValue(Uniport uniport)
-    {
-        TraceValue value = uniport.read();
-        return getPinValue(value);
-    }
+    //protected PinValue GetPinValue(Uniport uniport)
+    //{
+    //    TraceValue value = uniport.read();
+    //    return getPinValue(value);
+    //}
 
-    protected PinValue getPinValue(TraceValue value)
-    {
-        if (value.isError())
-        {
-            return PinValue.Error;
-        }
-        else if (value.isNotConnected())
-        {
-            return PinValue.NotConnected;
-        }
-        else if (value.isUnsettled())
-        {
-            return PinValue.Unknown;
-        }
-        else
-        {
-            return value.isHigh() ? PinValue.High : PinValue.Low;
-        }
-    }
+    //protected PinValue getPinValue(TraceValue value)
+    //{
+    //    if (value.isError())
+    //    {
+    //        return PinValue.Error;
+    //    }
+    //    else if (value.isNotConnected())
+    //    {
+    //        return PinValue.NotConnected;
+    //    }
+    //    else if (value.isUnsettled())
+    //    {
+    //        return PinValue.Unknown;
+    //    }
+    //    else
+    //    {
+    //        return value.isHigh() ? PinValue.High : PinValue.Low;
+    //    }
+    //}
 
-    char ToDebugString(CChars* pszDest)
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-        String description = " " + getDescription() + " ";
-        stringBuilder.append(" ").append(StringUtil.centerJustify(description, 48, "-")).append(" \n");
-        for (Port port : ports)
-        {
-            String portTransmissionState = StringUtil.rightJustify(port.getPortTransmissionStateAsString(), 24, " ");
-            String portValues = port.getTraceValuesAsString();
-            String connectionValues = port.getConnectionValuesAsString();
-            if (portValues.equals(connectionValues))
-            {
-                stringBuilder.append(portTransmissionState).append(": P&W").append(portValues);
-            }
-            else
-            {
-                stringBuilder.append(portTransmissionState).append(":   P").append(portValues).append(" W");
-                stringBuilder.append(connectionValues);
-            }
-            List<Trace> connections = port.getConnections();
-            Set<Port> updatingPorts = get_DEBUG_UpdatingPorts(connections);
-            if (updatingPorts.size() > 1)
-            {
-                stringBuilder.append(" (Multiple updaters)");
-            }
-            else if (updatingPorts.size() == 1)
-            {
-                stringBuilder.append(" (").append(updatingPorts.iterator().next().getDescription()).append(")");
-            }
+    //char ToDebugString(CChars* pszDest)
+    //{
+    //    StringBuilder stringBuilder = new StringBuilder();
+    //    String description = " " + getDescription() + " ";
+    //    stringBuilder.append(" ").append(StringUtil.centerJustify(description, 48, "-")).append(" \n");
+    //    for (Port port : ports)
+    //    {
+    //        String portTransmissionState = StringUtil.rightJustify(port.getPortTransmissionStateAsString(), 24, " ");
+    //        String portValues = port.getTraceValuesAsString();
+    //        String connectionValues = port.getConnectionValuesAsString();
+    //        if (portValues.equals(connectionValues))
+    //        {
+    //            stringBuilder.append(portTransmissionState).append(": P&W").append(portValues);
+    //        }
+    //        else
+    //        {
+    //            stringBuilder.append(portTransmissionState).append(":   P").append(portValues).append(" W");
+    //            stringBuilder.append(connectionValues);
+    //        }
+    //        CArray<Trace> connections = port.getConnections();
+    //        Set<Port> updatingPorts = get_DEBUG_UpdatingPorts(connections);
+    //        if (updatingPorts.size() > 1)
+    //        {
+    //            stringBuilder.append(" (Multiple updaters)");
+    //        }
+    //        else if (updatingPorts.size() == 1)
+    //        {
+    //            stringBuilder.append(" (").append(updatingPorts.iterator().next().getDescription()).append(")");
+    //        }
 
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
+    //        stringBuilder.append("\n");
+    //    }
+    //    return stringBuilder.toString();
+    //}
 
-    private Set<Port> get_DEBUG_UpdatingPorts(List<Trace> connections)
-    {
-        Set<Port> updatingPorts = new LinkedHashSet<>();
-        for (Trace connection : connections)
-        {
-            Port updatingPort = connection.get_DEBUG_lastPortThatUpdated();
-            if (updatingPort != null)
-            {
-                updatingPorts.add(updatingPort);
-            }
-        }
-        return updatingPorts;
-    }
+    //private Ptr<CSet<CPort>> get_DEBUG_UpdatingPorts(Ptr<CArray<Trace>> connections)
+    //{
+    //    Ptr<CSet<Port>> updatingPorts = OMalloc<CSet<Port>>();
+    //    for (Trace connection : connections)
+    //    {
+    //        Port updatingPort = connection.get_DEBUG_lastPortThatUpdated();
+    //        if (updatingPort != null)
+    //        {
+    //            updatingPorts.add(updatingPort);
+    //        }
+    //    }
+    //    return updatingPorts;
+    //}
 
-    INTEGRATED_CIRCUIT GetIntegratedCircuit(void)
-    {
-        return integratedCircuit;
-    }
+    //Ptr<CIntegratedCircuit> GetIntegratedCircuit(void)
+    //{
+    //    return integratedCircuit;
+    //}
 
-    void SetIntegratedCircuit(INTEGRATED_CIRCUIT integratedCircuit)
-    {
-        this.integratedCircuit = integratedCircuit;
-    }
+    //void SetIntegratedCircuit(INTEGRATED_CIRCUIT integratedCircuit)
+    //{
+    //    this.integratedCircuit = integratedCircuit;
+    //}
 
-    String GetType(void)
-    {
-        return integratedCircuit.getType();
-    }
+    //String GetType(void)
+    //{
+    //    return integratedCircuit.getType();
+    //}
 
-    uint64 GetTickCount(void)
-    {
-        return muiTickCount;
-    }
-}
+    //uint64 GetTickCount(void)
+    //{
+    //    return muiTickCount;
+    //}
+};
 
 
 #endif // !__TICKABLE_PINS_H__

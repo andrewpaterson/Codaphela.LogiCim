@@ -203,6 +203,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IntegratedCircuit.cpp" />
     <ClCompile Include="LogisimBitAdder.cpp" />
     <ClCompile Include="LogisimBuffer.cpp" />
     <ClCompile Include="LogisimCircuitComponent.cpp" />
@@ -252,6 +253,7 @@
     <ClCompile Include="TransmissionState.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IntegratedCircuit.h" />
     <ClInclude Include="LogisimBitAdder.h" />
     <ClInclude Include="LogisimAlignment.h" />
     <ClInclude Include="LogisimBuffer.h" />
@@ -298,6 +300,7 @@
     <ClInclude Include="LogisimXORGate.h" />
     <ClInclude Include="Port.h" />
     <ClInclude Include="TickablePins.h" />
+    <ClInclude Include="Tickables.h" />
     <ClInclude Include="Trace.h" />
     <ClInclude Include="TraceNet.h" />
     <ClInclude Include="TraceValue.h" />
