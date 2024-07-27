@@ -6,10 +6,10 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::Init(char* szDirectory, char* szFileName)
+bool CLogisimFileReader::Init(char* szDirectory, char* szFileName)
 {
 	CFileUtil	cFileUtil;
-	BOOL		bExists;
+	bool		bExists;
 
 	mszFileName.Init(szFileName);
 	mszDirectory.Init(szDirectory);
@@ -95,7 +95,7 @@ void CLogisimFileReader::Kill(void)
 CMarkupTag* CLogisimFileReader::Read(void)
 {
 	CMarkupTag*		pcRoot;
-	BOOL			bResult;
+	bool			bResult;
 
 	bResult = mcFile.Read(mszFileName.Text(), mszDirectory.Text());
 	if (bResult)
@@ -111,12 +111,12 @@ CMarkupTag* CLogisimFileReader::Read(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::Convert(CMarkupTag* pcContainer)
+bool CLogisimFileReader::Convert(CMarkupTag* pcContainer)
 {
 	STagIterator	sIter;
 	CMarkupTag*		pcTag;
 	char*			szTagName;
-	BOOL			bResult;
+	bool			bResult;
 
 	pcTag = pcContainer->GetTag(&sIter);
 	while (pcTag)
@@ -152,7 +152,7 @@ BOOL CLogisimFileReader::Convert(CMarkupTag* pcContainer)
 		}
 		pcTag = pcContainer->GetNextTag(&sIter);
 	}
-	return TRUE;
+	return true;
 }
 
 
@@ -180,14 +180,14 @@ CListTemplate<CLogisimCircuit>* CLogisimFileReader::GetCircuits(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertCircuit(CMarkupTag* pcCircuitTag)
+bool CLogisimFileReader::ConvertCircuit(CMarkupTag* pcCircuitTag)
 {
 	STagIterator		sIter;
 	CMarkupTag*			pcTag;
 	char*				szTagName;
 	CLogisimCircuit*	pcCircuit;
 	char*				szCircuitName;
-	BOOL				bResult;
+	bool				bResult;
 
 	szCircuitName = pcCircuitTag->GetAttribute("name");
 	if (szCircuitName == NULL)
@@ -225,7 +225,7 @@ BOOL CLogisimFileReader::ConvertCircuit(CMarkupTag* pcCircuitTag)
 		pcTag = pcCircuitTag->GetNextTag(&sIter);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -233,7 +233,7 @@ BOOL CLogisimFileReader::ConvertCircuit(CMarkupTag* pcCircuitTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertMain(CMarkupTag* pcMainTag)
+bool CLogisimFileReader::ConvertMain(CMarkupTag* pcMainTag)
 {
 	char*	szCircuitName;
 
@@ -245,7 +245,7 @@ BOOL CLogisimFileReader::ConvertMain(CMarkupTag* pcMainTag)
 
 	mszMainCircuitName.Set(szCircuitName);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -253,7 +253,7 @@ BOOL CLogisimFileReader::ConvertMain(CMarkupTag* pcMainTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertLibrary(CMarkupTag* pcMainTag)
+bool CLogisimFileReader::ConvertLibrary(CMarkupTag* pcMainTag)
 {
 	char*				szLibraryName;
 	char*				szLibraryDesc;
@@ -274,7 +274,7 @@ BOOL CLogisimFileReader::ConvertLibrary(CMarkupTag* pcMainTag)
 	pcLibrary = mlLibraries.Add();
 	pcLibrary->Init(szLibraryName, szLibraryDesc);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -282,14 +282,14 @@ BOOL CLogisimFileReader::ConvertLibrary(CMarkupTag* pcMainTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcCircuit)
+bool CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcCircuit)
 {
 	CLogisimWire*	pcWire;
 	char*			szFromPair;
 	char*			szToPair;
 	SInt2			sFrom;
 	SInt2			sTo;
-	BOOL			bResult;
+	bool			bResult;
 
 	szFromPair = pcWireTag->GetAttribute("from");
 	if (szFromPair == NULL)
@@ -312,7 +312,7 @@ BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcC
 	pcWire = pcCircuit->AddWire();
 	pcWire->Init(sFrom, sTo);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -320,13 +320,13 @@ BOOL CLogisimFileReader::ConvertWire(CMarkupTag* pcWireTag, CLogisimCircuit* pcC
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit* pcCircuit)
+bool CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit* pcCircuit)
 {
 	char*				szLib;
 	char*				szLoc;
 	char*				szName;
 	SInt2				sLoc;
-	BOOL				bResult;
+	bool				bResult;
 	CLogisimComponent*	pcComponent;
 
 	szLib = pcCompTag->GetAttribute("lib");
@@ -525,11 +525,11 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 	if (pcComponent)
 	{
 		pcCircuit->AddComponent(pcComponent);
-		return TRUE;
+		return true;
 	}
 	else
 	{
-		return FALSE;
+		return false;
 	}
 }
 
@@ -538,7 +538,7 @@ BOOL CLogisimFileReader::ConvertComponent(CMarkupTag* pcCompTag, CLogisimCircuit
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag* pcCompTag)
+bool CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag* pcCompTag)
 {
 	STagIterator	sIter;
 	char*			szTagName;
@@ -589,7 +589,7 @@ BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag*
 		pcTag = pcCompTag->GetNextTag(&sIter);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -597,7 +597,7 @@ BOOL CLogisimFileReader::ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag*
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, const char* szFirstKey, ...)
+bool CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, const char* szFirstKey, ...)
 {
 	va_list		vaMarker;
 	char*		szKey;
@@ -622,7 +622,7 @@ BOOL CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, co
 	}
 
 	pcMap->Kill();
-	return TRUE;
+	return true;
 }
 
 
@@ -630,7 +630,7 @@ BOOL CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, co
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, CArrayChars* paszKeys)
+bool CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, CArrayChars* paszKeys)
 {
 	int			i;
 	CChars*		psz;
@@ -647,7 +647,7 @@ BOOL CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, CA
 	}
 
 	pcMap->Kill();
-	return TRUE;
+	return true;
 }
 
 
@@ -655,7 +655,7 @@ BOOL CLogisimFileReader::CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, CA
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::UnknownTagError(CMarkupTag* pcTag, CMapStringString* pcMap)
+bool CLogisimFileReader::UnknownTagError(CMarkupTag* pcTag, CMapStringString* pcMap)
 {
 	CChars	szUnknownKeys;
 	char* szComponentName;
@@ -667,7 +667,7 @@ BOOL CLogisimFileReader::UnknownTagError(CMarkupTag* pcTag, CMapStringString* pc
 	gcLogger.Error2(__METHOD__, " Line [", IntToString(pcTag->GetLine() + 1),  "]:  Unknown 'a' tag name [", szUnknownKeys.Text(), "] creating ", szComponentName, ".", NULL);
 	szUnknownKeys.Kill();
 	pcMap->Kill();
-	return FALSE;
+	return false;
 }
 
 
@@ -675,7 +675,7 @@ BOOL CLogisimFileReader::UnknownTagError(CMarkupTag* pcTag, CMapStringString* pc
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::IsString(char* szLeft, char* szRight)
+bool CLogisimFileReader::IsString(char* szLeft, char* szRight)
 {
 	return StringCompare(szLeft, szRight) == 0;
 }
@@ -685,10 +685,10 @@ BOOL CLogisimFileReader::IsString(char* szLeft, char* szRight)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault)
 {
 	char* szValue;
-	BOOL			bResult;
+	bool			bResult;
 	CTextParser		cParser;
 	TRISTATE		tResult;
 
@@ -711,7 +711,7 @@ BOOL CLogisimFileReader::GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* p
 
 	cParser.Kill();
 
-	return TRUE;
+	return true;
 }
 
 
@@ -719,10 +719,10 @@ BOOL CLogisimFileReader::GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* p
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, BOOL bInclude0x, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, bool bInclude0x, char* szDefault)
 {
 	char* szValue;
-	BOOL			bResult;
+	bool			bResult;
 	CTextParser		cParser;
 	TRISTATE		tResult;
 	int				iNumDigits;
@@ -757,7 +757,7 @@ BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szK
 	}
 
 	cParser.Kill();
-	return TRUE;
+	return true;
 }
 
 
@@ -765,10 +765,10 @@ BOOL CLogisimFileReader::GetMapValueAsHexLong(CMapStringString* pcMap, char* szK
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault)
 {
 	char*	szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -794,7 +794,7 @@ BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKe
 		return gcLogger.Error2(__METHOD__, " Expected [north, east, south or west] parsing Facing.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -802,10 +802,10 @@ BOOL CLogisimFileReader::GetMapValueAsFacing(CMapStringString* pcMap, char* szKe
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsRGB(CMapStringString* pcMap, char* szKey, uint32* puiRGB, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsRGB(CMapStringString* pcMap, char* szKey, uint32* puiRGB, char* szDefault)
 {
 	char*			szValue;
-	BOOL			bResult;
+	bool			bResult;
 	CTextParser		cParser;
 	TRISTATE		tResult;
 	uint64			ulliRGB;
@@ -837,7 +837,7 @@ BOOL CLogisimFileReader::GetMapValueAsRGB(CMapStringString* pcMap, char* szKey, 
 	cParser.Kill();
 	*puiRGB = (uint32)ulliRGB;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -845,10 +845,10 @@ BOOL CLogisimFileReader::GetMapValueAsRGB(CMapStringString* pcMap, char* szKey, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault)
 {
 	char* szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -874,7 +874,7 @@ BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szK
 		return gcLogger.Error2(__METHOD__, " Expected [high, low, rising or falling] parsing Trigger.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -883,10 +883,10 @@ BOOL CLogisimFileReader::GetMapValueAsTrigger(CMapStringString* pcMap, char* szK
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsNumericType(CMapStringString* pcMap, char* szKey, ELogisimNumericType* peNumericType, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsNumericType(CMapStringString* pcMap, char* szKey, ELogisimNumericType* peNumericType, char* szDefault)
 {
 	char*	szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -904,7 +904,7 @@ BOOL CLogisimFileReader::GetMapValueAsNumericType(CMapStringString* pcMap, char*
 		return gcLogger.Error2(__METHOD__, " Expected [signed or unsigned] parsing Numeric Type.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -912,10 +912,10 @@ BOOL CLogisimFileReader::GetMapValueAsNumericType(CMapStringString* pcMap, char*
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey)
+bool CLogisimFileReader::GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey)
 {
 	char*	szValue;
-	BOOL	bResult;
+	bool	bResult;
 	char*	szComponentName;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, "classic");
@@ -930,7 +930,7 @@ BOOL CLogisimFileReader::GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringSt
 		return gcLogger.Error2(__METHOD__, " Component [", szComponentName, "], Line [", IntToString(pcTag->GetLine() + 1), "]:  Expected [classic] parsing Appearance.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -938,10 +938,10 @@ BOOL CLogisimFileReader::GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringSt
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, ELogisimSplitterAppearance* peValue, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, char* szKey, ELogisimSplitterAppearance* peValue, char* szDefault)
 {
 	char* szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -967,7 +967,7 @@ BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, ch
 		return gcLogger.Error2(__METHOD__, " Expected [center, left, right or legacy] parsing Appear.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -975,10 +975,10 @@ BOOL CLogisimFileReader::GetMapValueAsSplitterAppear(CMapStringString* pcMap, ch
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsControlledBufferControl(CMapStringString* pcMap, char* szKey, ELogisimControlledBufferControl* peValue, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsControlledBufferControl(CMapStringString* pcMap, char* szKey, ELogisimControlledBufferControl* peValue, char* szDefault)
 {
 	char* szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -996,7 +996,7 @@ BOOL CLogisimFileReader::GetMapValueAsControlledBufferControl(CMapStringString* 
 		return gcLogger.Error2(__METHOD__, " Expected [left or right] parsing Control.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1004,10 +1004,10 @@ BOOL CLogisimFileReader::GetMapValueAsControlledBufferControl(CMapStringString* 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsPullResistorPull(CMapStringString* pcMap, char* szKey, ELogisimPullResistorPull* pePull, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsPullResistorPull(CMapStringString* pcMap, char* szKey, ELogisimPullResistorPull* pePull, char* szDefault)
 {
 	char*	szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -1029,7 +1029,7 @@ BOOL CLogisimFileReader::GetMapValueAsPullResistorPull(CMapStringString* pcMap, 
 		return gcLogger.Error2(__METHOD__, " Expected [0, 1, or 1] parsing Pull.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1037,10 +1037,10 @@ BOOL CLogisimFileReader::GetMapValueAsPullResistorPull(CMapStringString* pcMap, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsSelectLocation(CMapStringString* pcMap, char* szKey, ELogisimSelectLocation* peSelectLocation, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsSelectLocation(CMapStringString* pcMap, char* szKey, ELogisimSelectLocation* peSelectLocation, char* szDefault)
 {
 	char* szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -1058,7 +1058,7 @@ BOOL CLogisimFileReader::GetMapValueAsSelectLocation(CMapStringString* pcMap, ch
 		return gcLogger.Error2(__METHOD__, " Expected [tr or bl] parsing Select Location.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1066,10 +1066,10 @@ BOOL CLogisimFileReader::GetMapValueAsSelectLocation(CMapStringString* pcMap, ch
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsGateOut(CMapStringString* pcMap, char* szKey, ELogisimGateOut* peOut, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsGateOut(CMapStringString* pcMap, char* szKey, ELogisimGateOut* peOut, char* szDefault)
 {
 	char*	szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -1091,7 +1091,7 @@ BOOL CLogisimFileReader::GetMapValueAsGateOut(CMapStringString* pcMap, char* szK
 		return gcLogger.Error2(__METHOD__, " Expected [01, 0Z or Z1] parsing Out.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1099,10 +1099,10 @@ BOOL CLogisimFileReader::GetMapValueAsGateOut(CMapStringString* pcMap, char* szK
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsAlignment(CMapStringString* pcMap, char* szKey, ELogisimAlignment* peValue, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsAlignment(CMapStringString* pcMap, char* szKey, ELogisimAlignment* peValue, char* szDefault)
 {
 	char*	szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -1136,7 +1136,7 @@ BOOL CLogisimFileReader::GetMapValueAsAlignment(CMapStringString* pcMap, char* s
 		return gcLogger.Error2(__METHOD__, " Expected [left, right, center top, bottom or base] parsing Alignment.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1144,10 +1144,10 @@ BOOL CLogisimFileReader::GetMapValueAsAlignment(CMapStringString* pcMap, char* s
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault)
+bool CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault)
 {
 	char* szValue;
-	BOOL	bResult;
+	bool	bResult;
 
 	bResult = GetMapValue(pcMap, szKey, &szValue, szDefault);
 	ReturnOnFalse(bResult);
@@ -1165,7 +1165,7 @@ BOOL CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szK
 		return gcLogger.Error2(__METHOD__, " Expected [bidir or separate] parsing Appear.", NULL);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1173,7 +1173,7 @@ BOOL CLogisimFileReader::GetMapValueAsDataBus(CMapStringString* pcMap, char* szK
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault)
+bool CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault)
 {
 	char* szValue;
 
@@ -1200,7 +1200,7 @@ BOOL CLogisimFileReader::GetMapValue(CMapStringString* pcMap, char* szKey, char*
 			SafeAssign(pszValue, szDefault);
 		}
 	}
-	return TRUE;
+	return true;
 }
 
 
@@ -1212,7 +1212,7 @@ CLogisimTunnel* CLogisimFileReader::CreateTunnel(CMarkupTag* pcCompTag, SInt2 sL
 {
 	CLogisimTunnel*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iWidth;
 	char*				szLabel;
 	ELogisimFacing		eFacing;
@@ -1252,7 +1252,7 @@ CLogisimPullResistor* CLogisimFileReader::CreatePullResistor(CMarkupTag* pcCompT
 {
 	CLogisimPullResistor*		pcComp;
 	CMapStringString			cMap;
-	BOOL						bResult;
+	bool						bResult;
 	ELogisimFacing				eFacing;
 	ELogisimPullResistorPull	ePull;
 
@@ -1288,7 +1288,7 @@ CLogisimConstant* CLogisimFileReader::CreateConstant(CMarkupTag* pcCompTag, SInt
 {
 	CLogisimConstant*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iWidth;
 	uint64				ulliValue;
 	ELogisimFacing		eFacing;
@@ -1296,7 +1296,7 @@ CLogisimConstant* CLogisimFileReader::CreateConstant(CMarkupTag* pcCompTag, SInt
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
 
-	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, FALSE, "1");
+	bResult = GetMapValueAsHexLong(&cMap, "value", &ulliValue, false, "1");
 	bResult &= GetMapValueAsFacing(&cMap, "facing", &eFacing, "east");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "1");
 	ReturnNullOnFalse(bResult);
@@ -1327,7 +1327,7 @@ CLogisimANDGate* CLogisimFileReader::CreateANDGate(CMarkupTag* pcCompTag, SInt2 
 {
 	CLogisimANDGate*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -1355,7 +1355,7 @@ CLogisimNANDGate* CLogisimFileReader::CreateNANDGate(CMarkupTag* pcCompTag, SInt
 {
 	CLogisimNANDGate*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -1383,7 +1383,7 @@ CLogisimNORGate* CLogisimFileReader::CreateNORGate(CMarkupTag* pcCompTag, SInt2 
 {
 	CLogisimNORGate*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -1411,7 +1411,7 @@ CLogisimORGate* CLogisimFileReader::CreateORGate(CMarkupTag* pcCompTag, SInt2 sL
 {
 	CMapStringString	cMap;
 	CLogisimORGate*		pcComp;
-	BOOL				bResult;
+	bool				bResult;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -1439,7 +1439,7 @@ CLogisimXORGate* CLogisimFileReader::CreateXORGate(CMarkupTag* pcCompTag, SInt2 
 {
 	CLogisimXORGate* pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 
 	bResult = ConvertATagsToMap(&cMap, pcCompTag);
 	ReturnNullOnFalse(bResult);
@@ -1463,20 +1463,20 @@ CLogisimXORGate* CLogisimFileReader::CreateXORGate(CMarkupTag* pcCompTag, SInt2 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap)
+bool CLogisimFileReader::PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap)
 {
-	BOOL				bResult;
+	bool				bResult;
 	int					iSize;
 	int					iInputs;
 	char*				szLabel;
 	int					iWidth;
 	ELogisimGateOut		eOut;
 	ELogisimFacing		eFacing;
-	BOOL				abNegate[64];
+	bool				abNegate[64];
 	int					i;
 	CChars				szNegateLabel;
 	char*				szNegate;
-	BOOL				bAnyNegate;
+	bool				bAnyNegate;
 	CArrayChars			aszKeys;
 
 	bResult = GetMapValueAsInt(pcCompTag, pcMap, "size", &iSize, "50");
@@ -1488,12 +1488,12 @@ BOOL CLogisimFileReader::PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcCom
 	if (!bResult)
 	{
 		KillComponent(pcComp);
-		return FALSE;
+		return false;
 	}
 
 	aszKeys.Init("size", "inputs", "label", "width", "out", "facing", NULL);
 
-	bAnyNegate = FALSE;
+	bAnyNegate = false;
 	for (i = 0; i < iInputs; i++)
 	{
 		szNegateLabel.Init("negate");
@@ -1506,13 +1506,13 @@ BOOL CLogisimFileReader::PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcCom
 		{
 			KillComponent(pcComp);
 			aszKeys.Kill();
-			return FALSE;
+			return false;
 		}
 
 		abNegate[i] = IsString("true", szNegate);
 		if (abNegate[i])
 		{
-			bAnyNegate = TRUE;
+			bAnyNegate = true;
 		}
 	}
 
@@ -1548,7 +1548,7 @@ CLogisimNOTGate* CLogisimFileReader::CreateNOTGate(CMarkupTag* pcCompTag, SInt2 
 {
 	CLogisimNOTGate*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	ELogisimFacing		eFacing;
 	int					iSize;
 
@@ -1583,7 +1583,7 @@ CLogisimClock* CLogisimFileReader::CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc
 {
 	CLogisimClock*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	ELogisimFacing		eFacing;
 	int					iHighDuration;
 	int					iLowDuration;
@@ -1626,7 +1626,7 @@ CLogisimControlledBuffer* CLogisimFileReader::CreateControlledBuffer(CMarkupTag*
 {
 	CLogisimControlledBuffer*			pcComp;
 	CMapStringString					cMap;
-	BOOL								bResult;
+	bool								bResult;
 	int									iWidth;
 	ELogisimFacing						eFacing;
 	char*								szLabel;
@@ -1669,7 +1669,7 @@ CLogisimCounter* CLogisimFileReader::CreateCounter(CMarkupTag* pcCompTag, SInt2 
 {
 	CLogisimCounter*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iWidth;
 	uint64				ulliMax;
 
@@ -1678,7 +1678,7 @@ CLogisimCounter* CLogisimFileReader::CreateCounter(CMarkupTag* pcCompTag, SInt2 
 
 	bResult = GetMapValueAsAppearance(pcCompTag, &cMap, "appearance");
 	bResult &= GetMapValueAsInt(pcCompTag, &cMap, "width", &iWidth, "8");
-	bResult &= GetMapValueAsHexLong(&cMap, "max", &ulliMax, TRUE, "0xff");
+	bResult &= GetMapValueAsHexLong(&cMap, "max", &ulliMax, true, "0xff");
 	ReturnNullOnFalse(bResult);
 
 	pcComp = mcComponents.CreateCounter();
@@ -1706,7 +1706,7 @@ CLogisimDecoder* CLogisimFileReader::CreateDecoder(CMarkupTag* pcCompTag, SInt2 
 {
 	CLogisimDecoder*		pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	char*					szIncludeEnabled;
 	int						iSelectBits;
 	char*					szDisabledZero;
@@ -1751,7 +1751,7 @@ CLogisimDigitalOscilloscope* CLogisimFileReader::CreateDigitalOscilloscope(CMark
 {
 	CLogisimDigitalOscilloscope*	pcComp;
 	CMapStringString				cMap;
-	BOOL							bResult;
+	bool							bResult;
 	int								iNumberOfStates;
 	int								iNumberOfInputs;
 
@@ -1786,7 +1786,7 @@ CLogisimLED* CLogisimFileReader::CreateLED(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
 	CLogisimLED*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	uint32				uiColour;
 	uint32				uiOffColour;
 	ELogisimFacing		eFacing;
@@ -1825,7 +1825,7 @@ CLogisimPin* CLogisimFileReader::CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
 	CLogisimPin*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iWidth;
 	int					iRadix;
 	ELogisimFacing		eFacing;
@@ -1875,7 +1875,7 @@ CLogisimProbe* CLogisimFileReader::CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc
 {
 	CLogisimProbe*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iRadix;
 	ELogisimFacing		eFacing;
 	char*				szAppearance;
@@ -1920,7 +1920,7 @@ CLogisimRAM* CLogisimFileReader::CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
 	CLogisimRAM*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iAddressWidth;
 	int					iDataWidth;
 	char*				szType;
@@ -1974,7 +1974,7 @@ CLogisimROM* CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
 	CLogisimROM*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	char*				szLabel;
 	int					iAddressWidth;
 	int					iDataWidth;
@@ -2044,7 +2044,7 @@ CLogisimROM* CLogisimFileReader::CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc)
 		tResult = cParser.GetInteger(&iData1);
 		if (tResult == TRITRUE)
 		{
-			tResult = cParser.GetExactCharacter('*', FALSE);
+			tResult = cParser.GetExactCharacter('*', false);
 			if (tResult == TRITRUE)
 			{
 				cParser.PassPosition();
@@ -2108,7 +2108,7 @@ CLogisimSplitter* CLogisimFileReader::CreateSplitter(CMarkupTag* pcCompTag, SInt
 {
 	CLogisimSplitter*			pcComp;
 	CMapStringString			cMap;
-	BOOL						bResult;
+	bool						bResult;
 	int							iSpacing;
 	int							iFanOut;
 	int							iIncoming;
@@ -2199,7 +2199,7 @@ CLogisimText* CLogisimFileReader::CreateText(CMarkupTag* pcCompTag, SInt2 sLoc)
 {
 	CLogisimText*			pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	char*					szText;
 	char*					szFont;
 	ELogisimAlignment		eHorizontalAlignment;
@@ -2255,7 +2255,7 @@ CLogisimDTypeFlipFlop* CLogisimFileReader::CreateDFlipFlop(CMarkupTag* pcCompTag
 {
 	CLogisimDTypeFlipFlop*	pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	char*					szLabel;
 	ELogisimTrigger			eTrigger;
 
@@ -2292,7 +2292,7 @@ CLogisimRandom* CLogisimFileReader::CreateRandom(CMarkupTag* pcCompTag, SInt2 sL
 {
 	CLogisimRandom*			pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	char*					szLabel;
 	int						iSeed;
 	ELogisimTrigger			eTrigger;
@@ -2336,7 +2336,7 @@ CLogisimComparator* CLogisimFileReader::CreateComparator(CMarkupTag* pcCompTag, 
 {
 	CLogisimComparator*		pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	ELogisimNumericType		eNumericType;
 	int						iWidth;
 
@@ -2372,7 +2372,7 @@ CLogisimShiftRegsiter* CLogisimFileReader::CreateShiftRegister(CMarkupTag* pcCom
 {
 	CLogisimShiftRegsiter*	pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	int						iNumberOfStages;
 	int						iDataBits;
 	char*					szLabel;
@@ -2419,7 +2419,7 @@ CLogisimBuffer* CLogisimFileReader::CreateBuffer(CMarkupTag* pcCompTag, SInt2 sL
 {
 	CLogisimBuffer*		pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	ELogisimFacing		eFacing;
 	char*				szLabel;
 
@@ -2456,7 +2456,7 @@ CLogisimBitAdder* CLogisimFileReader::CreateBitAdder(CMarkupTag* pcCompTag, SInt
 {
 	CLogisimBitAdder*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iInputs;
 	int					iWidth;
 
@@ -2493,7 +2493,7 @@ CLogisimRegister* CLogisimFileReader::CreateRegister(CMarkupTag* pcCompTag, SInt
 {
 	CLogisimRegister*	pcComp;
 	CMapStringString	cMap;
-	BOOL				bResult;
+	bool				bResult;
 	int					iWidth;
 	ELogisimTrigger		eTrigger;
 
@@ -2531,7 +2531,7 @@ CLogisimMultiplexer* CLogisimFileReader::CreateMultiplexer(CMarkupTag* pcCompTag
 {
 	CLogisimMultiplexer*	pcComp;
 	CMapStringString		cMap;
-	BOOL					bResult;
+	bool					bResult;
 	int						iSelectBits;
 	int						iDataBits;
 	ELogisimSelectLocation	eSelectLocation;
@@ -2629,13 +2629,13 @@ CLogisimCircuitComponent* CLogisimFileReader::CreateCircuitComponent(CMarkupTag*
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimFileReader::ParseInt2(SInt2* ps, char* sz)
+bool CLogisimFileReader::ParseInt2(SInt2* ps, char* sz)
 {
 	TRISTATE		tResult;
 	int				iX;
 	int				iY;
 	CTextParser		cParser;
-	BOOL			bResult;
+	bool			bResult;
 	
 	bResult = cParser.Init(sz);
 	if (!bResult)
@@ -2679,7 +2679,7 @@ BOOL CLogisimFileReader::ParseInt2(SInt2* ps, char* sz)
 
 	ps->Init(iX, iY);
 
-	return TRUE;
+	return true;
 }
 
 

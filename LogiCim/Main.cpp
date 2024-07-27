@@ -9,11 +9,11 @@ int __cdecl main(void)
 {
 	CLogisimFileReader					cReader;
 	CMarkupTag*							pcRoot;
-	BOOL								bFileExists;
-	BOOL								bResult;
+	bool								bFileExists;
+	bool								bResult;
 
 	gcLogger.Init();
-	gcLogger.SetBreakOnWarning(FALSE);
+	gcLogger.SetBreakOnWarning(false);
 
 	bFileExists = cReader.Init("D:\\Work\\658-Computer\\Logisim", "658_Computer.circ");
 	if (bFileExists)

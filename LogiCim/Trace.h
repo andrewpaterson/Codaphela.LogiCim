@@ -34,11 +34,11 @@ protected:
 			Ptr<CString>			ToString(void);
 			char					GetStringChar(void);
 			Ptr<CPort>				Get_DEBUG_lastPortThatUpdated(void);
-			BOOL					IsHigh(void);
-			BOOL					IsError(void);
-			BOOL					IsLow(void);
-			BOOL					IsUnsettled(void);
-			BOOL					IsNotConnected(void);
+			bool					IsHigh(void);
+			bool					IsError(void);
+			bool					IsLow(void);
+			bool					IsUnsettled(void);
+			bool					IsNotConnected(void);
 
 protected:
 			void					Class(void);

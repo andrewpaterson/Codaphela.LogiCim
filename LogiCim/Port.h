@@ -28,7 +28,7 @@ public:
     virtual void                UpdateConnection(void) =0;
     virtual ETraceValue         Read(void) =0;
     static  ETraceValue         ReadStates(Ptr<CArray<CPort>> pacPorts);
-    static  ETraceValue         TranslatePortValue(BOOL bHigh, BOOL bLow, BOOL bError, BOOL bUnsettled, BOOL bConnected);
+    static  ETraceValue         TranslatePortValue(bool bHigh, bool bLow, bool bError, bool bUnsettled, bool bConnected);
             char*               GetPortTransmissionStateAsString(CChars* pszDest);
             char*               GetDescription(CChars* pszDest);
             Ptr<CTickablePins>  GetTickable(void);

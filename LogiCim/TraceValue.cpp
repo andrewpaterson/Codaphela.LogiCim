@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTraceValue::IsHigh(ETraceValue e)
+bool CTraceValue::IsHigh(ETraceValue e)
 {
 	return e == TV_High;
 }
@@ -15,7 +15,7 @@ BOOL CTraceValue::IsHigh(ETraceValue e)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTraceValue::IsLow(ETraceValue e)
+bool CTraceValue::IsLow(ETraceValue e)
 {
 	return e == TV_Low;
 }
@@ -25,7 +25,7 @@ BOOL CTraceValue::IsLow(ETraceValue e)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTraceValue::IsUnsettled(ETraceValue e)
+bool CTraceValue::IsUnsettled(ETraceValue e)
 {
 	return e == TV_Unsettled;
 }
@@ -35,7 +35,7 @@ BOOL CTraceValue::IsUnsettled(ETraceValue e)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTraceValue::IsConnected(ETraceValue e)
+bool CTraceValue::IsConnected(ETraceValue e)
 {
 	return e != TV_NotConnected;
 }
@@ -45,7 +45,7 @@ BOOL CTraceValue::IsConnected(ETraceValue e)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTraceValue::IsError(ETraceValue e)
+bool CTraceValue::IsError(ETraceValue e)
 {
 	return e == TV_Error;
 }

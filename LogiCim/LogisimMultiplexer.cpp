@@ -26,9 +26,9 @@ void CLogisimMultiplexer::Kill(void)
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogisimMultiplexer::SetDataBits(int iDataBits) { miDataBits = iDataBits; }
-void CLogisimMultiplexer::SetDisabledZero(BOOL bDisabledZero) { mbDisabledZero = bDisabledZero; }
+void CLogisimMultiplexer::SetDisabledZero(bool bDisabledZero) { mbDisabledZero = bDisabledZero; }
 void CLogisimMultiplexer::SetSelectLocation(ELogisimSelectLocation eSelectLocation) { meSelectLocation = eSelectLocation; }
 void CLogisimMultiplexer::SetSelectBits(int iSelectBits) { miSelectBits = iSelectBits; }
-void CLogisimMultiplexer::SetIncludeEnabled(BOOL bIncludeEnabled) { mbIncludeEnabled = bIncludeEnabled; }
+void CLogisimMultiplexer::SetIncludeEnabled(bool bIncludeEnabled) { mbIncludeEnabled = bIncludeEnabled; }
 void CLogisimMultiplexer::SetSize(int iSize) { miSize = iSize; }
 

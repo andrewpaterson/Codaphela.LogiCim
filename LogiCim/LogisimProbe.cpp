@@ -10,7 +10,7 @@ void CLogisimProbe::Init(SInt2 sPosition)
 	CLogisimComponent::Init(sPosition);
 
 	miRadix = 0;
-	mbClassicAppearance = TRUE;
+	mbClassicAppearance = true;
 	mszLabel.Init();
 }
 
@@ -31,6 +31,6 @@ void CLogisimProbe::Kill(void)
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogisimProbe::SetRadix(int iRadix) { miRadix = iRadix; }
-void CLogisimProbe::SetClassicApearance(BOOL bClassicAppearance) { mbClassicAppearance = bClassicAppearance;  }
+void CLogisimProbe::SetClassicApearance(bool bClassicAppearance) { mbClassicAppearance = bClassicAppearance;  }
 void CLogisimProbe::SetLabel(char* szlabel) { mszLabel.Set(szlabel); }
 

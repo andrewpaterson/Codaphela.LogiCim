@@ -1,6 +1,6 @@
 #ifndef __TRANSMISSION_STATE_H__
 #define __TRANSMISSION_STATE_H__
-#include "BaseLib/Bool.h"
+#include "BaseLib/PrimitiveTypes.h"
 
 
 enum ETransmissionState
@@ -15,10 +15,10 @@ enum ETransmissionState
 class CTransmissionState
 {
 public:
-	static BOOL IsOutput(ETransmissionState eState);
-	static BOOL IsInput(ETransmissionState eState);
-	static BOOL IsNotSet(ETransmissionState eState);
-	static BOOL IsImpedance(ETransmissionState eState);
+	static bool IsOutput(ETransmissionState eState);
+	static bool IsInput(ETransmissionState eState);
+	static bool IsNotSet(ETransmissionState eState);
+	static bool IsImpedance(ETransmissionState eState);
 	static char* ToEnumString(ETransmissionState eState);
 };
 

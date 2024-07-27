@@ -8,9 +8,9 @@ class CLogisimMultiplexer : public CLogisimFacing
 {
 protected:
 	int						miDataBits;
-	BOOL					mbIncludeEnabled;
+	bool					mbIncludeEnabled;
 	int						miSelectBits;
-	BOOL					mbDisabledZero;
+	bool					mbDisabledZero;
 	ELogisimSelectLocation	meSelectLocation;
 	int						miSize;
 
@@ -19,10 +19,10 @@ public:
 	void Kill(void);
 
 	void SetDataBits(int iDataBits);
-	void SetDisabledZero(BOOL bDisabledZero);
+	void SetDisabledZero(bool bDisabledZero);
 	void SetSelectLocation(ELogisimSelectLocation eSelectLocation);
 	void SetSelectBits(int iSelectBits);
-	void SetIncludeEnabled(BOOL bIncludeEnabled);
+	void SetIncludeEnabled(bool bIncludeEnabled);
 	void SetSize(int iSize);
 };
 

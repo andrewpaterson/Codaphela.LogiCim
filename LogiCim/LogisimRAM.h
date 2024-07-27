@@ -15,18 +15,18 @@ enum ELogisimRAMDataBus
 class CLogisimRAM : public CLogisimMemory
 {
 protected:
-	BOOL				mbVolatile;
+	bool				mbVolatile;
 	ELogisimTrigger		meTrigger;
-	BOOL				mbLineEnables;
+	bool				mbLineEnables;
 	ELogisimRAMDataBus	meDataBus;
 
 public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
-	void SetVolatile(BOOL bVolatile);
+	void SetVolatile(bool bVolatile);
 	void SetTrigger(ELogisimTrigger eTrigger);
-	void SetLineEnables(BOOL bLineEnables);
+	void SetLineEnables(bool bLineEnables);
 	void SetDataBus(ELogisimRAMDataBus	eDataBus);
 };
 

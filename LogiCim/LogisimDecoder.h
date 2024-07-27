@@ -7,21 +7,21 @@
 class CLogisimDecoder : public CLogisimComponent
 {
 protected:
-	BOOL					mbIncludeEnabled;
+	bool					mbIncludeEnabled;
 	int						miSelectBits;
-	BOOL					mbDisabledZero;
+	bool					mbDisabledZero;
 	ELogisimSelectLocation	meSelectLocation;
-	BOOL					mbTristate;
+	bool					mbTristate;
 
 public:
 	void Init(SInt2 sPosition);
 	void Kill(void);
 
-	void SetIncludeEnabled(BOOL bIncludeEnabled);
+	void SetIncludeEnabled(bool bIncludeEnabled);
 	void SetSelectBits(int iSelectBits);
-	void SetDisabledZero(BOOL bDisabledZero);
+	void SetDisabledZero(bool bDisabledZero);
 	void SetSelectLocation(ELogisimSelectLocation eSelectLocation);
-	void SetTristate(BOOL bTristate);
+	void SetTristate(bool bTristate);
 };
 
 

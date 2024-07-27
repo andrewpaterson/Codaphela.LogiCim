@@ -1,6 +1,6 @@
 #ifndef __TRACE_VALUE_H__
 #define __TRACE_VALUE_H__
-#include "BaseLib/Bool.h"
+#include "BaseLib/PrimitiveTypes.h"
 
 
 enum ETraceValue
@@ -18,11 +18,11 @@ enum ETraceValue
 class CTraceValue final
 {
 public:
-	static BOOL IsHigh(ETraceValue e);
-	static BOOL IsLow(ETraceValue e);
-	static BOOL IsUnsettled(ETraceValue e);
-	static BOOL IsConnected(ETraceValue e);
-    static BOOL IsError(ETraceValue e);
+	static bool IsHigh(ETraceValue e);
+	static bool IsLow(ETraceValue e);
+	static bool IsUnsettled(ETraceValue e);
+	static bool IsConnected(ETraceValue e);
+    static bool IsError(ETraceValue e);
     static char GetCharValue(ETraceValue e);
 };
 

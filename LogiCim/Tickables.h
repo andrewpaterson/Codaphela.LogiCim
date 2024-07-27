@@ -3,6 +3,7 @@
 #include "StandardLib\Object.h"
 
 
+class CTickablePins;
 class CTickables : public CObject
 {
 CONSTRUCTABLE(CTickables);

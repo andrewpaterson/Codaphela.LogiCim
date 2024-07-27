@@ -51,5 +51,5 @@ void CLogisimGate::SetInputs(int iInputs) { miInputs = iInputs; }
 void CLogisimGate::SetOut(ELogisimGateOut eOut) { meOut = eOut; }
 void CLogisimGate::SetSize(int iSize) { miSize = iSize; }
 void CLogisimGate::SetLabel(char* szLabel) { mszLabel.Set(szLabel); }
-void CLogisimGate::SetNegtate(int iInput, BOOL bNegate) { mabNegate.Set(iInput, bNegate); }
+void CLogisimGate::SetNegtate(int iInput, bool bNegate) { mabNegate.Set(iInput, bNegate); }
 

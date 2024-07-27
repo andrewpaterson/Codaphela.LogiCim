@@ -322,7 +322,7 @@ CLogisimRegister* CLogisimComponentList::CreateRegister(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CLogisimComponentList::Remove(CLogisimComponent* pcComp)
+bool CLogisimComponentList::Remove(CLogisimComponent* pcComp)
 {
 	return mcList.Remove(pcComp);
 }

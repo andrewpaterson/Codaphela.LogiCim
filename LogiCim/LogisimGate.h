@@ -32,7 +32,7 @@ public:
 	void SetSize(int iSize);
 	void SetWidth(int iWidth);
 	void SetLabel(char* szLabel);
-	void SetNegtate(int iInput, BOOL bNegate);
+	void SetNegtate(int iInput, bool bNegate);
 };
 
 

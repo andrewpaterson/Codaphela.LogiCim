@@ -11,7 +11,7 @@ protected:
 	int					miNumberOfStages;
 	int					miDataBits;
 	CChars				mszLabel;
-	BOOL				mbParallelLoad;
+	bool				mbParallelLoad;
 	ELogisimTrigger		meTrigger;
 
 public:
@@ -21,7 +21,7 @@ public:
 	void SetNumberOfStages(int iNumberOfStages);
 	void SetDataBits(int iDataBits);
 	void SetLabel(char* szLabel);
-	void SetParallelLoad(BOOL bParallelLoad);
+	void SetParallelLoad(bool bParallelLoad);
 	void SetTrigger(ELogisimTrigger eTrigger);
 };
 

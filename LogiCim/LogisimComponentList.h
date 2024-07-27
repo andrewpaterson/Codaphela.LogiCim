@@ -71,7 +71,7 @@ public:
 	CLogisimMultiplexer*			CreateMultiplexer(void);
 	CLogisimRegister*				CreateRegister(void);
 
-	BOOL							Remove(CLogisimComponent* pcComp);
+	bool							Remove(CLogisimComponent* pcComp);
 };
 
 

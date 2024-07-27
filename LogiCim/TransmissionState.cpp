@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-static BOOL IsOutput(ETransmissionState eState)
+static bool IsOutput(ETransmissionState eState)
 {
 	return eState == TS_Output;
 }
@@ -15,7 +15,7 @@ static BOOL IsOutput(ETransmissionState eState)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-static BOOL IsInput(ETransmissionState eState)
+static bool IsInput(ETransmissionState eState)
 {
 	return eState == TS_Input;
 }
@@ -25,7 +25,7 @@ static BOOL IsInput(ETransmissionState eState)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-static BOOL IsNotSet(ETransmissionState eState)
+static bool IsNotSet(ETransmissionState eState)
 {
 	return eState == TS_NotSet;
 }
@@ -35,7 +35,7 @@ static BOOL IsNotSet(ETransmissionState eState)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTransmissionState::IsImpedance(ETransmissionState eState)
+bool CTransmissionState::IsImpedance(ETransmissionState eState)
 {
 	return eState == TS_Impedance;
 }

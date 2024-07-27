@@ -101,7 +101,7 @@ void CTrace::Recurse(Ptr<CSet<CTrace>> papcAllConnections, Ptr<CArray<CTrace>> p
 		for (int i = 0; i < iNumElements; i++)
 		{
 			Ptr<CTrace> pcConnection = papcTrces->Get(i);
-			BOOL bAdded = papcAllConnections->Add(pcConnection);
+			bool bAdded = papcAllConnections->Add(pcConnection);
 			if (bAdded)
 			{
 				papcStack->Add(pcConnection);
@@ -190,7 +190,7 @@ Ptr<CPort> CTrace::Get_DEBUG_lastPortThatUpdated(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTrace::IsHigh(void)
+bool CTrace::IsHigh(void)
 {
 	return mpcNet.IsNotNull() && CTraceValue::IsHigh(mpcNet->GetValue());
 }
@@ -200,7 +200,7 @@ BOOL CTrace::IsHigh(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTrace::IsError(void)
+bool CTrace::IsError(void)
 {
 	return mpcNet.IsNotNull() && CTraceValue::IsError(mpcNet->GetValue());
 }
@@ -210,7 +210,7 @@ BOOL CTrace::IsError(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTrace::IsLow(void)
+bool CTrace::IsLow(void)
 {
 	return mpcNet.IsNotNull() && CTraceValue::IsLow(mpcNet->GetValue());
 }
@@ -220,7 +220,7 @@ BOOL CTrace::IsLow(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTrace::IsUnsettled(void)
+bool CTrace::IsUnsettled(void)
 {
 	return mpcNet.IsNotNull() && CTraceValue::IsUnsettled(mpcNet->GetValue());
 }
@@ -230,7 +230,7 @@ BOOL CTrace::IsUnsettled(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTrace::IsNotConnected(void)
+bool CTrace::IsNotConnected(void)
 {
 	return mpcNet.IsNull();
 }

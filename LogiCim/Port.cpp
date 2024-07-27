@@ -64,11 +64,11 @@ void CPort::ResetConnections()
 //////////////////////////////////////////////////////////////////////////
 ETraceValue CPort::ReadStates(Ptr<CArray<CPort>> pacPorts)
 {
-    BOOL bHigh = FALSE;
-    BOOL bLow = FALSE;
-    BOOL bError = FALSE;
-    BOOL bUnsettled = FALSE;
-    BOOL bConnected = FALSE;
+    bool bHigh = false;
+    bool bLow = false;
+    bool bError = false;
+    bool bUnsettled = false;
+    bool bConnected = false;
 
     int iNumElements = pacPorts->NumElements();
 
@@ -78,24 +78,24 @@ ETraceValue CPort::ReadStates(Ptr<CArray<CPort>> pacPorts)
         ETraceValue eValue = pcPort->Read();
         if (CTraceValue::IsConnected(eValue))
         {
-            bConnected = TRUE;
+            bConnected = true;
         }
 
         if (CTraceValue::IsError(eValue))
         {
-            bError = TRUE;
+            bError = true;
         }
         else if (CTraceValue::IsUnsettled(eValue))
         {
-            bUnsettled = TRUE;
+            bUnsettled = true;
         }
         else if (CTraceValue::IsHigh(eValue))
         {
-            bHigh = TRUE;
+            bHigh = true;
         }
         else if (CTraceValue::IsLow(eValue))
         {
-            bLow = TRUE;
+            bLow = true;
         }
     }
 
@@ -107,7 +107,7 @@ ETraceValue CPort::ReadStates(Ptr<CArray<CPort>> pacPorts)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-ETraceValue CPort::TranslatePortValue(BOOL bHigh, BOOL bLow, BOOL bError, BOOL bUnsettled, BOOL bConnected)
+ETraceValue CPort::TranslatePortValue(bool bHigh, bool bLow, bool bError, bool bUnsettled, bool bConnected)
 {
     if (bConnected)
     {
