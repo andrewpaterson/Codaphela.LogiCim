@@ -1,5 +1,6 @@
 #ifndef __LOGISIM_PIN_H__
 #define __LOGISIM_PIN_H__
+#include "BaseLib/Chars.h"
 #include "LogisimFacing.h"
 
 

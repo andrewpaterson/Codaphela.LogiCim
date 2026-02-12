@@ -1,5 +1,6 @@
 #ifndef __LOGISIM_COMPONENT_H__
 #define __LOGISIM_COMPONENT_H__
+#include "BaseLib/Chars.h"
 #include "BaseLib/Int2.h"
 
 
