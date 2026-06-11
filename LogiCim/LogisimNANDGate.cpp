@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimNANDGate::Init(SInt2 sPosition)
+void CLogisimNANDGate::Init(SInt32Vec2 sPosition)
 {
 	CLogisimGate::Init(sPosition);
 }

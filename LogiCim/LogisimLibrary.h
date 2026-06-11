@@ -19,6 +19,6 @@ public:
 typedef CListTemplate<CLogisimLibrary> CLogisimLibraryList;
 
 
-#endif // !__LOGISIM_LIBRARY_H__
+#endif // __LOGISIM_LIBRARY_H__
 
 

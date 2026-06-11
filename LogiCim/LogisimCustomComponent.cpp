@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimCustomComponent::Init(SInt2 sPosition, char* szComponentType)
+void CLogisimCustomComponent::Init(SInt32Vec2 sPosition, char* szComponentType)
 {
 	CLogisimComponent::Init(sPosition);
 	mszComponentType.Init(szComponentType);

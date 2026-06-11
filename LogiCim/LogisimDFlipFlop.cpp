@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimDTypeFlipFlop::Init(SInt2 sPosition)
+void CLogisimDTypeFlipFlop::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	mszLabel.Init();

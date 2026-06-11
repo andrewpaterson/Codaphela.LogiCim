@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimXORGate::Init(SInt2 sPosition)
+void CLogisimXORGate::Init(SInt32Vec2 sPosition)
 {
 	CLogisimGate::Init(sPosition);
 }

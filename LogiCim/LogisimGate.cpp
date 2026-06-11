@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimGate::Init(SInt2 sPosition)
+void CLogisimGate::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 	miInputs = 0;

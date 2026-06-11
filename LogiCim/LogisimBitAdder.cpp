@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimBitAdder::Init(SInt2 sPosition)
+void CLogisimBitAdder::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	miWidth = 0;

@@ -18,12 +18,12 @@ protected:
 	ELogisimPullResistorPull	mePull;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetPull(ELogisimPullResistorPull ePull);
 };
 
 
-#endif // !__LOGISIM_PULL_RESISTOR_H__
+#endif // __LOGISIM_PULL_RESISTOR_H__
 

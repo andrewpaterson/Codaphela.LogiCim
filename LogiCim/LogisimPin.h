@@ -14,7 +14,7 @@ protected:
 	int		miRadix;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetWidth(int iWidth);
@@ -25,5 +25,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_PIN_H__
+#endif // __LOGISIM_PIN_H__
 

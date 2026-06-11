@@ -10,5 +10,5 @@ enum ELogisimSelectLocation
 };
 
 
-#endif // !__LOGISIM_SELECT_LOCATION_H__
+#endif // __LOGISIM_SELECT_LOCATION_H__
 

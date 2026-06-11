@@ -14,5 +14,5 @@ enum ELogisimAlignment
 };
 
 
-#endif // !__LOGISIM_ALIGNMENT_H__
+#endif // __LOGISIM_ALIGNMENT_H__
 

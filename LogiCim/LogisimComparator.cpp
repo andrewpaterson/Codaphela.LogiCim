@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimComparator::Init(SInt2 sPosition)
+void CLogisimComparator::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	miWidth = 0;

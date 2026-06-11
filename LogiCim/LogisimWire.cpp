@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimWire::Init(SInt2 sFrom, SInt2 sTo)
+void CLogisimWire::Init(SInt32Vec2 sFrom, SInt32Vec2 sTo)
 {
 	msFrom.Init(sFrom);
 	msTo.Init(sTo);

@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimMemory::Init(SInt2 sPosition)
+void CLogisimMemory::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	miAddressWidth = 0;

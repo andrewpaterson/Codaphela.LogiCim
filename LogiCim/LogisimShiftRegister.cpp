@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimShiftRegsiter::Init(SInt2 sPosition)
+void CLogisimShiftRegsiter::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	miNumberOfStages = 0;

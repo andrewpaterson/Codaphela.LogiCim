@@ -10,7 +10,7 @@ protected:
 	CChars	mszComponentType;
 
 public:
-	void	Init(SInt2 sPosition, char* szComponentType);
+	void	Init(SInt32Vec2 sPosition, char* szComponentType);
 	void	Kill(void);
 };
 

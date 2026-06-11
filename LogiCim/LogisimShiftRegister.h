@@ -15,7 +15,7 @@ protected:
 	ELogisimTrigger		meTrigger;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetNumberOfStages(int iNumberOfStages);
@@ -26,5 +26,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_SHIFT_REGISTER_H__
+#endif // __LOGISIM_SHIFT_REGISTER_H__
 

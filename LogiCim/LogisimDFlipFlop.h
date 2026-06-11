@@ -11,7 +11,7 @@ protected:
 	ELogisimTrigger		meTrigger;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetLabel(char* szLabel);
@@ -19,5 +19,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_D_TYPE_FLIP_FLOP_H__
+#endif // __LOGISIM_D_TYPE_FLIP_FLOP_H__
 

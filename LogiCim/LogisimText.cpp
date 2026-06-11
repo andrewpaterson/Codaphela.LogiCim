@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimText::Init(SInt2 sPosition)
+void CLogisimText::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	mszText.Init();

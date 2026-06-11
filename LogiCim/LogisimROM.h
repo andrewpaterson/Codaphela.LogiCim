@@ -10,7 +10,7 @@ protected:
 	uint32	muiSize;
 
 public:
-	void	Init(SInt2 sPosition);
+	void	Init(SInt32Vec2 sPosition);
 	void	Kill(void);
 
 	void	SetAddressWidth(int iAddressWidth);
@@ -18,5 +18,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_ROM_H__
+#endif // __LOGISIM_ROM_H__
 

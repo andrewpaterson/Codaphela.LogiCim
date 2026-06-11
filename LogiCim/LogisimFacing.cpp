@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimFacing::Init(SInt2 sPosition)
+void CLogisimFacing::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	meFacing = LF_NotSet;

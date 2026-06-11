@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimControlledBuffer::Init(SInt2 sPosition)
+void CLogisimControlledBuffer::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 }

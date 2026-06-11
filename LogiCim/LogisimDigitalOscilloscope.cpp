@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimDigitalOscilloscope::Init(SInt2 sPosition)
+void CLogisimDigitalOscilloscope::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 }

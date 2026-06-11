@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimProbe::Init(SInt2 sPosition)
+void CLogisimProbe::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 

@@ -14,7 +14,7 @@ protected:
 	bool					mbTristate;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetIncludeEnabled(bool bIncludeEnabled);
@@ -25,5 +25,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_DECODER_H__
+#endif // __LOGISIM_DECODER_H__
 

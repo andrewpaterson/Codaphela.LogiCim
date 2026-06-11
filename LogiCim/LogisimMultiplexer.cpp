@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimMultiplexer::Init(SInt2 sPosition)
+void CLogisimMultiplexer::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 }

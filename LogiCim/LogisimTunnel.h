@@ -10,7 +10,7 @@ protected:
 	CChars			mszLabel;
 
 public:
-	void	Init(SInt2 sPosition);
+	void	Init(SInt32Vec2 sPosition);
 	void	Kill(void);
 
 	void	SetWidth(int iWidth);
@@ -18,5 +18,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_TUNNEL_H__
+#endif // __LOGISIM_TUNNEL_H__
 

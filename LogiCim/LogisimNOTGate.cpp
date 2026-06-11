@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimNOTGate::Init(SInt2 sPosition)
+void CLogisimNOTGate::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 }

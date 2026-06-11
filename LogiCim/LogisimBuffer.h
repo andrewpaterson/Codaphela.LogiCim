@@ -9,13 +9,13 @@ protected:
 	CChars		mszLabel;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetLabel(char* szLabel);
 };
 
 
-#endif // !__LOGISIM_BUFFER_H__
+#endif // __LOGISIM_BUFFER_H__
 
 

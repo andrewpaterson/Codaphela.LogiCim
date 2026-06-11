@@ -23,5 +23,5 @@ public:
 };
 
 
-#endif // !__TRANSMISSION_STATE_H__
+#endif // __TRANSMISSION_STATE_H__
 

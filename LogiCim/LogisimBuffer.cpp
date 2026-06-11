@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimBuffer::Init(SInt2 sPosition)
+void CLogisimBuffer::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 	mszLabel.Init();

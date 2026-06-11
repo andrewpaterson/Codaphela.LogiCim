@@ -10,7 +10,7 @@ protected:
 	int		miNumberOfInputs;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetNumberOfStates(int iNumberOfStates);
@@ -18,6 +18,6 @@ public:
 };
 
 
-#endif // !__LOGISIM_DIGITAL_OSCILLOSCOPE_H__
+#endif // __LOGISIM_DIGITAL_OSCILLOSCOPE_H__
 
 

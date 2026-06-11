@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimROM::Init(SInt2 sPosition)
+void CLogisimROM::Init(SInt32Vec2 sPosition)
 {
 	CLogisimMemory::Init(sPosition);
 	mpvMemory = NULL;

@@ -3,6 +3,7 @@
 #include "BaseLib/MapStringString.h"
 #include "BaseLib/XMLFile.h"
 #include "BaseLib/Files.h"
+#include "BaseLib/Int32Vec2.h"
 #include "LogisimFacing.h"
 #include "LogisimTrigger.h"
 #include "LogisimCircuit.h"
@@ -46,7 +47,7 @@ protected:
 	bool			ConvertLibrary(CMarkupTag* pcMainTag);
 
 	bool			ConvertATagsToMap(CMapStringString* pcDest, CMarkupTag* pcCompTag);
-	bool			GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey, int* piValue, char* szDefault = NULL);
+	bool			GetMapValueAsInt(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey, int32* piValue, char* szDefault = NULL);
 	bool			GetMapValue(CMapStringString* pcMap, char* szKey, char** pszValue, char* szDefault = NULL);
 	bool			GetMapValueAsFacing(CMapStringString* pcMap, char* szKey, ELogisimFacing* peFacing, char* szDefault = NULL);
 	bool			GetMapValueAsTrigger(CMapStringString* pcMap, char* szKey, ELogisimTrigger* peTrigger, char* szDefault = NULL);
@@ -58,7 +59,7 @@ protected:
 	bool			GetMapValueAsGateOut(CMapStringString* pcMap, char* szKey, ELogisimGateOut* peOut, char* szDefault = NULL);
 	bool			GetMapValueAsAlignment(CMapStringString* pcMap, char* szKey, ELogisimAlignment* peValue, char* szDefault = NULL);
 	bool			GetMapValueAsDataBus(CMapStringString* pcMap, char* szKey, ELogisimRAMDataBus* peValue, char* szDefault = NULL);
-	bool			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, unsigned long long int* pulliValue, bool bInclude0x, char* szDefault = NULL);
+	bool			GetMapValueAsHexLong(CMapStringString* pcMap, char* szKey, uint64* pulliValue, bool bInclude0x, char* szDefault = NULL);
 	bool			GetMapValueAsAppearance(CMarkupTag* pcTag, CMapStringString* pcMap, char* szKey);
 	bool			GetMapValueAsRGB(CMapStringString* pcMap, char* szKey, uint32* puiRGB, char* szDefault = NULL);
 	bool			CheckMap(CMarkupTag* pcTag, CMapStringString* pcMap, const char* szFirst, ...);
@@ -67,45 +68,45 @@ protected:
 	bool			IsString(char* szLeft, char* szRight);
 
 protected:
-	CLogisimTunnel*					CreateTunnel(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimPullResistor*			CreatePullResistor(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimConstant*				CreateConstant(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimANDGate*				CreateANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimNANDGate*				CreateNANDGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimNORGate*				CreateNORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimORGate*					CreateORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimXORGate*				CreateXORGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimNOTGate*				CreateNOTGate(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimClock*					CreateClock(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimControlledBuffer*		CreateControlledBuffer(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimCounter*				CreateCounter(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimDecoder*				CreateDecoder(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimDigitalOscilloscope*	CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimLED*					CreateLED(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimPin*					CreatePin(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimProbe*					CreateProbe(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimRAM*					CreateRAM(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimROM*					CreateROM(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimSplitter*				CreateSplitter(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimText*					CreateText(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimDTypeFlipFlop*			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimRandom*					CreateRandom(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimComparator*				CreateComparator(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimShiftRegsiter*			CreateShiftRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimBuffer*					CreateBuffer(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimBitAdder*				CreateBitAdder(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimRegister*				CreateRegister(CMarkupTag* pcCompTag, SInt2 sLoc);
-	CLogisimMultiplexer*			CreateMultiplexer(CMarkupTag* pcCompTag, SInt2 sLoc);
+	CLogisimTunnel*					CreateTunnel(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimPullResistor*			CreatePullResistor(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimConstant*				CreateConstant(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimANDGate*				CreateANDGate(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimNANDGate*				CreateNANDGate(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimNORGate*				CreateNORGate(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimORGate*					CreateORGate(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimXORGate*				CreateXORGate(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimNOTGate*				CreateNOTGate(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimClock*					CreateClock(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimControlledBuffer*		CreateControlledBuffer(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimCounter*				CreateCounter(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimDecoder*				CreateDecoder(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimDigitalOscilloscope*	CreateDigitalOscilloscope(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimLED*					CreateLED(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimPin*					CreatePin(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimProbe*					CreateProbe(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimRAM*					CreateRAM(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimROM*					CreateROM(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimSplitter*				CreateSplitter(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimText*					CreateText(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimDTypeFlipFlop*			CreateDFlipFlop(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimRandom*					CreateRandom(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimComparator*				CreateComparator(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimShiftRegsiter*			CreateShiftRegister(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimBuffer*					CreateBuffer(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimBitAdder*				CreateBitAdder(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimRegister*				CreateRegister(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
+	CLogisimMultiplexer*			CreateMultiplexer(CMarkupTag* pcCompTag, SInt32Vec2 sLoc);
 
-	CLogisimCustomComponent*		CreateCustomComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
-	CLogisimCircuitComponent*		CreateCircuitComponent(CMarkupTag* pcCompTag, SInt2 sLoc, char* szName);
+	CLogisimCustomComponent*		CreateCustomComponent(CMarkupTag* pcCompTag, SInt32Vec2 sLoc, char* szName);
+	CLogisimCircuitComponent*		CreateCircuitComponent(CMarkupTag* pcCompTag, SInt32Vec2 sLoc, char* szName);
 
 protected:
 	bool					PopulateGate(CMarkupTag* pcCompTag, CLogisimGate* pcComp, CMapStringString* pcMap);
-	bool					ParseInt2(SInt2* ps, char* sz);
+	bool					ParseInt2(SInt32Vec2* ps, char* sz);
 	CLogisimComponent*		KillComponent(CLogisimComponent* pcComp);
 };
 
 
-#endif // !__LOGISIM_FILE_READER_H__
+#endif // __LOGISIM_FILE_READER_H__
 

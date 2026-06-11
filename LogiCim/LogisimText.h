@@ -12,7 +12,7 @@ protected:
 	ELogisimAlignment	meVerticalAlignment;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetText(char* szText);
@@ -21,5 +21,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_TEXT_H__
+#endif // __LOGISIM_TEXT_H__
 

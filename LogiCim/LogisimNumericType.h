@@ -10,5 +10,5 @@ enum ELogisimNumericType
 };
 
 
-#endif // !__LOGISIM_NUMERIC_TYPE_H__
+#endif // __LOGISIM_NUMERIC_TYPE_H__
 

@@ -12,5 +12,5 @@ enum ELogisimTrigger
 };
 
 
-#endif // !__LOGISIM_TRIGGER_H__
+#endif // __LOGISIM_TRIGGER_H__
 

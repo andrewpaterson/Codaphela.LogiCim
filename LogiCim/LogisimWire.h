@@ -1,17 +1,17 @@
 #ifndef __LOGISIM_WIRE_H__
 #define __LOGISIM_WIRE_H__
-#include "BaseLib/Int2.h"
+#include "BaseLib/Int32Vec2.h"
 #include "BaseLib/ListTemplate.h"
 
 
 class CLogisimWire
 {
 protected:
-	SInt2	msFrom;
-	SInt2	msTo;
+	SInt32Vec2	msFrom;
+	SInt32Vec2	msTo;
 
 public:
-	void Init(SInt2 sFrom, SInt2 sTo);
+	void Init(SInt32Vec2 sFrom, SInt32Vec2 sTo);
 	void Kill(void);
 };
 
@@ -19,6 +19,6 @@ public:
 typedef CListTemplate<CLogisimWire> CLogisimWireList;
 
 
-#endif // !__LOGISIM_WIRE_H__
+#endif // __LOGISIM_WIRE_H__
 
 

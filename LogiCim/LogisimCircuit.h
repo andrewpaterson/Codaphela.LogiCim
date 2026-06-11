@@ -31,6 +31,6 @@ public:
 typedef CListTemplate<CLogisimCircuit> CLogisimCircuitList;
 
 
-#endif // !__LOGISIM_CIRCUIT_H__
+#endif // __LOGISIM_CIRCUIT_H__
 
 

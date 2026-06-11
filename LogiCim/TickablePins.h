@@ -1,6 +1,6 @@
 #ifndef __TICKABLE_PINS_H__
 #define __TICKABLE_PINS_H__
-#include "StandardLib\Object.h"
+#include "StandardLib\Objects.h"
 #include "StandardLib\Array.h"
 #include "IntegratedCircuit.h"
 #include "Tickables.h"
@@ -93,18 +93,18 @@ public:
     //    return getIntegratedCircuit().getName();
     //}
 
-    //String GetDescription(void)
-    //{
-    //    String name = getName();
-    //    if (StringUtil.isEmptyOrNull(name))
-    //    {
-    //        return getType();
-    //    }
-    //    else
-    //    {
-    //        return getType() + " \"" + name + "\"";
-    //    }
-    //}
+    char* GetDescription(CChars* pszDest)
+    {
+        pszDest->Append(GetType());
+
+        if (!StrEmpty(GetName()))
+        {
+            pszDest->Append(" \"");
+            pszDest->Append(GetName());
+            pszDest->Append("\"");
+        }
+        return pszDest->Text();
+    }
 
     //protected BusValue GetBusValue(Ptr<COmniport> pcOmniport)
     //{
@@ -212,10 +212,10 @@ public:
     //    this.integratedCircuit = integratedCircuit;
     //}
 
-    //String GetType(void)
-    //{
-    //    return integratedCircuit.getType();
-    //}
+    char* GetType(void)
+    {
+        return mpcIntegratedCircuit->GetType();
+    }
 
     //uint64 GetTickCount(void)
     //{
@@ -224,5 +224,5 @@ public:
 };
 
 
-#endif // !__TICKABLE_PINS_H__
+#endif // __TICKABLE_PINS_H__
 

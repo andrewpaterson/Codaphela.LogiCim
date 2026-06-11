@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimClock::Init(SInt2 sPosition)
+void CLogisimClock::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 	miHighDuration = 0;

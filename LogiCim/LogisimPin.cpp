@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimPin::Init(SInt2 sPosition)
+void CLogisimPin::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	mszLabel.Init();

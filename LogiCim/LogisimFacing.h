@@ -19,12 +19,12 @@ protected:
 	ELogisimFacing	meFacing;
 
 public:
-	void	Init(SInt2 sPosition);
+	void	Init(SInt32Vec2 sPosition);
 	void	Kill(void);
 
 	void	SetFacing(ELogisimFacing eFacing);
 };
 
 
-#endif // !__LOGISIM_FACING_H__
+#endif // __LOGISIM_FACING_H__
 

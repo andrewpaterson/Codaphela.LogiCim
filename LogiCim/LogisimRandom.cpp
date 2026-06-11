@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimRandom::Init(SInt2 sPosition)
+void CLogisimRandom::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	mszLabel.Init();

@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimCircuitComponent::Init(SInt2 sPosition, char* szCircuitName)
+void CLogisimCircuitComponent::Init(SInt32Vec2 sPosition, char* szCircuitName)
 {
 	CLogisimComponent::Init(sPosition);
 	mszCircuitName.Init(szCircuitName);

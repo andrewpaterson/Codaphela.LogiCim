@@ -75,6 +75,6 @@ public:
 };
 
 
-#endif // !__LOGISIM_COMPONENT_LIST_H__
+#endif // __LOGISIM_COMPONENT_LIST_H__
 
 

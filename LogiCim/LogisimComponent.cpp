@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimComponent::Init(SInt2 sPosition)
+void CLogisimComponent::Init(SInt32Vec2 sPosition)
 {
 	msPosition.Init(sPosition);
 }

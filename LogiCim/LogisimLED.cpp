@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimLED::Init(SInt2 sPosition)
+void CLogisimLED::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 }

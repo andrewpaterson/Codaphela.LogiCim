@@ -11,7 +11,7 @@ protected:
 	CChars	mszLabel;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetAddressWidth(int iAddressWidth);

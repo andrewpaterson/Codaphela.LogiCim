@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimSplitter::Init(SInt2 sPosition)
+void CLogisimSplitter::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	miSpacing = 0;

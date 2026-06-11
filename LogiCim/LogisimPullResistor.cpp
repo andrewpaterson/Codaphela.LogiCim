@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimPullResistor::Init(SInt2 sPosition)
+void CLogisimPullResistor::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 	mePull = LPRP_Notset;

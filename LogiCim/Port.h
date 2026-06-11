@@ -42,5 +42,5 @@ protected:
 };
 
 
-#endif // !__PORT_H__
+#endif // __PORT_H__
 

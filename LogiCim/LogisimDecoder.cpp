@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimDecoder::Init(SInt2 sPosition)
+void CLogisimDecoder::Init(SInt32Vec2 sPosition)
 {
 	CLogisimComponent::Init(sPosition);
 }

@@ -9,9 +9,9 @@ CONSTRUCTABLE(CIntegratedCircuit);
 DESTRUCTABLE(CIntegratedCircuit);
 protected:
 public:
+	virtual char*	GetType(void) =0;
 };
 
 
-#endif // !__INTEGRATED_CIRCUIT_H__
-
+#endif // __INTEGRATED_CIRCUIT_H__
 

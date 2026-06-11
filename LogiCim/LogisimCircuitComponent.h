@@ -10,7 +10,7 @@ protected:
 	CChars	mszCircuitName;
 
 public:
-	void Init(SInt2 sPosition, char* szCircuitName);
+	void Init(SInt32Vec2 sPosition, char* szCircuitName);
 	void Kill(void);
 };
 
@@ -18,5 +18,5 @@ public:
 typedef CListTemplate<CLogisimCircuitComponent> CLogisimCircuitComponentList;
 
 
-#endif // !__LOGISIM_CIRCUIT_COMPONENT_H__
+#endif // __LOGISIM_CIRCUIT_COMPONENT_H__
 

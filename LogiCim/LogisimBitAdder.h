@@ -10,7 +10,7 @@ protected:
 	int		miWidth;
 
 public:
-	void Init(SInt2 sPosition);
+	void Init(SInt32Vec2 sPosition);
 	void Kill(void);
 
 	void SetInputs(int iInputs);
@@ -18,5 +18,5 @@ public:
 };
 
 
-#endif // !__LOGISIM_BIT_ADDER_H__
+#endif // __LOGISIM_BIT_ADDER_H__
 

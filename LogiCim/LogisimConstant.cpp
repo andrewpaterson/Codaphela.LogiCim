@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogisimConstant::Init(SInt2 sPosition)
+void CLogisimConstant::Init(SInt32Vec2 sPosition)
 {
 	CLogisimFacing::Init(sPosition);
 	miWidth = 0;
