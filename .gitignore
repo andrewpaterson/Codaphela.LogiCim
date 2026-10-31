@@ -1,0 +1,9 @@
+/.vs/*
+/Debug/*
+/Release/*
+/Log.txt
+/LogiCim/Debug/*
+/LogiCim/Release/*
+/LogiCim/Log.txt
+/x64/*
+/LogiCim/x64/*

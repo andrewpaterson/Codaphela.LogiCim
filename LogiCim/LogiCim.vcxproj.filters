@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{2f88dc1f-58bb-480c-b6e6-e563eb3c0579}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LogiCim.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitCanvas.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitCanvasDraw.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimButtonListener.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimCircuit.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimComponentChooser.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowData.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowTick.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CircuitCanvas.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CircuitCanvasDraw.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimButtonListener.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimCircuit.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimComponentChooser.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowContent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowData.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowTick.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

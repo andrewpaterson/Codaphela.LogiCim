@@ -1,0 +1,137 @@
+#include "StandardLib/Objects.h"
+#include "LogicimCircuit.h"
+
+
+#define LOGICIM_MAIN_CIRCUIT		"Main"
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Kill must be called even when this fails.  The circuit's text is
+// coloured in eColourOrder, the canvas's.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Init(const char* szPropagationTimes, const char* szFontDirectory, EColourOrder eColourOrder)
+{
+	Ptr<CFontFamily>	pFamily;
+	bool				bFonts;
+
+	mcColours.InitDark();
+	mcFamilies.Init();
+	mcEditor.Init(&mcFamilies, &mcFonts);
+
+	//Nothing else holds the font families, so they are rooted.
+	bFonts = LoadCircuitFonts(&mcFonts, szFontDirectory, eColourOrder);
+	pFamily = mcFonts.GetSansSerif();
+	if (pFamily.IsNotNull())
+	{
+		ORoot()->Add(pFamily);
+	}
+	pFamily = mcFonts.GetMonospaced();
+	if (pFamily.IsNotNull())
+	{
+		ORoot()->Add(pFamily);
+	}
+	if (!bFonts || !mcFamilies.Load(szPropagationTimes))
+	{
+		return false;
+	}
+
+	mcEditor.AddCircuit(LOGICIM_MAIN_CIRCUIT);
+	return CreateSimulation();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::Kill(void)
+{
+	mcEditor.Kill();
+	mcFamilies.Kill();
+	mcColours.Kill();
+	RemoveFontFamily(mcFonts.GetSansSerif());
+	RemoveFontFamily(mcFonts.GetMonospaced());
+	mcFonts.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::RemoveFontFamily(Ptr<CFontFamily> pFamily)
+{
+	if (pFamily.IsNotNull())
+	{
+		ORoot()->Remove(pFamily);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Simulates the circuit being edited afresh.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::CreateSimulation(void)
+{
+	return mcEditor.Simulate(mcEditor.GetCircuit() != NULL ? mcEditor.GetCircuit()->GetTypeName() : LOGICIM_MAIN_CIRCUIT);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Starts the simulation again from nothing.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Reset(void)
+{
+	return CreateSimulation();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// iTimeForward is in Logicim's time units (1/1024 ns).  Nothing runs
+// while an edit is in progress.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::Run(int64 iTimeForward)
+{
+	if ((mcEditor.GetSimulation() != NULL) && mcEditor.CanRun())
+	{
+		mcEditor.GetSimulation()->RunToTime(iTimeForward);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Save(const char* szFilename)
+{
+	return mcEditor.Save(szFilename);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Load(const char* szFilename)
+{
+	return mcEditor.Load(szFilename);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CCircuitEditor* CLogicimCircuit::GetEditor(void) { return &mcEditor; }
+CCircuitColours* CLogicimCircuit::GetColours(void) { return &mcColours; }
+CCircuitFonts* CLogicimCircuit::GetFonts(void) { return &mcFonts; }
+int64 CLogicimCircuit::GetTime(void) { return (mcEditor.GetSimulation() != NULL) ? mcEditor.GetSimulation()->GetTime() : -1; }
