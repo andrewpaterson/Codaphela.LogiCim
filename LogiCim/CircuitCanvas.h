@@ -32,7 +32,8 @@ class CCircuitEditor;
 //grid space, tells the window content where the pointer is over it, zooms with the wheel and pans with button three.
 //
 //Button one presses and releases come as ActivateComponent and ExecuteComponent, or with shift or control held as a
-//select drag.  Keys are Logicim's: r turns right and R left; Delete deletes; Escape stops the edit and clears the
+//select drag.  Either way the editor decides what the press does (see CCircuitEditor::ButtonPressed): dragging a
+//component on its own detaches it from its wires, and with control held keeps them connected.  Keys are Logicim's: r turns right and R left; Delete deletes; Escape stops the edit and clears the
 //selection; e, or a double click, edits the properties of the component under the pointer or selected; and letters
 //place components, as Logicim's KeyInputsFactory (g a ground, v a supply, p a pin, c a constant; with shift: A an AND
 //gate, O an OR, X an XOR, N an inverter, C a clock, P a probe, S a splitter, T a tunnel, L a label and F a flip flop).

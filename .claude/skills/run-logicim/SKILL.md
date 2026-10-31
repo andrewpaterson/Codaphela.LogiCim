@@ -42,7 +42,9 @@ Then Read the PNG to look at it. Stop with `Stop-LogiCim`.
 | `Stop-LogiCim` / `Focus-LogiCim` | Kills it / brings it to the front |
 | `Set-Zoom n` | Reset zoom then zoom in to n (whole steps, about the centre) |
 | `Move-Grid x y` / `Click-Grid x y` | Pointer to a grid point (fractions allowed) / button one click there |
-| `Drag-Grid @(x,y) @(x,y) ...` | Button one held through the points: draws a wire from a port or wire end (one or two lines per drag), or a selection rectangle from empty space |
+| `Drag-Grid @(x,y) @(x,y) ...` | Button one held through the points: draws a wire from a port or wire end (one or two lines per drag), moves a component (detached from its wires) or the selection, or drags a selection rectangle from empty space |
+| `Drag-GridControl @(x,y) @(x,y) ...` | As `Drag-Grid` with left control held: a move keeps the wires connected, routing them live |
+| `Press-Grid x y [-Control]` / `Release-Grid x y` | Button one down and left down (`Move-Grid` to drag, `Save-Screenshot` to see it mid-drag), then up |
 | `Place-Grid 'F' x y` | Canvas key then click to put it down. Keys (CCircuitCanvas::Printable): `F` flip flop, `C` clock, `v` 3.3V, `g` ground, `p` pin, `c` constant, `A`/`O`/`X`/`N` gates, `P` probe, `S` splitter, `T` tunnel, `L` label; `r`/`R` rotate, `e` properties |
 | `Send-Char 'x'` / `Send-VKey vk [-Shift] [-Extended]` / `Send-Delete` | Keys |
 | `Click-Client x y` / `Move-Client x y` | Raw client-area pixels, for toolbars and menus |

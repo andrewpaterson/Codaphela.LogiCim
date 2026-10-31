@@ -99,6 +99,29 @@ function Drag-Grid {
   [LogiCimU]::mouse_event(0x4, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 100
 }
 
+# Left control down or up.  A drag with it held moves views connected (their wires rubber band); without, detached.
+function Set-Control([bool]$Down) {
+  $sc = [byte][LogiCimU]::MapVirtualKey(0x11, 0)
+  [LogiCimU]::keybd_event(0x11, $sc, $(if ($Down) { 0 } else { 2 }), [IntPtr]::Zero); Start-Sleep -Milliseconds 60
+}
+
+# Drag-Grid with left control held: Drag-GridControl @(0,0) @(0,8)
+function Drag-GridControl { Set-Control $true; Drag-Grid @args; Set-Control $false }
+
+# Button one pressed at a grid point and left down, to look at a drag before it's dropped; Move-Grid to drag, then
+# Release-Grid.  -Control holds left control until the release.
+function Press-Grid([double]$gx, [double]$gy, [switch]$Control) {
+  if ($Control) { Set-Control $true }
+  Move-Grid $gx $gy
+  [LogiCimU]::mouse_event(0x2, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 60
+}
+
+function Release-Grid([double]$gx, [double]$gy) {
+  Move-Grid $gx $gy
+  [LogiCimU]::mouse_event(0x4, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 100
+  Set-Control $false
+}
+
 # A key by virtual key code.  Raw input reads the scan code, so it must be sent; extended keys (Delete, arrows) need -Extended.
 function Send-VKey([byte]$Vk, [switch]$Shift, [switch]$Extended) {
   $sc = [byte][LogiCimU]::MapVirtualKey($Vk, 0); $shiftSc = [byte][LogiCimU]::MapVirtualKey(0x10, 0)
