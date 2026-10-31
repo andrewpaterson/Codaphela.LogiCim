@@ -34,6 +34,7 @@ enum ELogicimDialog
 	LDG_NewSimulation,
 	LDG_LoadProject,
 	LDG_SaveProject,
+	LDG_ImportKicadSchematic,
 };
 
 

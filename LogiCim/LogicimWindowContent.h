@@ -77,6 +77,7 @@ enum ELogicimAction
 	LA_Paste,
 	LA_Duplicate,
 	LA_Delete,
+	LA_ImportKicadSchematic,
 	LA_Exit,
 
 	NUM_LOGICIM_ACTIONS
@@ -129,6 +130,7 @@ protected:
 
 	CLogicimCircuit			mcCircuit;
 	CChars					mszProjectFilename;  //The project last loaded or saved.
+	CChars					mszKicadFilename;  //The KiCad schematic last imported.
 	CChars					mszChooserSelected;  //The component last chosen.
 	int						miSimulationCount;
 	bool					mbRunning;
@@ -177,6 +179,7 @@ protected:
 	void					ShowNewSubcircuitDialog(void);
 	void					ShowNewSimulationDialog(void);
 	void					ShowProjectDialog(bool bSave);
+	void					ShowImportKicadDialog(void);
 	void					ShowComponentChooser(void);
 };
 

@@ -27,7 +27,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //LogiCim's editor and the circuits in it.  It starts with an empty "Main" circuit, simulated on its top view path.  A
-//project loaded replaces it.
+//project loaded, or a KiCad schematic imported (see CKicadSchemLogicimConverter), replaces it.
 class CLogicimCircuit
 {
 protected:
@@ -44,6 +44,7 @@ public:
 	void				Run(int64 iTimeForward);
 	bool				Save(const char* szFilename);
 	bool				Load(const char* szFilename);
+	bool				ImportKicadSchematic(const char* szFilename);
 
 	CCircuitEditor*		GetEditor(void);
 	CCircuitColours*	GetColours(void);

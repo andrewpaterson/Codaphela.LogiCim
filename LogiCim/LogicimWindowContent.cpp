@@ -59,6 +59,14 @@ static SFileChooserType gasProjectFileTypes[] =
 };
 
 
+//The KiCad schematic chooser's Files of Type.
+static SFileChooserType gasKicadFileTypes[] =
+{
+	{ "KiCad Schematics (*.kicad_sch)", "kicad_sch" },
+	{ "All Files", NULL },
+};
+
+
 struct SLogicimActionDesc
 {
 	const char*		szName;
@@ -106,6 +114,7 @@ static SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 	{ "Paste", NULL },
 	{ "Duplicate", "duplicate" },
 	{ "Delete", "trash" },
+	{ "Import KiCad Schematic...", "import" },
 	{ "Exit", "exit" },
 };
 
@@ -145,6 +154,7 @@ bool CLogicimWindowContent::Init(Ptr<CWindow> pWindow, SLogicimWindowData* psDat
 	//Before anything that can fail; Kill always kills it.
 	pWindow->GetColourFormat(&cFormat);
 	mszProjectFilename.Init("Project.xml");
+	mszKicadFilename.Init("Schematic.kicad_sch");
 	mszChooserSelected.Init();
 	if (!mcCircuit.Init(szPropagationTimes, szCircuitFontDirectory, cFormat.meOrder))
 	{
@@ -252,6 +262,7 @@ void CLogicimWindowContent::Kill(void)
 	mpFontColours = NULL;
 	mpWindow = NULL;
 	mcCircuit.Kill();
+	mszKicadFilename.Kill();
 	mszProjectFilename.Kill();
 	mszChooserSelected.Kill();
 }
@@ -375,7 +386,7 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateMenu(ELogicimAction* aeActions,
 //////////////////////////////////////////////////////////////////////////
 Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 {
-	ELogicimAction	aeFile[] = { LA_LoadProject, LA_SaveProject, LA_Separator, LA_Exit };
+	ELogicimAction	aeFile[] = { LA_LoadProject, LA_SaveProject, LA_Separator, LA_ImportKicadSchematic, LA_Separator, LA_Exit };
 	ELogicimAction	aeEdit[] = { LA_Undo, LA_Redo, LA_Separator, LA_Cut, LA_Copy, LA_Paste, LA_Duplicate, LA_Delete, LA_Separator, LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically, LA_Separator, LA_EditProperties };
 	ELogicimAction	aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
 	ELogicimAction	aeSimulation[] = { LA_NewSimulation, LA_Separator, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_Separator, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed };
@@ -900,6 +911,9 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 	case LA_SaveProject:
 		mpsData->eDialog = LDG_SaveProject;
 		break;
+	case LA_ImportKicadSchematic:
+		mpsData->eDialog = LDG_ImportKicadSchematic;
+		break;
 	case LA_RotateLeft:
 		pcEditor->RotateLeft();
 		break;
@@ -1097,6 +1111,10 @@ void CLogicimWindowContent::ShowDialog(ELogicimDialog eDialog)
 	else if (eDialog == LDG_SaveProject)
 	{
 		ShowProjectDialog(true);
+	}
+	else if (eDialog == LDG_ImportKicadSchematic)
+	{
+		ShowImportKicadDialog();
 	}
 }
 
@@ -1363,6 +1381,39 @@ void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 		if (bResult)
 		{
 			gcLogger.Info2(bSave ? "Saved [" : "Loaded [", szFilename, "].", NULL);
+		}
+		UpdateInfo();
+	}
+	cChooser.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Asks for a KiCad schematic and replaces the project with the circuit
+// made from it (see CLogicimCircuit::ImportKicadSchematic).  Saving the
+// project then offers the schematic's name as an .xml file.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowImportKicadDialog(void)
+{
+	CFileChooser		cChooser;
+	char*				szFilename;
+
+	cChooser.Init(mpWindow, &msDialogLook, "Import KiCad Schematic", false, mszKicadFilename.Text(), gasKicadFileTypes, sizeof(gasKicadFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
+	if (cChooser.Show())
+	{
+		szFilename = cChooser.GetChosen();
+		mszKicadFilename.Set(szFilename);
+		if (mcCircuit.ImportKicadSchematic(szFilename))
+		{
+			mszProjectFilename.Set(szFilename);
+			if (mszProjectFilename.EndsWith(".kicad_sch"))
+			{
+				mszProjectFilename.RemoveFromEnd(10);
+			}
+			mszProjectFilename.Append(".xml");
+			gcLogger.Info2("Imported [", szFilename, "].", NULL);
 		}
 		UpdateInfo();
 	}

@@ -18,7 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/XMLWriter.h"
+#include "BaseLib/Markup.h"
 #include "StandardLib/Objects.h"
+#include "LogicimLib/CircuitFile.h"
+#include "KicadImporterLib/KicadSchemLogicimConverter.h"
 #include "LogicimCircuit.h"
 
 
@@ -144,6 +148,72 @@ bool CLogicimCircuit::Save(const char* szFilename)
 bool CLogicimCircuit::Load(const char* szFilename)
 {
 	return mcEditor.Load(szFilename);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Converts the KiCad schematic to a circuit named as its file ("Counter
+// 16bit"), with the placeholder subcircuits made for its parts, and loads
+// them as a project is loaded so the import can be undone.  If it can't
+// be imported the project is left as it was.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
+{
+	CKicadSchemFile					cFile;
+	CKicadSchemNetlist				cNetlist;
+	CCircuitViews					cCircuits;
+	CKicadSchemLogicimConverter		cConverter;
+	CXMLWriter						cWriter;
+	CMarkup							cMarkup;
+	CMarkupTag*						pcRoot;
+	CChars							szName;
+	const char*						szStart;
+	const char*						sz;
+	bool							bResult;
+
+	szStart = szFilename;
+	for (sz = szFilename; *sz != '\0'; sz++)
+	{
+		if ((*sz == '/') || (*sz == '\\'))
+		{
+			szStart = sz + 1;
+		}
+	}
+	szName.Init(szStart);
+	if (szName.EndsWith(".kicad_sch"))
+	{
+		szName.RemoveFromEnd(10);
+	}
+
+	cFile.Init();
+	bResult = cFile.Load((char*)szFilename);
+	cNetlist.Init(&cFile);
+	cCircuits.Init();
+	cConverter.Init(&cFile, &cNetlist, &cCircuits, &mcFonts);
+	bResult = bResult && cNetlist.Build() && cConverter.Convert(szName.Text());
+	if (bResult)
+	{
+		cWriter.Init();
+		SaveCircuitsXML(&cCircuits, cConverter.GetCircuit(), NULL, &cWriter);
+		cMarkup.Init();
+		pcRoot = ReadCircuitTextRoot(&cMarkup, cWriter.GetText(), szFilename, "Circuits");
+		bResult = (pcRoot != NULL) && mcEditor.LoadXML(pcRoot, szFilename);
+		cMarkup.Kill();
+		cWriter.Kill();
+		if (bResult)
+		{
+			mcEditor.PushUndo(false);
+		}
+	}
+
+	cConverter.Kill();
+	cCircuits.Kill();
+	cNetlist.Kill();
+	cFile.Kill();
+	szName.Kill();
+	return bResult;
 }
 
 

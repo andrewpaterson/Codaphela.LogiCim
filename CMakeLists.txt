@@ -1,5 +1,5 @@
 # Linux build of LogiCim (BaseLib + StandardLib + SupportLib + InputLib +
-# WindowLib + X11Lib + MicroprocessorLib + LogicimLib + LogiCim's window
+# WindowLib + X11Lib + MicroprocessorLib + LogicimLib + KicadImporterLib + LogiCim's window
 # sources).
 #
 # 64-bit only: there is no 32-bit libX11 installed.  Needs libx11-dev.
@@ -36,6 +36,7 @@ set(WINDOWLIB_DIR "${COMMON_DIR}/WindowLib")
 set(X11LIB_DIR "${COMMON_DIR}/X11Lib")
 set(MICROPROCESSORLIB_DIR "${COMMON_DIR}/MicroprocessorLib")
 set(LOGICIMLIB_DIR "${COMMON_DIR}/LogicimLib")
+set(KICADIMPORTERLIB_DIR "${COMMON_DIR}/KicadImporterLib")
 set(LOGICIM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/LogiCim")
 
 
@@ -94,6 +95,7 @@ vcxproj_sources(WINDOWLIB_SOURCES "${WINDOWLIB_DIR}/WindowLib.vcxproj")
 vcxproj_sources(X11LIB_SOURCES "${X11LIB_DIR}/X11Lib.vcxproj")
 vcxproj_sources(MICROPROCESSORLIB_SOURCES "${MICROPROCESSORLIB_DIR}/MicroprocessorLib.vcxproj")
 vcxproj_sources(LOGICIMLIB_SOURCES "${LOGICIMLIB_DIR}/LogicimLib.vcxproj")
+vcxproj_sources(KICADIMPORTERLIB_SOURCES "${KICADIMPORTERLIB_DIR}/KicadImporterLib.vcxproj")
 
 # LogiCim.cpp (WinMain) is Windows only.
 set(LOGICIM_SOURCES
@@ -169,6 +171,8 @@ add_library(MicroprocessorLib STATIC ${MICROPROCESSORLIB_SOURCES})
 target_link_libraries(MicroprocessorLib PUBLIC StandardLib BaseLib)
 add_library(LogicimLib STATIC ${LOGICIMLIB_SOURCES})
 target_link_libraries(LogicimLib PUBLIC SupportLib MicroprocessorLib StandardLib BaseLib)
+add_library(KicadImporterLib STATIC ${KICADIMPORTERLIB_SOURCES})
+target_link_libraries(KicadImporterLib PUBLIC LogicimLib SupportLib MicroprocessorLib StandardLib BaseLib)
 add_executable(LogiCim ${LOGICIM_SOURCES})
 target_include_directories(LogiCim PRIVATE "${LOGICIM_DIR}")
-target_link_libraries(LogiCim PRIVATE X11Lib WindowLib InputLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
+target_link_libraries(LogiCim PRIVATE X11Lib WindowLib InputLib KicadImporterLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
