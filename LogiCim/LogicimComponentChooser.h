@@ -1,3 +1,23 @@
+/** ---------------- COPYRIGHT NOTICE, DISCLAIMER, and LICENSE ------------- **
+
+Copyright (c) 2026 Andrew Paterson
+
+This file is part of The Codaphela Project: Codaphela LogiCim
+
+Codaphela LogiCim is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Codaphela LogiCim is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
+
+** ------------------------------------------------------------------------ **/
 #ifndef __LOGICIM_COMPONENT_CHOOSER_H__
 #define __LOGICIM_COMPONENT_CHOOSER_H__
 #include "BaseLib/ArrayInt.h"
@@ -29,6 +49,7 @@ public:
 };
 
 
+//Filters the chooser's tree as the filter's text is typed (see CLogicimComponentChooser::FilterChanged).
 class CChooserFilterListener : public CTextFieldListener
 {
 CONSTRUCTABLE(CChooserFilterListener);
