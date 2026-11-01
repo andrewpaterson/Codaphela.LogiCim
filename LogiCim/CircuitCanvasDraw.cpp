@@ -167,31 +167,39 @@ void CCircuitCanvasDraw::FitPreview(SInt32Vec2 sSize)
 {
 	SFloat64Vec2	sMinimum;
 	SFloat64Vec2	sMaximum;
-	float64			fZoomX;
-	float64			fZoomY;
-	float64			fZoom;
-	float64			fPixelsPerGrid;
 
 	if (!mpcPreview->GetBoundingBox(&sMinimum, &sMaximum))
 	{
 		sMinimum.Init(-1, -1);
 		sMaximum.Init(1, 1);
 	}
-	mcViewport.SetZoom(1);
-	fPixelsPerGrid = mcViewport.GetPixelsPerGrid();
-	fZoomX = sSize.x / ((sMaximum.x - sMinimum.x + 4) * fPixelsPerGrid);
-	fZoomY = sSize.y / ((sMaximum.y - sMinimum.y + 4) * fPixelsPerGrid);
-	fZoom = (fZoomX < fZoomY) ? fZoomX : fZoomY;
-	if (fZoom > 4)
-	{
-		fZoom = 4;
-	}
-	else if (fZoom < 0.2)
-	{
-		fZoom = 0.2;
-	}
-	mcViewport.SetZoom(fZoom);
-	fPixelsPerGrid = mcViewport.GetPixelsPerGrid();
-	mcViewport.SetPosition(-(sMinimum.x + sMaximum.x) / 2 * fPixelsPerGrid, -(sMinimum.y + sMaximum.y) / 2 * fPixelsPerGrid);
+	mcViewport.SetSize(sSize.x, sSize.y);
+	mcViewport.ZoomToFit(sMinimum, sMaximum, 2, 4);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Zooms keeping the grid point in the middle of the canvas where it is.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitCanvasDraw::ZoomAroundCentre(float32 fZoom)
+{
+	SInt32Vec2	sSize;
+
+	sSize = mcViewport.GetSize();
+	mcViewport.ZoomAround(sSize.x / 2.0, sSize.y / 2.0, fZoom);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Zooms (no further in than the most) and scrolls so the grid box, one
+// grid unit bigger each way, fills the canvas.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitCanvasDraw::ZoomToFit(SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum)
+{
+	mcViewport.ZoomToFit(sMinimum, sMaximum, 1, CIRCUIT_MAXIMUM_ZOOM);
 }
 

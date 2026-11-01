@@ -33,17 +33,16 @@ class CCircuitEditor;
 //
 //Button one presses and releases come as ActivateComponent and ExecuteComponent, or with shift or control held as a
 //select drag.  Either way the editor decides what the press does (see CCircuitEditor::ButtonPressed): dragging a
-//component on its own detaches it from its wires, and with control held keeps them connected.  Keys are Logicim's: r turns right and R left; Delete deletes; Escape stops the edit and clears the
-//selection; e, or a double click, edits the properties of the component under the pointer or selected; and letters
+//component on its own detaches it from its wires, and with control held keeps them connected.  Keys: r turns left (anticlockwise) and R right; x flips left to right
+//and y top to bottom (see CCircuitEditor::FlipHorizontally); m moves the selection, or the component under the pointer,
+//until the next click (see CCircuitEditor::StartMove); Delete deletes; Escape stops the edit and clears the selection;
+//e, or a double click, edits the properties of the component under the pointer or selected; and letters
 //place components, as Logicim's KeyInputsFactory (g a ground, v a supply, p a pin, c a constant; with shift: A an AND
 //gate, O an OR, X an XOR, N an inverter, C a clock, P a probe, S a splitter, T a tunnel, L a label and F a flip flop).
 //Logicim's control and alt placements aren't printable keys and aren't here.
 //
 //Ctrl+Z undoes back to before the last change that wasn't only to the selection and Ctrl+Y redoes forward to after the
 //next one; with shift they step one change at a time, as Logicim's do (see CCircuitEditor::Undo).
-//
-//Ctrl+Shift+F followed by H flips left to right, and followed by V flips top to bottom (see
-//CCircuitEditor::FlipHorizontally); control and shift can be let go of before H or V.
 class CCircuitCanvas : public CCanvas
 {
 CONSTRUCTABLE(CCircuitCanvas);
@@ -82,8 +81,6 @@ public:
 	void						StepUndo(void);
 	void						Redo(void);
 	void						StepRedo(void);
-	void						FlipHorizontally(void);
-	void						FlipVertically(void);
 
 protected:
 	SFloat64Vec2				ToGrid(int x, int y);

@@ -45,7 +45,7 @@ Then Read the PNG to look at it. Stop with `Stop-LogiCim`.
 | `Drag-Grid @(x,y) @(x,y) ...` | Button one held through the points: draws a wire from a port or wire end (one or two lines per drag), moves a component (detached from its wires) or the selection, or drags a selection rectangle from empty space |
 | `Drag-GridControl @(x,y) @(x,y) ...` | As `Drag-Grid` with left control held: a move keeps the wires connected, routing them live |
 | `Press-Grid x y [-Control]` / `Release-Grid x y` | Button one down and left down (`Move-Grid` to drag, `Save-Screenshot` to see it mid-drag), then up |
-| `Place-Grid 'F' x y` | Canvas key then click to put it down. Keys (CCircuitCanvas::Printable): `F` flip flop, `C` clock, `v` 3.3V, `g` ground, `p` pin, `c` constant, `A`/`O`/`X`/`N` gates, `P` probe, `S` splitter, `T` tunnel, `L` label; `r`/`R` rotate, `e` properties |
+| `Place-Grid 'F' x y` | Canvas key then click to put it down. Keys (CCircuitCanvas::Printable): `F` flip flop, `C` clock, `v` 3.3V, `g` ground, `p` pin, `c` constant, `A`/`O`/`X`/`N` gates, `P` probe, `S` splitter, `T` tunnel, `L` label; `r` rotate anticlockwise, `R` clockwise, `x`/`y` flip horizontally/vertically, `e` properties, `m` move the selection (or the component under the pointer) until the next click |
 | `Send-Char 'x'` / `Send-VKey vk [-Shift] [-Extended]` / `Send-Delete` | Keys |
 | `Click-Client x y` / `Move-Client x y` | Raw client-area pixels, for toolbars and menus |
 | `Save-Screenshot path` | Whole window as PNG; the client area starts 8 px in and 31 px down in the image |

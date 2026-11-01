@@ -30,13 +30,13 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CIRCUIT_CANVAS_DOUBLE_CLICK_MILLISECONDS	500  //As Logicim's when the desktop doesn't say.
 #define CIRCUIT_CANVAS_DOUBLE_CLICK_PIXELS			4
+#define CIRCUIT_CANVAS_WHEEL_ZOOM					(4.0 / 3.0)  //A third more zoom for each notch in.
 
 
 static EComponentInputCommand	gaeCircuitCanvasCommands[] =
 {
 	CIC_ActivateComponent, CIC_ExecuteComponent, CIC_StartDragSelect, CIC_ContDragSelect, CIC_StopDragSelect,
 	CIC_StartDragScroll, CIC_ContDragScroll, CIC_Delete, CIC_ClearSelection, CIC_Undo, CIC_StepUndo, CIC_Redo, CIC_StepRedo,
-	CIC_FlipHorizontally, CIC_FlipVertically,
 };
 
 
@@ -86,8 +86,6 @@ void CCircuitCanvas::CommandAction(SComponentInputEvent* psEvent)
 	case CIC_StepUndo:			StepUndo();									break;
 	case CIC_Redo:				Redo();										break;
 	case CIC_StepRedo:			StepRedo();									break;
-	case CIC_FlipHorizontally:	FlipHorizontally();							break;
-	case CIC_FlipVertically:	FlipVertically();							break;
 	default:					break;
 	}
 }
@@ -150,15 +148,24 @@ void CCircuitCanvas::MovedOver(int x, int y)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Each notch zooms by a tenth, as Logicim's does, keeping the circuit
-// under the pointer where it is.
+// Each notch up zooms in by a third and each notch down out by as much
+// (back to where a notch up came from), keeping the circuit under the
+// pointer where it is.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitCanvas::Wheel(int iRight, int iDown)
 {
+	float64	fZoom;
+	int		i;
+
 	if (iDown != 0)
 	{
-		mpCircuitDraw->GetViewport()->ZoomAround(msPointer.x, msPointer.y, mpCircuitDraw->GetZoom() - iDown * 0.1f);
+		fZoom = mpCircuitDraw->GetZoom();
+		for (i = 0; i < abs(iDown); i++)
+		{
+			fZoom = (iDown < 0) ? fZoom * CIRCUIT_CANVAS_WHEEL_ZOOM : fZoom / CIRCUIT_CANVAS_WHEEL_ZOOM;
+		}
+		mpCircuitDraw->GetViewport()->ZoomAround(msPointer.x, msPointer.y, fZoom);
 		mpcContent->Zoom(mpCircuitDraw->GetZoom());
 		return true;
 	}
@@ -294,13 +301,22 @@ void CCircuitCanvas::Printable(char c, bool bInsert)
 	switch (c)
 	{
 	case 'r':
-		mpcEditor->RotateRight();
+		mpcEditor->RotateLeft();
 		return;
 	case 'R':
-		mpcEditor->RotateLeft();
+		mpcEditor->RotateRight();
+		return;
+	case 'x':
+		mpcEditor->FlipHorizontally();
+		return;
+	case 'y':
+		mpcEditor->FlipVertically();
 		return;
 	case 'e':
 		mpcContent->EditProperties();
+		return;
+	case 'm':
+		mpcEditor->StartMove();
 		return;
 	case 'g':
 		szXMLName = "Ground";
@@ -360,8 +376,6 @@ void CCircuitCanvas::Undo(void) { mpcContent->Undo(false); }
 void CCircuitCanvas::StepUndo(void) { mpcContent->Undo(true); }
 void CCircuitCanvas::Redo(void) { mpcContent->Redo(false); }
 void CCircuitCanvas::StepRedo(void) { mpcContent->Redo(true); }
-void CCircuitCanvas::FlipHorizontally(void) { mpcEditor->FlipHorizontally(); }
-void CCircuitCanvas::FlipVertically(void) { mpcEditor->FlipVertically(); }
 
 
 //////////////////////////////////////////////////////////////////////////

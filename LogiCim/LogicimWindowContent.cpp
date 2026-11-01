@@ -94,6 +94,7 @@ static SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 	{ "Zoom In", "zoom_in" },
 	{ "Zoom Out", "zoom_out" },
 	{ "Reset Zoom", "zoom_center_on_screen" },
+	{ "Select Zoom...", NULL },
 	{ "Zoom to Fit All", "zoom_fit_in_page" },
 	{ "Zoom to Fit Selection", "zoom_selection" },
 	{ "Simulation Tree...", "simulation_tree" },
@@ -388,7 +389,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 {
 	ELogicimAction	aeFile[] = { LA_LoadProject, LA_SaveProject, LA_Separator, LA_ImportKicadSchematic, LA_Separator, LA_Exit };
 	ELogicimAction	aeEdit[] = { LA_Undo, LA_Redo, LA_Separator, LA_Cut, LA_Copy, LA_Paste, LA_Duplicate, LA_Delete, LA_Separator, LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically, LA_Separator, LA_EditProperties };
-	ELogicimAction	aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
+	ELogicimAction	aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_SelectZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
 	ELogicimAction	aeSimulation[] = { LA_NewSimulation, LA_Separator, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_Separator, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed };
 	ELogicimAction	aePlace[] = { LA_AddComponent, LA_AddTrace, LA_AddSplitter, LA_AddTunnel, LA_AddConnection, LA_AddPower, LA_AddLabel, LA_AddSubcircuit, LA_Separator, LA_NewSubcircuit };
 
@@ -819,9 +820,51 @@ void CLogicimWindowContent::PointerOverCircuit(int x, int y)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Zoom(float32 fZoom)
 {
+	mpCircuit->GetCircuitDraw()->SetZoom(fZoom);
+	ShowZoom();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Zoom to Fit All fits the whole circuit on the canvas, Zoom to Fit
+// Selection the selection.  Nothing to fit leaves the zoom as it is.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ZoomToFit(bool bSelection)
+{
+	CCircuitEditor*		pcEditor;
+	SFloat64Vec2		sMinimum;
+	SFloat64Vec2		sMaximum;
+	bool				bHasBounds;
+
+	pcEditor = mcCircuit.GetEditor();
+	if (bSelection)
+	{
+		bHasBounds = pcEditor->GetSelection()->GetBoundingBox(&sMinimum, &sMaximum);
+	}
+	else
+	{
+		bHasBounds = (pcEditor->GetCircuit() != NULL) && pcEditor->GetCircuit()->GetBoundingBox(&sMinimum, &sMaximum);
+	}
+
+	if (bHasBounds)
+	{
+		mpCircuit->GetCircuitDraw()->ZoomToFit(sMinimum, sMaximum);
+		ShowZoom();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The status bar's zoom.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowZoom(void)
+{
 	CChars	sz;
 
-	mpCircuit->GetCircuitDraw()->SetZoom(fZoom);
 	sz.Init("Z ");
 	AppendTenths(&sz, mpCircuit->GetCircuitDraw()->GetZoom());
 	mpZoomInfo->SetText(sz.Text());
@@ -991,6 +1034,15 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 	case LA_ResetZoom:
 		Zoom(1.0f);
 		break;
+	case LA_SelectZoom:
+		mpsData->eDialog = LDG_SelectZoom;
+		break;
+	case LA_ZoomFitAll:
+		ZoomToFit(false);
+		break;
+	case LA_ZoomFitSelection:
+		ZoomToFit(true);
+		break;
 	case LA_Exit:
 		mpWindow->Stop();
 		break;
@@ -1099,6 +1151,10 @@ void CLogicimWindowContent::ShowDialog(ELogicimDialog eDialog)
 	else if (eDialog == LDG_NewSimulation)
 	{
 		ShowNewSimulationDialog();
+	}
+	else if (eDialog == LDG_SelectZoom)
+	{
+		ShowSelectZoomDialog();
 	}
 	else if (eDialog == LDG_ChooseComponent)
 	{
@@ -1311,6 +1367,50 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 	}
 
 	pName = NULL;
+	cDialog.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The zoom as a factor, 1 for 100%, about the middle of the canvas.  Text
+// that isn't a number leaves the zoom as it is; a number is kept between
+// the least and most zoom.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowSelectZoomDialog(void)
+{
+	CDialog				cDialog;
+	Ptr<CTextField>		pZoom;
+	Ptr<CCircuitCanvasDraw>	pDraw;
+	CChars				szZoom;
+	char*				szText;
+	char*				szEnd;
+	float64				fZoom;
+
+	pDraw = mpCircuit->GetCircuitDraw();
+	szZoom.Init();
+	AppendTenths(&szZoom, pDraw->GetZoom());
+	cDialog.Init(mpWindow, &msDialogLook, "Select Zoom");
+	pZoom = cDialog.AddTextField("Zoom (1 is 100%)", szZoom.Text());
+	szZoom.Kill();
+
+	if (cDialog.Show(LOGICIM_DIALOG_WIDTH))
+	{
+		szText = pZoom->GetText();
+		fZoom = strtod(szText, &szEnd);
+		while (*szEnd == ' ')
+		{
+			szEnd++;
+		}
+		if ((szEnd != szText) && (*szEnd == '\0') && (fZoom > 0))
+		{
+			pDraw->ZoomAroundCentre((float32)fZoom);
+			ShowZoom();
+		}
+	}
+
+	pZoom = NULL;
 	cDialog.Kill();
 }
 

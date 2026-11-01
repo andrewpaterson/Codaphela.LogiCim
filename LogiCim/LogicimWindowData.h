@@ -32,6 +32,7 @@ enum ELogicimDialog
 	LDG_ChooseComponent,
 	LDG_NewSubcircuit,
 	LDG_NewSimulation,
+	LDG_SelectZoom,
 	LDG_LoadProject,
 	LDG_SaveProject,
 	LDG_ImportKicadSchematic,

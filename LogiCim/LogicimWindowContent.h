@@ -57,6 +57,7 @@ enum ELogicimAction
 	LA_ZoomIn,
 	LA_ZoomOut,
 	LA_ResetZoom,
+	LA_SelectZoom,
 	LA_ZoomFitAll,
 	LA_ZoomFitSelection,
 	LA_ViewSimulationTree,
@@ -145,6 +146,7 @@ public:
 	void			ListSelectionChanged(CListContainer* pcList);
 	void			PointerOverCircuit(int x, int y);
 	void			Zoom(float32 fZoom);
+	void			ZoomToFit(bool bSelection);
 	void			EditProperties(void);
 	void			Undo(bool bStep);
 	void			Redo(bool bStep);
@@ -178,6 +180,8 @@ protected:
 	void					ShowPropertiesDialog(void);
 	void					ShowNewSubcircuitDialog(void);
 	void					ShowNewSimulationDialog(void);
+	void					ShowSelectZoomDialog(void);
+	void					ShowZoom(void);
 	void					ShowProjectDialog(bool bSave);
 	void					ShowImportKicadDialog(void);
 	void					ShowComponentChooser(void);
