@@ -1,9 +1,21 @@
-/.vs/*
-/Debug/*
-/Release/*
-/Log.txt
-/LogiCim/Debug/*
-/LogiCim/Release/*
-/LogiCim/Log.txt
-/x64/*
-/LogiCim/x64/*
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.opendb
+*.suo
+*.sdf
+*.opensdf
+*ipch
+*.swp
+
+# MSBuild output for every project and platform (Win32: Debug/Release, x64: x64/Debug, x64/Release)
+[Dd]ebug/
+[Rr]elease/
+x64/
+
+# Logs written by LogiCim and the tests
+Log.txt
+
+# Files the tests write
+/TestLogicimLib/TestLogicimLib/Output/
+/TestKicadImporterLib/TestKicadImporterLib/Output/

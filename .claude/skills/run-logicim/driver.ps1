@@ -27,7 +27,7 @@ public static class LogiCimU {
 }
 [LogiCimU]::SetProcessDPIAware() | Out-Null
 
-$LogiCimUnit = (Resolve-Path "$PSScriptRoot\..\..\..").Path
+$LogiCimUnit = (Resolve-Path "$PSScriptRoot\..\..\..\LogiCim").Path
 # The canvas centre in client pixels (grid 0,0 at zoom 1, unscrolled) and the left toolbar's zoom buttons.
 $LogiCimCentre = @(740, 347)
 $LogiCimZoomIn = @(20, 148)

@@ -14,10 +14,10 @@ Use the **PowerShell** tool (Windows PowerShell 5.1), not Bash: the driver is a 
 ## Build
 
 ```powershell
-& "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" "D:\gameengine\LogiCim\LogiCim.sln" /p:Configuration=Debug /p:Platform=x64 /m /v:minimal /nologo | Select-String "LogiCim.exe| error "
+& "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" "D:\gameengine\LogiCim\LogiCim\LogiCim.sln" /p:Configuration=Debug /p:Platform=x64 /m /v:minimal /nologo | Select-String "LogiCim.exe| error "
 ```
 
-The exe lands in `x64\Debug\LogiCim.exe` (Win32 configurations in `Debug\` / `Release\`).
+The exe lands in `LogiCim\x64\Debug\LogiCim.exe` (Win32 configurations in `LogiCim\Debug\` / `LogiCim\Release\`).
 
 ## Run (agent path)
 
@@ -38,7 +38,7 @@ Then Read the PNG to look at it. Stop with `Stop-LogiCim`.
 
 | Function | Does |
 |---|---|
-| `Start-LogiCim [-Config Debug] [-Platform x64]` | Stops any running LogiCim, launches from `LogiCim\` (it loads `Resources\`), waits for the window, warns if the client isn't 1280x800 |
+| `Start-LogiCim [-Config Debug] [-Platform x64]` | Stops any running LogiCim, launches from `LogiCim\LogiCim\` (it loads `Resources\`), waits for the window, warns if the client isn't 1280x800 |
 | `Stop-LogiCim` / `Focus-LogiCim` | Kills it / brings it to the front |
 | `Set-Zoom n` | Reset zoom then zoom in to n (whole steps, about the centre) |
 | `Move-Grid x y` / `Click-Grid x y` | Pointer to a grid point (fractions allowed) / button one click there |
@@ -55,16 +55,16 @@ QB (4,1). A clock's output is one unit right of it; a 3.3V supply placed at (-10
 
 ## Run (human path)
 
-Launch `x64\Debug\LogiCim.exe` with the working directory `LogiCim\LogiCim\`. The simulation starts
+Launch `LogiCim\x64\Debug\LogiCim.exe` with the working directory `LogiCim\LogiCim\`. The simulation starts
 running ("View Path: Top (running)" in the status bar).
 
 ## Test
 
-The editor and drawing logic is in `CommonLibraries\LogicimLib`, tested by `Test\TestLogicimLib` (run the exe from
+The editor and drawing logic is in `LogicimLib`, tested by `TestLogicimLib` (run the exe from
 its project folder, results at the end of `Log.txt`):
 
 ```powershell
-& "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" D:\gameengine\Test\TestLogicimLib\TestLogicimLib.sln /p:Configuration=Release /p:Platform=x64 /m /v:minimal /nologo | Select-String " error "; Set-Location D:\gameengine\Test\TestLogicimLib\TestLogicimLib; & ..\x64\Release\TestLogicimLib.exe | Out-Null; Get-Content Log.txt -Tail 4
+& "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" D:\gameengine\LogiCim\TestLogicimLib\TestLogicimLib.sln /p:Configuration=Release /p:Platform=x64 /m /v:minimal /nologo | Select-String " error "; Set-Location D:\gameengine\LogiCim\TestLogicimLib\TestLogicimLib; & ..\x64\Release\TestLogicimLib.exe | Out-Null; Get-Content Log.txt -Tail 4
 ```
 
 ## Gotchas
