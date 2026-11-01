@@ -1492,7 +1492,8 @@ void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 //
 // Asks for a KiCad schematic and replaces the project with the circuit
 // made from it (see CLogicimCircuit::ImportKicadSchematic).  Saving the
-// project then offers the schematic's name as an .xml file.
+// project then offers the schematic's name as an .xml file.  The imported
+// circuit is zoomed to fit.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowImportKicadDialog(void)
@@ -1514,6 +1515,7 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 			}
 			mszProjectFilename.Append(".xml");
 			gcLogger.Info2("Imported [", szFilename, "].", NULL);
+			ZoomToFit(false);
 		}
 		UpdateInfo();
 	}
