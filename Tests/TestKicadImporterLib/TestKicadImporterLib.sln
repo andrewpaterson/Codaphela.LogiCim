@@ -2,19 +2,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31402.337
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseLib", "..\..\CommonLibraries\BaseLib\BaseLib.vcxproj", "{E25D2DAC-0E80-42B2-8FA7-99B837CF7588}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseLib", "..\..\..\CommonLibraries\Libraries\BaseLib\BaseLib.vcxproj", "{E25D2DAC-0E80-42B2-8FA7-99B837CF7588}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StandardLib", "..\..\CommonLibraries\StandardLib\StandardLib.vcxproj", "{2CFA23FA-6565-4744-8B75-9790B21CC0E5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StandardLib", "..\..\..\CommonLibraries\Libraries\StandardLib\StandardLib.vcxproj", "{2CFA23FA-6565-4744-8B75-9790B21CC0E5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SupportLib", "..\..\CommonLibraries\SupportLib\SupportLib.vcxproj", "{221022F1-B103-456A-8F55-721F33F2E26D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SupportLib", "..\..\..\CommonLibraries\Libraries\SupportLib\SupportLib.vcxproj", "{221022F1-B103-456A-8F55-721F33F2E26D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLib", "..\..\CommonLibraries\TestLib\TestLib.vcxproj", "{D06D265E-A503-42F8-A93A-A0A1C0B058FF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLib", "..\..\..\CommonLibraries\Libraries\TestLib\TestLib.vcxproj", "{D06D265E-A503-42F8-A93A-A0A1C0B058FF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroprocessorLib", "..\..\CommonLibraries\MicroprocessorLib\MicroprocessorLib.vcxproj", "{0BF6F66E-80B2-44CF-897C-0F305AAF6AF0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroprocessorLib", "..\..\..\CommonLibraries\Libraries\MicroprocessorLib\MicroprocessorLib.vcxproj", "{0BF6F66E-80B2-44CF-897C-0F305AAF6AF0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogicimLib", "..\LogicimLib\LogicimLib.vcxproj", "{C3DFF95A-5E3F-452F-B879-1AF5257A94B4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogicimLib", "..\..\Libraries\LogicimLib\LogicimLib.vcxproj", "{C3DFF95A-5E3F-452F-B879-1AF5257A94B4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KicadImporterLib", "..\KicadImporterLib\KicadImporterLib.vcxproj", "{B4FBD661-3262-4471-814B-429C08722CF2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KicadImporterLib", "..\..\Libraries\KicadImporterLib\KicadImporterLib.vcxproj", "{B4FBD661-3262-4471-814B-429C08722CF2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestKicadImporterLib", "TestKicadImporterLib\TestKicadImporterLib.vcxproj", "{1A47AE7A-9470-4237-8A95-8BBD9F9B8BE0}"
 	ProjectSection(ProjectDependencies) = postProject

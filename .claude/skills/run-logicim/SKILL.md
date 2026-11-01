@@ -60,11 +60,11 @@ running ("View Path: Top (running)" in the status bar).
 
 ## Test
 
-The editor and drawing logic is in `LogicimLib`, tested by `TestLogicimLib` (run the exe from
+The editor and drawing logic is in `Libraries\LogicimLib`, tested by `Tests\TestLogicimLib` (run the exe from
 its project folder, results at the end of `Log.txt`):
 
 ```powershell
-& "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" D:\gameengine\LogiCim\TestLogicimLib\TestLogicimLib.sln /p:Configuration=Release /p:Platform=x64 /m /v:minimal /nologo | Select-String " error "; Set-Location D:\gameengine\LogiCim\TestLogicimLib\TestLogicimLib; & ..\x64\Release\TestLogicimLib.exe | Out-Null; Get-Content Log.txt -Tail 4
+& "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" D:\gameengine\LogiCim\Tests\TestLogicimLib\TestLogicimLib.sln /p:Configuration=Release /p:Platform=x64 /m /v:minimal /nologo | Select-String " error "; Set-Location D:\gameengine\LogiCim\Tests\TestLogicimLib\TestLogicimLib; & ..\x64\Release\TestLogicimLib.exe | Out-Null; Get-Content Log.txt -Tail 4
 ```
 
 ## Gotchas

@@ -17,5 +17,5 @@ x64/
 Log.txt
 
 # Files the tests write
-/TestLogicimLib/TestLogicimLib/Output/
-/TestKicadImporterLib/TestKicadImporterLib/Output/
+/Tests/TestLogicimLib/TestLogicimLib/Output/
+/Tests/TestKicadImporterLib/TestKicadImporterLib/Output/

@@ -31,7 +31,7 @@ option(BASELIB_ASAN "Build with AddressSanitizer and LeakSanitizer" OFF)
 # This solution is in the LogiCim repository (with LogicimLib and KicadImporterLib), which is beside CommonLibraries.
 get_filename_component(LOGICIM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 get_filename_component(CODAPHELA_ROOT "${LOGICIM_ROOT}/.." ABSOLUTE)
-set(COMMON_DIR "${CODAPHELA_ROOT}/commonlibraries")
+set(COMMON_DIR "${CODAPHELA_ROOT}/commonlibraries/Libraries")
 set(BASELIB_DIR "${COMMON_DIR}/BaseLib")
 set(STANDARDLIB_DIR "${COMMON_DIR}/StandardLib")
 set(SUPPORTLIB_DIR "${COMMON_DIR}/SupportLib")
@@ -39,8 +39,8 @@ set(INPUTLIB_DIR "${COMMON_DIR}/InputLib")
 set(WINDOWLIB_DIR "${COMMON_DIR}/WindowLib")
 set(X11LIB_DIR "${COMMON_DIR}/X11Lib")
 set(MICROPROCESSORLIB_DIR "${COMMON_DIR}/MicroprocessorLib")
-set(LOGICIMLIB_DIR "${LOGICIM_ROOT}/LogicimLib")
-set(KICADIMPORTERLIB_DIR "${LOGICIM_ROOT}/KicadImporterLib")
+set(LOGICIMLIB_DIR "${LOGICIM_ROOT}/Libraries/LogicimLib")
+set(KICADIMPORTERLIB_DIR "${LOGICIM_ROOT}/Libraries/KicadImporterLib")
 set(LOGICIM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/LogiCim")
 
 
@@ -119,7 +119,7 @@ set(LOGICIM_SOURCES
 # BREAK_ON_WARNING: on Linux BREAK() raises SIGTRAP, which kills the test run
 # when no debugger is attached.
 add_library(baselib_options INTERFACE)
-target_include_directories(baselib_options INTERFACE "${COMMON_DIR}" "${LOGICIM_ROOT}")
+target_include_directories(baselib_options INTERFACE "${COMMON_DIR}" "${LOGICIM_ROOT}/Libraries")
 target_compile_definitions(baselib_options INTERFACE
 	LINUX_GNU
 	$<$<CONFIG:Debug>:_DEBUG>

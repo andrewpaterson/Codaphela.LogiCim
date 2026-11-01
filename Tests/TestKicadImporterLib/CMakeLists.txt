@@ -1,14 +1,14 @@
-# Linux build of TestLogicimLib (BaseLib + TestLib + StandardLib + SupportLib +
-# MicroprocessorLib + LogicimLib + TestLogicimLib).
+# Linux build of TestKicadImporterLib (BaseLib + TestLib + StandardLib + SupportLib +
+# MicroprocessorLib + LogicimLib + KicadImporterLib + TestKicadImporterLib).
 #
 # Builds 32-bit (-m32, needs g++-multilib) by default.  Add -DBASELIB_64=ON
 # for a 64-bit build, in its own build directory:
 #
-#   cmake -S LogiCim/TestLogicimLib -B build/TestLogicimLib64 -G Ninja -DBASELIB_64=ON
+#   cmake -S LogiCim/Tests/TestKicadImporterLib -B build/TestKicadImporterLib64 -G Ninja -DBASELIB_64=ON
 #
-#   cmake -S LogiCim/TestLogicimLib -B build/TestLogicimLib -G Ninja -DCMAKE_BUILD_TYPE=Debug
-#   cmake --build build/TestLogicimLib
-#   ctest --test-dir build/TestLogicimLib -V
+#   cmake -S LogiCim/Tests/TestKicadImporterLib -B build/TestKicadImporterLib -G Ninja -DCMAKE_BUILD_TYPE=Debug
+#   cmake --build build/TestKicadImporterLib
+#   ctest --test-dir build/TestKicadImporterLib -V
 #
 # Add -DBASELIB_ASAN=ON for AddressSanitizer and LeakSanitizer.
 #
@@ -18,7 +18,7 @@
 # so never glob *.cpp to find sources.
 
 cmake_minimum_required(VERSION 3.16)
-project(TestLogicimLib CXX)
+project(TestKicadImporterLib CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -32,16 +32,17 @@ option(BASELIB_ASAN "Build with AddressSanitizer and LeakSanitizer" OFF)
 option(BASELIB_64 "Build 64-bit instead of 32-bit" OFF)
 
 # This test is in the LogiCim repository (with LogicimLib and KicadImporterLib), which is beside CommonLibraries.
-get_filename_component(LOGICIM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+get_filename_component(LOGICIM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 get_filename_component(CODAPHELA_ROOT "${LOGICIM_ROOT}/.." ABSOLUTE)
-set(COMMON_DIR "${CODAPHELA_ROOT}/commonlibraries")
+set(COMMON_DIR "${CODAPHELA_ROOT}/commonlibraries/Libraries")
 set(BASELIB_DIR "${COMMON_DIR}/BaseLib")
 set(TESTLIB_DIR "${COMMON_DIR}/TestLib")
 set(STANDARDLIB_DIR "${COMMON_DIR}/StandardLib")
 set(SUPPORTLIB_DIR "${COMMON_DIR}/SupportLib")
 set(MICROPROCESSORLIB_DIR "${COMMON_DIR}/MicroprocessorLib")
-set(LOGICIMLIB_DIR "${LOGICIM_ROOT}/LogicimLib")
-set(TESTLOGICIMLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/TestLogicimLib")
+set(LOGICIMLIB_DIR "${LOGICIM_ROOT}/Libraries/LogicimLib")
+set(KICADIMPORTERLIB_DIR "${LOGICIM_ROOT}/Libraries/KicadImporterLib")
+set(TESTKICADIMPORTERLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/TestKicadImporterLib")
 
 
 # Reads <ClCompile Include="..."/> entries from a .vcxproj and resolves them
@@ -98,14 +99,16 @@ vcxproj_sources(MICROPROCESSORLIB_SOURCES "${MICROPROCESSORLIB_DIR}/Microprocess
 
 vcxproj_sources(LOGICIMLIB_SOURCES "${LOGICIMLIB_DIR}/LogicimLib.vcxproj")
 
-vcxproj_sources(TESTLOGICIMLIB_SOURCES "${TESTLOGICIMLIB_DIR}/TestLogicimLib.vcxproj")
+vcxproj_sources(KICADIMPORTERLIB_SOURCES "${KICADIMPORTERLIB_DIR}/KicadImporterLib.vcxproj")
+
+vcxproj_sources(TESTKICADIMPORTERLIB_SOURCES "${TESTKICADIMPORTERLIB_DIR}/TestKicadImporterLib.vcxproj")
 
 
 # Matches the Visual Studio configurations, except BREAK_ON_ERROR and
 # BREAK_ON_WARNING: on Linux BREAK() raises SIGTRAP, which kills the test run
 # when no debugger is attached.
 add_library(baselib_options INTERFACE)
-target_include_directories(baselib_options INTERFACE "${COMMON_DIR}" "${LOGICIM_ROOT}")
+target_include_directories(baselib_options INTERFACE "${COMMON_DIR}" "${LOGICIM_ROOT}/Libraries")
 target_compile_definitions(baselib_options INTERFACE
 	LINUX_GNU
 	$<$<CONFIG:Debug>:_DEBUG>
@@ -193,10 +196,14 @@ target_link_libraries(MicroprocessorLib PUBLIC StandardLib BaseLib)
 add_library(LogicimLib STATIC ${LOGICIMLIB_SOURCES})
 target_link_libraries(LogicimLib PUBLIC SupportLib MicroprocessorLib StandardLib BaseLib)
 
-add_executable(TestLogicimLib ${TESTLOGICIMLIB_SOURCES})
-target_link_libraries(TestLogicimLib PRIVATE TestLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
+# KicadImporterLib uses LogicimLib to write Logicim circuits.  LogicimLib must never depend on it.
+add_library(KicadImporterLib STATIC ${KICADIMPORTERLIB_SOURCES})
+target_link_libraries(KicadImporterLib PUBLIC LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
+
+add_executable(TestKicadImporterLib ${TESTKICADIMPORTERLIB_SOURCES})
+target_link_libraries(TestKicadImporterLib PRIVATE TestLib KicadImporterLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
 
 # The tests read their input (Input/ ...) relative to the project directory,
 # as Visual Studio does.
 enable_testing()
-add_test(NAME TestLogicimLib COMMAND TestLogicimLib WORKING_DIRECTORY "${TESTLOGICIMLIB_DIR}")
+add_test(NAME TestKicadImporterLib COMMAND TestKicadImporterLib WORKING_DIRECTORY "${TESTKICADIMPORTERLIB_DIR}")
