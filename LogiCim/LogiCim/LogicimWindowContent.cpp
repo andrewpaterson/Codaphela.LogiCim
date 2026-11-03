@@ -42,6 +42,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //IntelliJ IDEA's new UI dark theme.  The dim text is LogiCim's own, for the status bar and dividers.
 #define LOGICIM_DIM_TEXT			Set32BitColour((uint8)0x9D, (uint8)0xA0, (uint8)0xA8)
 #define LOGICIM_DEFAULT_SPEED	0.25  //Simulated nanoseconds per millisecond.
+#define LOGICIM_SIMULATION_TICK_MILLISECONDS	16  //How often a running simulation is stepped.
 
 #define LOGICIM_ROW_HEIGHT		24
 #define LOGICIM_DIALOG_WIDTH		440
@@ -140,6 +141,7 @@ bool CLogicimWindowContent::Init(Ptr<CWindow> pWindow, SLogicimWindowData* psDat
 	mpsData->eDialog = LDG_None;
 	miSimulationCount = 0;
 	mbRunning = true;
+	mbRanLastTick = false;
 	mfNanosecondsPerMillisecond = LOGICIM_DEFAULT_SPEED;
 	maButtons.Init();
 	maiButtonActions.Init();
@@ -1056,15 +1058,23 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 //////////////////////////////////////////////////////////////////////////
 //
 // Runs the simulation on by the time since the last tick, scaled by the
-// speed.
+// speed, and paints the window again if anything happened in it.  The
+// window waits for events between ticks, so a running simulation asks to
+// be ticked again.  The time before the simulation started running isn't
+// simulated.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 {
 	if (mbRunning)
 	{
-		mcCircuit.Run(NanosecondsToTime(iUpdateTimeInMilliseconds * mfNanosecondsPerMillisecond));
+		if (mbRanLastTick && mcCircuit.Run(NanosecondsToTime(iUpdateTimeInMilliseconds * mfNanosecondsPerMillisecond)))
+		{
+			mpWindow->Invalidate();
+		}
+		mpWindow->RequestTick(LOGICIM_SIMULATION_TICK_MILLISECONDS);
 	}
+	mbRanLastTick = mbRunning;
 	UpdateEditMenu();
 }
 

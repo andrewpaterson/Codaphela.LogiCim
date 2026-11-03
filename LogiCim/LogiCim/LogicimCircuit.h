@@ -41,7 +41,7 @@ public:
 	void				Kill(void);
 
 	bool				Reset(void);
-	void				Run(int64 iTimeForward);
+	bool				Run(int64 iTimeForward);
 	bool				Save(const char* szFilename);
 	bool				Load(const char* szFilename);
 	bool				ImportKicadSchematic(const char* szFilename);

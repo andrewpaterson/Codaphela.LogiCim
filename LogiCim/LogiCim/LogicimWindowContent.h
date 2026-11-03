@@ -135,6 +135,7 @@ protected:
 	CChars					mszChooserSelected;  //The component last chosen.
 	int						miSimulationCount;
 	bool					mbRunning;
+	bool					mbRanLastTick;  //The simulation ran in the last tick, so the time since it is simulated.
 	float64					mfNanosecondsPerMillisecond;  //How fast the simulation runs.
 
 public:

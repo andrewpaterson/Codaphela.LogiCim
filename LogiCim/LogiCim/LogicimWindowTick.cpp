@@ -92,7 +92,6 @@ void CLogicimWindowTick::Tick(Ptr<CWindow> pWindow, int64 iUpdateTimeInMilliecon
 	{
 		mpsData->pcContent->Tick(iUpdateTimeInMillieconds);
 	}
-	pWindow->Paint();
 
 	if (miSnapshotTicks >= 0)
 	{
@@ -100,6 +99,12 @@ void CLogicimWindowTick::Tick(Ptr<CWindow> pWindow, int64 iUpdateTimeInMilliecon
 		{
 			SavePNG(pWindow->GetCanvas()->GetImageOrNull(), mszSnapshot.Text());
 			pWindow->Stop();
+		}
+		else
+		{
+			//The window would otherwise wait for input before the next tick.
+			pWindow->Invalidate();
+			pWindow->RequestTick(0);
 		}
 		miSnapshotTicks--;
 	}

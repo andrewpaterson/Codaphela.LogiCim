@@ -119,15 +119,17 @@ bool CLogicimCircuit::Reset(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // iTimeForward is in Logicim's time units (1/1024 ns).  Nothing runs
-// while an edit is in progress.
+// while an edit is in progress.  Returns true if any events happened, so
+// what the circuit shows may have changed.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimCircuit::Run(int64 iTimeForward)
+bool CLogicimCircuit::Run(int64 iTimeForward)
 {
 	if ((mcEditor.GetSimulation() != NULL) && mcEditor.CanRun())
 	{
-		mcEditor.GetSimulation()->RunToTime(iTimeForward);
+		return mcEditor.GetSimulation()->RunToTime(iTimeForward);
 	}
+	return false;
 }
 
 
