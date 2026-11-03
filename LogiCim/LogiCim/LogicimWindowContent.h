@@ -92,9 +92,11 @@ enum ELogicimAction
 //
 //The dialogs (a component's properties, a new subcircuit, a new simulation) are native windows shown modally.
 //
-//The window must already be in the root, see CLogicimWindowContent::Init.
-class CLogicimWindowContent
+//The content is an object; keep it under the root, see Setup.  It holds the window, its widgets and LogiCim's circuit.
+class CLogicimWindowContent : public CObject
 {
+CONSTRUCTABLE(CLogicimWindowContent);
+DESTRUCTABLE(CLogicimWindowContent);
 protected:
 	Ptr<CWindow>			mpWindow;
 	SLogicimWindowData*		mpsData;
@@ -129,7 +131,7 @@ protected:
 	CLogicimMenuListener		mcMenuListener;
 	CLogicimListListener		mcListListener;
 
-	CLogicimCircuit			mcCircuit;
+	Ptr<CLogicimCircuit>	mpLogicimCircuit;
 	CChars					mszProjectFilename;  //The project last loaded or saved.
 	CChars					mszKicadFilename;  //The KiCad schematic last imported.
 	CChars					mszChooserSelected;  //The component last chosen.
@@ -139,8 +141,14 @@ protected:
 	float64					mfNanosecondsPerMillisecond;  //How fast the simulation runs.
 
 public:
-	bool			Init(Ptr<CWindow> pWindow, SLogicimWindowData* psData, const char* szFontFilename, const char* szIconDirectory, const char* szPropagationTimes, const char* szCircuitFontDirectory);
-	void			Kill(void);
+	void			Init(void);
+	void			Class(void) override;
+	void			Free(void) override;
+
+	bool			Save(CObjectWriter* pcFile) override;
+	bool			Load(CObjectReader* pcFile) override;
+
+	bool			Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psData, const char* szFontFilename, const char* szIconDirectory, const char* szPropagationTimes, const char* szCircuitFontDirectory);
 
 	void			ButtonClicked(CButton* pcButton);
 	void			MenuItemClicked(CMenuItem* pcItem);

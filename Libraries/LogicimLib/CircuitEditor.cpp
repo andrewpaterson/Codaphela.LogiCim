@@ -26,6 +26,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/Markup.h"
 #include "BaseLib/LogString.h"
 #include "BaseLib/ArrayElementNotFound.h"
+#include "StandardLib/Objects.h"
 #include "MicroprocessorLib/CircuitSimulation.h"
 #include "CircuitPainter.h"
 #include "CircuitWiring.h"
@@ -46,14 +47,15 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 // Logicim's (whose West is East here).
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, CCircuitFonts* pcFonts)
+void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, Ptr<CCircuitFonts> pFonts)
 {
+	PreInit();
+
 	mpcCircuits = NewMalloc<CCircuitViews>();
 	mpcCircuits->Init();
 	mpcCircuit = NULL;
-	mpcSimulation = NULL;
 	mpcFamilies = pcFamilies;
-	mpcFonts = pcFonts;
+	mpFonts = pFonts;
 	mcSelection.Init();
 	mcUndo.Init();
 	mpcEdit = NULL;
@@ -73,6 +75,8 @@ void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, CCircuit
 	mbPointer = false;
 	mbControl = false;
 	mbShift = false;
+
+	PostInit();
 }
 
 
@@ -80,10 +84,10 @@ void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, CCircuit
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitEditor::Kill(void)
+void CCircuitEditor::Free(void)
 {
 	SafeKill(mpcNextUnit);
-	KillProject();
+	KillProject(true);
 	mcUndo.Kill();
 	mapcLeadRoutes.Kill();
 	maiLiftedLeadIndices.Kill();
@@ -92,8 +96,64 @@ void CCircuitEditor::Kill(void)
 	mapcFollowing.Kill();
 	masLeads.Kill();
 	mcSelection.Kill();
-	mpcFonts = NULL;
 	mpcFamilies = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::Class(void)
+{
+	U_Pointer(mpcCircuits);
+	U_Pointer(mpcCircuit);
+	M_Pointer(mpSimulation);
+	U_Pointer(mpcFamilies);
+	M_Pointer(mpFonts);
+	U_Unknown(CCircuitSelection, mcSelection);
+	U_Unknown(CUndoStack, mcUndo);
+	U_Pointer(mpcEdit);
+	U_Pointer(mpcNextUnit);
+	U_Enum(meCreationRotation);
+	U_Bool(mbCreationMirrored);
+	U_Pointer(mpcHover);
+	U_Bool(mbHoverConnection);
+	U_2Int32(msHoverConnection);
+	U_Pointer(mpcHoverTrace);
+	U_Unknown(CArrayMoveLead, masLeads);
+	U_Unknown(CArrayTraceViewPtr, mapcFollowing);
+	U_Unknown(CArrayMoveAnchor, masAnchors);
+	U_Bool(mbDetachedMove);
+	U_Bool(mbLeadsLifted);
+	U_Unknown(CArrayTraceViewPtr, mapcLiftedLeads);
+	U_Unknown(CArrayInt, maiLiftedLeadIndices);
+	U_Unknown(CArrayTraceViewPtr, mapcLeadRoutes);
+	U_Data(SFloat64Vec2, msPointer);
+	U_Bool(mbPointer);
+	U_Bool(mbControl);
+	U_Bool(mbShift);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A project is saved as a circuits file, see Save(const char*).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::Save(CObjectWriter* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::Load(CObjectReader* pcFile)
+{
+	return false;
 }
 
 
@@ -102,14 +162,14 @@ void CCircuitEditor::Kill(void)
 // An edit in progress is dropped as it is, not discarded.
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitEditor::KillProject(void)
+void CCircuitEditor::KillProject(bool bFreeing)
 {
 	KillEdit();
 	KillLeads();
 	masAnchors.ReInit();
 	mcSelection.Clear();
 	ClearHover();
-	KillSimulation();
+	KillSimulation(bFreeing);
 	if (mpcCircuits != NULL)
 	{
 		mpcCircuits->Kill();
@@ -122,20 +182,23 @@ void CCircuitEditor::KillProject(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The views forget the simulation before it's killed.
+// The views forget the simulation, then letting go of it frees it.  When
+// the editor is being freed the simulation is let go of with the editor's
+// other pointers.
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitEditor::KillSimulation(void)
+void CCircuitEditor::KillSimulation(bool bFreeing)
 {
-	if (mpcSimulation != NULL)
+	if (mpSimulation.IsNotNull())
 	{
 		if (mpcCircuit != NULL)
 		{
-			mpcCircuit->DisconnectSimulation(GetViewPath(), mpcSimulation);
+			mpcCircuit->DisconnectSimulation(GetViewPath(), &mpSimulation);
 		}
-		mpcSimulation->Kill();
-		free(mpcSimulation);
-		mpcSimulation = NULL;
+		if (!bFreeing)
+		{
+			mpSimulation = NULL;
+		}
 	}
 }
 
@@ -174,10 +237,9 @@ bool CCircuitEditor::Simulate(const char* szTypeName)
 	KillSimulation();
 	pcPrevious = mpcCircuit;
 	mpcCircuit = pcCircuit;
-	mpcSimulation = NewMalloc<CCircuitSimulation>();
-	mpcSimulation->Init(szTypeName);
+	mpSimulation = OMalloc<CCircuitSimulation>(szTypeName);
 	UpdateHover();
-	if (!mpcCircuit->CreateSimulation(GetViewPath(), mpcSimulation, mpcFamilies, true))
+	if (!mpcCircuit->CreateSimulation(GetViewPath(), &mpSimulation, mpcFamilies, true))
 	{
 		return false;
 	}
@@ -334,7 +396,7 @@ bool CCircuitEditor::StartPlaceComponent(const char* szXMLName)
 	}
 
 	DiscardEdit();
-	pcComponent = NewPlacedComponentView(szXMLName, RoundToGrid(msPointer.x), RoundToGrid(msPointer.y), meCreationRotation, mpcCircuit, mpcFonts);
+	pcComponent = NewPlacedComponentView(szXMLName, RoundToGrid(msPointer.x), RoundToGrid(msPointer.y), meCreationRotation, mpcCircuit, &mpFonts);
 	if (pcComponent == NULL)
 	{
 		return gcLogger.Error2(__METHOD__, " Cannot place a [", szXMLName, "].", NULL);
@@ -371,7 +433,7 @@ bool CCircuitEditor::StartPlaceSubcircuit(const char* szTypeName)
 	}
 
 	DiscardEdit();
-	pcComponent = NewPlacedSubcircuitInstanceView(pcSubcircuit, RoundToGrid(msPointer.x), RoundToGrid(msPointer.y), meCreationRotation, mpcFonts);
+	pcComponent = NewPlacedSubcircuitInstanceView(pcSubcircuit, RoundToGrid(msPointer.x), RoundToGrid(msPointer.y), meCreationRotation, &mpFonts);
 	return StartPlace(pcComponent);
 }
 
@@ -812,7 +874,7 @@ CComponentView* CCircuitEditor::SetProperties(CComponentView* pcComponent, CComp
 void CCircuitEditor::InitPropertiesContext(SComponentPropertiesContext* psContext)
 {
 	psContext->pcFamilies = mpcFamilies;
-	psContext->pcFonts = mpcFonts;
+	psContext->pcFonts = &mpFonts;
 	psContext->pcCircuits = mpcCircuits;
 }
 
@@ -882,9 +944,9 @@ void CCircuitEditor::SaveXML(CXMLWriter* pcWriter)
 	}
 	pcWriter->End();
 	mpcCircuits->SaveXML(pcWriter);
-	if (mpcSimulation != NULL)
+	if (mpSimulation.IsNotNull())
 	{
-		SaveSimulationXML(pcWriter, mpcCircuit, GetViewPath(), mpcSimulation);
+		SaveSimulationXML(pcWriter, mpcCircuit, GetViewPath(), &mpSimulation);
 	}
 	pcWriter->End();
 }
@@ -930,7 +992,7 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	STagIterator				sIter;
 	CCircuitViews*				pcCircuits;
 	CCircuitView*				pcCircuit;
-	CCircuitSimulation*			pcSimulation;
+	Ptr<CCircuitSimulation>		pSimulation;
 	ERotation					eRotation;
 	bool						bMirrored;
 	char*						szCircuit;
@@ -1019,21 +1081,18 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 		}
 	}
 
-	pcSimulation = NULL;
 	if (bResult)
 	{
-		pcSimulation = NewMalloc<CCircuitSimulation>();
-		pcSimulation->Init(pcCircuit->GetTypeName());
-		bResult = LoadCircuitFileSimulation(pcRoot, pcCircuit, pcCircuits->GetTopPath(pcCircuit), pcSimulation, mpcFamilies);
+		pSimulation = OMalloc<CCircuitSimulation>(pcCircuit->GetTypeName());
+		bResult = LoadCircuitFileSimulation(pcRoot, pcCircuit, pcCircuits->GetTopPath(pcCircuit), &pSimulation, mpcFamilies);
 	}
 
 	if (!bResult)
 	{
-		if (pcSimulation != NULL)
+		if (pSimulation.IsNotNull())
 		{
-			pcCircuit->DisconnectSimulation(pcCircuits->GetTopPath(pcCircuit), pcSimulation);
-			pcSimulation->Kill();
-			free(pcSimulation);
+			pcCircuit->DisconnectSimulation(pcCircuits->GetTopPath(pcCircuit), &pSimulation);
+			pSimulation = NULL;
 		}
 		pcCircuits->Kill();
 		free(pcCircuits);
@@ -1045,7 +1104,7 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	KillProject();
 	mpcCircuits = pcCircuits;
 	mpcCircuit = pcCircuit;
-	mpcSimulation = pcSimulation;
+	mpSimulation = pSimulation;
 	meCreationRotation = eRotation;
 	mbCreationMirrored = bMirrored;
 	for (i = 0; i < aiComponents.NumElements(); i++)
@@ -1291,7 +1350,8 @@ bool CCircuitEditor::CanRun(void)
 bool CCircuitEditor::IsEditing(void) { return mpcEdit != NULL; }
 CCircuitViews* CCircuitEditor::GetCircuits(void) { return mpcCircuits; }
 CCircuitView* CCircuitEditor::GetCircuit(void) { return mpcCircuit; }
-CCircuitSimulation* CCircuitEditor::GetSimulation(void) { return mpcSimulation; }
+CCircuitSimulation* CCircuitEditor::GetSimulation(void) { return &mpSimulation; }
+CCircuitFonts* CCircuitEditor::GetFonts(void) { return &mpFonts; }
 CUndoStack* CCircuitEditor::GetUndoStack(void) { return &mcUndo; }
 CCircuitSelection* CCircuitEditor::GetSelection(void) { return &mcSelection; }
 CComponentView* CCircuitEditor::GetHover(void) { return mpcHover; }

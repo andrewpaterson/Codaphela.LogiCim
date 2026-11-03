@@ -21,6 +21,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/Logger.h"
 #include "BaseLib/FileUtil.h"
 #include "StandardLib/Objects.h"
+#include "StandardLib/ObjectReader.h"
+#include "StandardLib/ObjectWriter.h"
 #include "SupportLib/ColourARGB32.h"
 #include "SupportLib/ImageColour.h"
 #include "SupportLib/ImageColourConverter.h"
@@ -129,16 +131,11 @@ static SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimWindowContent::Init(Ptr<CWindow> pWindow, SLogicimWindowData* psData, const char* szFontFilename, const char* szIconDirectory, const char* szPropagationTimes, const char* szCircuitFontDirectory)
+void CLogicimWindowContent::Init(void)
 {
-	CColourFormatHelper		cFormat;
-	Ptr<CGridContainer>		pGrid;
-	Ptr<CFont>				pWhite;
+	PreInit();
 
-	mpWindow = pWindow;
-	mpsData = psData;
-	mpsData->pcContent = this;
-	mpsData->eDialog = LDG_None;
+	mpsData = NULL;
 	miSimulationCount = 0;
 	mbRunning = true;
 	mbRanLastTick = false;
@@ -153,13 +150,104 @@ bool CLogicimWindowContent::Init(Ptr<CWindow> pWindow, SLogicimWindowData* psDat
 	mcButtonListener.Init(this);
 	mcMenuListener.Init(this);
 	mcListListener.Init(this);
-
-	//Before anything that can fail; Kill always kills it.
-	pWindow->GetColourFormat(&cFormat);
 	mszProjectFilename.Init("Project.xml");
 	mszKicadFilename.Init("Schematic.kicad_sch");
 	mszChooserSelected.Init();
-	if (!mcCircuit.Init(szPropagationTimes, szCircuitFontDirectory, cFormat.meOrder))
+	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
+
+	PostInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::Class(void)
+{
+	M_Pointer(mpWindow);
+	U_Pointer(mpsData);
+	M_Pointer(mpFontColours);
+	M_Pointer(mpFont);
+	M_Pointer(mpDimFont);
+	M_Pointer(mpTheme);
+	M_Pointer(msDialogLook.pTheme);
+	M_Pointer(msDialogLook.pDimFont);
+	U_Data(ARGB32, msDialogLook.sBackground);
+	U_Data(ARGB32, msDialogLook.sDivider);
+	M_Embedded(mapIcons);
+	M_Pointer(mpFileIcon);
+	M_Pointer(mpMenuBar);
+	M_Pointer(mpEditMenu);
+	M_Pointer(mpSubcircuits);
+	M_Pointer(mpSimulations);
+	M_Embedded(maSubcircuitLabels);
+	M_Embedded(maSimulationLabels);
+	M_Pointer(mpCircuit);
+	M_Pointer(mpSubcircuitInfo);
+	M_Pointer(mpSimulationInfo);
+	M_Pointer(mpViewPathInfo);
+	M_Pointer(mpMouseXInfo);
+	M_Pointer(mpMouseYInfo);
+	M_Pointer(mpZoomInfo);
+	M_Embedded(maButtons);
+	U_Unknown(CArrayInt, maiButtonActions);
+	M_Embedded(maMenuItems);
+	U_Unknown(CArrayInt, maiMenuItemActions);
+	U_Unknown(CLogicimButtonListener, mcButtonListener);
+	U_Unknown(CLogicimMenuListener, mcMenuListener);
+	U_Unknown(CLogicimListListener, mcListListener);
+	M_Pointer(mpLogicimCircuit);
+	U_String(mszProjectFilename);
+	U_String(mszKicadFilename);
+	U_String(mszChooserSelected);
+	U_Int32(miSimulationCount);
+	U_Bool(mbRunning);
+	U_Bool(mbRanLastTick);
+	U_Data(float64, mfNanosecondsPerMillisecond);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The content isn't saved; a project is, see LogicimCircuit.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::Save(CObjectWriter* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::Load(CObjectReader* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The window's widgets and LogiCim's circuit.  Free still frees whatever
+// was made when this fails.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psData, const char* szFontFilename, const char* szIconDirectory, const char* szPropagationTimes, const char* szCircuitFontDirectory)
+{
+	CColourFormatHelper		cFormat;
+	Ptr<CGridContainer>		pGrid;
+	Ptr<CFont>				pWhite;
+
+	mpWindow = pWindow;
+	mpsData = psData;
+	mpsData->pcContent = this;
+	mpsData->eDialog = LDG_None;
+
+	pWindow->GetColourFormat(&cFormat);
+	if (!mpLogicimCircuit->Setup(szPropagationTimes, szCircuitFontDirectory, cFormat.meOrder))
 	{
 		return false;
 	}
@@ -170,9 +258,8 @@ bool CLogicimWindowContent::Init(Ptr<CWindow> pWindow, SLogicimWindowData* psDat
 	{
 		return false;
 	}
-	//Nothing in the window holds the font colours or the theme, the widgets hold their parts, so they are rooted.
+	//The content holds the font colours and the theme; the widgets only hold their parts.
 	mpFontColours = OMalloc<CFontColours>(pWhite);
-	ORoot()->Add(mpFontColours);
 	mpFont = mpFontColours->GetFont(JEWEL_TEXT);
 	mpDimFont = mpFontColours->GetFont(LOGICIM_DIM_TEXT);
 
@@ -208,63 +295,20 @@ bool CLogicimWindowContent::Init(Ptr<CWindow> pWindow, SLogicimWindowData* psDat
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::Kill(void)
+void CLogicimWindowContent::Free(void)
 {
-	size	i;
-
-	for (i = 0; i < maButtons.Size(); i++)
-	{
-		maButtons.Get(i)->RemoveListener(&mcButtonListener);
-	}
-	if (mpMenuBar.IsNotNull())
-	{
-		mpMenuBar->RemoveListener(&mcMenuListener);
-	}
-	if (mpSubcircuits.IsNotNull())
-	{
-		mpSubcircuits->RemoveListener(&mcListListener);
-		mpSimulations->RemoveListener(&mcListListener);
-	}
+	//An object's memory is freed without its destructor running so its listeners unhook themselves from the widgets
+	//still listened to.  The widgets, the theme, the fonts and the circuit are freed with the content's pointers.
+	mcButtonListener.RemoveFromListenerCalls();
+	mcMenuListener.RemoveFromListenerCalls();
+	mcListListener.RemoveFromListenerCalls();
 	if (mpsData)
 	{
 		mpsData->pcContent = NULL;
 	}
 
-	maButtons.Kill();
 	maiButtonActions.Kill();
-	maMenuItems.Kill();
 	maiMenuItemActions.Kill();
-	mapIcons.Kill();
-	mpFileIcon = NULL;
-	maSubcircuitLabels.Kill();
-	maSimulationLabels.Kill();
-	msDialogLook.Kill();
-	if (mpTheme.IsNotNull())
-	{
-		ORoot()->Remove(mpTheme);
-	}
-	mpTheme = NULL;
-
-	mpMenuBar = NULL;
-	mpEditMenu = NULL;
-	mpSubcircuits = NULL;
-	mpSimulations = NULL;
-	mpCircuit = NULL;
-	mpSubcircuitInfo = NULL;
-	mpSimulationInfo = NULL;
-	mpViewPathInfo = NULL;
-	mpMouseXInfo = NULL;
-	mpMouseYInfo = NULL;
-	mpZoomInfo = NULL;
-	mpFont = NULL;
-	mpDimFont = NULL;
-	if (mpFontColours.IsNotNull())
-	{
-		ORoot()->Remove(mpFontColours);
-	}
-	mpFontColours = NULL;
-	mpWindow = NULL;
-	mcCircuit.Kill();
 	mszKicadFilename.Kill();
 	mszProjectFilename.Kill();
 	mszChooserSelected.Kill();
@@ -345,7 +389,6 @@ void CLogicimWindowContent::CreateLooks(void)
 {
 	//The dialogs share the window's theme, they have the same colour format.
 	mpTheme = CJewelTheme::CreateDarkTheme(mpWindow, mpFont);
-	ORoot()->Add(mpTheme);
 	msDialogLook.pTheme = mpTheme;
 	msDialogLook.pDimFont = mpDimFont;
 	msDialogLook.sBackground = JEWEL_PANEL;
@@ -651,7 +694,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	pSubcircuits = CreateToolWindow("Subcircuits", mpSubcircuits);
 	pSubcircuits->SetDesiredSize(200, -1);
 
-	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mcCircuit), this, mcCircuit.GetEditor());
+	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mpLogicimCircuit), this, mpLogicimCircuit->GetEditor());
 	mpCircuit->SetAlignment(CSH_Stretch, CSV_Stretch);
 	mpSimulations = CreateList();
 	pSimulations = CreateToolWindow("Simulations", mpSimulations);
@@ -840,7 +883,7 @@ void CLogicimWindowContent::ZoomToFit(bool bSelection)
 	SFloat64Vec2		sMaximum;
 	bool				bHasBounds;
 
-	pcEditor = mcCircuit.GetEditor();
+	pcEditor = mpLogicimCircuit->GetEditor();
 	if (bSelection)
 	{
 		bHasBounds = pcEditor->GetSelection()->GetBoundingBox(&sMinimum, &sMaximum);
@@ -947,7 +990,7 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 	CCircuitEditor*			pcEditor;
 
 	pDraw = mpCircuit->GetCircuitDraw();
-	pcEditor = mcCircuit.GetEditor();
+	pcEditor = mpLogicimCircuit->GetEditor();
 	switch (eAction)
 	{
 	case LA_LoadProject:
@@ -1013,7 +1056,7 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 		UpdateInfo();
 		break;
 	case LA_ResetSimulation:
-		mcCircuit.Reset();
+		mpLogicimCircuit->Reset();
 		break;
 	case LA_DefaultSpeed:
 		mfNanosecondsPerMillisecond = LOGICIM_DEFAULT_SPEED;
@@ -1068,7 +1111,7 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 {
 	if (mbRunning)
 	{
-		if (mbRanLastTick && mcCircuit.Run(NanosecondsToTime(iUpdateTimeInMilliseconds * mfNanosecondsPerMillisecond)))
+		if (mbRanLastTick && mpLogicimCircuit->Run(NanosecondsToTime(iUpdateTimeInMilliseconds * mfNanosecondsPerMillisecond)))
 		{
 			mpWindow->Invalidate();
 		}
@@ -1088,7 +1131,7 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Undo(bool bStep)
 {
-	mcCircuit.GetEditor()->Undo(bStep);
+	mpLogicimCircuit->GetEditor()->Undo(bStep);
 	UpdateInfo();
 	UpdateEditMenu();
 }
@@ -1101,7 +1144,7 @@ void CLogicimWindowContent::Undo(bool bStep)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Redo(bool bStep)
 {
-	mcCircuit.GetEditor()->Redo(bStep);
+	mpLogicimCircuit->GetEditor()->Redo(bStep);
 	UpdateInfo();
 	UpdateEditMenu();
 }
@@ -1133,7 +1176,7 @@ void CLogicimWindowContent::UpdateEditMenu(void)
 			iRow = mpEditMenu->GetItemRow(maMenuItems.Get(i));
 			if (iRow >= 0)
 			{
-				bEnabled = (eAction == LA_Undo) ? mcCircuit.GetEditor()->CanUndo() : mcCircuit.GetEditor()->CanRedo();
+				bEnabled = (eAction == LA_Undo) ? mpLogicimCircuit->GetEditor()->CanUndo() : mpLogicimCircuit->GetEditor()->CanRedo();
 				if (mpEditMenu->IsRowEnabled(iRow) != bEnabled)
 				{
 					mpEditMenu->SetRowEnabled(iRow, bEnabled);
@@ -1217,7 +1260,7 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 	int						iEditor;
 	ERotation				eRotation;
 
-	pcEditor = mcCircuit.GetEditor();
+	pcEditor = mpLogicimCircuit->GetEditor();
 	pcComponent = pcEditor->GetPropertiesComponent();
 	if (pcComponent == NULL)
 	{
@@ -1443,12 +1486,12 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 	SFloat64Vec2			sGrid;
 	SInt32Vec2				sSize;
 
-	cChooser.Init(mpWindow, &msDialogLook, &mcCircuit, mszChooserSelected.Text());
+	cChooser.Init(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text());
 	if (cChooser.Show())
 	{
 		szChosen = cChooser.GetChosen(&bSubcircuit);
 		mszChooserSelected.Set(szChosen);
-		pcEditor = mcCircuit.GetEditor();
+		pcEditor = mpLogicimCircuit->GetEditor();
 		bPlaced = bSubcircuit ? pcEditor->StartPlaceSubcircuit(szChosen) : pcEditor->StartPlaceComponent(szChosen);
 		if (!bPlaced)
 		{
@@ -1487,7 +1530,7 @@ void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 	{
 		szFilename = cChooser.GetChosen();
 		mszProjectFilename.Set(szFilename);
-		bResult = bSave ? mcCircuit.Save(szFilename) : mcCircuit.Load(szFilename);
+		bResult = bSave ? mpLogicimCircuit->Save(szFilename) : mpLogicimCircuit->Load(szFilename);
 		if (bResult)
 		{
 			gcLogger.Info2(bSave ? "Saved [" : "Loaded [", szFilename, "].", NULL);
@@ -1516,7 +1559,7 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 	{
 		szFilename = cChooser.GetChosen();
 		mszKicadFilename.Set(szFilename);
-		if (mcCircuit.ImportKicadSchematic(szFilename))
+		if (mpLogicimCircuit->ImportKicadSchematic(szFilename))
 		{
 			mszProjectFilename.Set(szFilename);
 			if (mszProjectFilename.EndsWith(".kicad_sch"))

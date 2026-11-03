@@ -26,8 +26,8 @@ void TestViewPathTop(void)
 	CViewPaths				cPaths;
 	CCircuitView			cCircuit;
 	CCircuitView			cOther;
-	CCircuitSimulation		cFirst;
-	CCircuitSimulation		cSecond;
+	Ptr<CCircuitSimulation>	pFirst;
+	Ptr<CCircuitSimulation>	pSecond;
 	CViewPath*				pcPath;
 	CViewPath*				pcOtherPath;
 	CChars					sz;
@@ -38,8 +38,10 @@ void TestViewPathTop(void)
 	cCircuit.Init();
 	cOther.Init();
 	cPaths.Init();
-	cFirst.Init("First");
-	cSecond.Init("Second");
+	pFirst = OMalloc<CCircuitSimulation>("First");
+	ORoot()->Add(pFirst);
+	pSecond = OMalloc<CCircuitSimulation>("Second");
+	ORoot()->Add(pSecond);
 
 	pcPath = cPaths.AddTop(&cCircuit);
 	AssertNotNull(pcPath);
@@ -68,27 +70,29 @@ void TestViewPathTop(void)
 	AssertSize(2, cPaths.NumViewPaths());
 
 	AssertSize(0, pcPath->NumCircuitSimulations());
-	AssertFalse(pcPath->ContainsCircuitSimulation(&cFirst));
-	AssertNull(pcPath->GetSubcircuitSimulation(&cFirst));
-	AssertTrue(pcPath->AddSubcircuitSimulation(cFirst.GetSubcircuitTopSimulation()));
-	AssertTrue(pcPath->AddSubcircuitSimulation(cSecond.GetSubcircuitTopSimulation()));
+	AssertFalse(pcPath->ContainsCircuitSimulation(&pFirst));
+	AssertNull(pcPath->GetSubcircuitSimulation(&pFirst));
+	AssertTrue(pcPath->AddSubcircuitSimulation(pFirst->GetSubcircuitTopSimulation()));
+	AssertTrue(pcPath->AddSubcircuitSimulation(pSecond->GetSubcircuitTopSimulation()));
 	gcLogger.SetSilent();
-	AssertFalse(pcPath->AddSubcircuitSimulation(cFirst.GetSubcircuitTopSimulation()));
+	AssertFalse(pcPath->AddSubcircuitSimulation(pFirst->GetSubcircuitTopSimulation()));
 	gcLogger.SetConfig(&sLogConfig);
 	AssertSize(2, pcPath->NumCircuitSimulations());
-	AssertTrue(pcPath->GetCircuitSimulation(0) == &cFirst);
-	AssertTrue(pcPath->GetCircuitSimulation(1) == &cSecond);
-	AssertTrue(pcPath->GetSubcircuitSimulation(&cSecond) == cSecond.GetSubcircuitTopSimulation());
-	AssertFalse(pcOtherPath->ContainsCircuitSimulation(&cFirst));
+	AssertTrue(pcPath->GetCircuitSimulation(0) == &pFirst);
+	AssertTrue(pcPath->GetCircuitSimulation(1) == &pSecond);
+	AssertTrue(pcPath->GetSubcircuitSimulation(&pSecond) == pSecond->GetSubcircuitTopSimulation());
+	AssertFalse(pcOtherPath->ContainsCircuitSimulation(&pFirst));
 
-	AssertTrue(pcPath->RemoveSubcircuitSimulation(&cFirst));
-	AssertFalse(pcPath->RemoveSubcircuitSimulation(&cFirst));
-	AssertFalse(pcPath->ContainsCircuitSimulation(&cFirst));
-	AssertTrue(pcPath->ContainsCircuitSimulation(&cSecond));
-	AssertTrue(pcPath->GetCircuitSimulation(0) == &cSecond);
+	AssertTrue(pcPath->RemoveSubcircuitSimulation(&pFirst));
+	AssertFalse(pcPath->RemoveSubcircuitSimulation(&pFirst));
+	AssertFalse(pcPath->ContainsCircuitSimulation(&pFirst));
+	AssertTrue(pcPath->ContainsCircuitSimulation(&pSecond));
+	AssertTrue(pcPath->GetCircuitSimulation(0) == &pSecond);
 
-	cSecond.Kill();
-	cFirst.Kill();
+	ORoot()->Remove(pSecond);
+	pSecond = NULL;
+	ORoot()->Remove(pFirst);
+	pFirst = NULL;
 	cPaths.Kill();
 	cOther.Kill();
 	cCircuit.Kill();
@@ -126,8 +130,8 @@ void TestViewPathTwoSimulations(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
 	CFamilyVoltageConfiguration*		pcFamily;
-	CCircuitSimulation					cFirst;
-	CCircuitSimulation					cSecond;
+	Ptr<CCircuitSimulation>				pFirst;
+	Ptr<CCircuitSimulation>				pSecond;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -142,48 +146,52 @@ void TestViewPathTwoSimulations(void)
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
 	pcFamily = cFamilies.Get("LVC");
 	fVcc = pcFamily->GetDefaultVoltageConfiguration(DEFAULT_LOGIC_LEVEL)->GetVcc();
-	cFirst.Init("First");
-	cSecond.Init("Second");
+	pFirst = OMalloc<CCircuitSimulation>("First");
+	ORoot()->Add(pFirst);
+	pSecond = OMalloc<CCircuitSimulation>("Second");
+	ORoot()->Add(pSecond);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
 	AddGroundedInverter(&cCircuit, &pcInverter, &pcOut);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cFirst, &cFamilies));
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSecond, &cFamilies));
-	AssertTrue(pcPath->GetSubcircuitSimulation(&cFirst) == cFirst.GetSubcircuitTopSimulation());
-	AssertTrue(pcPath->GetSubcircuitSimulation(&cSecond) == cSecond.GetSubcircuitTopSimulation());
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pFirst, &cFamilies));
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSecond, &cFamilies));
+	AssertTrue(pcPath->GetSubcircuitSimulation(&pFirst) == pFirst->GetSubcircuitTopSimulation());
+	AssertTrue(pcPath->GetSubcircuitSimulation(&pSecond) == pSecond->GetSubcircuitTopSimulation());
 	AssertSize(2, pcInverter->NumComponents());
-	AssertNotNull(pcInverter->GetComponent(pcPath, &cFirst));
-	AssertNotNull(pcInverter->GetComponent(pcPath, &cSecond));
-	AssertTrue(pcInverter->GetComponent(pcPath, &cFirst) != pcInverter->GetComponent(pcPath, &cSecond));
-	AssertTrue(pcInverter->GetComponent(pcPath, &cFirst)->GetContainingSubcircuitSimulation() == cFirst.GetSubcircuitTopSimulation());
-	AssertTrue(pcInverter->GetComponent(pcPath, &cSecond)->GetContainingSubcircuitSimulation() == cSecond.GetSubcircuitTopSimulation());
-	AssertSize(1, pcOut->NumTraces(pcPath, &cFirst));
-	AssertSize(1, pcOut->NumTraces(pcPath, &cSecond));
-	AssertTrue(pcOut->GetTrace(pcPath, &cFirst, 0) != pcOut->GetTrace(pcPath, &cSecond, 0));
-	AssertTrue(pcInverter->GetPortView("Output")->GetPort(pcPath, &cFirst, 0)->GetTrace() == pcOut->GetTrace(pcPath, &cFirst, 0));
-	AssertTrue(pcInverter->GetPortView("Output")->GetPort(pcPath, &cSecond, 0)->GetTrace() == pcOut->GetTrace(pcPath, &cSecond, 0));
+	AssertNotNull(pcInverter->GetComponent(pcPath, &pFirst));
+	AssertNotNull(pcInverter->GetComponent(pcPath, &pSecond));
+	AssertTrue(pcInverter->GetComponent(pcPath, &pFirst) != pcInverter->GetComponent(pcPath, &pSecond));
+	AssertTrue(pcInverter->GetComponent(pcPath, &pFirst)->GetContainingSubcircuitSimulation() == pFirst->GetSubcircuitTopSimulation());
+	AssertTrue(pcInverter->GetComponent(pcPath, &pSecond)->GetContainingSubcircuitSimulation() == pSecond->GetSubcircuitTopSimulation());
+	AssertSize(1, pcOut->NumTraces(pcPath, &pFirst));
+	AssertSize(1, pcOut->NumTraces(pcPath, &pSecond));
+	AssertTrue(pcOut->GetTrace(pcPath, &pFirst, 0) != pcOut->GetTrace(pcPath, &pSecond, 0));
+	AssertTrue(pcInverter->GetPortView("Output")->GetPort(pcPath, &pFirst, 0)->GetTrace() == pcOut->GetTrace(pcPath, &pFirst, 0));
+	AssertTrue(pcInverter->GetPortView("Output")->GetPort(pcPath, &pSecond, 0)->GetTrace() == pcOut->GetTrace(pcPath, &pSecond, 0));
 
 	//Only the first is run; the second's output hasn't been driven yet.
-	cFirst.GetTimeline()->Run();
-	AssertInt(TV_High, pcFamily->GetValue(pcOut->GetTrace(pcPath, &cFirst, 0)->GetVoltage(cFirst.GetTime()), fVcc));
-	AssertFalse(IsVoltage(pcOut->GetTrace(pcPath, &cSecond, 0)->GetVoltage(cSecond.GetTime())));
+	pFirst->GetTimeline()->Run();
+	AssertInt(TV_High, pcFamily->GetValue(pcOut->GetTrace(pcPath, &pFirst, 0)->GetVoltage(pFirst->GetTime()), fVcc));
+	AssertFalse(IsVoltage(pcOut->GetTrace(pcPath, &pSecond, 0)->GetVoltage(pSecond->GetTime())));
 
-	cCircuit.DisconnectSimulation(pcPath, &cFirst);
-	AssertFalse(pcPath->ContainsCircuitSimulation(&cFirst));
-	AssertNull(pcInverter->GetComponent(pcPath, &cFirst));
-	AssertSize(0, pcOut->NumTraces(pcPath, &cFirst));
+	cCircuit.DisconnectSimulation(pcPath, &pFirst);
+	AssertFalse(pcPath->ContainsCircuitSimulation(&pFirst));
+	AssertNull(pcInverter->GetComponent(pcPath, &pFirst));
+	AssertSize(0, pcOut->NumTraces(pcPath, &pFirst));
 	AssertSize(1, pcInverter->NumComponents());
-	AssertNotNull(pcInverter->GetComponent(pcPath, &cSecond));
+	AssertNotNull(pcInverter->GetComponent(pcPath, &pSecond));
 
-	cSecond.GetTimeline()->Run();
-	AssertInt(TV_High, pcFamily->GetValue(pcOut->GetTrace(pcPath, &cSecond, 0)->GetVoltage(cSecond.GetTime()), fVcc));
+	pSecond->GetTimeline()->Run();
+	AssertInt(TV_High, pcFamily->GetValue(pcOut->GetTrace(pcPath, &pSecond, 0)->GetVoltage(pSecond->GetTime()), fVcc));
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSecond.Kill();
-	cFirst.Kill();
+	ORoot()->Remove(pSecond);
+	pSecond = NULL;
+	ORoot()->Remove(pFirst);
+	pFirst = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }
@@ -198,7 +206,7 @@ void TestViewPathTwoSimulations(void)
 void TestViewPathCreateErrors(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CCircuitView						cOther;
 	CViewPaths							cPaths;
@@ -211,7 +219,8 @@ void TestViewPathCreateErrors(void)
 	ObjectsInit();
 	cFamilies.Init();
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-	cSimulation.Init("Errors");
+	pSimulation = OMalloc<CCircuitSimulation>("Errors");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cOther.Init();
 	cPaths.Init();
@@ -221,21 +230,22 @@ void TestViewPathCreateErrors(void)
 
 	gcLogger.GetConfig(&sLogConfig);
 	gcLogger.SetSilent();
-	AssertFalse(cCircuit.CreateSimulation(pcOtherPath, &cSimulation, &cFamilies));
+	AssertFalse(cCircuit.CreateSimulation(pcOtherPath, &pSimulation, &cFamilies));
 	AssertSize(0, pcInverter->NumComponents());
-	AssertNull(pcInverter->CreateComponent(pcPath, &cSimulation, &cFamilies));
+	AssertNull(pcInverter->CreateComponent(pcPath, &pSimulation, &cFamilies));
 	gcLogger.SetConfig(&sLogConfig);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
 	gcLogger.SetSilent();
-	AssertNull(pcInverter->CreateComponent(pcPath, &cSimulation, &cFamilies));
+	AssertNull(pcInverter->CreateComponent(pcPath, &pSimulation, &cFamilies));
 	gcLogger.SetConfig(&sLogConfig);
 	AssertSize(1, pcInverter->NumComponents());
 
 	cCircuit.Kill();
 	cOther.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }

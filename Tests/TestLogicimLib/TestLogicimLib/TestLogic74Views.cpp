@@ -19,7 +19,7 @@
 #include "TestLogicimRender.h"
 
 
-void LoadTestCircuitFonts(CCircuitFonts* pcFonts);
+Ptr<CCircuitFonts> LoadTestCircuitFonts(void);
 void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 void AssertGridPosition(int32 x, int32 y, CPortView* pcPortView);
 
@@ -269,7 +269,7 @@ void TestLogic74ViewsSimulation(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
 	CFamilyVoltageConfiguration*		pcFamily;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -289,7 +289,8 @@ void TestLogic74ViewsSimulation(void)
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
 	pcFamily = cFamilies.Get("LVC");
 	fVcc = pcFamily->GetDefaultVoltageConfiguration(DEFAULT_LOGIC_LEVEL)->GetVcc();
-	cSimulation.Init("Logic 74 Parts");
+	pSimulation = OMalloc<CCircuitSimulation>("Logic 74 Parts");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
@@ -313,23 +314,24 @@ void TestLogic74ViewsSimulation(void)
 	cCircuit.AddTrace(15, -1, 19, -1);
 	pcUnitOut = cCircuit.AddTrace(23, 0, 26, 0);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	AssertTrue(pcPackage->GetPortView("2A")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcIn->GetTrace(pcPath, &cSimulation, 0));
-	AssertTrue(pcPackage->GetPortView("2B")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcIn->GetTrace(pcPath, &cSimulation, 0));
-	AssertTrue(pcPackage->GetPortView("2Y")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcOut->GetTrace(pcPath, &cSimulation, 0));
-	AssertTrue(pcUnit->GetPortView("Input 0")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcIn->GetTrace(pcPath, &cSimulation, 0));
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	AssertTrue(pcPackage->GetPortView("2A")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcIn->GetTrace(pcPath, &pSimulation, 0));
+	AssertTrue(pcPackage->GetPortView("2B")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcIn->GetTrace(pcPath, &pSimulation, 0));
+	AssertTrue(pcPackage->GetPortView("2Y")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcOut->GetTrace(pcPath, &pSimulation, 0));
+	AssertTrue(pcUnit->GetPortView("Input 0")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcIn->GetTrace(pcPath, &pSimulation, 0));
 
-	pcSupply = &OMalloc<CPowerSource>(cSimulation.GetSubcircuitTopSimulation(), "Supply", fVcc);
-	AssertTrue(pcSupply->GetPowerOutPort()->ConnectLive(pcIn->GetTrace(pcPath, &cSimulation, 0), cSimulation.GetTimeline()));
-	cSimulation.GetTimeline()->Run();
-	AssertInt(TV_High, pcFamily->GetValue(pcIn->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertInt(TV_Low, pcFamily->GetValue(pcOut->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertTrue(pcFamily->GetValue(pcOther->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc) != TV_Low);
-	AssertTrue(pcFamily->GetValue(pcUnitOut->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc) != TV_Low);
+	pcSupply = &OMalloc<CPowerSource>(pSimulation->GetSubcircuitTopSimulation(), "Supply", fVcc);
+	AssertTrue(pcSupply->GetPowerOutPort()->ConnectLive(pcIn->GetTrace(pcPath, &pSimulation, 0), pSimulation->GetTimeline()));
+	pSimulation->GetTimeline()->Run();
+	AssertInt(TV_High, pcFamily->GetValue(pcIn->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertInt(TV_Low, pcFamily->GetValue(pcOut->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertTrue(pcFamily->GetValue(pcOther->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc) != TV_Low);
+	AssertTrue(pcFamily->GetValue(pcUnitOut->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc) != TV_Low);
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }
@@ -345,14 +347,14 @@ void TestLogic74ViewsRender(void)
 {
 	CCircuitView			cCircuit;
 	CCircuitColours			cColours;
-	CCircuitFonts			cFonts;
+	Ptr<CCircuitFonts>		pFonts;
 	CLogic74PackageView*	pcPackage;
 	CLogic74UnitView*		pcUnit;
 	int						i;
 	const char*				aszPackages[] = { "00", "04", "86", "11", "20" };
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cColours.InitLogicim();
 	cCircuit.Init();
 
@@ -374,10 +376,11 @@ void TestLogic74ViewsRender(void)
 		pcUnit->Init(6 + 7 * i, 12, ROT_East, "U7", "LVC", false, i < 2 ? "32" : "02", i);
 		cCircuit.Add(pcUnit);
 	}
-	AssertRenderedCircuit(&cCircuit, &cColours, 1440, 720, 2, NULL, NULL, true, "Logic74Parts", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 1440, 720, 2, NULL, NULL, true, "Logic74Parts", &pFonts);
 
 	cCircuit.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -393,7 +396,7 @@ void TestLogic74BlocksRender(void)
 {
 	CCircuitView			cCircuit;
 	CCircuitColours			cColours;
-	CCircuitFonts			cFonts;
+	Ptr<CCircuitFonts>		pFonts;
 	CLogicBlockView*		pcBlock;
 	CLogic74PackageView*	pcPackage;
 	CLogic74UnitView*		pcUnit;
@@ -404,7 +407,7 @@ void TestLogic74BlocksRender(void)
 	ELogicBlockKind			eKind;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cColours.InitLogicim();
 	cCircuit.Init();
 
@@ -430,10 +433,11 @@ void TestLogic74BlocksRender(void)
 		pcUnit->Init(5 + 10 * i, 34, ROT_East, "U3", "LVC", false, "74", i);
 		cCircuit.Add(pcUnit);
 	}
-	AssertRenderedCircuit(&cCircuit, &cColours, 2800, 2200, 2, NULL, NULL, true, "Logic74Blocks", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 2800, 2200, 2, NULL, NULL, true, "Logic74Blocks", &pFonts);
 
 	cCircuit.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }

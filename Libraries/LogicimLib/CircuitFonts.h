@@ -64,17 +64,25 @@ struct SCircuitTextSize
 
 
 //The font families circuit text is drawn in: a sans serif family with regular and bold faces and a monospaced family
-//with a regular face.  Each size (and turn) of a face is rasterised the first time it's drawn.  The families are the
-//caller's objects; root them.
-class CCircuitFonts
+//with a regular face.  Each size (and turn) of a face is rasterised the first time it's drawn.  It is an object that
+//holds its families; keep it under the root (an editor holding it is enough).
+class CCircuitFonts : public CObject
 {
+CONSTRUCTABLE(CCircuitFonts);
+DESTRUCTABLE(CCircuitFonts);
 protected:
 	Ptr<CFontFamily>	mpSansSerif;
 	Ptr<CFontFamily>	mpMonospaced;
 
 public:
 	void				Init(Ptr<CFontFamily> pSansSerif, Ptr<CFontFamily> pMonospaced);
-	void				Kill(void);
+	void				Class(void) override;
+	void				Free(void) override;
+
+	bool				Save(CObjectWriter* pcFile) override;
+	bool				Load(CObjectReader* pcFile) override;
+
+	bool				HasFamilies(void);
 
 	Ptr<CFontColours>	GetColours(ECircuitFont eFont, float32 fPixelSize, EFontTurn eTurn);
 	SCircuitTextSize	Measure(ECircuitFont eFont, float64 fSize, const char* szMarkup);
@@ -134,7 +142,7 @@ public:
 
 
 Ptr<CFontFamily> CreateCircuitFontFamily(const char* szName, const char* szRegularFilename, const char* szBoldFilename, EColourOrder eColourOrder);
-bool LoadCircuitFonts(CCircuitFonts* pcFonts, const char* szDirectory, EColourOrder eColourOrder);
+Ptr<CCircuitFonts> LoadCircuitFonts(const char* szDirectory, EColourOrder eColourOrder);
 const char*	TextAlignmentToString(ETextAlignment eAlignment);
 bool		StringToTextAlignment(const char* szAlignment, ETextAlignment* peAlignment);
 

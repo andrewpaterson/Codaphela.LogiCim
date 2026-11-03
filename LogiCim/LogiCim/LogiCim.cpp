@@ -58,15 +58,15 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	bResult = true;
 
 	{
-		CWinGDIWindowFactory	cNativeFactory;
-		Ptr<CWindow>			pLogicimWindow;
-		Ptr<CLogicimWindowTick>	pTick;
-		SLogicimWindowData		sData;
-		CLogicimWindowContent	cContent;
-		CInput					cInput;
-		CWinInput				cWinInput;
-		Ptr<CWindowInputSource>	pInputSource;
-		CComponentInput			cComponentInput;
+		CWinGDIWindowFactory		cNativeFactory;
+		Ptr<CWindow>				pLogicimWindow;
+		Ptr<CLogicimWindowTick>		pTick;
+		SLogicimWindowData			sData;
+		Ptr<CLogicimWindowContent>	pContent;
+		CInput						cInput;
+		CWinInput					cWinInput;
+		Ptr<CWindowInputSource>		pInputSource;
+		CComponentInput				cComponentInput;
 
 		cNativeFactory.Init(&gcMemoryAllocator,
 			hInstance,
@@ -83,7 +83,9 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		pLogicimWindow = OMalloc<CWindow>("LogiCim", &cNativeFactory, pTick, OMalloc<CClearCanvasDraw>(JEWEL_PANEL), CFT_RGBX, CCO_BGR, CRGB_24bit, ARGB_8bit);
 		ORoot()->Add(pLogicimWindow);
 
-		if (cContent.Init(pLogicimWindow, &sData, "Resources/InterVariable.ttf", "Resources/Icons", "Resources/PropagationTimes.csv", "Resources/Fonts"))
+		pContent = OMalloc<CLogicimWindowContent>();
+		ORoot()->Add(pContent);
+		if (pContent->Setup(pLogicimWindow, &sData, "Resources/InterVariable.ttf", "Resources/Icons", "Resources/PropagationTimes.csv", "Resources/Fonts"))
 		{
 			//The devices are described by the XML so they are added after it is read.
 			cInput.Init(NULL);
@@ -113,7 +115,8 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			bResult = false;
 		}
 
-		cContent.Kill();
+		ORoot()->Remove(pContent);
+		pContent = NULL;
 		ORoot()->Remove(pLogicimWindow);
 		pLogicimWindow = NULL;
 		pTick = NULL;

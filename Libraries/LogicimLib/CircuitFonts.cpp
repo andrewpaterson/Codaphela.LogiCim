@@ -24,6 +24,8 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/StringHelper.h"
 #include "BaseLib/UTF8.h"
 #include "StandardLib/Objects.h"
+#include "StandardLib/ObjectReader.h"
+#include "StandardLib/ObjectWriter.h"
 #include "CircuitTextMarkupParser.h"
 #include "CircuitFonts.h"
 
@@ -50,8 +52,12 @@ void SCircuitTextSize::Init(float64 fWidth, float64 fHeight, float64 fOverlineTo
 //////////////////////////////////////////////////////////////////////////
 void CCircuitFonts::Init(Ptr<CFontFamily> pSansSerif, Ptr<CFontFamily> pMonospaced)
 {
+	PreInit();
+
 	mpSansSerif = pSansSerif;
 	mpMonospaced = pMonospaced;
+
+	PostInit();
 }
 
 
@@ -59,10 +65,51 @@ void CCircuitFonts::Init(Ptr<CFontFamily> pSansSerif, Ptr<CFontFamily> pMonospac
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitFonts::Kill(void)
+void CCircuitFonts::Class(void)
 {
-	mpMonospaced = NULL;
-	mpSansSerif = NULL;
+	M_Pointer(mpSansSerif);
+	M_Pointer(mpMonospaced);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitFonts::Free(void)
+{
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The fonts are loaded from their files, see LoadCircuitFonts.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitFonts::Save(CObjectWriter* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitFonts::Load(CObjectReader* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Both families were loaded.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitFonts::HasFamilies(void)
+{
+	return mpSansSerif.IsNotNull() && mpMonospaced.IsNotNull();
 }
 
 
@@ -460,10 +507,11 @@ Ptr<CFontFamily> CreateCircuitFontFamily(const char* szName, const char* szRegul
 //
 // Liberation Sans (LiberationSans-Regular.ttf and LiberationSans-Bold.ttf)
 // and Liberation Mono (LiberationMono-Regular.ttf) from the directory,
-// coloured in eColourOrder (that of the image they're drawn on).
+// coloured in eColourOrder (that of the image they're drawn on).  A
+// family that couldn't be loaded is NULL, see HasFamilies.
 //
 //////////////////////////////////////////////////////////////////////////
-bool LoadCircuitFonts(CCircuitFonts* pcFonts, const char* szDirectory, EColourOrder eColourOrder)
+Ptr<CCircuitFonts> LoadCircuitFonts(const char* szDirectory, EColourOrder eColourOrder)
 {
 	CFileUtil			cFileUtil;
 	CChars				szRegular;
@@ -486,8 +534,7 @@ bool LoadCircuitFonts(CCircuitFonts* pcFonts, const char* szDirectory, EColourOr
 	szBold.Kill();
 	szRegular.Kill();
 
-	pcFonts->Init(pSansSerif, pMonospaced);
-	return pSansSerif.IsNotNull() && pMonospaced.IsNotNull();
+	return OMalloc<CCircuitFonts>(pSansSerif, pMonospaced);
 }
 
 

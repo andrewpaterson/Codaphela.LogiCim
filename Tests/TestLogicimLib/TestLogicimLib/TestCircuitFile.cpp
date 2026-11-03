@@ -231,7 +231,7 @@ void TestCircuitFileFactory(void)
 void TestCircuitFileRoundTrip(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cSaved;
 	CCircuitView						cLoaded;
 	CViewPaths							cPaths;
@@ -289,18 +289,20 @@ void TestCircuitFileRoundTrip(void)
 	CTrace::ResetNextID();
 	cFamilies.Init();
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-	cSimulation.Init("Ground");
+	pSimulation = OMalloc<CCircuitSimulation>("Ground");
+	ORoot()->Add(pSimulation);
 	cLoaded.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cLoaded);
 	cColours.InitLogicim();
 	AssertTrue(LoadCircuitFile(&cLoaded, "Input" _FS_ "GroundInverters.xml"));
-	AssertTrue(cLoaded.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	cSimulation.GetTimeline()->Run();
-	AssertRenderedCircuit(&cLoaded, &cColours, 420, 160, 2, pcPath, &cSimulation, true, "GroundInverters");
+	AssertTrue(cLoaded.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	pSimulation->GetTimeline()->Run();
+	AssertRenderedCircuit(&cLoaded, &cColours, 420, 160, 2, pcPath, &pSimulation, true, "GroundInverters");
 	cLoaded.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 

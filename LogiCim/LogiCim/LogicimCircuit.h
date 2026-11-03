@@ -27,18 +27,26 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //LogiCim's editor and the circuits in it.  It starts with an empty "Main" circuit, simulated on its top view path.  A
-//project loaded, or a KiCad schematic imported (see CKicadSchemLogicimConverter), replaces it.
-class CLogicimCircuit
+//project loaded, or a KiCad schematic imported (see CKicadSchemLogicimConverter), replaces it.  It is an object held by the window's
+//content; Setup makes the editor.
+class CLogicimCircuit : public CObject
 {
+CONSTRUCTABLE(CLogicimCircuit);
+DESTRUCTABLE(CLogicimCircuit);
 protected:
 	CFamilyVoltageConfigurationStore	mcFamilies;
-	CCircuitEditor						mcEditor;
+	Ptr<CCircuitEditor>					mpEditor;  //It holds the circuit fonts.
 	CCircuitColours						mcColours;
-	CCircuitFonts						mcFonts;
 
 public:
-	bool				Init(const char* szPropagationTimes, const char* szFontDirectory, EColourOrder eColourOrder);
-	void				Kill(void);
+	void				Init(void);
+	void				Class(void) override;
+	void				Free(void) override;
+
+	bool				Save(CObjectWriter* pcFile) override;
+	bool				Load(CObjectReader* pcFile) override;
+
+	bool				Setup(const char* szPropagationTimes, const char* szFontDirectory, EColourOrder eColourOrder);
 
 	bool				Reset(void);
 	bool				Run(int64 iTimeForward);
@@ -52,7 +60,6 @@ public:
 	int64				GetTime(void);
 
 protected:
-	void				RemoveFontFamily(Ptr<CFontFamily> pFamily);
 	bool				CreateSimulation(void);
 };
 

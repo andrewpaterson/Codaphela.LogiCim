@@ -17,7 +17,7 @@
 #include "TestLib/Assert.h"
 
 
-void LoadTestCircuitFonts(CCircuitFonts* pcFonts);
+Ptr<CCircuitFonts> LoadTestCircuitFonts(void);
 void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 
 
@@ -102,11 +102,11 @@ static int32 MaxImageDifference(Ptr<CImage> pA, Ptr<CImage> pB)
 struct SSpriteTestCircuit
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
-	CCircuitFonts						cFonts;
+	Ptr<CCircuitFonts>					pFonts;
 	CLabelView*							pcLabel;
 };
 
@@ -124,19 +124,20 @@ static void InitSpriteTestCircuit(SSpriteTestCircuit* psTest)
 
 	CEvent::ResetNextID();
 	CTrace::ResetNextID();
-	LoadTestCircuitFonts(&psTest->cFonts);
+	psTest->pFonts = LoadTestCircuitFonts();
 	psTest->cFamilies.Init();
 	AssertTrue(psTest->cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-	psTest->cSimulation.Init("Sprites");
+	psTest->pSimulation = OMalloc<CCircuitSimulation>("Sprites");
+	ORoot()->Add(psTest->pSimulation);
 	psTest->cCircuit.Init();
 	psTest->cPaths.Init();
 	psTest->pcPath = psTest->cPaths.AddTop(&psTest->cCircuit);
 
 	pcConstant = NewMalloc<CConstantView>();
-	pcConstant->Init(-38, -8, ROT_East, "", "LVC", false, 8, RADIX_Hexadecimal, &psTest->cFonts);
+	pcConstant->Init(-38, -8, ROT_East, "", "LVC", false, 8, RADIX_Hexadecimal, &psTest->pFonts);
 	psTest->cCircuit.Add(pcConstant);
 	pcProbe = NewMalloc<CProbeView>();
-	pcProbe->Init(-24, -8, ROT_West, "", "LVC", false, 8, RADIX_Hexadecimal, &psTest->cFonts);
+	pcProbe->Init(-24, -8, ROT_West, "", "LVC", false, 8, RADIX_Hexadecimal, &psTest->pFonts);
 	psTest->cCircuit.Add(pcProbe);
 	psTest->cCircuit.AddTrace(-38, -8, -24, -8);
 
@@ -151,11 +152,11 @@ static void InitSpriteTestCircuit(SSpriteTestCircuit* psTest)
 	psTest->cCircuit.Add(pcCounter);
 
 	psTest->pcLabel = NewMalloc<CLabelView>();
-	psTest->pcLabel->Init(-18, 5, ROT_East, "Sprites", TA_Left, false, true, true, &psTest->cFonts);
+	psTest->pcLabel->Init(-18, 5, ROT_East, "Sprites", TA_Left, false, true, true, &psTest->pFonts);
 	psTest->cCircuit.Add(psTest->pcLabel);
 
-	AssertTrue(psTest->cCircuit.CreateSimulation(psTest->pcPath, &psTest->cSimulation, &psTest->cFamilies));
-	psTest->cSimulation.GetTimeline()->Run();
+	AssertTrue(psTest->cCircuit.CreateSimulation(psTest->pcPath, &psTest->pSimulation, &psTest->cFamilies));
+	psTest->pSimulation->GetTimeline()->Run();
 }
 
 
@@ -167,9 +168,11 @@ static void KillSpriteTestCircuit(SSpriteTestCircuit* psTest)
 {
 	psTest->cCircuit.Kill();
 	psTest->cPaths.Kill();
-	psTest->cSimulation.Kill();
+	ORoot()->Remove(psTest->pSimulation);
+	psTest->pSimulation = NULL;
 	psTest->cFamilies.Kill();
-	KillTestCircuitFonts(&psTest->cFonts);
+	KillTestCircuitFonts(&psTest->pFonts);
+	psTest->pFonts = NULL;
 }
 
 
@@ -212,8 +215,8 @@ void TestComponentSpritesMatchShapes(void)
 		{
 			for (j = 0; j < 2; j++)
 			{
-				pShapes = RenderWithCache(&sTest.cCircuit, &cColours, 900, 300, afZooms[i], afScrolls[j], afScrolls[j] * 1.5, sTest.pcPath, &sTest.cSimulation, &sTest.cFonts, NULL);
-				pSprites = RenderWithCache(&sTest.cCircuit, &cColours, 900, 300, afZooms[i], afScrolls[j], afScrolls[j] * 1.5, sTest.pcPath, &sTest.cSimulation, &sTest.cFonts, &pCache);
+				pShapes = RenderWithCache(&sTest.cCircuit, &cColours, 900, 300, afZooms[i], afScrolls[j], afScrolls[j] * 1.5, sTest.pcPath, &sTest.pSimulation, &sTest.pFonts, NULL);
+				pSprites = RenderWithCache(&sTest.cCircuit, &cColours, 900, 300, afZooms[i], afScrolls[j], afScrolls[j] * 1.5, sTest.pcPath, &sTest.pSimulation, &sTest.pFonts, &pCache);
 				AssertTrue((MaxImageDifference(pShapes, pSprites) >= 0) && (MaxImageDifference(pShapes, pSprites) <= 2));
 			}
 		}
@@ -241,8 +244,8 @@ static Ptr<CImage> AssertMatchesShapes(SSpriteTestCircuit* psTest, CCircuitColou
 	Ptr<CImage>	pSprites;
 	int32		iDifference;
 
-	pSprites = RenderWithCache(&psTest->cCircuit, pcColours, 900, 300, fZoom, fScrollX, fScrollY, pcPath, pcSimulation, &psTest->cFonts, pcCache);
-	pShapes = RenderWithCache(&psTest->cCircuit, pcColours, 900, 300, fZoom, fScrollX, fScrollY, pcPath, pcSimulation, &psTest->cFonts, NULL);
+	pSprites = RenderWithCache(&psTest->cCircuit, pcColours, 900, 300, fZoom, fScrollX, fScrollY, pcPath, pcSimulation, &psTest->pFonts, pcCache);
+	pShapes = RenderWithCache(&psTest->cCircuit, pcColours, 900, 300, fZoom, fScrollX, fScrollY, pcPath, pcSimulation, &psTest->pFonts, NULL);
 	iDifference = MaxImageDifference(pShapes, pSprites);
 	AssertTrue((iDifference >= 0) && (iDifference <= 2));
 	return pSprites;
@@ -274,7 +277,7 @@ void TestComponentSpritesShared(void)
 	cColours.InitLogicim();
 	pCache = OMalloc<CComponentSpriteCache>();
 
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	uiSprites = pCache->NumSprites();
 	uiMisses = pCache->NumMisses();
 	uiLookups = pCache->NumHits() + pCache->NumMisses();
@@ -283,7 +286,7 @@ void TestComponentSpritesShared(void)
 	AssertTrue(uiSprites < uiLookups);
 	AssertSize(0, pCache->NumMemoHits());
 
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertSize(uiSprites, pCache->NumSprites());
 	AssertSize(uiMisses, pCache->NumMisses());
 	AssertSize(uiLookups, pCache->NumHits() + pCache->NumMisses());
@@ -350,13 +353,13 @@ void TestComponentSpritesText(void)
 	cColours.InitLogicim();
 	pCache = OMalloc<CComponentSpriteCache>();
 
-	pBefore = AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	pBefore = AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	uiSprites = pCache->NumSprites();
 	uiMisses = pCache->NumMisses();
 	uiHits = pCache->NumHits();
 
 	sTest.pcLabel->GetShapes()->SetText(1, "Changed");
-	pSprites = AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	pSprites = AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertSize(uiSprites, pCache->NumSprites());
 	AssertSize(uiMisses, pCache->NumMisses());
 	AssertSize(uiHits, pCache->NumHits());
@@ -364,7 +367,7 @@ void TestComponentSpritesText(void)
 
 	sTest.pcLabel->GetShapes()->SetVisible(0, false);
 	pBefore = pSprites;
-	pSprites = AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	pSprites = AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue(MaxImageDifference(pBefore, pSprites) > 2);
 	AssertSize(uiHits, pCache->NumHits());
 
@@ -398,23 +401,23 @@ void TestComponentSpritesZoomsAndScrolls(void)
 	cColours.InitLogicim();
 	pCache = OMalloc<CComponentSpriteCache>();
 
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	uiMisses = pCache->NumMisses();
-	AssertMatchesShapes(&sTest, &cColours, 1.5, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 1.5, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue(pCache->NumMisses() > uiMisses);
 	uiMisses = pCache->NumMisses();
 	uiHits = pCache->NumHits();
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertSize(uiMisses, pCache->NumMisses());
 	AssertTrue(pCache->NumHits() > uiHits);
 	AssertSize(0, pCache->NumEvictions());
 
 	//A twentieth of a grid unit at twenty pixels a unit is a pixel; a fortieth is half of one.
-	AssertMatchesShapes(&sTest, &cColours, 2, 0.025, 0.025, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0.025, 0.025, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue(pCache->NumMisses() > uiMisses);
 	uiMisses = pCache->NumMisses();
 	uiHits = pCache->NumHits();
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertSize(uiMisses, pCache->NumMisses());
 	AssertTrue(pCache->NumHits() > uiHits);
 
@@ -447,13 +450,13 @@ void TestComponentSpritesPages(void)
 	cColours.InitLogicim();
 
 	pCache = OMalloc<CComponentSpriteCache>();
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue((pCache->NumPages() >= 1) && (pCache->NumPages() < pCache->NumSprites()));
 	AssertLSize((lsize)pCache->NumPages() * COMPONENT_SPRITE_PAGE_SIZE * COMPONENT_SPRITE_PAGE_SIZE * 4, pCache->GetBytes());
 
 	//Pages of 32 pixels: the ports share pages, the bodies are each on one their own size.
 	pCache = OMalloc<CComponentSpriteCache>((lsize)COMPONENT_SPRITE_CACHE_DEFAULT_BYTES, (int32)32);
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue(pCache->NumPages() > 1);
 	uiCels = 0;
 	bOwnPage = false;
@@ -501,18 +504,18 @@ void TestComponentSpritesEviction(void)
 
 	//Room for one page of 64 pixels.
 	pCache = OMalloc<CComponentSpriteCache>((lsize)64 * 64 * 4, (int32)64);
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	uiPages = pCache->NumPages();
 	AssertTrue(uiPages > 1);
 	AssertSize(0, pCache->NumEvictions());
 
 	//Another zoom's sprites reuse the first zoom's pages; they weren't drawn from this frame.
-	AssertMatchesShapes(&sTest, &cColours, 1.5, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 1.5, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue(pCache->NumEvictions() > 0);
 
 	//Back at the first zoom the memos of sprites on reused pages are forgotten and the sprites made again.
 	uiMisses = pCache->NumMisses();
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 	AssertTrue(pCache->NumMisses() > uiMisses);
 
 	//Cleared.
@@ -520,7 +523,7 @@ void TestComponentSpritesEviction(void)
 	AssertSize(0, pCache->NumSprites());
 	AssertSize(0, pCache->NumPages());
 	AssertLSize(0, pCache->GetBytes());
-	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.cSimulation, &pCache);
+	AssertMatchesShapes(&sTest, &cColours, 2, 0, 0, sTest.pcPath, &sTest.pSimulation, &pCache);
 
 	cColours.Kill();
 	pCache = NULL;

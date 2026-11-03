@@ -26,7 +26,7 @@
 #include "TestLogicimRender.h"
 
 
-void LoadTestCircuitFonts(CCircuitFonts* pcFonts);
+Ptr<CCircuitFonts> LoadTestCircuitFonts(void);
 void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 
 
@@ -38,7 +38,7 @@ void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 struct SWiringTest
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -50,7 +50,8 @@ struct SWiringTest
 		CTrace::ResetNextID();
 		cFamilies.Init();
 		AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-		cSimulation.Init("Wiring");
+		pSimulation = OMalloc<CCircuitSimulation>("Wiring");
+		ORoot()->Add(pSimulation);
 		cCircuit.Init();
 		cPaths.Init();
 		pcPath = cPaths.AddTop(&cCircuit);
@@ -61,7 +62,8 @@ struct SWiringTest
 	{
 		cCircuit.Kill();
 		cPaths.Kill();
-		cSimulation.Kill();
+		ORoot()->Remove(pSimulation);
+		pSimulation = NULL;
 		cFamilies.Kill();
 		if (bRooted)
 		{
@@ -139,9 +141,9 @@ void SetWiringConstant(CConstantView* pcView, int64 iValue, SWiringTest* psTest)
 {
 	CConstant*	pcConstant;
 
-	pcConstant = (CConstant*)pcView->GetComponent(psTest->pcPath, &psTest->cSimulation);
+	pcConstant = (CConstant*)pcView->GetComponent(psTest->pcPath, &psTest->pSimulation);
 	pcConstant->SetConstantValue(iValue);
-	pcConstant->SimulationStarted(psTest->cSimulation.GetTimeline());
+	pcConstant->SimulationStarted(psTest->pSimulation->GetTimeline());
 }
 
 
@@ -154,7 +156,7 @@ void AssertValueText(const char* szExpected, CValueView* pcView, SWiringTest* ps
 	CChars	sz;
 
 	sz.Init();
-	pcView->GetValueText(&sz, psTest->pcPath, &psTest->cSimulation);
+	pcView->GetValueText(&sz, psTest->pcPath, &psTest->pSimulation);
 	AssertString(szExpected, sz.Text());
 	sz.Kill();
 }
@@ -166,7 +168,7 @@ void AssertValueText(const char* szExpected, CValueView* pcView, SWiringTest* ps
 //////////////////////////////////////////////////////////////////////////
 CTrace* GetPortViewTrace(SWiringTest* psTest, CComponentView* pcView, size uiPortView, size uiBit)
 {
-	return pcView->GetPortView(uiPortView)->GetPort(psTest->pcPath, &psTest->cSimulation, uiBit)->GetTrace();
+	return pcView->GetPortView(uiPortView)->GetPort(psTest->pcPath, &psTest->pSimulation, uiBit)->GetTrace();
 }
 
 
@@ -209,10 +211,10 @@ void TestWiringTunnels(void)
 	sTest.cCircuit.AddTrace(0, 16, 6, 16);
 	pcDouble = AddWiringProbe(&sTest.cCircuit, 6, 16, ROT_West, 4, RADIX_Hexadecimal);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
 	SetWiringConstant(pcConstant, 0x5A, &sTest);
 	SetWiringConstant(pcConstant2, 0xC, &sTest);
-	sTest.cSimulation.GetTimeline()->Run();
+	sTest.pSimulation->GetTimeline()->Run();
 
 	AssertValueText("5A", pcProbe, &sTest);
 	AssertTrue(GetPortViewTrace(&sTest, pcConstant, 0, 7) == GetPortViewTrace(&sTest, pcProbe, 0, 7));
@@ -266,11 +268,11 @@ void TestWiringSplitter(void)
 	pcLow = AddWiringConstant(&sTest.cCircuit, 40, 2, ROT_South, 4, RADIX_Hexadecimal);
 	pcHigh = AddWiringConstant(&sTest.cCircuit, 38, 2, ROT_South, 4, RADIX_Hexadecimal);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
 	SetWiringConstant(pcConstant, 0xA5, &sTest);
 	SetWiringConstant(pcLow, 0x3, &sTest);
 	SetWiringConstant(pcHigh, 0xC, &sTest);
-	sTest.cSimulation.GetTimeline()->Run();
+	sTest.pSimulation->GetTimeline()->Run();
 
 	AssertValueText("5", pcProbeLow, &sTest);
 	AssertValueText("A", pcProbeHigh, &sTest);
@@ -347,10 +349,10 @@ void TestWiringSplitterIndicesAndChains(void)
 	pcLowPair = AddWiringProbe(&sTest.cCircuit, 30, 10, ROT_South, 2, RADIX_Hexadecimal);
 	pcHighPair = AddWiringProbe(&sTest.cCircuit, 28, 10, ROT_South, 2, RADIX_Hexadecimal);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
 	SetWiringConstant(pcConstant, 6, &sTest);
 	SetWiringConstant(pcByte, 0xA6, &sTest);
-	sTest.cSimulation.GetTimeline()->Run();
+	sTest.pSimulation->GetTimeline()->Run();
 
 	//0110: bits 1 and 3 are 1 and 0, bits 0 and 2 are 0 and 1.
 	AssertValueText("01", pcOdd, &sTest);
@@ -397,11 +399,11 @@ void TestWiringPinAndLabel(void)
 	pcLabel->Init(0, 6, ROT_East, "Note", TA_Left, false, true, true, sFloatMinimum, sFloatMaximum);
 	sTest.cCircuit.Add(pcLabel);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
-	AssertNull(pcLabel->GetComponent(sTest.pcPath, &sTest.cSimulation));
-	AssertString("Pin", pcPin->GetComponent(sTest.pcPath, &sTest.cSimulation)->GetType());
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
+	AssertNull(pcLabel->GetComponent(sTest.pcPath, &sTest.pSimulation));
+	AssertString("Pin", pcPin->GetComponent(sTest.pcPath, &sTest.pSimulation)->GetType());
 	SetWiringConstant(pcConstant, 9, &sTest);
-	sTest.cSimulation.GetTimeline()->Run();
+	sTest.pSimulation->GetTimeline()->Run();
 	AssertValueText("9", pcPin, &sTest);
 
 	sTest.Kill();
@@ -441,19 +443,19 @@ void TestWiringClockAndOscilloscope(void)
 	pcScope->Init(0, -10, ROT_East, "Scope", "LVC", 1, 4, 8, 2, 100000000);
 	sTest.cCircuit.Add(pcScope);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
-	sTest.cSimulation.RunToTime(NanosecondsToTime((int64)125));
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
+	sTest.pSimulation->RunToTime(NanosecondsToTime((int64)125));
 	szFirst.Init();
-	pcProbe->GetValueText(&szFirst, sTest.pcPath, &sTest.cSimulation);
-	sTest.cSimulation.RunToTime(NanosecondsToTime((int64)50));
+	pcProbe->GetValueText(&szFirst, sTest.pcPath, &sTest.pSimulation);
+	sTest.pSimulation->RunToTime(NanosecondsToTime((int64)50));
 	szSecond.Init();
-	pcProbe->GetValueText(&szSecond, sTest.pcPath, &sTest.cSimulation);
+	pcProbe->GetValueText(&szSecond, sTest.pcPath, &sTest.pSimulation);
 	AssertTrue(((StringCompare(szFirst.Text(), "0") == 0) && (StringCompare(szSecond.Text(), "1") == 0)) ||
 			   ((StringCompare(szFirst.Text(), "1") == 0) && (StringCompare(szSecond.Text(), "0") == 0)));
 	szSecond.Kill();
 	szFirst.Kill();
 
-	pcOscilloscope = (COscilloscope*)pcScope->GetComponent(sTest.pcPath, &sTest.cSimulation);
+	pcOscilloscope = (COscilloscope*)pcScope->GetComponent(sTest.pcPath, &sTest.pSimulation);
 	AssertSize(32, pcOscilloscope->GetSampleCount());
 	uiHigh = 0;
 	uiLow = 0;
@@ -486,13 +488,13 @@ void TestWiringW65C816(void)
 	CW65C816View*		pcMPU;
 	CClockView*			pcClock;
 	CCircuitColours		cColours;
-	CCircuitFonts		cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	SInt32Vec2			sPHI2;
 
 	CW65C816InstructionFactory::GetInstance()->Init();
 	sTest.Init();
 	cColours.InitLogicim();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	pcMPU = NewMalloc<CW65C816View>();
 	pcMPU->Init(0, 0, ROT_East, "MPU", "LVC", false);
 	sTest.cCircuit.Add(pcMPU);
@@ -508,14 +510,15 @@ void TestWiringW65C816(void)
 	sTest.cCircuit.Add(pcClock);
 	sTest.cCircuit.AddTrace(sPHI2.x - 4, sPHI2.y, sPHI2.x, sPHI2.y);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
-	sTest.cSimulation.RunToTime(NanosecondsToTime((int64)5000));
-	AssertRenderedCircuit(&sTest.cCircuit, &cColours, 700, 640, 1.5, sTest.pcPath, &sTest.cSimulation, false, "W65C816Running", &cFonts);
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
+	sTest.pSimulation->RunToTime(NanosecondsToTime((int64)5000));
+	AssertRenderedCircuit(&sTest.cCircuit, &cColours, 700, 640, 1.5, sTest.pcPath, &sTest.pSimulation, false, "W65C816Running", &pFonts);
 	AssertTrue(pcMPU->IsFlagSet(W65C816_Emulation));
 	AssertString("B", pcMPU->GetFlagText(W65C816_IndexWidthOrBreak));
 
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	sTest.Kill(true);
 	CW65C816InstructionFactory::GetInstance()->Kill();
 }
@@ -532,12 +535,12 @@ void TestWiring65C64(void)
 	C65C64View*			pcMPU;
 	CClockView*			pcClock;
 	CCircuitColours		cColours;
-	CCircuitFonts		cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	SInt32Vec2			sPHI2;
 
 	sTest.Init();
 	cColours.InitLogicim();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	pcMPU = NewMalloc<C65C64View>();
 	pcMPU->Init(0, 0, ROT_East, "CPU", "LVC", false);
 	sTest.cCircuit.Add(pcMPU);
@@ -555,9 +558,9 @@ void TestWiring65C64(void)
 	sTest.cCircuit.Add(pcClock);
 	sTest.cCircuit.AddTrace(sPHI2.x - 4, sPHI2.y, sPHI2.x, sPHI2.y);
 
-	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.cSimulation, &sTest.cFamilies));
-	sTest.cSimulation.RunToTime(NanosecondsToTime((int64)5000));
-	AssertRenderedCircuit(&sTest.cCircuit, &cColours, 820, 820, 1.5, sTest.pcPath, &sTest.cSimulation, false, "65C64Running", &cFonts);
+	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
+	sTest.pSimulation->RunToTime(NanosecondsToTime((int64)5000));
+	AssertRenderedCircuit(&sTest.cCircuit, &cColours, 820, 820, 1.5, sTest.pcPath, &sTest.pSimulation, false, "65C64Running", &pFonts);
 	AssertString("RES", pcMPU->GetDetail(C65C64_OpCodeName));
 	AssertString("3", pcMPU->GetDetail(C65C64_Cycle));
 	AssertString("0x0001ffff", pcMPU->GetDetail(C65C64_Stack));
@@ -567,7 +570,8 @@ void TestWiring65C64(void)
 	AssertFalse(pcMPU->IsFlagSet(C65C64_Carry));
 
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	sTest.Kill(true);
 }
 
@@ -583,7 +587,7 @@ void TestWiringRenderViews(void)
 {
 	CCircuitView		cCircuit;
 	CCircuitColours		cColours;
-	CCircuitFonts		cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	CClockView*			pcClock;
 	CPositivePowerView*	pcPower;
 	CPinView*			pcPin;
@@ -593,7 +597,7 @@ void TestWiringRenderViews(void)
 	COscilloscopeView*	pcScope;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cColours.InitLogicim();
 	cCircuit.Init();
 
@@ -604,16 +608,16 @@ void TestWiringRenderViews(void)
 	pcPower->Init(-32, -6, ROT_South, "", 3.3f);
 	cCircuit.Add(pcPower);
 	pcPin = NewMalloc<CPinView>();
-	pcPin->Init(-26, -6, ROT_East, "Pin", "LVC", false, 1, RADIX_Binary, &cFonts);
+	pcPin->Init(-26, -6, ROT_East, "Pin", "LVC", false, 1, RADIX_Binary, &pFonts);
 	cCircuit.Add(pcPin);
 	pcSplitter = NewMalloc<CSplitterView>();
 	pcSplitter->Init(-18, -6, ROT_North, "", 2, 2, 2, SA_LeftHanded, -1);
 	cCircuit.Add(pcSplitter);
 	pcTunnel = NewMalloc<CTunnelView>();
-	pcTunnel->Init(-12, -6, ROT_North, "  ", false, &cFonts);
+	pcTunnel->Init(-12, -6, ROT_North, "  ", false, &pFonts);
 	cCircuit.Add(pcTunnel);
 	pcLabel = NewMalloc<CLabelView>();
-	pcLabel->Init(-8, -6, ROT_North, "  ", TA_Left, false, true, true, &cFonts);
+	pcLabel->Init(-8, -6, ROT_North, "  ", TA_Left, false, true, true, &pFonts);
 	cCircuit.Add(pcLabel);
 	pcScope = NewMalloc<COscilloscopeView>();
 	pcScope->Init(0, -8, ROT_East, "", "LVC", 2, 32, 30, 4, 6000000000.0);
@@ -626,32 +630,33 @@ void TestWiringRenderViews(void)
 	pcPower->Init(-38, 8, ROT_South, "", 5.0f);
 	cCircuit.Add(pcPower);
 	pcPin = NewMalloc<CPinView>();
-	pcPin->Init(-22, 8, ROT_East, "Address", "LVC", false, 8, RADIX_Hexadecimal, &cFonts);
+	pcPin->Init(-22, 8, ROT_East, "Address", "LVC", false, 8, RADIX_Hexadecimal, &pFonts);
 	cCircuit.Add(pcPin);
 	pcSplitter = NewMalloc<CSplitterView>();
 	pcSplitter->Init(-14, 8, ROT_North, "", 8, 3, 2, SA_RightHanded, 1);
 	cCircuit.Add(pcSplitter);
 	pcTunnel = NewMalloc<CTunnelView>();
-	pcTunnel->Init(-2, 8, ROT_East, "Bus", false, &cFonts);
+	pcTunnel->Init(-2, 8, ROT_East, "Bus", false, &pFonts);
 	cCircuit.Add(pcTunnel);
 	pcTunnel = NewMalloc<CTunnelView>();
-	pcTunnel->Init(0, 12, ROT_West, "Data", true, &cFonts);
+	pcTunnel->Init(0, 12, ROT_West, "Data", true, &pFonts);
 	cCircuit.Add(pcTunnel);
 	pcLabel = NewMalloc<CLabelView>();
-	pcLabel->Init(18, 8, ROT_East, "Centred label", TA_Centre, true, false, true, &cFonts);
+	pcLabel->Init(18, 8, ROT_East, "Centred label", TA_Centre, true, false, true, &pFonts);
 	cCircuit.Add(pcLabel);
 	pcLabel = NewMalloc<CLabelView>();
-	pcLabel->Init(24, 12, ROT_North, "Down", TA_Left, false, false, false, &cFonts);
+	pcLabel->Init(24, 12, ROT_North, "Down", TA_Left, false, false, false, &pFonts);
 	cCircuit.Add(pcLabel);
 
-	AssertRenderedCircuit(&cCircuit, &cColours, 900, 340, 1, NULL, NULL, true, "NewViews", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 900, 340, 1, NULL, NULL, true, "NewViews", &pFonts);
 	cColours.Kill();
 	cColours.InitDark();
-	AssertRenderedCircuit(&cCircuit, &cColours, 900, 340, 1, NULL, NULL, true, "NewViewsDark", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 900, 340, 1, NULL, NULL, true, "NewViewsDark", &pFonts);
 
 	cCircuit.Kill();
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }

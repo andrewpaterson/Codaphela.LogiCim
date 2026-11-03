@@ -21,7 +21,7 @@
 #include "TestLogicimRender.h"
 
 
-void LoadTestCircuitFonts(CCircuitFonts* pcFonts);
+Ptr<CCircuitFonts> LoadTestCircuitFonts(void);
 void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 
 
@@ -33,7 +33,7 @@ void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 struct SSubcircuitTest
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitViews						cCircuits;
 
 	void Init(void)
@@ -44,7 +44,8 @@ struct SSubcircuitTest
 		CViewPath::ResetNextID();
 		cFamilies.Init();
 		AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-		cSimulation.Init("Subcircuits");
+		pSimulation = OMalloc<CCircuitSimulation>("Subcircuits");
+		ORoot()->Add(pSimulation);
 		cCircuits.Init();
 	}
 
@@ -52,7 +53,8 @@ struct SSubcircuitTest
 	void Kill(bool bRooted = false)
 	{
 		cCircuits.Kill();
-		cSimulation.Kill();
+		ORoot()->Remove(pSimulation);
+		pSimulation = NULL;
 		cFamilies.Kill();
 		if (bRooted)
 		{
@@ -287,7 +289,7 @@ void TestSubcircuitSignalThrough(void)
 	CPinView*					pcIn;
 
 	sTest.Init();
-	pcSimulation = &sTest.cSimulation;
+	pcSimulation = &sTest.pSimulation;
 	pcInverter = AddInverterSubcircuit(&sTest.cCircuits);
 	pcTop = sTest.cCircuits.Add("Top");
 	pcInstance = AddTestInstance(pcTop, 0, 0, "U1", pcInverter);
@@ -349,7 +351,7 @@ void TestSubcircuitReused(void)
 	CComponentView*				pcInverterGate;
 
 	sTest.Init();
-	pcSimulation = &sTest.cSimulation;
+	pcSimulation = &sTest.pSimulation;
 	pcInverter = AddInverterSubcircuit(&sTest.cCircuits);
 	pcTop = sTest.cCircuits.Add("Top");
 	pcFirst = AddTestInstance(pcTop, 0, 0, "U1", pcInverter);
@@ -419,7 +421,7 @@ void TestSubcircuitNested(void)
 	CChars						sz;
 
 	sTest.Init();
-	pcSimulation = &sTest.cSimulation;
+	pcSimulation = &sTest.pSimulation;
 	pcInverter = AddInverterSubcircuit(&sTest.cCircuits);
 	pcDouble = AddDoubleSubcircuit(&sTest.cCircuits, pcInverter);
 	pcTop = sTest.cCircuits.Add("Top");
@@ -466,7 +468,7 @@ void TestSubcircuitNested(void)
 void TestSubcircuitTwoSimulations(void)
 {
 	SSubcircuitTest				sTest;
-	CCircuitSimulation			cSecond;
+	Ptr<CCircuitSimulation>		pSecond;
 	CCircuitView*				pcInverter;
 	CCircuitView*				pcTop;
 	CSubcircuitInstanceView*	pcInstance;
@@ -475,7 +477,8 @@ void TestSubcircuitTwoSimulations(void)
 	CViewPath*					pcTopPath;
 
 	sTest.Init();
-	cSecond.Init("Second");
+	pSecond = OMalloc<CCircuitSimulation>("Second");
+	ORoot()->Add(pSecond);
 	pcInverter = AddInverterSubcircuit(&sTest.cCircuits);
 	pcTop = sTest.cCircuits.Add("Top");
 	pcInstance = AddTestInstance(pcTop, 0, 0, "U1", pcInverter);
@@ -483,21 +486,22 @@ void TestSubcircuitTwoSimulations(void)
 	pcProbe = AddTestProbe(pcTop, GetPinPosition(pcInstance, "Out"));
 	pcTopPath = sTest.cCircuits.GetTopPath(pcTop);
 
-	AssertTrue(pcTop->CreateSimulation(pcTopPath, &sTest.cSimulation, &sTest.cFamilies));
-	AssertTrue(pcTop->CreateSimulation(pcTopPath, &cSecond, &sTest.cFamilies));
+	AssertTrue(pcTop->CreateSimulation(pcTopPath, &sTest.pSimulation, &sTest.cFamilies));
+	AssertTrue(pcTop->CreateSimulation(pcTopPath, &pSecond, &sTest.cFamilies));
 	AssertSize(2, pcInverter->GetComponent(1)->NumComponents());
 	AssertSize(2, pcTopPath->FindChild(pcInstance)->NumCircuitSimulations());
 
-	SetTestConstant(pcConstant, 1, pcTopPath, &sTest.cSimulation);
-	SetTestConstant(pcConstant, 0, pcTopPath, &cSecond);
-	AssertProbe("0", pcProbe, pcTopPath, &sTest.cSimulation);
-	AssertProbe("1", pcProbe, pcTopPath, &cSecond);
+	SetTestConstant(pcConstant, 1, pcTopPath, &sTest.pSimulation);
+	SetTestConstant(pcConstant, 0, pcTopPath, &pSecond);
+	AssertProbe("0", pcProbe, pcTopPath, &sTest.pSimulation);
+	AssertProbe("1", pcProbe, pcTopPath, &pSecond);
 
-	pcTop->DisconnectSimulation(pcTopPath, &sTest.cSimulation);
+	pcTop->DisconnectSimulation(pcTopPath, &sTest.pSimulation);
 	AssertSize(1, pcInverter->GetComponent(1)->NumComponents());
-	AssertProbe("1", pcProbe, pcTopPath, &cSecond);
+	AssertProbe("1", pcProbe, pcTopPath, &pSecond);
 
-	cSecond.Kill();
+	ORoot()->Remove(pSecond);
+	pSecond = NULL;
 	sTest.Kill();
 }
 
@@ -777,7 +781,7 @@ static size NumPathsEndingWith(CViewPaths* pcViewPaths, CCircuitView* pcCircuit)
 void TestSubcircuitReusedInReused(void)
 {
 	SSubcircuitTest				sTest;
-	CCircuitSimulation			cSecond;
+	Ptr<CCircuitSimulation>		pSecond;
 	SReusedCircuit				sCircuit;
 	CViewPaths*					pcViewPaths;
 	CViewPath*					pcQuadPath;
@@ -790,13 +794,14 @@ void TestSubcircuitReusedInReused(void)
 	uint32						uiPattern;
 
 	sTest.Init();
-	cSecond.Init("Second");
+	pSecond = OMalloc<CCircuitSimulation>("Second");
+	ORoot()->Add(pSecond);
 	sCircuit.Init(&sTest.cCircuits, false);
 	pcViewPaths = sTest.cCircuits.GetViewPaths();
 	pcInverter = sCircuit.pcInverter;
 
-	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &sTest.cSimulation, &sTest.cFamilies));
-	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &cSecond, &sTest.cFamilies));
+	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &sTest.pSimulation, &sTest.cFamilies));
+	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &pSecond, &sTest.cFamilies));
 
 	//2 Quads x 2 Pairs x 3 Inverters in each of two simulations.
 	AssertSize(24, pcInverter->GetComponent(1)->NumComponents());
@@ -806,7 +811,7 @@ void TestSubcircuitReusedInReused(void)
 
 	//Each Pair has five wires through its Inverters (I2's Out is I3's In), so twenty in each simulation, and none
 	//shared between the simulations.
-	AssertInverterTraces(20, 40, pcViewPaths, pcInverter, &sTest.cSimulation, &cSecond);
+	AssertInverterTraces(20, 40, pcViewPaths, pcInverter, &sTest.pSimulation, &pSecond);
 
 	//Q2's B2 is one trace from Top down through Quad and Pair to the wire inside I2.
 	pcQuadPath = sCircuit.pcTopPath->FindChild(sCircuit.apcQuads[1]);
@@ -814,37 +819,38 @@ void TestSubcircuitReusedInReused(void)
 	pcSecondInverterPath = pcPairPath->FindChild(sCircuit.pcPair->GetComponent(4)->GetCircuitInstanceView());
 	pcThirdInverterPath = pcPairPath->FindChild(sCircuit.pcPair->GetComponent(5)->GetCircuitInstanceView());
 	AssertSize(4, pcSecondInverterPath->Length());
-	pcTrace = sCircuit.apcQuads[1]->GetPin("B2")->pcPortView->GetPort(sCircuit.pcTopPath, &sTest.cSimulation, 0)->GetTrace();
+	pcTrace = sCircuit.apcQuads[1]->GetPin("B2")->pcPortView->GetPort(sCircuit.pcTopPath, &sTest.pSimulation, 0)->GetTrace();
 	AssertNotNull(pcTrace);
-	AssertTrue(pcTrace == sCircuit.pcQuad->GetComponent(7)->GetPortView((size)0)->GetPort(pcQuadPath, &sTest.cSimulation, 0)->GetTrace());
-	AssertTrue(pcTrace == sCircuit.pcPair->GetComponent(3)->GetPortView((size)0)->GetPort(pcPairPath, &sTest.cSimulation, 0)->GetTrace());
-	AssertTrue(pcTrace == pcInverter->GetTrace(0)->GetTrace(pcSecondInverterPath, &sTest.cSimulation, 0));
-	AssertTrue(pcTrace != pcInverter->GetTrace(0)->GetTrace(pcSecondInverterPath, &cSecond, 0));
-	AssertTrue(pcInverter->GetTrace(1)->GetTrace(pcSecondInverterPath, &sTest.cSimulation, 0) == pcInverter->GetTrace(0)->GetTrace(pcThirdInverterPath, &sTest.cSimulation, 0));
-	AssertTrue(pcInverter->GetTrace(1)->GetTrace(pcSecondInverterPath, &sTest.cSimulation, 0) != pcInverter->GetTrace(1)->GetTrace(pcThirdInverterPath, &sTest.cSimulation, 0));
+	AssertTrue(pcTrace == sCircuit.pcQuad->GetComponent(7)->GetPortView((size)0)->GetPort(pcQuadPath, &sTest.pSimulation, 0)->GetTrace());
+	AssertTrue(pcTrace == sCircuit.pcPair->GetComponent(3)->GetPortView((size)0)->GetPort(pcPairPath, &sTest.pSimulation, 0)->GetTrace());
+	AssertTrue(pcTrace == pcInverter->GetTrace(0)->GetTrace(pcSecondInverterPath, &sTest.pSimulation, 0));
+	AssertTrue(pcTrace != pcInverter->GetTrace(0)->GetTrace(pcSecondInverterPath, &pSecond, 0));
+	AssertTrue(pcInverter->GetTrace(1)->GetTrace(pcSecondInverterPath, &sTest.pSimulation, 0) == pcInverter->GetTrace(0)->GetTrace(pcThirdInverterPath, &sTest.pSimulation, 0));
+	AssertTrue(pcInverter->GetTrace(1)->GetTrace(pcSecondInverterPath, &sTest.pSimulation, 0) != pcInverter->GetTrace(1)->GetTrace(pcThirdInverterPath, &sTest.pSimulation, 0));
 
 	//Every pattern in the first simulation, with a different one in the second.
 	for (uiPattern = 0; uiPattern < 256; uiPattern++)
 	{
-		sCircuit.RunInputs(uiPattern, &sTest.cSimulation);
-		sCircuit.RunInputs((uiPattern * 37 + 11) & 0xFF, &cSecond);
-		sCircuit.AssertOutputs(uiPattern, &sTest.cSimulation);
-		sCircuit.AssertOutputs((uiPattern * 37 + 11) & 0xFF, &cSecond);
+		sCircuit.RunInputs(uiPattern, &sTest.pSimulation);
+		sCircuit.RunInputs((uiPattern * 37 + 11) & 0xFF, &pSecond);
+		sCircuit.AssertOutputs(uiPattern, &sTest.pSimulation);
+		sCircuit.AssertOutputs((uiPattern * 37 + 11) & 0xFF, &pSecond);
 	}
 
 	//Forgetting the first simulation leaves the second's twelve inverters running.
-	sCircuit.pcTop->DisconnectSimulation(sCircuit.pcTopPath, &sTest.cSimulation);
+	sCircuit.pcTop->DisconnectSimulation(sCircuit.pcTopPath, &sTest.pSimulation);
 	AssertSize(12, pcInverter->GetComponent(1)->NumComponents());
 	for (i = 0; i < pcViewPaths->NumViewPaths(); i++)
 	{
-		AssertFalse(pcViewPaths->GetViewPath(i)->ContainsCircuitSimulation(&sTest.cSimulation));
+		AssertFalse(pcViewPaths->GetViewPath(i)->ContainsCircuitSimulation(&sTest.pSimulation));
 	}
-	sCircuit.RunInputs(0x5A, &cSecond);
-	sCircuit.AssertOutputs(0x5A, &cSecond);
-	sCircuit.RunInputs(0xA5, &cSecond);
-	sCircuit.AssertOutputs(0xA5, &cSecond);
+	sCircuit.RunInputs(0x5A, &pSecond);
+	sCircuit.AssertOutputs(0x5A, &pSecond);
+	sCircuit.RunInputs(0xA5, &pSecond);
+	sCircuit.AssertOutputs(0xA5, &pSecond);
 
-	cSecond.Kill();
+	ORoot()->Remove(pSecond);
+	pSecond = NULL;
 	sTest.Kill();
 }
 
@@ -859,7 +865,7 @@ void TestSubcircuitReusedInReused(void)
 void TestSubcircuitReusedAtTwoDepths(void)
 {
 	SSubcircuitTest				sTest;
-	CCircuitSimulation			cSecond;
+	Ptr<CCircuitSimulation>		pSecond;
 	SReusedCircuit				sCircuit;
 	CViewPaths*					pcViewPaths;
 	CViewPath*					pcPairPath;
@@ -872,55 +878,57 @@ void TestSubcircuitReusedAtTwoDepths(void)
 	uint32						uiOther;
 
 	sTest.Init();
-	cSecond.Init("Second");
+	pSecond = OMalloc<CCircuitSimulation>("Second");
+	ORoot()->Add(pSecond);
 	sCircuit.Init(&sTest.cCircuits, true);
 	pcViewPaths = sTest.cCircuits.GetViewPaths();
 	pcInverter = sCircuit.pcInverter;
 	AssertSize(12, sCircuit.uiInputs);
 
-	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &sTest.cSimulation, &sTest.cFamilies));
-	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &cSecond, &sTest.cFamilies));
+	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &sTest.pSimulation, &sTest.cFamilies));
+	AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &pSecond, &sTest.cFamilies));
 
 	//(2 Quads x 2 Pairs + 2 Pairs) x 3 Inverters in each of two simulations.
 	AssertSize(36, pcInverter->GetComponent(1)->NumComponents());
 	AssertSize(12, sCircuit.pcPair->GetComponent(1)->NumComponents());
 	AssertSize(19, NumPathsEndingWith(pcViewPaths, pcInverter));
 	AssertSize(7, NumPathsEndingWith(pcViewPaths, sCircuit.pcPair));
-	AssertInverterTraces(30, 60, pcViewPaths, pcInverter, &sTest.cSimulation, &cSecond);
+	AssertInverterTraces(30, 60, pcViewPaths, pcInverter, &sTest.pSimulation, &pSecond);
 
 	//T2's B is one trace from Top through the Pair to the wire inside its I2, a path of three views.
 	pcPairPath = sCircuit.pcTopPath->FindChild(sCircuit.apcPairs[1]);
 	AssertSize(2, pcPairPath->Length());
 	pcInverterPath = pcPairPath->FindChild(sCircuit.pcPair->GetComponent(4)->GetCircuitInstanceView());
 	AssertSize(3, pcInverterPath->Length());
-	pcTrace = sCircuit.apcPairs[1]->GetPin("B")->pcPortView->GetPort(sCircuit.pcTopPath, &sTest.cSimulation, 0)->GetTrace();
+	pcTrace = sCircuit.apcPairs[1]->GetPin("B")->pcPortView->GetPort(sCircuit.pcTopPath, &sTest.pSimulation, 0)->GetTrace();
 	AssertNotNull(pcTrace);
-	AssertTrue(pcTrace == sCircuit.pcPair->GetComponent(3)->GetPortView((size)0)->GetPort(pcPairPath, &sTest.cSimulation, 0)->GetTrace());
-	AssertTrue(pcTrace == pcInverter->GetTrace(0)->GetTrace(pcInverterPath, &sTest.cSimulation, 0));
+	AssertTrue(pcTrace == sCircuit.pcPair->GetComponent(3)->GetPortView((size)0)->GetPort(pcPairPath, &sTest.pSimulation, 0)->GetTrace());
+	AssertTrue(pcTrace == pcInverter->GetTrace(0)->GetTrace(pcInverterPath, &sTest.pSimulation, 0));
 
 	//The Pair on Top and the Pairs in the Quads make their own inverters.
 	pcQuadPairPath = sCircuit.pcTopPath->FindChild(sCircuit.apcQuads[0])->FindChild(sCircuit.pcQuad->GetComponent(0)->GetCircuitInstanceView());
 	AssertSize(3, pcQuadPairPath->Length());
 	pcFirstInverter = pcInverter->GetComponent(1);
-	AssertTrue(pcFirstInverter->GetComponent(pcPairPath->FindChild(sCircuit.pcPair->GetComponent(1)->GetCircuitInstanceView()), &sTest.cSimulation) !=
-			   pcFirstInverter->GetComponent(pcQuadPairPath->FindChild(sCircuit.pcPair->GetComponent(1)->GetCircuitInstanceView()), &sTest.cSimulation));
+	AssertTrue(pcFirstInverter->GetComponent(pcPairPath->FindChild(sCircuit.pcPair->GetComponent(1)->GetCircuitInstanceView()), &sTest.pSimulation) !=
+			   pcFirstInverter->GetComponent(pcQuadPairPath->FindChild(sCircuit.pcPair->GetComponent(1)->GetCircuitInstanceView()), &sTest.pSimulation));
 
 	//Twelve inputs: a spread of patterns in the first simulation, with others in the second.
 	for (uiPattern = 0; uiPattern < 256; uiPattern++)
 	{
 		uiOther = (uiPattern * 0x9E5 + 0x123) & 0xFFF;
-		sCircuit.RunInputs((uiPattern * 0x10F) & 0xFFF, &sTest.cSimulation);
-		sCircuit.RunInputs(uiOther, &cSecond);
-		sCircuit.AssertOutputs((uiPattern * 0x10F) & 0xFFF, &sTest.cSimulation);
-		sCircuit.AssertOutputs(uiOther, &cSecond);
+		sCircuit.RunInputs((uiPattern * 0x10F) & 0xFFF, &sTest.pSimulation);
+		sCircuit.RunInputs(uiOther, &pSecond);
+		sCircuit.AssertOutputs((uiPattern * 0x10F) & 0xFFF, &sTest.pSimulation);
+		sCircuit.AssertOutputs(uiOther, &pSecond);
 	}
 
-	sCircuit.pcTop->DisconnectSimulation(sCircuit.pcTopPath, &cSecond);
+	sCircuit.pcTop->DisconnectSimulation(sCircuit.pcTopPath, &pSecond);
 	AssertSize(18, pcInverter->GetComponent(1)->NumComponents());
-	sCircuit.RunInputs(0xF0F, &sTest.cSimulation);
-	sCircuit.AssertOutputs(0xF0F, &sTest.cSimulation);
+	sCircuit.RunInputs(0xF0F, &sTest.pSimulation);
+	sCircuit.AssertOutputs(0xF0F, &sTest.pSimulation);
 
-	cSecond.Kill();
+	ORoot()->Remove(pSecond);
+	pSecond = NULL;
 	sTest.Kill();
 }
 
@@ -959,13 +967,13 @@ static void TickSimulation(CCircuitSimulation* pcSimulation, float64 fNanosecond
 // Each simulation is still at the time it was last ticked to.
 //
 //////////////////////////////////////////////////////////////////////////
-static void AssertSimulationTimes(CCircuitSimulation* acSimulations, int64* aiTimes, size uiNum)
+static void AssertSimulationTimes(Ptr<CCircuitSimulation>* apSimulations, int64* aiTimes, size uiNum)
 {
 	size	i;
 
 	for (i = 0; i < uiNum; i++)
 	{
-		AssertLong(aiTimes[i], acSimulations[i].GetTime());
+		AssertLong(aiTimes[i], apSimulations[i]->GetTime());
 	}
 }
 
@@ -984,7 +992,7 @@ void TestSubcircuitSimulationsTickedApart(void)
 {
 	SSubcircuitTest			sTest;
 	SReusedCircuit			sCircuit;
-	CCircuitSimulation		acSimulations[3];
+	Ptr<CCircuitSimulation>	apSimulations[3];
 	int64					aiTimes[3];
 	const char*				aszNames[3] = { "One", "Two", "Three" };
 	CCircuitSimulation*		pcOne;
@@ -996,14 +1004,15 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.Init(&sTest.cCircuits, true);
 	for (i = 0; i < 3; i++)
 	{
-		acSimulations[i].Init(aszNames[i]);
-		AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &acSimulations[i], &sTest.cFamilies));
-		sCircuit.RunInputs(0, &acSimulations[i]);
-		aiTimes[i] = acSimulations[i].GetTime();
+		apSimulations[i] = OMalloc<CCircuitSimulation>(aszNames[i]);
+		ORoot()->Add(apSimulations[i]);
+		AssertTrue(sCircuit.pcTop->CreateSimulation(sCircuit.pcTopPath, &apSimulations[i], &sTest.cFamilies));
+		sCircuit.RunInputs(0, &apSimulations[i]);
+		aiTimes[i] = apSimulations[i]->GetTime();
 	}
-	pcOne = &acSimulations[0];
-	pcTwo = &acSimulations[1];
-	pcThree = &acSimulations[2];
+	pcOne = &apSimulations[0];
+	pcTwo = &apSimulations[1];
+	pcThree = &apSimulations[2];
 	AssertSize(54, sCircuit.pcInverter->GetComponent(1)->NumComponents());
 
 	//One is given new inputs and ticked a little: nothing has come out yet.
@@ -1012,13 +1021,13 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.AssertOutputs(0, pcOne);
 	sCircuit.AssertOutputs(0, pcTwo);
 	sCircuit.AssertOutputs(0, pcThree);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//One is ticked a little more and paused part way: its Xs have changed and its Ys haven't.
 	TickSimulation(pcOne, REUSED_X_OUTPUTS_NS - REUSED_NO_OUTPUTS_NS, &aiTimes[0]);
 	sCircuit.AssertOutputs(0xFFF, 0, pcOne);
 	sCircuit.AssertOutputs(0, pcTwo);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//Two is given other inputs and ticked through; One stays part way and Three as it was.
 	sCircuit.SetInputs(0xA5A, pcTwo);
@@ -1026,14 +1035,14 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.AssertOutputs(0xA5A, pcTwo);
 	sCircuit.AssertOutputs(0xFFF, 0, pcOne);
 	sCircuit.AssertOutputs(0, pcThree);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//One is ticked on and finishes its change.
 	TickSimulation(pcOne, REUSED_ALL_OUTPUTS_NS - REUSED_X_OUTPUTS_NS, &aiTimes[0]);
 	sCircuit.AssertOutputs(0xFFF, pcOne);
 	sCircuit.AssertOutputs(0xA5A, pcTwo);
 	sCircuit.AssertOutputs(0, pcThree);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//Three is given inputs and paused part way.
 	sCircuit.SetInputs(0x3C3, pcThree);
@@ -1041,7 +1050,7 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.AssertOutputs(0x3C3, 0, pcThree);
 	sCircuit.AssertOutputs(0xA5A, pcTwo);
 	sCircuit.AssertOutputs(0xFFF, pcOne);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//Two changes again and is paused part way, from its last inputs; Three stays part way.
 	sCircuit.SetInputs(0x5A5, pcTwo);
@@ -1049,7 +1058,7 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.AssertOutputs(0x5A5, 0xA5A, pcTwo);
 	sCircuit.AssertOutputs(0x3C3, 0, pcThree);
 	sCircuit.AssertOutputs(0xFFF, pcOne);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//One changes and is ticked a little, with the other two both part way.
 	sCircuit.SetInputs(0x0F0, pcOne);
@@ -1057,7 +1066,7 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.AssertOutputs(0xFFF, pcOne);
 	sCircuit.AssertOutputs(0x5A5, 0xA5A, pcTwo);
 	sCircuit.AssertOutputs(0x3C3, 0, pcThree);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	//Three, then Two, then One are ticked through, each checked as the others wait.
 	TickSimulation(pcThree, REUSED_ALL_OUTPUTS_NS - REUSED_X_OUTPUTS_NS, &aiTimes[2]);
@@ -1072,11 +1081,12 @@ void TestSubcircuitSimulationsTickedApart(void)
 	sCircuit.AssertOutputs(0x0F0, pcOne);
 	sCircuit.AssertOutputs(0x5A5, pcTwo);
 	sCircuit.AssertOutputs(0x3C3, pcThree);
-	AssertSimulationTimes(acSimulations, aiTimes, 3);
+	AssertSimulationTimes(apSimulations, aiTimes, 3);
 
 	for (i = 0; i < 3; i++)
 	{
-		acSimulations[i].Kill();
+		ORoot()->Remove(apSimulations[i]);
+		apSimulations[i] = NULL;
 	}
 	sTest.Kill();
 }
@@ -1101,7 +1111,7 @@ void TestSubcircuitInsideItself(void)
 
 	gcLogger.GetConfig(&sLogConfig);
 	gcLogger.SetSilent();
-	AssertFalse(pcLoop->CreateSimulation(sTest.cCircuits.GetTopPath(pcLoop), &sTest.cSimulation, &sTest.cFamilies));
+	AssertFalse(pcLoop->CreateSimulation(sTest.cCircuits.GetTopPath(pcLoop), &sTest.pSimulation, &sTest.cFamilies));
 	gcLogger.SetConfig(&sLogConfig);
 
 	sTest.Kill();
@@ -1131,11 +1141,11 @@ void TestSubcircuitDuplicatePinNames(void)
 
 	gcLogger.GetConfig(&sLogConfig);
 	gcLogger.SetSilent();
-	AssertFalse(pcTop->CreateSimulation(sTest.cCircuits.GetTopPath(pcTop), &sTest.cSimulation, &sTest.cFamilies));
+	AssertFalse(pcTop->CreateSimulation(sTest.cCircuits.GetTopPath(pcTop), &sTest.pSimulation, &sTest.cFamilies));
 	gcLogger.SetConfig(&sLogConfig);
 
-	AssertSize(0, sTest.cSimulation.GetCircuit()->NumPassives());
-	AssertSize(0, sTest.cSimulation.NumInstanceSimulations());
+	AssertSize(0, sTest.pSimulation->GetCircuit()->NumPassives());
+	AssertSize(0, sTest.pSimulation->NumInstanceSimulations());
 	AssertSize(0, pcInstance->NumComponents());
 
 	sTest.Kill();
@@ -1152,7 +1162,7 @@ void TestSubcircuitFileRoundTrip(void)
 {
 	SSubcircuitTest				sTest;
 	CCircuitViews				cLoaded;
-	CCircuitSimulation			cLoadedSimulation;
+	Ptr<CCircuitSimulation>		pLoadedSimulation;
 	CCircuitView*				pcInverter;
 	CCircuitView*				pcDouble;
 	CCircuitView*				pcTop;
@@ -1174,25 +1184,26 @@ void TestSubcircuitFileRoundTrip(void)
 	AddTestProbe(pcTop, GetPinPosition(pcInstance, "Out"));
 	AddTestInstance(pcTop, 10, 0, "U1", pcInverter);
 	pcTopPath = sTest.cCircuits.GetTopPath(pcTop);
-	AssertTrue(pcTop->CreateSimulation(pcTopPath, &sTest.cSimulation, &sTest.cFamilies));
-	SetTestConstant(pcConstant, 1, pcTopPath, &sTest.cSimulation);
+	AssertTrue(pcTop->CreateSimulation(pcTopPath, &sTest.pSimulation, &sTest.cFamilies));
+	SetTestConstant(pcConstant, 1, pcTopPath, &sTest.pSimulation);
 
 	cFileUtil.MakeDir("Output");
-	AssertTrue(SaveCircuitsFile(&sTest.cCircuits, pcTop, &sTest.cSimulation, "Output" _FS_ "Subcircuits.xml"));
+	AssertTrue(SaveCircuitsFile(&sTest.cCircuits, pcTop, &sTest.pSimulation, "Output" _FS_ "Subcircuits.xml"));
 
 	cLoaded.Init();
-	cLoadedSimulation.Init("Subcircuits");
-	AssertTrue(LoadCircuitsFile(&cLoaded, "Top", &cLoadedSimulation, &sTest.cFamilies, "Output" _FS_ "Subcircuits.xml"));
+	pLoadedSimulation = OMalloc<CCircuitSimulation>("Subcircuits");
+	ORoot()->Add(pLoadedSimulation);
+	AssertTrue(LoadCircuitsFile(&cLoaded, "Top", &pLoadedSimulation, &sTest.cFamilies, "Output" _FS_ "Subcircuits.xml"));
 	AssertSize(3, cLoaded.NumCircuits());
 	pcLoadedTop = cLoaded.Get("Top");
 	AssertNotNull(pcLoadedTop);
 	AssertTrue(((CSubcircuitInstanceView*)pcLoadedTop->GetComponent(0))->GetInstanceCircuitView() == cLoaded.Get("Double"));
-	AssertLong(sTest.cSimulation.GetTime(), cLoadedSimulation.GetTime());
+	AssertLong(sTest.pSimulation->GetTime(), pLoadedSimulation->GetTime());
 
 	cSavedText.Init();
-	SaveCircuitsXML(&sTest.cCircuits, pcTop, &sTest.cSimulation, &cSavedText);
+	SaveCircuitsXML(&sTest.cCircuits, pcTop, &sTest.pSimulation, &cSavedText);
 	cLoadedText.Init();
-	SaveCircuitsXML(&cLoaded, pcLoadedTop, &cLoadedSimulation, &cLoadedText);
+	SaveCircuitsXML(&cLoaded, pcLoadedTop, &pLoadedSimulation, &cLoadedText);
 	AssertString(cSavedText.GetText(), cLoadedText.GetText());
 	AssertTrue(strstr(cSavedText.GetText(), "<Subcircuit ") != NULL);
 	AssertTrue(strstr(cSavedText.GetText(), "<Instance index=\"0\">") != NULL);
@@ -1201,12 +1212,13 @@ void TestSubcircuitFileRoundTrip(void)
 	cSavedText.Kill();
 
 	sz.Init();
-	((CProbeView*)pcLoadedTop->GetComponent(2))->GetValueText(&sz, cLoaded.GetTopPath(pcLoadedTop), &cLoadedSimulation);
+	((CProbeView*)pcLoadedTop->GetComponent(2))->GetValueText(&sz, cLoaded.GetTopPath(pcLoadedTop), &pLoadedSimulation);
 	AssertString("1", sz.Text());
 	sz.Kill();
 
 	cLoaded.Kill();
-	cLoadedSimulation.Kill();
+	ORoot()->Remove(pLoadedSimulation);
+	pLoadedSimulation = NULL;
 	sTest.Kill();
 
 	cFileUtil.Delete("Output" _FS_ "Subcircuits.xml");
@@ -1250,7 +1262,7 @@ static CCircuitView* AddChipSubcircuit(CCircuitViews* pcCircuits)
 void TestSubcircuitLayoutRender(void)
 {
 	SSubcircuitTest				sTest;
-	CCircuitFonts				cFonts;
+	Ptr<CCircuitFonts>			pFonts;
 	CCircuitColours				cColours;
 	CCircuitView*				pcInverter;
 	CCircuitView*				pcChip;
@@ -1262,17 +1274,17 @@ void TestSubcircuitLayoutRender(void)
 	CViewPath*					pcTopPath;
 
 	sTest.Init();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cColours.InitLogicim();
 	pcInverter = AddInverterSubcircuit(&sTest.cCircuits);
 	pcChip = AddChipSubcircuit(&sTest.cCircuits);
 	pcTop = sTest.cCircuits.Add("Top");
 
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(-9, 0, ROT_East, "U1", "Not", pcInverter, &cFonts);
+	pcInstance->Init(-9, 0, ROT_East, "U1", "Not", pcInverter, &pFonts);
 	pcTop->Add(pcInstance);
 	pcChipInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcChipInstance->Init(10, 0, ROT_East, "", "", pcChip, &cFonts);
+	pcChipInstance->Init(10, 0, ROT_East, "", "", pcChip, &pFonts);
 	pcTop->Add(pcChipInstance);
 	pcConstant = AddTestConstant(pcTop, GetPinPosition(pcInstance, "In"));
 	AddTestProbe(pcTop, GetPinPosition(pcInstance, "Out"));
@@ -1282,10 +1294,10 @@ void TestSubcircuitLayoutRender(void)
 	AssertTrue(pcChipInstance->GetPin("Y")->pcPin->IsInverting());
 
 	pcTopPath = sTest.cCircuits.GetTopPath(pcTop);
-	AssertTrue(pcTop->CreateSimulation(pcTopPath, &sTest.cSimulation, &sTest.cFamilies));
-	SetTestConstant(pcConstant, 1, pcTopPath, &sTest.cSimulation);
+	AssertTrue(pcTop->CreateSimulation(pcTopPath, &sTest.pSimulation, &sTest.cFamilies));
+	SetTestConstant(pcConstant, 1, pcTopPath, &sTest.pSimulation);
 
-	AssertRenderedCircuit(pcTop, &cColours, 840, 360, 2, pcTopPath, &sTest.cSimulation, true, "Subcircuits", &cFonts);
+	AssertRenderedCircuit(pcTop, &cColours, 840, 360, 2, pcTopPath, &sTest.pSimulation, true, "Subcircuits", &pFonts);
 
 	//An instance given the kept layout, as one loaded, puts its pins where they were measured.
 	pcLoaded = NewMalloc<CSubcircuitInstanceView>();
@@ -1299,7 +1311,8 @@ void TestSubcircuitLayoutRender(void)
 	SafeKill(pcLoaded);
 
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	sTest.Kill(true);
 }
 

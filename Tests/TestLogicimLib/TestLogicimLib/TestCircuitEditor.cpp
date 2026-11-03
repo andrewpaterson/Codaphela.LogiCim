@@ -38,7 +38,7 @@
 #include "TestLib/Assert.h"
 
 
-void LoadTestCircuitFonts(CCircuitFonts* pcFonts);
+Ptr<CCircuitFonts> LoadTestCircuitFonts(void);
 void KillTestCircuitFonts(CCircuitFonts* pcFonts);
 void AssertGridPosition(int32 x, int32 y, CPortView* pcPortView);
 
@@ -51,9 +51,11 @@ void AssertGridPosition(int32 x, int32 y, CPortView* pcPortView);
 struct SEditorTest
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitEditor						cEditor;
+	Ptr<CCircuitFonts>					pFonts;
+	Ptr<CCircuitEditor>					pEditor;
 
-	void Init(CCircuitFonts* pcFonts = NULL)
+	//The editor is rooted, and so are its fonts when it has them.
+	void Init(bool bFonts = false)
 	{
 		ObjectsInit();
 		CEvent::ResetNextID();
@@ -61,19 +63,30 @@ struct SEditorTest
 		CViewPath::ResetNextID();
 		cFamilies.Init();
 		AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-		cEditor.Init(&cFamilies, pcFonts);
+		if (bFonts)
+		{
+			pFonts = LoadTestCircuitFonts();
+		}
+		pEditor = OMalloc<CCircuitEditor>(&cFamilies, pFonts);
+		ORoot()->Add(pEditor);
 	}
 
-	//Rooted objects (fonts) leave the root changed; it isn't checked.
-	void Kill(bool bRooted = false)
+	//Rooted objects leave the root changed; it isn't checked.
+	void Kill(void)
 	{
-		cEditor.Kill();
-		cFamilies.Kill();
-		if (bRooted)
+		if (pEditor.IsNotNull())
 		{
-			ObjectsFlush();
+			ORoot()->Remove(pEditor);
+			pEditor = NULL;
 		}
-		ObjectsKill(!bRooted);
+		if (pFonts.IsNotNull())
+		{
+			KillTestCircuitFonts(&pFonts);
+			pFonts = NULL;
+		}
+		cFamilies.Kill();
+		ObjectsFlush();
+		ObjectsKill(false);
 	}
 
 	void PointAt(float64 x, float64 y)
@@ -81,7 +94,7 @@ struct SEditorTest
 		SFloat64Vec2	sPosition;
 
 		sPosition.Init(x, y);
-		cEditor.PointerMoved(sPosition);
+		pEditor->PointerMoved(sPosition);
 	}
 
 	void Press(float64 x, float64 y)
@@ -89,8 +102,8 @@ struct SEditorTest
 		SFloat64Vec2	sPosition;
 
 		sPosition.Init(x, y);
-		cEditor.PointerMoved(sPosition);
-		cEditor.ButtonPressed(sPosition);
+		pEditor->PointerMoved(sPosition);
+		pEditor->ButtonPressed(sPosition);
 	}
 
 	void Release(float64 x, float64 y)
@@ -98,8 +111,8 @@ struct SEditorTest
 		SFloat64Vec2	sPosition;
 
 		sPosition.Init(x, y);
-		cEditor.PointerMoved(sPosition);
-		cEditor.ButtonReleased(sPosition);
+		pEditor->PointerMoved(sPosition);
+		pEditor->ButtonReleased(sPosition);
 	}
 
 	void Click(float64 x, float64 y)
@@ -116,12 +129,12 @@ struct SEditorTest
 
 	void Run(void)
 	{
-		cEditor.GetSimulation()->GetTimeline()->Run();
+		pEditor->GetSimulation()->GetTimeline()->Run();
 	}
 
 	int GetLevel(int32 x, int32 y)
 	{
-		return GetEditorLevel(&cEditor, &cFamilies, x, y);
+		return GetEditorLevel(&pEditor, &cFamilies, x, y);
 	}
 
 	//The level of the wire through the grid point in the editor's simulation, TV_Unsettled when nothing drives it.
@@ -226,36 +239,36 @@ void TestCircuitEditorSelection(void)
 	SFloat64Vec2		sB;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcA = AddTestInverter(pcMain, -3, -2);
 	pcB = AddTestInverter(pcMain, -3, 3);
 	pcTrace = pcMain->AddTrace(-1, -2, 6, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
-	pcSelection = sTest.cEditor.GetSelection();
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	pcSelection = sTest.pEditor->GetSelection();
 	sA = GetCentre(pcA);
 	sB = GetCentre(pcB);
 
 	sTest.PointAt(sA.x, sA.y);
-	AssertPointer(pcA, sTest.cEditor.GetHover());
+	AssertPointer(pcA, sTest.pEditor->GetHover());
 
 	sTest.Click(sA.x, sA.y);
 	AssertSize(1, pcSelection->NumComponents());
 	AssertPointer(pcA, pcSelection->GetComponent(0));
 	AssertSize(0, pcSelection->NumTraces());
-	AssertNull(sTest.cEditor.GetHover());
+	AssertNull(sTest.pEditor->GetHover());
 
-	sTest.cEditor.SetModifiers(false, true);
+	sTest.pEditor->SetModifiers(false, true);
 	sTest.Click(sB.x, sB.y);
 	AssertSize(2, pcSelection->NumComponents());
 	AssertTrue(pcSelection->Contains(pcA));
 	AssertTrue(pcSelection->Contains(pcB));
 
-	sTest.cEditor.SetModifiers(true, true);
+	sTest.pEditor->SetModifiers(true, true);
 	sTest.Click(sA.x, sA.y);
 	AssertSize(1, pcSelection->NumComponents());
 	AssertPointer(pcB, pcSelection->GetComponent(0));
 
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	sTest.Click(20.2, 20.2);
 	AssertTrue(pcSelection->IsEmpty());
 
@@ -278,7 +291,7 @@ void TestCircuitEditorSelection(void)
 	AssertSize(1, pcSelection->NumTraces());
 	AssertPointer(pcTrace, pcSelection->GetTrace(0));
 
-	sTest.cEditor.StopEdit();
+	sTest.pEditor->StopEdit();
 	AssertTrue(pcSelection->IsEmpty());
 
 	sTest.Kill();
@@ -300,32 +313,32 @@ void TestCircuitEditorPlace(void)
 	CComponentView*		pcPlaced;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_Unsettled, sTest.GetLevel(3, -2));
 
-	AssertFalse(sTest.cEditor.StartPlaceComponent("Inverter"));
+	AssertFalse(sTest.pEditor->StartPlaceComponent("Inverter"));
 	sTest.PointAt(10.3, 9.8);
-	AssertTrue(sTest.cEditor.StartPlaceComponent("Inverter"));
-	AssertTrue(sTest.cEditor.IsEditing());
-	AssertFalse(sTest.cEditor.CanRun());
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Inverter"));
+	AssertTrue(sTest.pEditor->IsEditing());
+	AssertFalse(sTest.pEditor->CanRun());
 	AssertSize(2, pcMain->NumComponents());
 	pcPlaced = pcMain->GetComponent(1);
 	AssertString("Inverter", pcPlaced->GetType());
 	AssertInt(10, pcPlaced->GetPosition().x);
 	AssertInt(10, pcPlaced->GetPosition().y);
 	AssertInt(ROT_East, pcPlaced->GetRotation());
-	AssertNull(pcPlaced->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+	AssertNull(pcPlaced->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 
 	sTest.PointAt(-2.9, -2.2);
 	AssertInt(-3, pcPlaced->GetPosition().x);
 	AssertInt(-2, pcPlaced->GetPosition().y);
 	sTest.Press(-2.9, -2.2);
-	AssertFalse(sTest.cEditor.IsEditing());
-	AssertNotNull(pcPlaced->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
-	AssertTrue(sTest.cEditor.GetSelection()->IsEmpty());
+	AssertFalse(sTest.pEditor->IsEditing());
+	AssertNotNull(pcPlaced->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
+	AssertTrue(sTest.pEditor->GetSelection()->IsEmpty());
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
 
@@ -333,11 +346,11 @@ void TestCircuitEditorPlace(void)
 	AssertSize(2, pcMain->NumComponents());
 
 	sTest.PointAt(20, 20);
-	AssertTrue(sTest.cEditor.StartPlaceComponent("Ground"));
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Ground"));
 	AssertSize(3, pcMain->NumComponents());
-	sTest.cEditor.StopEdit();
+	sTest.pEditor->StopEdit();
 	AssertSize(2, pcMain->NumComponents());
-	AssertFalse(sTest.cEditor.IsEditing());
+	AssertFalse(sTest.pEditor->IsEditing());
 
 	sTest.Kill();
 }
@@ -365,38 +378,38 @@ void TestCircuitEditorMove(void)
 
 	sTest.Init();
 	sOldOut.Init(3, -2);
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
-	pcComponent = pcInverter->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation());
-	uiTraces = sTest.cEditor.GetSimulation()->GetCircuit()->NumTraces();
+	pcComponent = pcInverter->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation());
+	uiTraces = sTest.pEditor->GetSimulation()->GetCircuit()->NumTraces();
 
 	sCentre = GetCentre(pcInverter);
 	sTest.Click(sCentre.x, sCentre.y);
-	AssertTrue(sTest.cEditor.GetSelection()->Contains(pcInverter));
-	sTest.cEditor.SetModifiers(true, false);
+	AssertTrue(sTest.pEditor->GetSelection()->Contains(pcInverter));
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Drag(sCentre.x, sCentre.y, sCentre.x, sCentre.y + 10);
 	AssertInt(-3, pcInverter->GetPosition().x);
 	AssertInt(8, pcInverter->GetPosition().y);
-	AssertTrue(sTest.cEditor.GetSelection()->Contains(pcInverter));
+	AssertTrue(sTest.pEditor->GetSelection()->Contains(pcInverter));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(6, 8));
 	AssertNull(pcMain->GetTraceAt(sOldOut));
-	AssertTrue(sTest.cEditor.GetSelection()->Contains(pcInverter));
-	AssertSize(1, sTest.cEditor.GetSelection()->NumComponents());
-	AssertSize(0, sTest.cEditor.GetSelection()->NumTraces());
-	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+	AssertTrue(sTest.pEditor->GetSelection()->Contains(pcInverter));
+	AssertSize(1, sTest.pEditor->GetSelection()->NumComponents());
+	AssertSize(0, sTest.pEditor->GetSelection()->NumTraces());
+	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 
 	sTest.Drag(sCentre.x, sCentre.y + 10, sCentre.x, sCentre.y);
 	AssertInt(-2, pcInverter->GetPosition().y);
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(6, -2));
-	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
-	AssertSize(uiTraces, sTest.cEditor.GetSimulation()->GetCircuit()->NumTraces());
-	sTest.cEditor.SetModifiers(false, false);
+	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
+	AssertSize(uiTraces, sTest.pEditor->GetSimulation()->GetCircuit()->NumTraces());
+	sTest.pEditor->SetModifiers(false, false);
 
 	sTest.Kill();
 }
@@ -419,7 +432,7 @@ void TestCircuitEditorMoveFromJunction(void)
 	SFloat64Vec2		sCentre;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(-8, -3, ROT_North, "");
 	pcMain->Add(pcGround);
@@ -430,16 +443,16 @@ void TestCircuitEditorMoveFromJunction(void)
 	AddTestInverter(pcMain, -3, 6);
 	pcMain->AddTrace(-1, 0, 4, 0);
 	pcMain->AddTrace(-1, 6, 4, 6);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(4, 0));
 	AssertInt(TV_High, sTest.GetLevel(4, 6));
 
 	sCentre = GetCentre(pcInverter);
 	sTest.Click(sCentre.x, sCentre.y);
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Drag(sCentre.x, sCentre.y, sCentre.x + 12, sCentre.y - 8);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(9, pcInverter->GetPosition().x);
 	AssertInt(-8, pcInverter->GetPosition().y);
 	sTest.Run();
@@ -467,7 +480,7 @@ void TestCircuitEditorMoveWire(void)
 	SInt32Vec2			sPoint;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(0, -1, ROT_North, "");
 	pcMain->Add(pcGround);
@@ -476,33 +489,33 @@ void TestCircuitEditorMoveWire(void)
 	pcMain->AddTrace(10, 5, 10, 10);
 	AddTestInverter(pcMain, 11, 10);
 	pcMain->AddTrace(13, 10, 18, 10);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(15, 10));
 
 	sTest.Click(5, 5);
-	AssertSize(1, sTest.cEditor.GetSelection()->NumTraces());
+	AssertSize(1, sTest.pEditor->GetSelection()->NumTraces());
 	uiTraces = pcMain->NumTraces();
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Press(5, 5);
 	sTest.PointAt(5, 8);
-	AssertTrue(sTest.cEditor.IsEditing());
+	AssertTrue(sTest.pEditor->IsEditing());
 	AssertSize(uiTraces, pcMain->NumTraces());
 	sPoint.Init(5, 8);
 	AssertNotNull(pcMain->GetTraceAt(sPoint));
 
 	sTest.Release(5, 8);
-	sTest.cEditor.SetModifiers(false, false);
-	AssertFalse(sTest.cEditor.IsEditing());
+	sTest.pEditor->SetModifiers(false, false);
+	AssertFalse(sTest.pEditor->IsEditing());
 	sPoint.Init(5, 5);
 	AssertNull(pcMain->GetTraceAt(sPoint));
 	sPoint.Init(0, 7);
 	AssertNotNull(pcMain->GetTraceAt(sPoint));
 	sPoint.Init(10, 6);
 	AssertNotNull(pcMain->GetTraceAt(sPoint));
-	AssertSize(1, sTest.cEditor.GetSelection()->NumTraces());
+	AssertSize(1, sTest.pEditor->GetSelection()->NumTraces());
 	sPoint.Init(5, 8);
-	AssertTrue(sTest.cEditor.GetSelection()->GetTrace(0)->Contains(sPoint));
+	AssertTrue(sTest.pEditor->GetSelection()->GetTrace(0)->Contains(sPoint));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(15, 10));
 
@@ -517,7 +530,7 @@ void TestCircuitEditorMoveWire(void)
 //////////////////////////////////////////////////////////////////////////
 static CTrace* GetPortTrace(SEditorTest* psTest, CComponentView* pcComponent, const char* szPort)
 {
-	return pcComponent->GetPortView(szPort)->GetPort(psTest->cEditor.GetViewPath(), psTest->cEditor.GetSimulation(), 0)->GetTrace();
+	return pcComponent->GetPortView(szPort)->GetPort(psTest->pEditor->GetViewPath(), psTest->pEditor->GetSimulation(), 0)->GetTrace();
 }
 
 
@@ -544,22 +557,22 @@ void TestCircuitEditorMoveDetached(void)
 
 	sTest.Init();
 	sOldOut.Init(3, -2);
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
-	pcComponent = pcInverter->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation());
+	pcComponent = pcInverter->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation());
 	uiTraces = pcMain->NumTraces();
-	uiSnapshots = sTest.cEditor.GetUndoStack()->NumSnapshots();
+	uiSnapshots = sTest.pEditor->GetUndoStack()->NumSnapshots();
 	AssertNotNull(GetPortTrace(&sTest, pcInverter, "Output"));
 
 	sCentre = GetCentre(pcInverter);
-	AssertTrue(sTest.cEditor.GetSelection()->IsEmpty());
+	AssertTrue(sTest.pEditor->GetSelection()->IsEmpty());
 	sTest.Press(sCentre.x, sCentre.y);
 	sTest.PointAt(sCentre.x, sCentre.y + 10);
-	AssertTrue(sTest.cEditor.IsEditing());
+	AssertTrue(sTest.pEditor->IsEditing());
 	AssertInt(8, pcInverter->GetPosition().y);
 	AssertNull(GetPortTrace(&sTest, pcInverter, "Input"));
 	AssertNull(GetPortTrace(&sTest, pcInverter, "Output"));
@@ -567,29 +580,29 @@ void TestCircuitEditorMoveDetached(void)
 	AssertNotNull(pcMain->GetTraceAt(sOldOut));
 
 	sTest.Release(sCentre.x, sCentre.y + 10);
-	AssertFalse(sTest.cEditor.IsEditing());
-	AssertTrue(sTest.cEditor.GetSelection()->Contains(pcInverter));
-	AssertSize(1, sTest.cEditor.GetSelection()->NumComponents());
+	AssertFalse(sTest.pEditor->IsEditing());
+	AssertTrue(sTest.pEditor->GetSelection()->Contains(pcInverter));
+	AssertSize(1, sTest.pEditor->GetSelection()->NumComponents());
 	AssertNotNull(pcMain->GetTraceAt(sOldOut));
-	AssertSize(uiSnapshots + 1, sTest.cEditor.GetUndoStack()->NumSnapshots());
+	AssertSize(uiSnapshots + 1, sTest.pEditor->GetUndoStack()->NumSnapshots());
 	sTest.Run();
 	AssertInt(TV_Unsettled, sTest.GetLevel(3, -2));
-	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 
 	sTest.Drag(sCentre.x, sCentre.y + 10, sCentre.x, sCentre.y);
 	AssertInt(-2, pcInverter->GetPosition().y);
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
-	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+	AssertPointer(pcComponent, pcInverter->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 	AssertSize(uiTraces, pcMain->NumTraces());
 
-	uiSnapshots = sTest.cEditor.GetUndoStack()->NumSnapshots();
+	uiSnapshots = sTest.pEditor->GetUndoStack()->NumSnapshots();
 	sTest.Press(sCentre.x, sCentre.y);
 	sTest.PointAt(sCentre.x + 6, sCentre.y + 4);
 	AssertNull(GetPortTrace(&sTest, pcInverter, "Output"));
 	sTest.PointAt(sCentre.x, sCentre.y);
 	sTest.Release(sCentre.x, sCentre.y);
-	AssertSize(uiSnapshots, sTest.cEditor.GetUndoStack()->NumSnapshots());
+	AssertSize(uiSnapshots, sTest.pEditor->GetUndoStack()->NumSnapshots());
 	AssertNotNull(GetPortTrace(&sTest, pcInverter, "Output"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
@@ -615,7 +628,7 @@ void TestCircuitEditorMoveDetachedWire(void)
 	CTraceView*			pcAcross;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(0, -1, ROT_North, "");
 	pcMain->Add(pcGround);
@@ -624,18 +637,18 @@ void TestCircuitEditorMoveDetachedWire(void)
 	pcMain->AddTrace(10, 5, 10, 10);
 	AddTestInverter(pcMain, 11, 10);
 	pcMain->AddTrace(13, 10, 18, 10);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(15, 10));
 
 	sTest.Click(5, 5);
-	AssertSize(1, sTest.cEditor.GetSelection()->NumTraces());
+	AssertSize(1, sTest.pEditor->GetSelection()->NumTraces());
 	sTest.Press(5, 5);
 	sTest.PointAt(5, 8);
-	AssertTrue(sTest.cEditor.IsEditing());
+	AssertTrue(sTest.pEditor->IsEditing());
 	sPoint.Init(5, 8);
 	AssertTrue(pcAcross->Contains(sPoint));
-	AssertNull(pcAcross->GetTraces(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+	AssertNull(pcAcross->GetTraces(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 	AssertInt(TV_Low, sTest.GetLevel(0, 3));
 
 	sTest.Release(5, 8);
@@ -675,10 +688,10 @@ void TestCircuitEditorMoveConnectedLive(void)
 
 	sTest.Init();
 	sOldLead.Init(-4, -3);
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	apcBefore.Init();
 	for (i = 0; i < pcMain->NumTraces(); i++)
@@ -686,10 +699,10 @@ void TestCircuitEditorMoveConnectedLive(void)
 		apcBefore.Add(pcMain->GetTrace(i));
 	}
 	AssertNotNull(pcMain->GetTraceAt(sOldLead));
-	uiSnapshots = sTest.cEditor.GetUndoStack()->NumSnapshots();
+	uiSnapshots = sTest.pEditor->GetUndoStack()->NumSnapshots();
 
 	sCentre = GetCentre(pcInverter);
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Press(sCentre.x, sCentre.y);
 	sTest.PointAt(sCentre.x, sCentre.y + 10);
 	AssertInt(8, pcInverter->GetPosition().y);
@@ -697,7 +710,7 @@ void TestCircuitEditorMoveConnectedLive(void)
 	pcRoute = pcMain->GetTraceAt(pcInverter->GetPortView("Input")->GetGridPosition());
 	AssertNotNull(pcRoute);
 	AssertTrue(apcBefore.Find(pcRoute) == ARRAY_ELEMENT_NOT_FOUND);
-	AssertNull(pcRoute->GetTraces(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+	AssertNull(pcRoute->GetTraces(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 
 	sTest.PointAt(sCentre.x + 3, sCentre.y + 12);
 	AssertNotNull(pcMain->GetTraceAt(pcInverter->GetPortView("Input")->GetGridPosition()));
@@ -709,13 +722,13 @@ void TestCircuitEditorMoveConnectedLive(void)
 	{
 		AssertPointer(apcBefore.GetPtr(i), pcMain->GetTrace(i));
 	}
-	AssertSize(uiSnapshots, sTest.cEditor.GetUndoStack()->NumSnapshots());
+	AssertSize(uiSnapshots, sTest.pEditor->GetUndoStack()->NumSnapshots());
 
 	sTest.Press(sCentre.x, sCentre.y);
 	sTest.PointAt(sCentre.x + 8, sCentre.y + 5);
 	AssertNull(pcMain->GetTraceAt(sOldLead));
-	sTest.cEditor.StopEdit();
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->StopEdit();
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(-2, pcInverter->GetPosition().y);
 	AssertSize(apcBefore.NumElements(), pcMain->NumTraces());
 	for (i = 0; i < pcMain->NumTraces(); i++)
@@ -746,18 +759,18 @@ void TestCircuitEditorMoveConnectedLoop(void)
 	SInt32Vec2			sPoint;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcInverter = AddTestInverter(pcMain, -3, -2);
 	pcMain->AddTrace(-1, -2, -1, 2);
 	pcMain->AddTrace(-1, 2, -4, 2);
 	pcMain->AddTrace(-4, 2, -4, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	AssertPointer(GetPortTrace(&sTest, pcInverter, "Input"), GetPortTrace(&sTest, pcInverter, "Output"));
 
 	sCentre = GetCentre(pcInverter);
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Drag(sCentre.x, sCentre.y, sCentre.x + 5, sCentre.y + 10);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(2, pcInverter->GetPosition().x);
 	AssertInt(8, pcInverter->GetPosition().y);
 	sPoint.Init(-1, 2);
@@ -784,16 +797,14 @@ void TestCircuitEditorMoveConnectedLoop(void)
 void TestCircuitEditorMoveConnectedSharedNet(void)
 {
 	SEditorTest			sTest;
-	CCircuitFonts		cFonts;
 	CCircuitView*		pcMain;
 	CComponentView*		pcFlipFlop;
 	CComponentView*		pcPower;
 	SFloat64Vec2		sCentre;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	AssertTrue(sTest.cEditor.Load("Input" _FS_ "FlipFlopDivider.xml"));
-	pcMain = sTest.cEditor.GetCircuit();
+	sTest.Init(true);
+	AssertTrue(sTest.pEditor->Load("Input" _FS_ "FlipFlopDivider.xml"));
+	pcMain = sTest.pEditor->GetCircuit();
 	pcFlipFlop = pcMain->GetComponent(1);
 	pcPower = pcMain->GetComponent(2);
 	AssertString("D Flip Flop", pcFlipFlop->GetType());
@@ -804,9 +815,9 @@ void TestCircuitEditorMoveConnectedSharedNet(void)
 
 	sCentre = GetCentre(pcFlipFlop);
 	sTest.Click(sCentre.x, sCentre.y);
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Drag(sCentre.x, sCentre.y, sCentre.x + 10, sCentre.y - 8);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(3, pcFlipFlop->GetPosition().x);
 	AssertInt(-6, pcFlipFlop->GetPosition().y);
 	AssertNotNull(GetPortTrace(&sTest, pcFlipFlop, "SD"));
@@ -815,8 +826,7 @@ void TestCircuitEditorMoveConnectedSharedNet(void)
 	AssertPointer(GetPortTrace(&sTest, pcFlipFlop, "QB"), GetPortTrace(&sTest, pcFlipFlop, "D"));
 	AssertNotNull(GetPortTrace(&sTest, pcFlipFlop, "CP"));
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -839,7 +849,7 @@ void TestCircuitEditorMoveConnectedJunction(void)
 	SInt32Vec2			sPoint;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(-8, -3, ROT_North, "");
 	pcMain->Add(pcGround);
@@ -847,17 +857,17 @@ void TestCircuitEditorMoveConnectedJunction(void)
 	pcMain->AddTrace(-4, -2, -4, 4);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
 	pcOther = AddTestInverter(pcMain, -3, 4);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	AssertNotNull(GetPortTrace(&sTest, pcInverter, "Input"));
 	AssertPointer(GetPortTrace(&sTest, pcOther, "Input"), GetPortTrace(&sTest, pcInverter, "Input"));
 
 	sCentre = GetCentre(pcInverter);
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Press(sCentre.x, sCentre.y);
 	sTest.PointAt(sCentre.x + 6, sCentre.y - 8);
 	AssertNotNull(pcMain->GetTraceAt(pcInverter->GetPortView("Input")->GetGridPosition()));
 	sTest.Release(sCentre.x + 6, sCentre.y - 8);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(3, pcInverter->GetPosition().x);
 	AssertInt(-10, pcInverter->GetPosition().y);
 
@@ -883,17 +893,15 @@ void TestCircuitEditorMoveConnectedJunction(void)
 void TestCircuitEditorMoveConnectedPortOnPort(void)
 {
 	SEditorTest			sTest;
-	CCircuitFonts		cFonts;
 	CCircuitView*		pcMain;
 	CComponentView*		pcClock;
 	CComponentView*		pcFlipFlop;
 	CComponentView*		pcPower;
 	SFloat64Vec2		sCentre;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	AssertTrue(sTest.cEditor.Load("Input" _FS_ "FlipFlopClose.xml"));
-	pcMain = sTest.cEditor.GetCircuit();
+	sTest.Init(true);
+	AssertTrue(sTest.pEditor->Load("Input" _FS_ "FlipFlopClose.xml"));
+	pcMain = sTest.pEditor->GetCircuit();
 	pcClock = pcMain->GetComponent(0);
 	pcFlipFlop = pcMain->GetComponent(1);
 	pcPower = pcMain->GetComponent(2);
@@ -904,12 +912,12 @@ void TestCircuitEditorMoveConnectedPortOnPort(void)
 
 	sCentre = GetCentre(pcFlipFlop);
 	sTest.Click(sCentre.x, sCentre.y);
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Press(sCentre.x, sCentre.y);
 	sTest.PointAt(sCentre.x + 10, sCentre.y - 8);
 	AssertNotNull(pcMain->GetTraceAt(pcFlipFlop->GetPortView("CP")->GetGridPosition()));
 	sTest.Release(sCentre.x + 10, sCentre.y - 8);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(-2, pcFlipFlop->GetPosition().x);
 	AssertInt(-9, pcFlipFlop->GetPosition().y);
 
@@ -921,8 +929,7 @@ void TestCircuitEditorMoveConnectedPortOnPort(void)
 	AssertPointer(GetPortTrace(&sTest, pcPower, "Power"), GetPortTrace(&sTest, pcFlipFlop, "RD"));
 	AssertPointer(GetPortTrace(&sTest, pcFlipFlop, "QB"), GetPortTrace(&sTest, pcFlipFlop, "D"));
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -938,7 +945,6 @@ void TestCircuitEditorMoveConnectedPortOnPort(void)
 void TestCircuitEditorMoveConnectedWithWire(void)
 {
 	SEditorTest			sTest;
-	CCircuitFonts		cFonts;
 	CCircuitView*		pcMain;
 	CComponentView*		pcClock;
 	CComponentView*		pcFlipFlop;
@@ -947,10 +953,9 @@ void TestCircuitEditorMoveConnectedWithWire(void)
 	SInt32Vec2			sPoint;
 	size				uiTraces;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	AssertTrue(sTest.cEditor.Load("Input" _FS_ "FlipFlopClose.xml"));
-	pcMain = sTest.cEditor.GetCircuit();
+	sTest.Init(true);
+	AssertTrue(sTest.pEditor->Load("Input" _FS_ "FlipFlopClose.xml"));
+	pcMain = sTest.pEditor->GetCircuit();
 	pcClock = pcMain->GetComponent(0);
 	pcFlipFlop = pcMain->GetComponent(1);
 	pcPower = pcMain->GetComponent(2);
@@ -959,15 +964,15 @@ void TestCircuitEditorMoveConnectedWithWire(void)
 
 	sCentre = GetCentre(pcFlipFlop);
 	sTest.Click(sCentre.x, sCentre.y);
-	sTest.cEditor.SetModifiers(false, true);
+	sTest.pEditor->SetModifiers(false, true);
 	sTest.Click(-6, 2);
-	sTest.cEditor.SetModifiers(false, false);
-	AssertSize(1, sTest.cEditor.GetSelection()->NumComponents());
-	AssertSize(1, sTest.cEditor.GetSelection()->NumTraces());
+	sTest.pEditor->SetModifiers(false, false);
+	AssertSize(1, sTest.pEditor->GetSelection()->NumComponents());
+	AssertSize(1, sTest.pEditor->GetSelection()->NumTraces());
 
-	sTest.cEditor.SetModifiers(true, false);
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Drag(sCentre.x, sCentre.y, sCentre.x + 10, sCentre.y - 8);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(-2, pcFlipFlop->GetPosition().x);
 	AssertInt(-9, pcFlipFlop->GetPosition().y);
 
@@ -985,8 +990,7 @@ void TestCircuitEditorMoveConnectedWithWire(void)
 	AssertPointer(GetPortTrace(&sTest, pcPower, "Power"), GetPortTrace(&sTest, pcFlipFlop, "SD"));
 	AssertPointer(GetPortTrace(&sTest, pcPower, "Power"), GetPortTrace(&sTest, pcFlipFlop, "RD"));
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -1004,23 +1008,21 @@ void TestCircuitEditorMoveConnectedWithWire(void)
 void TestCircuitEditorMoveConnectedDanglingWire(void)
 {
 	SEditorTest			sTest;
-	CCircuitFonts		cFonts;
 	CCircuitView*		pcMain;
 	CComponentView*		pcPower;
 	SInt32Vec2			sPoint;
 	CTraceView*			pcMoved;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	AssertTrue(sTest.cEditor.Load("Input" _FS_ "DanglingWire.xml"));
-	pcMain = sTest.cEditor.GetCircuit();
+	sTest.Init(true);
+	AssertTrue(sTest.pEditor->Load("Input" _FS_ "DanglingWire.xml"));
+	pcMain = sTest.pEditor->GetCircuit();
 	pcPower = pcMain->GetComponent(0);
 
 	sTest.Click(-17, 3);
-	AssertSize(1, sTest.cEditor.GetSelection()->NumTraces());
-	sTest.cEditor.SetModifiers(true, false);
+	AssertSize(1, sTest.pEditor->GetSelection()->NumTraces());
+	sTest.pEditor->SetModifiers(true, false);
 	sTest.Drag(-17, 3, -11, -1);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 
 	sPoint.Init(-15, 2);
 	AssertNull(pcMain->GetTraceAt(sPoint));
@@ -1034,10 +1036,9 @@ void TestCircuitEditorMoveConnectedDanglingWire(void)
 	sPoint.Init(-17, 3);
 	AssertNotNull(pcMain->GetTraceAt(sPoint));
 	AssertNotNull(GetPortTrace(&sTest, pcPower, "Power"));
-	AssertPointer(GetPortTrace(&sTest, pcPower, "Power"), pcMoved->GetTrace(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation(), 0));
+	AssertPointer(GetPortTrace(&sTest, pcPower, "Power"), pcMoved->GetTrace(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation(), 0));
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -1056,18 +1057,18 @@ void TestCircuitEditorShiftPressSelects(void)
 	SFloat64Vec2		sCentre;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	sCentre = GetCentre(pcInverter);
-	sTest.cEditor.SetModifiers(false, true);
+	sTest.pEditor->SetModifiers(false, true);
 	sTest.Drag(sCentre.x, sCentre.y, sCentre.x - 10, sCentre.y - 10);
-	sTest.cEditor.SetModifiers(false, false);
+	sTest.pEditor->SetModifiers(false, false);
 	AssertInt(-3, pcInverter->GetPosition().x);
 	AssertInt(-2, pcInverter->GetPosition().y);
-	AssertTrue(sTest.cEditor.GetSelection()->Contains(pcInverter));
+	AssertTrue(sTest.pEditor->GetSelection()->Contains(pcInverter));
 
 	sTest.Kill();
 }
@@ -1091,49 +1092,49 @@ void TestCircuitEditorRotateAndDelete(void)
 	SInt32Vec2			sOutPoint;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
-	pcCircuit = sTest.cEditor.GetSimulation()->GetCircuit();
+	pcCircuit = sTest.pEditor->GetSimulation()->GetCircuit();
 	uiIntegratedCircuits = pcCircuit->NumIntegratedCircuits();
 	sOutPoint.Init(6, -2);
 
 	sTest.PointAt(-1, -2);
-	AssertPointer(pcInverter, sTest.cEditor.GetHover());
-	sTest.cEditor.RotateRight();
+	AssertPointer(pcInverter, sTest.pEditor->GetHover());
+	sTest.pEditor->RotateRight();
 	AssertInt(ROT_South, pcInverter->GetRotation());
 	AssertInt(-1, pcInverter->GetPosition().x);
 	AssertInt(-4, pcInverter->GetPosition().y);
-	AssertInt(ROT_South, sTest.cEditor.GetCreationRotation());
+	AssertInt(ROT_South, sTest.pEditor->GetCreationRotation());
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(-1, 5));
 
-	sTest.cEditor.RotateLeft();
+	sTest.pEditor->RotateLeft();
 	AssertInt(ROT_East, pcInverter->GetRotation());
 	AssertInt(-3, pcInverter->GetPosition().x);
 	AssertInt(-2, pcInverter->GetPosition().y);
-	AssertInt(ROT_East, sTest.cEditor.GetCreationRotation());
+	AssertInt(ROT_East, sTest.pEditor->GetCreationRotation());
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(6, -2));
 
 	sTest.PointAt(-2, -2);
-	AssertPointer(pcInverter, sTest.cEditor.GetHover());
-	AssertTrue(sTest.cEditor.Delete());
+	AssertPointer(pcInverter, sTest.pEditor->GetHover());
+	AssertTrue(sTest.pEditor->Delete());
 	AssertSize(1, pcMain->NumComponents());
 	AssertSize(uiIntegratedCircuits - 1, pcCircuit->NumIntegratedCircuits());
-	AssertNull(sTest.cEditor.GetHover());
+	AssertNull(sTest.pEditor->GetHover());
 	sTest.Run();
 	AssertInt(TV_Unsettled, sTest.GetLevel(6, -2));
 
 	sTest.Click(6, -2);
-	AssertTrue(sTest.cEditor.GetSelection()->NumTraces() > 0);
-	AssertTrue(sTest.cEditor.GetSelection()->GetTrace(0)->Contains(sOutPoint));
-	AssertTrue(sTest.cEditor.Delete());
+	AssertTrue(sTest.pEditor->GetSelection()->NumTraces() > 0);
+	AssertTrue(sTest.pEditor->GetSelection()->GetTrace(0)->Contains(sOutPoint));
+	AssertTrue(sTest.pEditor->Delete());
 	AssertNull(pcMain->GetTraceAt(sOutPoint));
-	AssertTrue(sTest.cEditor.GetSelection()->IsEmpty());
-	AssertFalse(sTest.cEditor.Delete());
+	AssertTrue(sTest.pEditor->GetSelection()->IsEmpty());
+	AssertFalse(sTest.pEditor->Delete());
 
 	sTest.Kill();
 }
@@ -1158,7 +1159,7 @@ void TestCircuitEditorFlip(void)
 	SInt32Vec2			sOutput;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcMain = pcEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
@@ -1239,62 +1240,64 @@ void TestCircuitEditorFlip(void)
 //////////////////////////////////////////////////////////////////////////
 void TestCircuitEditorSaveLoad(void)
 {
-	SEditorTest		sSaved;
-	CCircuitEditor	cLoaded;
-	CCircuitView*	pcMain;
-	CFileUtil		cFileUtil;
-	CXMLWriter		cSavedText;
-	CXMLWriter		cLoadedText;
-	SLogConfig		sLogConfig;
+	SEditorTest			sSaved;
+	Ptr<CCircuitEditor>	pLoaded;
+	CCircuitView*		pcMain;
+	CFileUtil			cFileUtil;
+	CXMLWriter			cSavedText;
+	CXMLWriter			cLoadedText;
+	SLogConfig			sLogConfig;
 
 	sSaved.Init();
-	pcMain = sSaved.cEditor.AddCircuit("Main");
-	sSaved.cEditor.AddCircuit("Other");
+	pcMain = sSaved.pEditor->AddCircuit("Main");
+	sSaved.pEditor->AddCircuit("Other");
 	AddGroundAndOutput(pcMain);
-	AssertTrue(sSaved.cEditor.Simulate("Main"));
+	AssertTrue(sSaved.pEditor->Simulate("Main"));
 	sSaved.PointAt(-3, -2);
-	sSaved.cEditor.RotateRight();
-	sSaved.cEditor.RotateLeft();
-	sSaved.cEditor.RotateLeft();
-	sSaved.cEditor.RotateRight();
-	sSaved.cEditor.RotateRight();
-	AssertTrue(sSaved.cEditor.StartPlaceComponent("Inverter"));
-	sSaved.cEditor.RotateLeft();
+	sSaved.pEditor->RotateRight();
+	sSaved.pEditor->RotateLeft();
+	sSaved.pEditor->RotateLeft();
+	sSaved.pEditor->RotateRight();
+	sSaved.pEditor->RotateRight();
+	AssertTrue(sSaved.pEditor->StartPlaceComponent("Inverter"));
+	sSaved.pEditor->RotateLeft();
 	sSaved.Click(-3, -2);
 	sSaved.Run();
 	AssertInt(TV_High, sSaved.GetLevel(3, -2));
-	AssertInt(ROT_East, sSaved.cEditor.GetCreationRotation());
+	AssertInt(ROT_East, sSaved.pEditor->GetCreationRotation());
 	sSaved.PointAt(30, 30);
-	sSaved.cEditor.RotateRight();
-	sSaved.cEditor.FlipVertically();
+	sSaved.pEditor->RotateRight();
+	sSaved.pEditor->FlipVertically();
 
 	cFileUtil.MakeDir("Output");
-	AssertTrue(sSaved.cEditor.Save("Output" _FS_ "Editor.xml"));
+	AssertTrue(sSaved.pEditor->Save("Output" _FS_ "Editor.xml"));
 
-	cLoaded.Init(&sSaved.cFamilies, NULL);
-	AssertTrue(cLoaded.Load("Output" _FS_ "Editor.xml"));
-	AssertString("Main", cLoaded.GetCircuit()->GetTypeName());
-	AssertSize(2, cLoaded.GetCircuits()->NumCircuits());
-	AssertInt(ROT_North, cLoaded.GetCreationRotation());
-	AssertTrue(cLoaded.IsCreationMirrored());
-	AssertInt(TV_High, SEditorTest::GetEditorLevel(&cLoaded, &sSaved.cFamilies, 3, -2));
-	AssertLong(sSaved.cEditor.GetSimulation()->GetTime(), cLoaded.GetSimulation()->GetTime());
+	pLoaded = OMalloc<CCircuitEditor>(&sSaved.cFamilies, Ptr<CCircuitFonts>());
+	ORoot()->Add(pLoaded);
+	AssertTrue(pLoaded->Load("Output" _FS_ "Editor.xml"));
+	AssertString("Main", pLoaded->GetCircuit()->GetTypeName());
+	AssertSize(2, pLoaded->GetCircuits()->NumCircuits());
+	AssertInt(ROT_North, pLoaded->GetCreationRotation());
+	AssertTrue(pLoaded->IsCreationMirrored());
+	AssertInt(TV_High, SEditorTest::GetEditorLevel(&pLoaded, &sSaved.cFamilies, 3, -2));
+	AssertLong(sSaved.pEditor->GetSimulation()->GetTime(), pLoaded->GetSimulation()->GetTime());
 
 	cSavedText.Init();
-	sSaved.cEditor.GetCircuits()->SaveXML(&cSavedText);
+	sSaved.pEditor->GetCircuits()->SaveXML(&cSavedText);
 	cLoadedText.Init();
-	cLoaded.GetCircuits()->SaveXML(&cLoadedText);
+	pLoaded->GetCircuits()->SaveXML(&cLoadedText);
 	AssertString(cSavedText.GetText(), cLoadedText.GetText());
 	cLoadedText.Kill();
 	cSavedText.Kill();
 
 	gcLogger.GetConfig(&sLogConfig);
 	gcLogger.SetSilent();
-	AssertFalse(cLoaded.Load("Output" _FS_ "Missing.xml"));
+	AssertFalse(pLoaded->Load("Output" _FS_ "Missing.xml"));
 	gcLogger.SetConfig(&sLogConfig);
-	AssertString("Main", cLoaded.GetCircuit()->GetTypeName());
+	AssertString("Main", pLoaded->GetCircuit()->GetTypeName());
 
-	cLoaded.Kill();
+	ORoot()->Remove(pLoaded);
+	pLoaded = NULL;
 	sSaved.Kill();
 	cFileUtil.Delete("Output" _FS_ "Editor.xml");
 	cFileUtil.RemoveDir("Output");
@@ -1337,7 +1340,6 @@ static void AddEditorInverterSubcircuit(CCircuitEditor* pcEditor, CCircuitFonts*
 void TestCircuitEditorSubcircuit(void)
 {
 	SEditorTest					sTest;
-	CCircuitFonts				cFonts;
 	CCircuitView*				pcMain;
 	CSubcircuitInstanceView*	pcInstance;
 	CCircuitSimulation*			pcSimulation;
@@ -1346,44 +1348,42 @@ void TestCircuitEditorSubcircuit(void)
 	SFloat64Vec2				sCentre;
 	SLogConfig					sLogConfig;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	AddEditorInverterSubcircuit(&sTest.cEditor, &cFonts);
-	pcMain = sTest.cEditor.AddCircuit("Main");
-	AssertTrue(sTest.cEditor.Simulate("Main"));
-	pcSimulation = sTest.cEditor.GetSimulation();
-	uiPaths = sTest.cEditor.GetCircuits()->GetViewPaths()->NumViewPaths();
+	sTest.Init(true);
+	AddEditorInverterSubcircuit(&sTest.pEditor, &sTest.pFonts);
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	pcSimulation = sTest.pEditor->GetSimulation();
+	uiPaths = sTest.pEditor->GetCircuits()->GetViewPaths()->NumViewPaths();
 	uiIntegratedCircuits = pcSimulation->GetCircuit()->NumIntegratedCircuits();
 
 	sTest.PointAt(0, 0);
 	gcLogger.GetConfig(&sLogConfig);
 	gcLogger.SetSilent();
-	AssertFalse(sTest.cEditor.StartPlaceSubcircuit("Main"));
-	AssertFalse(sTest.cEditor.StartPlaceSubcircuit("Missing"));
+	AssertFalse(sTest.pEditor->StartPlaceSubcircuit("Main"));
+	AssertFalse(sTest.pEditor->StartPlaceSubcircuit("Missing"));
 	gcLogger.SetConfig(&sLogConfig);
-	AssertTrue(sTest.cEditor.StartPlaceSubcircuit("Inverter"));
+	AssertTrue(sTest.pEditor->StartPlaceSubcircuit("Inverter"));
 	sTest.Click(5, 5);
 	AssertSize(1, pcMain->NumComponents());
 	pcInstance = (CSubcircuitInstanceView*)pcMain->GetComponent(0);
 	AssertString("Inverter", pcInstance->GetTypeName());
-	AssertSize(uiPaths + 1, sTest.cEditor.GetCircuits()->GetViewPaths()->NumViewPaths());
+	AssertSize(uiPaths + 1, sTest.pEditor->GetCircuits()->GetViewPaths()->NumViewPaths());
 	AssertSize(1, pcSimulation->NumInstanceSimulations());
 	AssertSize(uiIntegratedCircuits + 1, pcSimulation->GetCircuit()->NumIntegratedCircuits());
-	AssertNotNull(pcInstance->GetComponent(sTest.cEditor.GetViewPath(), pcSimulation));
+	AssertNotNull(pcInstance->GetComponent(sTest.pEditor->GetViewPath(), pcSimulation));
 
-	sTest.cEditor.StopEdit();
+	sTest.pEditor->StopEdit();
 	sCentre = GetCentre(pcInstance);
 	sTest.PointAt(sCentre.x, sCentre.y);
-	AssertPointer(pcInstance, sTest.cEditor.GetHover());
-	AssertTrue(sTest.cEditor.Delete());
+	AssertPointer(pcInstance, sTest.pEditor->GetHover());
+	AssertTrue(sTest.pEditor->Delete());
 	AssertSize(0, pcMain->NumComponents());
-	AssertSize(uiPaths, sTest.cEditor.GetCircuits()->GetViewPaths()->NumViewPaths());
+	AssertSize(uiPaths, sTest.pEditor->GetCircuits()->GetViewPaths()->NumViewPaths());
 	AssertSize(0, pcSimulation->NumInstanceSimulations());
 	AssertSize(uiIntegratedCircuits, pcSimulation->GetCircuit()->NumIntegratedCircuits());
 	AssertSize(0, pcSimulation->GetCircuit()->NumPassives());
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -1480,32 +1480,32 @@ void TestCircuitEditorPullWire(void)
 	CTraceView*			pcTrace;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(-8, -3, ROT_North, "");
 	pcMain->Add(pcGround);
 	pcMain->AddTraces(-8, -3, -4, -2);
 	AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	sTest.PointAt(-1, -2);
-	AssertTrue(sTest.cEditor.GetHoverConnection(&sConnection));
+	AssertTrue(sTest.pEditor->GetHoverConnection(&sConnection));
 	AssertInt(-1, sConnection.x);
 	AssertInt(-2, sConnection.y);
-	AssertNull(sTest.cEditor.GetHoverTrace());
+	AssertNull(sTest.pEditor->GetHoverTrace());
 	sTest.Press(-1, -2);
 	sTest.PointAt(3, -2);
-	AssertTrue(sTest.cEditor.IsEditing());
+	AssertTrue(sTest.pEditor->IsEditing());
 	sTest.PointAt(6, -2);
 	sTest.Release(6, -2);
 	AssertSize(3, pcMain->NumTraces());
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
-	AssertTrue(sTest.cEditor.GetSelection()->IsEmpty());
+	AssertTrue(sTest.pEditor->GetSelection()->IsEmpty());
 
 	sTest.PointAt(6, -2);
-	AssertTrue(sTest.cEditor.GetHoverConnection(&sConnection));
-	AssertNull(sTest.cEditor.GetHoverTrace());
+	AssertTrue(sTest.pEditor->GetHoverConnection(&sConnection));
+	AssertNull(sTest.pEditor->GetHoverTrace());
 	sTest.Drag(6, -2, 10, -2);
 	AssertSize(3, pcMain->NumTraces());
 	sPoint.Init(8, -2);
@@ -1514,7 +1514,7 @@ void TestCircuitEditorPullWire(void)
 	AssertInt(10, pcTrace->GetEnd().x);
 
 	sTest.PointAt(3, -2);
-	AssertNotNull(sTest.cEditor.GetHoverTrace());
+	AssertNotNull(sTest.pEditor->GetHoverTrace());
 	sTest.Drag(3, -2, 3, 4);
 	AssertSize(5, pcMain->NumTraces());
 	sTest.Run();
@@ -1522,8 +1522,8 @@ void TestCircuitEditorPullWire(void)
 	AssertInt(TV_High, sTest.GetLevel(8, -2));
 
 	sTest.PointAt(3, 2);
-	AssertNotNull(sTest.cEditor.GetHoverTrace());
-	AssertTrue(sTest.cEditor.Delete());
+	AssertNotNull(sTest.pEditor->GetHoverTrace());
+	AssertTrue(sTest.pEditor->Delete());
 	AssertSize(3, pcMain->NumTraces());
 	pcTrace = pcMain->GetTraceAt(sPoint);
 	AssertInt(-1, pcTrace->GetStart().x);
@@ -1532,8 +1532,8 @@ void TestCircuitEditorPullWire(void)
 	AssertInt(TV_High, sTest.GetLevel(8, -2));
 
 	sTest.Click(8, -2);
-	AssertSize(1, sTest.cEditor.GetSelection()->NumTraces());
-	AssertPointer(pcTrace, sTest.cEditor.GetSelection()->GetTrace(0));
+	AssertSize(1, sTest.pEditor->GetSelection()->NumTraces());
+	AssertPointer(pcTrace, sTest.pEditor->GetSelection()->GetTrace(0));
 
 	sTest.Kill();
 }
@@ -1559,7 +1559,7 @@ void TestCircuitEditorRouteWire(void)
 	int32				x;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(-8, -3, ROT_North, "");
 	pcMain->Add(pcGround);
@@ -1570,7 +1570,7 @@ void TestCircuitEditorRouteWire(void)
 	pcLabel = NewMalloc<CLabelView>();
 	pcLabel->Init(-6, -3, ROT_East, "", TA_Left, false, true, true, sMinimum, sMaximum);
 	pcMain->Add(pcLabel);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	sTest.Press(-8, -3);
 	sTest.PointAt(-4, -3);
@@ -1602,7 +1602,7 @@ void TestCircuitEditorRouteWire(void)
 //////////////////////////////////////////////////////////////////////////
 void TestCircuitEditorComponentLibraries(void)
 {
-	CCircuitFonts			cFonts;
+	Ptr<CCircuitFonts>		pFonts;
 	CCircuitView			cCircuit;
 	SComponentLibrary*		psLibrary;
 	SComponentLibrary*		psLogic;
@@ -1616,7 +1616,7 @@ void TestCircuitEditorComponentLibraries(void)
 	const char*				szXMLName;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cCircuit.Init();
 
 	for (i = 0; i < NumComponentLibraries(); i++)
@@ -1626,7 +1626,7 @@ void TestCircuitEditorComponentLibraries(void)
 		for (j = 0; j < psLibrary->uiNumEntries; j++)
 		{
 			psEntry = &psLibrary->asEntries[j];
-			pcView = NewPlacedComponentView(psEntry->szXMLName, 0, 0, ROT_East, &cCircuit, &cFonts);
+			pcView = NewPlacedComponentView(psEntry->szXMLName, 0, 0, ROT_East, &cCircuit, &pFonts);
 			AssertNotNull(pcView);
 			AssertTrue(strncmp(psEntry->szXMLName, pcView->GetXMLName(), strlen(pcView->GetXMLName())) == 0);
 			SafeKill(pcView);
@@ -1635,13 +1635,13 @@ void TestCircuitEditorComponentLibraries(void)
 	AssertNull(GetComponentLibrary(NumComponentLibraries()));
 
 	//A chip is given a reference; anything else isn't.
-	pcView = NewPlacedComponentView("Logic74Package:04", 0, 0, ROT_East, &cCircuit, &cFonts);
+	pcView = NewPlacedComponentView("Logic74Package:04", 0, 0, ROT_East, &cCircuit, &pFonts);
 	AssertString("U1", pcView->GetName());
 	SafeKill(pcView);
-	pcView = NewPlacedComponentView("DTypeFlipFlop", 0, 0, ROT_East, &cCircuit, &cFonts);
+	pcView = NewPlacedComponentView("DTypeFlipFlop", 0, 0, ROT_East, &cCircuit, &pFonts);
 	AssertString("U1", pcView->GetName());
 	SafeKill(pcView);
-	pcView = NewPlacedComponentView("Ground", 0, 0, ROT_East, &cCircuit, &cFonts);
+	pcView = NewPlacedComponentView("Ground", 0, 0, ROT_East, &cCircuit, &pFonts);
 	AssertString("", pcView->GetName());
 	SafeKill(pcView);
 
@@ -1706,7 +1706,8 @@ void TestCircuitEditorComponentLibraries(void)
 	AssertFalse(TextMatchesFilter(NULL, "a"));
 
 	cCircuit.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -1728,18 +1729,18 @@ void TestCircuitEditorPlaceUnits(void)
 	int						i;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	sTest.PointAt(0, 0);
-	AssertTrue(sTest.cEditor.StartPlaceComponent("Logic74Unit:04"));
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Logic74Unit:04"));
 	for (i = 0; i < 6; i++)
 	{
-		AssertTrue(sTest.cEditor.IsEditing());
+		AssertTrue(sTest.pEditor->IsEditing());
 		AssertSize(i + 1, pcMain->NumComponents());
 		sTest.Click(6 * i, 0);
 	}
-	AssertFalse(sTest.cEditor.IsEditing());
+	AssertFalse(sTest.pEditor->IsEditing());
 	AssertSize(6, pcMain->NumComponents());
 	for (i = 0; i < 6; i++)
 	{
@@ -1748,24 +1749,24 @@ void TestCircuitEditorPlaceUnits(void)
 		AssertString("04", pcUnit->GetPartType());
 		AssertChar((char)('A' + i), pcUnit->GetUnitLetter());
 		AssertInt(6 * i, pcUnit->GetPosition().x);
-		AssertNotNull(pcUnit->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+		AssertNotNull(pcUnit->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 	}
 
 	//Stopped while placing the second unit: only the first is placed.
 	sTest.PointAt(0, 10);
-	AssertTrue(sTest.cEditor.StartPlaceComponent("Logic74Unit:04"));
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Logic74Unit:04"));
 	sTest.Click(0, 10);
-	AssertTrue(sTest.cEditor.IsEditing());
+	AssertTrue(sTest.pEditor->IsEditing());
 	AssertSize(8, pcMain->NumComponents());
-	sTest.cEditor.StopEdit();
-	AssertFalse(sTest.cEditor.IsEditing());
+	sTest.pEditor->StopEdit();
+	AssertFalse(sTest.pEditor->IsEditing());
 	AssertSize(7, pcMain->NumComponents());
 
 	//A component of one isn't followed by anything.
 	sTest.PointAt(0, 20);
-	AssertTrue(sTest.cEditor.StartPlaceComponent("Inverter"));
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Inverter"));
 	sTest.Click(0, 20);
-	AssertFalse(sTest.cEditor.IsEditing());
+	AssertFalse(sTest.pEditor->IsEditing());
 	AssertSize(8, pcMain->NumComponents());
 
 	//The units are named as one part, the next part's as another and the inverter as a third.
@@ -1775,10 +1776,10 @@ void TestCircuitEditorPlaceUnits(void)
 	AssertString("U3", pcMain->GetComponent(7)->GetName());
 
 	//Deleting one unit deletes only that unit.
-	sTest.cEditor.StopEdit();
+	sTest.pEditor->StopEdit();
 	sTest.PointAt(12, 0);
-	AssertTrue(sTest.cEditor.GetHover() == pcMain->GetComponent(2));
-	AssertTrue(sTest.cEditor.Delete());
+	AssertTrue(sTest.pEditor->GetHover() == pcMain->GetComponent(2));
+	AssertTrue(sTest.pEditor->Delete());
 	AssertSize(7, pcMain->NumComponents());
 	AssertChar('B', ((CLogic74UnitView*)pcMain->GetComponent(1))->GetUnitLetter());
 	AssertChar('D', ((CLogic74UnitView*)pcMain->GetComponent(2))->GetUnitLetter());
@@ -1787,20 +1788,20 @@ void TestCircuitEditorPlaceUnits(void)
 	AssertString("Inverter", pcMain->GetComponent(6)->GetXMLName());
 
 	//A NAND part's four units, each a NAND gate.
-	sTest.cEditor.StopEdit();
+	sTest.pEditor->StopEdit();
 	sTest.PointAt(0, 30);
-	AssertTrue(sTest.cEditor.StartPlaceComponent("Logic74Unit:00"));
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Logic74Unit:00"));
 	for (i = 0; i < 4; i++)
 	{
-		AssertTrue(sTest.cEditor.IsEditing());
+		AssertTrue(sTest.pEditor->IsEditing());
 		sTest.Click(8 * i, 30);
 	}
-	AssertFalse(sTest.cEditor.IsEditing());
+	AssertFalse(sTest.pEditor->IsEditing());
 	AssertSize(11, pcMain->NumComponents());
 	pcUnit = (CLogic74UnitView*)pcMain->GetComponent(10);
 	AssertChar('D', pcUnit->GetUnitLetter());
 	AssertString("U4", pcUnit->GetName());
-	AssertString("NAND Gate", ((CIntegratedCircuit*)pcUnit->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()))->GetType());
+	AssertString("NAND Gate", ((CIntegratedCircuit*)pcUnit->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()))->GetType());
 
 	sTest.Kill();
 }
@@ -1817,7 +1818,6 @@ void TestCircuitEditorPlaceUnits(void)
 void TestCircuitEditorPlaceEveryComponent(void)
 {
 	SEditorTest				sTest;
-	CCircuitFonts			cFonts;
 	CCircuitView*			pcMain;
 	CComponentView*			pcView;
 	CCircuitColours			cColours;
@@ -1828,11 +1828,10 @@ void TestCircuitEditorPlaceEveryComponent(void)
 	size					k;
 	int32					x;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
+	sTest.Init(true);
 	cColours.InitLogicim();
-	pcMain = sTest.cEditor.AddCircuit("Main");
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	x = 0;
 	for (i = 0; i < NumComponentLibraries(); i++)
@@ -1841,34 +1840,33 @@ void TestCircuitEditorPlaceEveryComponent(void)
 		for (j = 0; j < psLibrary->uiNumEntries; j++)
 		{
 			sTest.PointAt(x, 0);
-			AssertTrue(sTest.cEditor.StartPlaceComponent(psLibrary->asEntries[j].szXMLName));
+			AssertTrue(sTest.pEditor->StartPlaceComponent(psLibrary->asEntries[j].szXMLName));
 			sTest.Click(x, 0);
-			for (k = 0; (k < 26) && sTest.cEditor.IsEditing(); k++)
+			for (k = 0; (k < 26) && sTest.pEditor->IsEditing(); k++)
 			{
 				//A part placed as its units goes on to its next unit.
 				x += 6;
 				sTest.Click(x, 0);
 			}
-			AssertFalse(sTest.cEditor.IsEditing());
+			AssertFalse(sTest.pEditor->IsEditing());
 			pcView = pcMain->GetComponent(pcMain->NumComponents() - 1);
 			AssertTrue(strncmp(psLibrary->asEntries[j].szXMLName, pcView->GetXMLName(), strlen(pcView->GetXMLName())) == 0);
 			if (pcView->MakesComponent())
 			{
-				AssertNotNull(pcView->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+				AssertNotNull(pcView->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 			}
-			sTest.cEditor.GetSimulation()->RunToTime(100000);
+			sTest.pEditor->GetSimulation()->RunToTime(100000);
 			x += 60;
 		}
 	}
-	sTest.cEditor.GetSimulation()->RunToTime(1000000);
+	sTest.pEditor->GetSimulation()->RunToTime(1000000);
 	cFileUtil.MakeDir("Output");
-	AssertTrue(RenderCircuitPNG(pcMain, &cColours, 400, 400, 0.2, sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation(), false, "Output" _FS_ "PlacedComponents.png", &cFonts));
+	AssertTrue(RenderCircuitPNG(pcMain, &cColours, 400, 400, 0.2, sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation(), false, "Output" _FS_ "PlacedComponents.png", &sTest.pFonts));
 
 	cFileUtil.Delete("Output" _FS_ "PlacedComponents.png");
 	cFileUtil.RemoveDir("Output");
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -1885,7 +1883,7 @@ static void PointAtPixel(SEditorTest* psTest, CCircuitViewport* pcViewport, int3
 
 	sScreen.Init(x, y);
 	pcViewport->ScreenToGrid(&sGrid, &sScreen);
-	psTest->cEditor.PointerMoved(sGrid);
+	psTest->pEditor->PointerMoved(sGrid);
 }
 
 
@@ -1982,9 +1980,9 @@ void TestCircuitEditorPortHover(void)
 
 	sTest.Init();
 	cColours.InitLogicim();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	cViewport.Init(401, 301);
 	cViewport.SetZoom(4);
@@ -2004,14 +2002,14 @@ void TestCircuitEditorPortHover(void)
 			for (iDX = -1; iDX <= 1; iDX++)
 			{
 				PointAtPixel(&sTest, &cViewport, (int32)floor(sScreen.x + iDX * fNear + 0.5), (int32)floor(sScreen.y + iDY * fNear + 0.5));
-				AssertTrue(sTest.cEditor.GetHoverConnection(&sHover));
+				AssertTrue(sTest.pEditor->GetHoverConnection(&sHover));
 				AssertInt(sPort.x, sHover.x);
 				AssertInt(sPort.y, sHover.y);
 			}
 		}
 
 		PointAtPixel(&sTest, &cViewport, (int32)floor(sScreen.x + 0.5), (int32)floor(sScreen.y + 0.5));
-		AssertTrue(GetPaintedHoverBox(&sTest.cEditor, &cViewport, &cColours, &sMinimum, &sMaximum));
+		AssertTrue(GetPaintedHoverBox(&sTest.pEditor, &cViewport, &cColours, &sMinimum, &sMaximum));
 		AssertDouble(sScreen.x, (sMinimum.x + sMaximum.x) / 2.0, 0);
 		AssertDouble(sScreen.y, (sMinimum.y + sMaximum.y) / 2.0, 0);
 	}
@@ -2243,7 +2241,7 @@ void TestCircuitEditorDrawClockDivider(void)
 	int32				iBottom;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcEditor->AddCircuit("Main");
 	AssertTrue(pcEditor->Simulate("Main"));
 	cViewport.Init(801, 601);
@@ -2340,7 +2338,6 @@ static void SaveViewText(CComponentView* pcView, CChars* pszText)
 void TestCircuitEditorPropertiesRoundTrip(void)
 {
 	SEditorTest				sTest;
-	CCircuitFonts			cFonts;
 	CCircuitView*			pcMain;
 	CComponentView*			pcView;
 	CComponentView*			pcNew;
@@ -2353,11 +2350,10 @@ void TestCircuitEditorPropertiesRoundTrip(void)
 	size					k;
 	int32					x;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	AddEditorInverterSubcircuit(&sTest.cEditor, &cFonts);
-	pcMain = sTest.cEditor.AddCircuit("Main");
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	sTest.Init(true);
+	AddEditorInverterSubcircuit(&sTest.pEditor, &sTest.pFonts);
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	x = 0;
 	for (i = 0; i < NumComponentLibraries(); i++)
@@ -2366,13 +2362,13 @@ void TestCircuitEditorPropertiesRoundTrip(void)
 		for (j = 0; j < psLibrary->uiNumEntries; j++)
 		{
 			sTest.PointAt(x, 0);
-			AssertTrue(sTest.cEditor.StartPlaceComponent(psLibrary->asEntries[j].szXMLName));
+			AssertTrue(sTest.pEditor->StartPlaceComponent(psLibrary->asEntries[j].szXMLName));
 			sTest.Click(x, 0);
 			x += 60;
 		}
 	}
 	sTest.PointAt(x, 0);
-	AssertTrue(sTest.cEditor.StartPlaceSubcircuit("Inverter"));
+	AssertTrue(sTest.pEditor->StartPlaceSubcircuit("Inverter"));
 	sTest.Click(x, 0);
 
 	for (k = 0; k < pcMain->NumComponents(); k++)
@@ -2380,15 +2376,15 @@ void TestCircuitEditorPropertiesRoundTrip(void)
 		pcView = pcMain->GetComponent(k);
 		SaveViewText(pcView, &szBefore);
 		cProperties.Init();
-		sTest.cEditor.GetProperties(pcView, &cProperties);
+		sTest.pEditor->GetProperties(pcView, &cProperties);
 		AssertTrue(cProperties.NumProperties() > 0);
 		AssertString("name", cProperties.Get(StringCompare(pcView->GetXMLName(), "Subcircuit") == 0 ? 1 : 0)->szName.Text());
-		pcNew = sTest.cEditor.SetProperties(pcView, &cProperties, pcView->GetRotation(), pcView->IsMirrored());
+		pcNew = sTest.pEditor->SetProperties(pcView, &cProperties, pcView->GetRotation(), pcView->IsMirrored());
 		AssertNotNull(pcNew);
 		AssertPointer(pcNew, pcMain->GetComponent(k));
 		if (pcNew->MakesComponent())
 		{
-			AssertNotNull(pcNew->GetComponent(sTest.cEditor.GetViewPath(), sTest.cEditor.GetSimulation()));
+			AssertNotNull(pcNew->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation()));
 		}
 		SaveViewText(pcNew, &szAfter);
 		AssertString(szBefore.Text(), szAfter.Text());
@@ -2396,10 +2392,9 @@ void TestCircuitEditorPropertiesRoundTrip(void)
 		szBefore.Kill();
 		cProperties.Kill();
 	}
-	sTest.cEditor.GetSimulation()->RunToTime(1000000);
+	sTest.pEditor->GetSimulation()->RunToTime(1000000);
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -2421,17 +2416,17 @@ void TestCircuitEditorPropertiesListed(void)
 	SInt32Vec2				sMaximum;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddTestInverter(pcMain, 0, 0);
 	sMinimum.Init(-2, -1);
 	sMaximum.Init(0, 1);
 	pcPin = NewMalloc<CPinView>();
 	pcPin->Init(10, 0, ROT_East, "In", "LVC", false, 1, RADIX_Binary, sMinimum, sMaximum);
 	pcMain->Add(pcPin);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcMain->GetComponent(0), &cProperties);
+	sTest.pEditor->GetProperties(pcMain->GetComponent(0), &cProperties);
 	AssertSize(6, cProperties.NumProperties());
 	psProperty = cProperties.Get((size)0);
 	AssertString("name", psProperty->szName.Text());
@@ -2459,7 +2454,7 @@ void TestCircuitEditorPropertiesListed(void)
 	cProperties.Kill();
 
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcPin, &cProperties);
+	sTest.pEditor->GetProperties(pcPin, &cProperties);
 	AssertString("bitWidth", cProperties.Get(1)->szName.Text());
 	AssertInt(CPT_Divider, cProperties.Get("instanceLocation")->eType);
 	AssertString("Instance location", cProperties.Get("instanceLocation")->szLabel.Text());
@@ -2545,27 +2540,27 @@ void TestCircuitEditorPropertiesEdited(void)
 	CChars					szLogged;
 
 	sTest.Init();
-	pcMain = sTest.cEditor.AddCircuit("Main");
+	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
 	pcInverter = AddTestInverter(pcMain, -3, -2);
-	AssertTrue(sTest.cEditor.Simulate("Main"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
 	sTest.Run();
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
-	pcCircuit = sTest.cEditor.GetSimulation()->GetCircuit();
+	pcCircuit = sTest.pEditor->GetSimulation()->GetCircuit();
 	uiIntegratedCircuits = pcCircuit->NumIntegratedCircuits();
 	uiTraces = pcCircuit->NumTraces();
 
 	sCentre = GetCentre(pcInverter);
 	sTest.Click(sCentre.x, sCentre.y);
-	AssertPointer(pcInverter, sTest.cEditor.GetPropertiesComponent());
+	AssertPointer(pcInverter, sTest.pEditor->GetPropertiesComponent());
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcInverter, &cProperties);
+	sTest.pEditor->GetProperties(pcInverter, &cProperties);
 	AssertTrue(cProperties.SetValue("name", "U1"));
 	AssertTrue(cProperties.SetValue("inputWidth", "100"));
 	gcLogger.GetConfig(&sLogConfig);
 	gcLogger.SetSilent();
 	StartLogCapture(&cCapture);
-	pcNew = sTest.cEditor.SetProperties(pcInverter, &cProperties, ROT_East, false);
+	pcNew = sTest.pEditor->SetProperties(pcInverter, &cProperties, ROT_East, false);
 	StopLogCapture(&cCapture, &szLogged);
 	gcLogger.SetConfig(&sLogConfig);
 	cProperties.Kill();
@@ -2575,13 +2570,13 @@ void TestCircuitEditorPropertiesEdited(void)
 	AssertNotNull(pcNew);
 	AssertString("U1", pcNew->GetName());
 	AssertInt(RADIX_MAX_BIT_WIDTH, ((CInverterView*)pcNew)->GetInputWidth());
-	AssertTrue(sTest.cEditor.GetSelection()->Contains(pcNew));
+	AssertTrue(sTest.pEditor->GetSelection()->Contains(pcNew));
 
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcNew, &cProperties);
+	sTest.pEditor->GetProperties(pcNew, &cProperties);
 	AssertTrue(cProperties.SetValue("inputWidth", "1"));
 	StartLogCapture(&cCapture);
-	pcNew = sTest.cEditor.SetProperties(pcNew, &cProperties, ROT_East, false);
+	pcNew = sTest.pEditor->SetProperties(pcNew, &cProperties, ROT_East, false);
 	StopLogCapture(&cCapture, &szLogged);
 	cProperties.Kill();
 	AssertSize(0, szLogged.Length());
@@ -2592,8 +2587,8 @@ void TestCircuitEditorPropertiesEdited(void)
 	AssertSize(uiTraces, pcCircuit->NumTraces());
 
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcNew, &cProperties);
-	pcNew = sTest.cEditor.SetProperties(pcNew, &cProperties, ROT_South, false);
+	sTest.pEditor->GetProperties(pcNew, &cProperties);
+	pcNew = sTest.pEditor->SetProperties(pcNew, &cProperties, ROT_South, false);
 	cProperties.Kill();
 	AssertInt(ROT_South, pcNew->GetRotation());
 	AssertInt(-3, pcNew->GetPosition().x);
@@ -2601,15 +2596,15 @@ void TestCircuitEditorPropertiesEdited(void)
 
 	//The implied VCC is set as a property and kept when other properties are.
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcNew, &cProperties);
+	sTest.pEditor->GetProperties(pcNew, &cProperties);
 	AssertTrue(cProperties.SetValue("impliedVCC", "3.3"));
-	pcNew = sTest.cEditor.SetProperties(pcNew, &cProperties, ROT_South, false);
+	pcNew = sTest.pEditor->SetProperties(pcNew, &cProperties, ROT_South, false);
 	cProperties.Kill();
 	AssertFloat(3.3f, pcNew->GetIntegratedCircuitView()->GetImpliedVcc(), 3);
 	cProperties.Init();
-	sTest.cEditor.GetProperties(pcNew, &cProperties);
+	sTest.pEditor->GetProperties(pcNew, &cProperties);
 	AssertTrue(cProperties.SetValue("name", "U2"));
-	pcNew = sTest.cEditor.SetProperties(pcNew, &cProperties, ROT_South, false);
+	pcNew = sTest.pEditor->SetProperties(pcNew, &cProperties, ROT_South, false);
 	cProperties.Kill();
 	AssertString("U2", pcNew->GetName());
 	AssertFloat(3.3f, pcNew->GetIntegratedCircuitView()->GetImpliedVcc(), 3);
@@ -2739,7 +2734,7 @@ void TestCircuitEditorUndo(void)
 	SFloat64Vec2		sCentre;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
@@ -2860,7 +2855,7 @@ void TestCircuitEditorUndoMove(void)
 	SFloat64Vec2		sCentre;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
@@ -2924,7 +2919,7 @@ void TestCircuitEditorUndoPullWire(void)
 	SInt32Vec2			sPoint;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	pcGround = NewMalloc<CGroundView>();
@@ -2976,7 +2971,7 @@ void TestCircuitEditorUndoProperties(void)
 	SFloat64Vec2			sCentre;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
@@ -3023,7 +3018,7 @@ void TestCircuitEditorUndoPlaceTurned(void)
 	CUndoStack*			pcUndo;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	AddGroundAndOutput(pcEditor->AddCircuit("Main"));
 	AssertTrue(pcEditor->Simulate("Main"));
@@ -3072,7 +3067,7 @@ void TestCircuitEditorUndoSelections(void)
 	SFloat64Vec2		sA;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcSelection = pcEditor->GetSelection();
 	pcMain = pcEditor->AddCircuit("Main");
@@ -3158,7 +3153,7 @@ void TestCircuitEditorUndoSimulation(void)
 	int64				iSettled;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	pcEditor->AddCircuit("Other");
@@ -3206,7 +3201,7 @@ void TestCircuitEditorUndoSimulation(void)
 void TestCircuitEditorUndoLoad(void)
 {
 	SEditorTest			sTest;
-	CCircuitEditor		cLoaded;
+	Ptr<CCircuitEditor>	pLoaded;
 	CCircuitEditor*		pcEditor;
 	CCircuitView*		pcMain;
 	CUndoStack*			pcUndo;
@@ -3214,7 +3209,7 @@ void TestCircuitEditorUndoLoad(void)
 	SFloat64Vec2		sCentre;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	AddGroundAndOutput(pcMain);
@@ -3231,15 +3226,17 @@ void TestCircuitEditorUndoLoad(void)
 	cFileUtil.MakeDir("Output");
 	AssertTrue(pcEditor->Save("Output" _FS_ "Undo.xml"));
 
-	cLoaded.Init(&sTest.cFamilies, NULL);
-	AssertTrue(cLoaded.Load("Output" _FS_ "Undo.xml"));
-	AssertSize(1, cLoaded.GetUndoStack()->NumSnapshots());
-	AssertFalse(cLoaded.CanUndo(true));
-	AssertSize(1, cLoaded.GetSelection()->NumComponents());
-	AssertPointer(cLoaded.GetCircuit()->GetComponent(1), cLoaded.GetSelection()->GetComponent(0));
-	AssertSize(1, cLoaded.GetSelection()->NumTraces());
-	AssertTrue(cLoaded.GetSelection()->GetTrace(0)->Contains(sTest.cEditor.GetSelection()->GetTrace(0)->GetStart()));
-	cLoaded.Kill();
+	pLoaded = OMalloc<CCircuitEditor>(&sTest.cFamilies, Ptr<CCircuitFonts>());
+	ORoot()->Add(pLoaded);
+	AssertTrue(pLoaded->Load("Output" _FS_ "Undo.xml"));
+	AssertSize(1, pLoaded->GetUndoStack()->NumSnapshots());
+	AssertFalse(pLoaded->CanUndo(true));
+	AssertSize(1, pLoaded->GetSelection()->NumComponents());
+	AssertPointer(pLoaded->GetCircuit()->GetComponent(1), pLoaded->GetSelection()->GetComponent(0));
+	AssertSize(1, pLoaded->GetSelection()->NumTraces());
+	AssertTrue(pLoaded->GetSelection()->GetTrace(0)->Contains(sTest.pEditor->GetSelection()->GetTrace(0)->GetStart()));
+	ORoot()->Remove(pLoaded);
+	pLoaded = NULL;
 
 	AssertTrue(pcEditor->Delete());
 	AssertSize(1, pcEditor->GetCircuit()->NumComponents());
@@ -3270,16 +3267,14 @@ void TestCircuitEditorUndoLoad(void)
 void TestCircuitEditorUndoSubcircuit(void)
 {
 	SEditorTest			sTest;
-	CCircuitFonts		cFonts;
 	CCircuitEditor*		pcEditor;
 	CCircuitSimulation*	pcSimulation;
 	size				uiPaths;
 	size				uiIntegratedCircuits;
 
-	sTest.Init(&cFonts);
-	LoadTestCircuitFonts(&cFonts);
-	pcEditor = &sTest.cEditor;
-	AddEditorInverterSubcircuit(pcEditor, &cFonts);
+	sTest.Init(true);
+	pcEditor = &sTest.pEditor;
+	AddEditorInverterSubcircuit(pcEditor, &sTest.pFonts);
 	pcEditor->AddCircuit("Main");
 	AssertTrue(pcEditor->Simulate("Main"));
 	uiPaths = pcEditor->GetCircuits()->GetViewPaths()->NumViewPaths();
@@ -3307,8 +3302,7 @@ void TestCircuitEditorUndoSubcircuit(void)
 	AssertSize(uiIntegratedCircuits + 1, pcSimulation->GetCircuit()->NumIntegratedCircuits());
 	AssertNotNull(pcEditor->GetCircuit()->GetComponent(0)->GetComponent(pcEditor->GetViewPath(), pcSimulation));
 
-	KillTestCircuitFonts(&cFonts);
-	sTest.Kill(true);
+	sTest.Kill();
 }
 
 
@@ -3329,7 +3323,7 @@ void TestCircuitEditorUndoLimit(void)
 	size				i;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	pcMain = pcEditor->AddCircuit("Main");
 	AddTestInverter(pcMain, -3, -2);
@@ -3368,7 +3362,7 @@ void TestCircuitEditorUndoBadSnapshot(void)
 	SLogConfig			sLogConfig;
 
 	sTest.Init();
-	pcEditor = &sTest.cEditor;
+	pcEditor = &sTest.pEditor;
 	pcUndo = pcEditor->GetUndoStack();
 	AddGroundAndOutput(pcEditor->AddCircuit("Main"));
 	AssertTrue(pcEditor->Simulate("Main"));
@@ -3393,6 +3387,94 @@ void TestCircuitEditorUndoBadSnapshot(void)
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
 
 	szPlaced.Kill();
+	sTest.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The objects in memory of the class.
+//
+//////////////////////////////////////////////////////////////////////////
+static size CountEditorObjects(const char* szClassName)
+{
+	SIndexesIterator	sIter;
+	OIndex				oi;
+	CPointer			p;
+	size				uiCount;
+
+	uiCount = 0;
+	oi = gcObjects.StartMemoryIteration(&sIter);
+	while (oi != INVALID_O_INDEX)
+	{
+		p = gcObjects.TestGetFromMemory(oi);
+		if (StringCompare(p->ClassName(), szClassName) == 0)
+		{
+			uiCount++;
+		}
+		oi = gcObjects.IterateMemory(&sIter);
+	}
+	sIter.Kill();
+	p = NULL;
+	return uiCount;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The editor is an object holding its simulation and fonts.  Simulating
+// again, loading and undoing replace its one simulation, and taking the
+// editor out of the root frees it, its simulation and its circuit.  The
+// fonts stay while something else holds them.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestCircuitEditorObjects(void)
+{
+	SEditorTest		sTest;
+	CCircuitView*	pcMain;
+	CFileUtil		cFileUtil;
+
+	sTest.Init(true);
+	AssertSize(1, CountEditorObjects("CCircuitEditor"));
+	AssertSize(1, CountEditorObjects("CCircuitFonts"));
+	AssertSize(0, CountEditorObjects("CCircuitSimulation"));
+	AssertPointer(&sTest.pFonts, sTest.pEditor->GetFonts());
+
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AddGroundAndOutput(pcMain);
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	AssertSize(1, CountEditorObjects("CCircuitSimulation"));
+	AssertSize(1, CountEditorObjects("CCircuit"));
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	AssertSize(1, CountEditorObjects("CCircuitSimulation"));
+	AssertSize(1, CountEditorObjects("CCircuit"));
+
+	sTest.PointAt(-3, -2);
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Inverter"));
+	sTest.Click(-3, -2);
+	sTest.Run();
+	AssertTrue(sTest.pEditor->CanUndo());
+	AssertTrue(sTest.pEditor->Undo(false));
+	AssertSize(1, CountEditorObjects("CCircuitSimulation"));
+	AssertSize(1, CountEditorObjects("CCircuit"));
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(sTest.pEditor->Save("Output" _FS_ "EditorObjects.xml"));
+	AssertTrue(sTest.pEditor->Load("Output" _FS_ "EditorObjects.xml"));
+	AssertSize(1, CountEditorObjects("CCircuitSimulation"));
+	AssertSize(1, CountEditorObjects("CCircuit"));
+
+	ORoot()->Remove(sTest.pEditor);
+	sTest.pEditor = NULL;
+	AssertSize(0, CountEditorObjects("CCircuitEditor"));
+	AssertSize(0, CountEditorObjects("CCircuitSimulation"));
+	AssertSize(0, CountEditorObjects("CCircuit"));
+	AssertSize(1, CountEditorObjects("CCircuitFonts"));
+
+	KillTestCircuitFonts(&sTest.pFonts);
+	sTest.pFonts = NULL;
+	AssertSize(0, CountEditorObjects("CCircuitFonts"));
+	AssertSize(0, CountEditorObjects("CFontFamily"));
 	sTest.Kill();
 }
 
@@ -3449,6 +3531,7 @@ void TestCircuitEditor(void)
 	TestCircuitEditorUndoSubcircuit();
 	TestCircuitEditorUndoLimit();
 	TestCircuitEditorUndoBadSnapshot();
+	TestCircuitEditorObjects();
 
 	DataMemoryKill();
 	DataIOKill();

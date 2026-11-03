@@ -367,7 +367,7 @@ void TestLogicGateViewExplicitPower(void)
 void TestGateViewsRender(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -384,7 +384,8 @@ void TestGateViewsRender(void)
 	ObjectsInit();
 	cFamilies.Init();
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-	cSimulation.Init("Gates");
+	pSimulation = OMalloc<CCircuitSimulation>("Gates");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
@@ -431,19 +432,20 @@ void TestGateViewsRender(void)
 	pcBuffer->Init(29, 6, ROT_North, "", "LVC", false, 3, 1);
 	cCircuit.Add(pcBuffer);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	AssertNotNull(pcAnd->GetComponent(pcPath, &cSimulation));
-	AssertString("AND Gate", ((CIntegratedCircuit*)pcAnd->GetComponent(pcPath, &cSimulation))->GetType());
-	AssertSize(4, pcAnd->GetIntegratedCircuit(pcPath, &cSimulation)->GetPins()->NumPorts() - 3);
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	AssertNotNull(pcAnd->GetComponent(pcPath, &pSimulation));
+	AssertString("AND Gate", ((CIntegratedCircuit*)pcAnd->GetComponent(pcPath, &pSimulation))->GetType());
+	AssertSize(4, pcAnd->GetIntegratedCircuit(pcPath, &pSimulation)->GetPins()->NumPorts() - 3);
 
-	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 400, 2, pcPath, &cSimulation, true, "Gates");
+	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 400, 2, pcPath, &pSimulation, true, "Gates");
 
 	cColours.InitDark();
-	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 400, 2, pcPath, &cSimulation, true, "GatesDark");
+	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 400, 2, pcPath, &pSimulation, true, "GatesDark");
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }
@@ -504,7 +506,7 @@ void TestCircuitViewSimulation(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
 	CFamilyVoltageConfiguration*		pcFamily;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -525,7 +527,8 @@ void TestCircuitViewSimulation(void)
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
 	pcFamily = cFamilies.Get("LVC");
 	fVcc = pcFamily->GetDefaultVoltageConfiguration(DEFAULT_LOGIC_LEVEL)->GetVcc();
-	cSimulation.Init("Inverter");
+	pSimulation = OMalloc<CCircuitSimulation>("Inverter");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
@@ -546,41 +549,44 @@ void TestCircuitViewSimulation(void)
 	cCircuit.AddTrace(-4, 1, 1, 1);
 	pcOut = cCircuit.AddTrace(4, 0, 10, 0);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	AssertSize(1, pcIn->NumTraces(pcPath, &cSimulation));
-	AssertTrue(pcMiddle->GetTrace(pcPath, &cSimulation, 0) == pcUpper->GetTrace(pcPath, &cSimulation, 0));
-	AssertTrue(pcMiddle->GetTrace(pcPath, &cSimulation, 0) != pcIn->GetTrace(pcPath, &cSimulation, 0));
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	AssertSize(1, pcIn->NumTraces(pcPath, &pSimulation));
+	AssertTrue(pcMiddle->GetTrace(pcPath, &pSimulation, 0) == pcUpper->GetTrace(pcPath, &pSimulation, 0));
+	AssertTrue(pcMiddle->GetTrace(pcPath, &pSimulation, 0) != pcIn->GetTrace(pcPath, &pSimulation, 0));
 	AssertTrue(pcMiddle->IsEndJunction());
-	AssertTrue(pcAnd->GetPortView("Input 0")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcMiddle->GetTrace(pcPath, &cSimulation, 0));
-	AssertTrue(pcAnd->GetPortView("Output")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcOut->GetTrace(pcPath, &cSimulation, 0));
+	AssertTrue(pcAnd->GetPortView("Input 0")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcMiddle->GetTrace(pcPath, &pSimulation, 0));
+	AssertTrue(pcAnd->GetPortView("Output")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcOut->GetTrace(pcPath, &pSimulation, 0));
 
 	//Nothing drives the input yet.
 	AssertRenderedCircuit(&cCircuit, &cColours, 600, 160, 2, NULL, NULL, false, "InverterAndDisconnected");
 
 	//Wired on to the running simulation, as the editor would.
-	pcSupply = &OMalloc<CPowerSource>(cSimulation.GetSubcircuitTopSimulation(), "Supply", fVcc);
-	AssertTrue(pcSupply->GetPowerOutPort()->ConnectLive(pcIn->GetTrace(pcPath, &cSimulation, 0), cSimulation.GetTimeline()));
-	cSimulation.GetTimeline()->Run();
-	AssertInt(TV_High, pcFamily->GetValue(pcIn->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertInt(TV_Low, pcFamily->GetValue(pcMiddle->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertInt(TV_Low, pcFamily->GetValue(pcOut->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertRenderedCircuit(&cCircuit, &cColours, 600, 160, 2, pcPath, &cSimulation, true, "InverterAndHigh");
+	pcSupply = &OMalloc<CPowerSource>(pSimulation->GetSubcircuitTopSimulation(), "Supply", fVcc);
+	AssertTrue(pcSupply->GetPowerOutPort()->ConnectLive(pcIn->GetTrace(pcPath, &pSimulation, 0), pSimulation->GetTimeline()));
+	pSimulation->GetTimeline()->Run();
+	AssertInt(TV_High, pcFamily->GetValue(pcIn->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertInt(TV_Low, pcFamily->GetValue(pcMiddle->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertInt(TV_Low, pcFamily->GetValue(pcOut->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertRenderedCircuit(&cCircuit, &cColours, 600, 160, 2, pcPath, &pSimulation, true, "InverterAndHigh");
 
 	//The views can make the circuit again in a new simulation.
-	cCircuit.DisconnectSimulation(pcPath, &cSimulation);
-	AssertNull(pcAnd->GetComponent(pcPath, &cSimulation));
-	AssertSize(0, pcIn->NumTraces(pcPath, &cSimulation));
-	AssertSize(0, pcAnd->GetPortView("Output")->NumPorts(pcPath, &cSimulation));
-	cSimulation.Kill();
-	cSimulation.Init("Again");
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	AssertNotNull(pcAnd->GetComponent(pcPath, &cSimulation));
-	AssertTrue(pcAnd->GetPortView("Output")->GetPort(pcPath, &cSimulation, 0)->GetTrace() == pcOut->GetTrace(pcPath, &cSimulation, 0));
-	AssertTrue(pcMiddle->GetTrace(pcPath, &cSimulation, 0) == pcUpper->GetTrace(pcPath, &cSimulation, 0));
+	cCircuit.DisconnectSimulation(pcPath, &pSimulation);
+	AssertNull(pcAnd->GetComponent(pcPath, &pSimulation));
+	AssertSize(0, pcIn->NumTraces(pcPath, &pSimulation));
+	AssertSize(0, pcAnd->GetPortView("Output")->NumPorts(pcPath, &pSimulation));
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
+	pSimulation = OMalloc<CCircuitSimulation>("Again");
+	ORoot()->Add(pSimulation);
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	AssertNotNull(pcAnd->GetComponent(pcPath, &pSimulation));
+	AssertTrue(pcAnd->GetPortView("Output")->GetPort(pcPath, &pSimulation, 0)->GetTrace() == pcOut->GetTrace(pcPath, &pSimulation, 0));
+	AssertTrue(pcMiddle->GetTrace(pcPath, &pSimulation, 0) == pcUpper->GetTrace(pcPath, &pSimulation, 0));
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }
@@ -597,7 +603,7 @@ void TestCircuitViewGroundDrivesInverters(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
 	CFamilyVoltageConfiguration*		pcFamily;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -617,7 +623,8 @@ void TestCircuitViewGroundDrivesInverters(void)
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
 	pcFamily = cFamilies.Get("LVC");
 	fVcc = pcFamily->GetDefaultVoltageConfiguration(DEFAULT_LOGIC_LEVEL)->GetVcc();
-	cSimulation.Init("Ground");
+	pSimulation = OMalloc<CCircuitSimulation>("Ground");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
@@ -643,15 +650,16 @@ void TestCircuitViewGroundDrivesInverters(void)
 	cCircuit.Add(pcInverter);
 	pcOut2 = cCircuit.AddTrace(-1, 3, 6, 3);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	cSimulation.GetTimeline()->Run();
-	AssertInt(TV_High, pcFamily->GetValue(pcOut1->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertInt(TV_High, pcFamily->GetValue(pcOut2->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
-	AssertRenderedCircuit(&cCircuit, &cColours, 420, 160, 2, pcPath, &cSimulation, true, "GroundInverters");
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	pSimulation->GetTimeline()->Run();
+	AssertInt(TV_High, pcFamily->GetValue(pcOut1->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertInt(TV_High, pcFamily->GetValue(pcOut2->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
+	AssertRenderedCircuit(&cCircuit, &cColours, 420, 160, 2, pcPath, &pSimulation, true, "GroundInverters");
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }
@@ -668,7 +676,7 @@ void TestCircuitViewRingOscillator(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
 	CFamilyVoltageConfiguration*		pcFamily;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
@@ -692,7 +700,8 @@ void TestCircuitViewRingOscillator(void)
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
 	pcFamily = cFamilies.Get("LVC");
 	fVcc = pcFamily->GetDefaultVoltageConfiguration(DEFAULT_LOGIC_LEVEL)->GetVcc();
-	cSimulation.Init("Ring");
+	pSimulation = OMalloc<CCircuitSimulation>("Ring");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
@@ -715,24 +724,24 @@ void TestCircuitViewRingOscillator(void)
 	cCircuit.AddTrace(-20, 4, -20, 1);
 	cCircuit.AddTrace(-20, 1, -18, 1);
 
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	pcTimeline = cSimulation.GetTimeline();
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	pcTimeline = pSimulation->GetTimeline();
 
-	pcLow = &OMalloc<CPowerSource>(cSimulation.GetSubcircuitTopSimulation(), "Disable", 0.0f);
-	AssertTrue(pcLow->GetPowerOutPort()->ConnectLive(pcEnable->GetTrace(pcPath, &cSimulation, 0), pcTimeline));
+	pcLow = &OMalloc<CPowerSource>(pSimulation->GetSubcircuitTopSimulation(), "Disable", 0.0f);
+	AssertTrue(pcLow->GetPowerOutPort()->ConnectLive(pcEnable->GetTrace(pcPath, &pSimulation, 0), pcTimeline));
 	pcTimeline->Run();
-	AssertInt(TV_High, pcFamily->GetValue(pcRing->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc));
+	AssertInt(TV_High, pcFamily->GetValue(pcRing->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc));
 	pcLow->GetPowerOutPort()->Disconnect(pcTimeline);
 
-	pcHigh = &OMalloc<CPowerSource>(cSimulation.GetSubcircuitTopSimulation(), "Enable", fVcc);
-	AssertTrue(pcHigh->GetPowerOutPort()->ConnectLive(pcEnable->GetTrace(pcPath, &cSimulation, 0), pcTimeline));
+	pcHigh = &OMalloc<CPowerSource>(pSimulation->GetSubcircuitTopSimulation(), "Enable", fVcc);
+	AssertTrue(pcHigh->GetPowerOutPort()->ConnectLive(pcEnable->GetTrace(pcPath, &pSimulation, 0), pcTimeline));
 
 	iChanges = 0;
 	eLast = TV_High;
 	for (i = 0; i < 200; i++)
 	{
-		cSimulation.RunToTime(NanosecondsToTime((int64)1));
-		eValue = pcFamily->GetValue(pcRing->GetTrace(pcPath, &cSimulation, 0)->GetVoltage(cSimulation.GetTime()), fVcc);
+		pSimulation->RunToTime(NanosecondsToTime((int64)1));
+		eValue = pcFamily->GetValue(pcRing->GetTrace(pcPath, &pSimulation, 0)->GetVoltage(pSimulation->GetTime()), fVcc);
 		if (((eValue == TV_High) || (eValue == TV_Low)) && (eValue != eLast))
 		{
 			iChanges++;
@@ -743,7 +752,8 @@ void TestCircuitViewRingOscillator(void)
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	ObjectsKill();
 }

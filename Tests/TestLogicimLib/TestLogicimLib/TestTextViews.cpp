@@ -28,18 +28,17 @@
 //////////////////////////////////////////////////////////////////////////
 //
 // The fonts rooted, so their glyphs aren't walked for each pointer
-// change.
+// change.  KillTestCircuitFonts takes them out of the root.
 //
 //////////////////////////////////////////////////////////////////////////
-void LoadTestCircuitFonts(CCircuitFonts* pcFonts)
+Ptr<CCircuitFonts> LoadTestCircuitFonts(void)
 {
-	Ptr<CFontFamily>	pFamily;
+	Ptr<CCircuitFonts>	pFonts;
 
-	AssertTrue(LoadCircuitFonts(pcFonts, TEXT_VIEW_FONTS, CCO_Unknown));
-	pFamily = pcFonts->GetSansSerif();
-	ORoot()->Add(pFamily);
-	pFamily = pcFonts->GetMonospaced();
-	ORoot()->Add(pFamily);
+	pFonts = LoadCircuitFonts(TEXT_VIEW_FONTS, CCO_Unknown);
+	AssertTrue(pFonts->HasFamilies());
+	ORoot()->Add(pFonts);
+	return pFonts;
 }
 
 
@@ -49,8 +48,8 @@ void LoadTestCircuitFonts(CCircuitFonts* pcFonts)
 //////////////////////////////////////////////////////////////////////////
 void KillTestCircuitFonts(CCircuitFonts* pcFonts)
 {
-	pcFonts->Kill();
-	ORoot()->RemoveAll();
+	//Only the fonts come out of the root; an editor may still hold them.  The caller lets go of its pointer to them.
+	ORoot()->Remove(pcFonts);
 }
 
 
@@ -62,29 +61,30 @@ void KillTestCircuitFonts(CCircuitFonts* pcFonts)
 //////////////////////////////////////////////////////////////////////////
 void TestCircuitFontsMeasure(void)
 {
-	CCircuitFonts		cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	SCircuitTextSize	sSize;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 
-	sSize = cFonts.Measure(CF_Monospaced, 10, "X");
+	sSize = pFonts->Measure(CF_Monospaced, 10, "X");
 	AssertDouble(0.6, sSize.fWidth, 9);
-	sSize = cFonts.Measure(CF_Monospaced, 10, "XXXXXXXX");
+	sSize = pFonts->Measure(CF_Monospaced, 10, "XXXXXXXX");
 	AssertDouble(4.8, sSize.fWidth, 9);
-	sSize = cFonts.Measure(CF_Monospaced, 13, "XX");
+	sSize = pFonts->Measure(CF_Monospaced, 13, "XX");
 	AssertDouble(1.6, sSize.fWidth, 9);
-	sSize = cFonts.Measure(CF_SansSerif, 10, "XX");
+	sSize = pFonts->Measure(CF_SansSerif, 10, "XX");
 	AssertDouble(1.4, sSize.fWidth, 9);
-	sSize = cFonts.Measure(CF_SansSerif, 10, "Up Counter");
+	sSize = pFonts->Measure(CF_SansSerif, 10, "Up Counter");
 	AssertDouble(5.3, sSize.fWidth, 9);
-	sSize = cFonts.Measure(CF_SansSerif, 10, "");
+	sSize = pFonts->Measure(CF_SansSerif, 10, "");
 	AssertDouble(0.0, sSize.fWidth, 9);
 	AssertTrue(sSize.fHeight > 1.0);
-	sSize = cFonts.Measure(CF_SansSerifBold, 10, "Clock");
+	sSize = pFonts->Measure(CF_SansSerifBold, 10, "Clock");
 	AssertDouble(2.8, sSize.fWidth, 9);
 
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -189,17 +189,17 @@ void AssertValueBox(int32 iLeft, int32 iTop, int32 iRight, int32 iBottom, CValue
 //////////////////////////////////////////////////////////////////////////
 void TestValueViewMeasuredBox(void)
 {
-	CCircuitFonts	cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	CConstantView	cConstant;
 	CProbeView		cProbe;
 	SFloat64Vec2	sMinimum;
 	SFloat64Vec2	sMaximum;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 
 	//One hexadecimal digit: 0.6 + 0.5 is 2.
-	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 1, RADIX_Hexadecimal, &cFonts);
+	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 1, RADIX_Hexadecimal, &pFonts);
 	AssertValueBox(-2, -1, 0, 1, &cConstant);
 	AssertTrue(cConstant.GetLocalBounds(&sMinimum, &sMaximum));
 	AssertDouble(-2.0, sMinimum.x, 9);
@@ -209,22 +209,22 @@ void TestValueViewMeasuredBox(void)
 	cConstant.Kill();
 
 	//Eight digits: 4.8 + 0.5 is 6.
-	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 8, RADIX_Binary, &cFonts);
+	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 8, RADIX_Binary, &pFonts);
 	AssertValueBox(-6, -1, 0, 1, &cConstant);
 	cConstant.Kill();
-	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 32, RADIX_Hexadecimal, &cFonts);
+	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 32, RADIX_Hexadecimal, &pFonts);
 	AssertValueBox(-6, -1, 0, 1, &cConstant);
 	cConstant.Kill();
 
 	//65535: 3.0 + 0.5 is 4.
-	cProbe.Init(0, 0, ROT_North, "", "LVC", false, 16, RADIX_Decimal, &cFonts);
+	cProbe.Init(0, 0, ROT_North, "", "LVC", false, 16, RADIX_Decimal, &pFonts);
 	AssertValueBox(-4, -1, 0, 1, &cProbe);
 	AssertSize(1, cProbe.NumPortViews());
 	AssertSize(16, cProbe.GetPortView((size)0)->NumPortNames());
 	AssertString("Input 15", cProbe.GetPortView((size)0)->GetPortName(15));
 	cProbe.Kill();
 
-	cProbe.Init(0, 0, ROT_North, "", "LVC", true, 1, RADIX_Binary, &cFonts);
+	cProbe.Init(0, 0, ROT_North, "", "LVC", true, 1, RADIX_Binary, &pFonts);
 	AssertValueBox(-2, -1, 0, 1, &cProbe);
 	AssertSize(3, cProbe.NumPortViews());
 	AssertInt(-1, cProbe.GetPortView("VCC")->GetRelativePosition().x);
@@ -233,7 +233,8 @@ void TestValueViewMeasuredBox(void)
 	AssertInt(1, cProbe.GetPortView("GND")->GetRelativePosition().y);
 	cProbe.Kill();
 
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -247,7 +248,7 @@ void TestValueViewMeasuredBox(void)
 //////////////////////////////////////////////////////////////////////////
 void TestValueViewBoxKept(void)
 {
-	CCircuitFonts	cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	CCircuitView	cSaved;
 	CCircuitView	cLoaded;
 	CConstantView*	pcConstant;
@@ -261,10 +262,10 @@ void TestValueViewBoxKept(void)
 </Logicim>\n";
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cSaved.Init();
 	pcConstant = NewMalloc<CConstantView>();
-	pcConstant->Init(3, 4, ROT_East, "K", "LVC", false, 8, RADIX_Binary, &cFonts);
+	pcConstant->Init(3, 4, ROT_East, "K", "LVC", false, 8, RADIX_Binary, &pFonts);
 	cSaved.Add(pcConstant);
 	cWriter.Init();
 	SaveCircuitXML(&cSaved, &cWriter);
@@ -273,7 +274,8 @@ void TestValueViewBoxKept(void)
 	cFileUtil.MakeDir("Output");
 	AssertTrue(SaveCircuitFile(&cSaved, "Output" _FS_ "Constant.xml"));
 	cSaved.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 
@@ -347,12 +349,12 @@ void SetConstant(CConstantView* pcView, int64 iValue, CViewPath* pcViewPath, CCi
 void TestTextViewsRender(void)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
-	CCircuitSimulation					cSimulation;
+	Ptr<CCircuitSimulation>				pSimulation;
 	CCircuitView						cCircuit;
 	CViewPaths							cPaths;
 	CViewPath*							pcPath;
 	CCircuitColours						cColours;
-	CCircuitFonts						cFonts;
+	Ptr<CCircuitFonts>					pFonts;
 	CConstantView*						pcConstant8;
 	CConstantView*						pcConstant1;
 	CConstantView*						pcConstantNorth;
@@ -366,36 +368,37 @@ void TestTextViewsRender(void)
 	ObjectsInit();
 	CEvent::ResetNextID();
 	CTrace::ResetNextID();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cFamilies.Init();
 	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
-	cSimulation.Init("Text");
+	pSimulation = OMalloc<CCircuitSimulation>("Text");
+	ORoot()->Add(pSimulation);
 	cCircuit.Init();
 	cPaths.Init();
 	pcPath = cPaths.AddTop(&cCircuit);
 	cColours.InitLogicim();
 
 	pcConstant8 = NewMalloc<CConstantView>();
-	pcConstant8->Init(-38, -8, ROT_East, "", "LVC", false, 8, RADIX_Hexadecimal, &cFonts);
+	pcConstant8->Init(-38, -8, ROT_East, "", "LVC", false, 8, RADIX_Hexadecimal, &pFonts);
 	cCircuit.Add(pcConstant8);
 	pcProbe8 = NewMalloc<CProbeView>();
-	pcProbe8->Init(-24, -8, ROT_West, "", "LVC", false, 8, RADIX_Hexadecimal, &cFonts);
+	pcProbe8->Init(-24, -8, ROT_West, "", "LVC", false, 8, RADIX_Hexadecimal, &pFonts);
 	cCircuit.Add(pcProbe8);
 	cCircuit.AddTrace(-38, -8, -24, -8);
 
 	pcConstant1 = NewMalloc<CConstantView>();
-	pcConstant1->Init(-38, 0, ROT_East, "", "LVC", false, 1, RADIX_Binary, &cFonts);
+	pcConstant1->Init(-38, 0, ROT_East, "", "LVC", false, 1, RADIX_Binary, &pFonts);
 	cCircuit.Add(pcConstant1);
 	pcProbe1 = NewMalloc<CProbeView>();
-	pcProbe1->Init(-28, 0, ROT_West, "", "LVC", false, 1, RADIX_Binary, &cFonts);
+	pcProbe1->Init(-28, 0, ROT_West, "", "LVC", false, 1, RADIX_Binary, &pFonts);
 	cCircuit.Add(pcProbe1);
 	cCircuit.AddTrace(-38, 0, -28, 0);
 
 	pcConstantNorth = NewMalloc<CConstantView>();
-	pcConstantNorth->Init(-14, -9, ROT_North, "", "LVC", false, 16, RADIX_Decimal, &cFonts);
+	pcConstantNorth->Init(-14, -9, ROT_North, "", "LVC", false, 16, RADIX_Decimal, &pFonts);
 	cCircuit.Add(pcConstantNorth);
 	pcProbeSouth = NewMalloc<CProbeView>();
-	pcProbeSouth->Init(-14, 8, ROT_South, "", "LVC", false, 4, RADIX_Binary, &cFonts);
+	pcProbeSouth->Init(-14, 8, ROT_South, "", "LVC", false, 4, RADIX_Binary, &pFonts);
 	cCircuit.Add(pcProbeSouth);
 
 	pcFlipFlop = NewMalloc<CDTypeFlipFlopView>();
@@ -409,43 +412,45 @@ void TestTextViewsRender(void)
 	cCircuit.Add(pcCounter);
 
 	//Starting resets the constants to 0, so their values are set after and driven again.
-	AssertTrue(cCircuit.CreateSimulation(pcPath, &cSimulation, &cFamilies));
-	SetConstant(pcConstant8, 0xA5, pcPath, &cSimulation);
-	SetConstant(pcConstant1, 1, pcPath, &cSimulation);
-	SetConstant(pcConstantNorth, 1234, pcPath, &cSimulation);
-	((CCounter*)pcCounter->GetComponent(pcPath, &cSimulation))->SetCount(0xC);
-	cSimulation.GetTimeline()->Run();
+	AssertTrue(cCircuit.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	SetConstant(pcConstant8, 0xA5, pcPath, &pSimulation);
+	SetConstant(pcConstant1, 1, pcPath, &pSimulation);
+	SetConstant(pcConstantNorth, 1234, pcPath, &pSimulation);
+	((CCounter*)pcCounter->GetComponent(pcPath, &pSimulation))->SetCount(0xC);
+	pSimulation->GetTimeline()->Run();
 
 	szValue.Init();
-	pcProbe8->GetValueText(&szValue, pcPath, &cSimulation);
+	pcProbe8->GetValueText(&szValue, pcPath, &pSimulation);
 	AssertString("A5", szValue.Text());
 	szValue.ReInit();
-	pcProbe1->GetValueText(&szValue, pcPath, &cSimulation);
+	pcProbe1->GetValueText(&szValue, pcPath, &pSimulation);
 	AssertString("1", szValue.Text());
 	szValue.ReInit();
 	//Without a wire there's no trace to read (as Logicim).
-	pcConstantNorth->GetValueText(&szValue, pcPath, &cSimulation);
+	pcConstantNorth->GetValueText(&szValue, pcPath, &pSimulation);
 	AssertString(".....", szValue.Text());
 	szValue.ReInit();
-	pcProbeSouth->GetValueText(&szValue, pcPath, &cSimulation);
+	pcProbeSouth->GetValueText(&szValue, pcPath, &pSimulation);
 	AssertString("....", szValue.Text());
 	szValue.ReInit();
 	pcProbe8->GetValueText(&szValue, NULL, NULL);
 	AssertString("", szValue.Text());
 	szValue.Kill();
 
-	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 340, 1.5, pcPath, &cSimulation, true, "TextViews", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 340, 1.5, pcPath, &pSimulation, true, "TextViews", &pFonts);
 	cColours.Kill();
 	cColours.InitDark();
-	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 340, 1.5, pcPath, &cSimulation, true, "TextViewsDark", &cFonts);
-	AssertRenderedCircuit(&cCircuit, &cColours, 700, 170, 0.75, pcPath, &cSimulation, false, "TextViewsSmall", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 1400, 340, 1.5, pcPath, &pSimulation, true, "TextViewsDark", &pFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 700, 170, 0.75, pcPath, &pSimulation, false, "TextViewsSmall", &pFonts);
 
 	cCircuit.Kill();
 	cPaths.Kill();
-	cSimulation.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
 	cFamilies.Kill();
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -522,26 +527,27 @@ void TestCircuitTextMarkupParser(void)
 //////////////////////////////////////////////////////////////////////////
 void TestCircuitFontsMeasureMarkup(void)
 {
-	CCircuitFonts		cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	SCircuitTextSize	sPlain;
 	SCircuitTextSize	sSize;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 
-	sPlain = cFonts.Measure(CF_SansSerif, 10, "1OE");
-	sSize = cFonts.Measure(CF_SansSerif, 10, "1~{OE}");
+	sPlain = pFonts->Measure(CF_SansSerif, 10, "1OE");
+	sSize = pFonts->Measure(CF_SansSerif, 10, "1~{OE}");
 	AssertDouble(sPlain.fWidth, sSize.fWidth, 9);
 	AssertDouble(sPlain.fHeight, sSize.fHeight, 9);
 
-	sPlain = cFonts.Measure(CF_SansSerif, 10, "A00");
-	sSize = cFonts.Measure(CF_SansSerif, 10, "A_{00}");
+	sPlain = pFonts->Measure(CF_SansSerif, 10, "A00");
+	sSize = pFonts->Measure(CF_SansSerif, 10, "A_{00}");
 	AssertTrue(sSize.fWidth < sPlain.fWidth);
-	AssertTrue(sSize.fWidth > cFonts.Measure(CF_SansSerif, 10, "A").fWidth);
+	AssertTrue(sSize.fWidth > pFonts->Measure(CF_SansSerif, 10, "A").fWidth);
 	AssertDouble(sPlain.fHeight, sSize.fHeight, 9);
-	AssertDouble(sSize.fWidth, cFonts.Measure(CF_SansSerif, 10, "A^{00}").fWidth, 9);
+	AssertDouble(sSize.fWidth, pFonts->Measure(CF_SansSerif, 10, "A^{00}").fWidth, 9);
 
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -558,31 +564,32 @@ void TestMarkupLabelsRender(void)
 {
 	CCircuitView	cCircuit;
 	CCircuitColours	cColours;
-	CCircuitFonts	cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	CLabelView*		pcLabel;
 	const char*		aszTexts[] = { "1~{OE}", "~{A_{0}}", "D_{7}", "x^{2}+y^{2}", "~{RD}/~{WR}" };
 	size			i;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cCircuit.Init();
 	cColours.InitLogicim();
 
 	for (i = 0; i < 5; i++)
 	{
 		pcLabel = NewMalloc<CLabelView>();
-		pcLabel->Init(-18, -8 + (int32)i * 4, ROT_East, aszTexts[i], TA_Left, i == 4, false, true, &cFonts);
+		pcLabel->Init(-18, -8 + (int32)i * 4, ROT_East, aszTexts[i], TA_Left, i == 4, false, true, &pFonts);
 		cCircuit.Add(pcLabel);
 		pcLabel = NewMalloc<CLabelView>();
-		pcLabel->Init(2 + (int32)i * 4, 6, ROT_North, aszTexts[i], TA_Left, false, false, false, &cFonts);
+		pcLabel->Init(2 + (int32)i * 4, 6, ROT_North, aszTexts[i], TA_Left, false, false, false, &pFonts);
 		cCircuit.Add(pcLabel);
 	}
 
-	AssertRenderedCircuit(&cCircuit, &cColours, 1200, 600, 3, NULL, NULL, true, "MarkupLabels", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 1200, 600, 3, NULL, NULL, true, "MarkupLabels", &pFonts);
 
 	cCircuit.Kill();
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -598,34 +605,35 @@ void TestTunnelsRender(void)
 {
 	CCircuitView	cCircuit;
 	CCircuitColours	cColours;
-	CCircuitFonts	cFonts;
+	Ptr<CCircuitFonts>	pFonts;
 	CTunnelView*	pcTunnel;
 	const char*		aszNames[] = { "high", "~{RESET}", "D_{0}", "Bus", "Clock out" };
 	size			i;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cCircuit.Init();
 	cColours.InitLogicim();
 
 	for (i = 0; i < 5; i++)
 	{
 		pcTunnel = NewMalloc<CTunnelView>();
-		pcTunnel->Init(-14, -4 + 2 * (int32)i, ROT_East, aszNames[i], false, &cFonts);
+		pcTunnel->Init(-14, -4 + 2 * (int32)i, ROT_East, aszNames[i], false, &pFonts);
 		cCircuit.Add(pcTunnel);
 		pcTunnel = NewMalloc<CTunnelView>();
-		pcTunnel->Init(-5, -4 + 2 * (int32)i, ROT_East, aszNames[i], true, &cFonts);
+		pcTunnel->Init(-5, -4 + 2 * (int32)i, ROT_East, aszNames[i], true, &pFonts);
 		cCircuit.Add(pcTunnel);
 		pcTunnel = NewMalloc<CTunnelView>();
-		pcTunnel->Init(6 + 2 * (int32)i, 5, ROT_North, aszNames[i], false, &cFonts);
+		pcTunnel->Init(6 + 2 * (int32)i, 5, ROT_North, aszNames[i], false, &pFonts);
 		cCircuit.Add(pcTunnel);
 	}
 
-	AssertRenderedCircuit(&cCircuit, &cColours, 1050, 450, 3, NULL, NULL, true, "Tunnels", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 1050, 450, 3, NULL, NULL, true, "Tunnels", &pFonts);
 
 	cCircuit.Kill();
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }
@@ -642,14 +650,14 @@ void TestMirroredViewsRender(void)
 {
 	CCircuitView			cCircuit;
 	CCircuitColours			cColours;
-	CCircuitFonts			cFonts;
+	Ptr<CCircuitFonts>		pFonts;
 	CDTypeFlipFlopView*		pcFlipFlop;
 	ERotation				aeRotations[] = { ROT_East, ROT_North, ROT_South, ROT_West };
 	size					i;
 	size					j;
 
 	ObjectsInit();
-	LoadTestCircuitFonts(&cFonts);
+	pFonts = LoadTestCircuitFonts();
 	cCircuit.Init();
 	cColours.InitLogicim();
 
@@ -664,11 +672,12 @@ void TestMirroredViewsRender(void)
 		}
 	}
 
-	AssertRenderedCircuit(&cCircuit, &cColours, 1200, 600, 2, NULL, NULL, true, "MirroredViews", &cFonts);
+	AssertRenderedCircuit(&cCircuit, &cColours, 1200, 600, 2, NULL, NULL, true, "MirroredViews", &pFonts);
 
 	cCircuit.Kill();
 	cColours.Kill();
-	KillTestCircuitFonts(&cFonts);
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
 	ObjectsFlush();
 	ObjectsKill(false);
 }

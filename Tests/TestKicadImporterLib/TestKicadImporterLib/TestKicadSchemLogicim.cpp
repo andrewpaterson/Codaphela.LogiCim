@@ -412,24 +412,21 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 {
 	CKicadSchemFile					cFile;
 	CKicadSchemNetlist				cNetlist;
-	CCircuitFonts					cFonts;
+	Ptr<CCircuitFonts>				pFonts;
 	CCircuitViews					cCircuits;
 	CCircuitViews					cLoaded;
 	CKicadSchemLogicimConverter		cConverter;
 	CChars							szPath;
 	CFileUtil						cFileUtil;
-	Ptr<CFontFamily>				pFamily;
 	CCircuitView*					pcLoaded;
 	CChars							szUnconnected;
 	size							i;
 	SKicadSchemLogicimConnection*	psConnection;
 
 	ObjectsInit();
-	AssertTrue(LoadCircuitFonts(&cFonts, KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown));
-	pFamily = cFonts.GetSansSerif();
-	ORoot()->Add(pFamily);
-	pFamily = cFonts.GetMonospaced();
-	ORoot()->Add(pFamily);
+	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
+	AssertTrue(pFonts->HasFamilies());
+	ORoot()->Add(pFonts);
 
 	szPath.Init("Input" _FS_);
 	szPath.Append(szName);
@@ -447,7 +444,7 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 	AssertTrue(cNetlist.Build());
 
 	cCircuits.Init();
-	cConverter.Init(&cFile, &cNetlist, &cCircuits, &cFonts);
+	cConverter.Init(&cFile, &cNetlist, &cCircuits, &pFonts);
 	AssertTrue(cConverter.Convert(szName));
 	AssertTrue(cConverter.NumGates() >= uiMinimumGates);
 	AssertTrue(cConverter.NumPlaceholders() >= uiMinimumPlaceholders);
@@ -504,7 +501,8 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 	cFile.Kill();
 	szPath.Kill();
 
-	cFonts.Kill();
+	ORoot()->Remove(pFonts);
+	pFonts = NULL;
 	ORoot()->RemoveAll();
 	ObjectsFlush();
 	ObjectsKill(false);

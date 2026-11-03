@@ -21,6 +21,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/XMLWriter.h"
 #include "BaseLib/Markup.h"
 #include "StandardLib/Objects.h"
+#include "StandardLib/ObjectReader.h"
+#include "StandardLib/ObjectWriter.h"
 #include "LogicimLib/CircuitFile.h"
 #include "KicadImporterLib/KicadSchemLogicimConverter.h"
 #include "LogicimCircuit.h"
@@ -31,37 +33,85 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Kill must be called even when this fails.  The circuit's text is
-// coloured in eColourOrder, the canvas's.
+// Setup makes the editor; see it.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimCircuit::Init(const char* szPropagationTimes, const char* szFontDirectory, EColourOrder eColourOrder)
+void CLogicimCircuit::Init(void)
 {
-	Ptr<CFontFamily>	pFamily;
-	bool				bFonts;
+	PreInit();
 
 	mcColours.InitDark();
 	mcFamilies.Init();
-	mcEditor.Init(&mcFamilies, &mcFonts);
 
-	//Nothing else holds the font families, so they are rooted.
-	bFonts = LoadCircuitFonts(&mcFonts, szFontDirectory, eColourOrder);
-	pFamily = mcFonts.GetSansSerif();
-	if (pFamily.IsNotNull())
-	{
-		ORoot()->Add(pFamily);
-	}
-	pFamily = mcFonts.GetMonospaced();
-	if (pFamily.IsNotNull())
-	{
-		ORoot()->Add(pFamily);
-	}
-	if (!bFonts || !mcFamilies.Load(szPropagationTimes))
+	PostInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::Class(void)
+{
+	U_Unknown(CFamilyVoltageConfigurationStore, mcFamilies);
+	M_Pointer(mpEditor);
+	U_Unknown(CCircuitColours, mcColours);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The editor is freed with this.  It only points to the families, it
+// doesn't use them as it's freed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::Free(void)
+{
+	mcFamilies.Kill();
+	mcColours.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A project is saved as a circuits file, see Save(const char*).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Save(CObjectWriter* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Load(CObjectReader* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The families, the fonts and the editor with an empty "Main" circuit
+// being simulated.  Free still frees whatever was made when this fails.
+// The circuit's text is coloured in eColourOrder, the canvas's.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::Setup(const char* szPropagationTimes, const char* szFontDirectory, EColourOrder eColourOrder)
+{
+	Ptr<CCircuitFonts>	pFonts;
+
+	pFonts = LoadCircuitFonts(szFontDirectory, eColourOrder);
+	mpEditor = OMalloc<CCircuitEditor>(&mcFamilies, pFonts);
+	if (!pFonts->HasFamilies() || !mcFamilies.Load(szPropagationTimes))
 	{
 		return false;
 	}
 
-	mcEditor.AddCircuit(LOGICIM_MAIN_CIRCUIT);
+	mpEditor->AddCircuit(LOGICIM_MAIN_CIRCUIT);
 	return CreateSimulation();
 }
 
@@ -70,30 +120,6 @@ bool CLogicimCircuit::Init(const char* szPropagationTimes, const char* szFontDir
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimCircuit::Kill(void)
-{
-	mcEditor.Kill();
-	mcFamilies.Kill();
-	mcColours.Kill();
-	RemoveFontFamily(mcFonts.GetSansSerif());
-	RemoveFontFamily(mcFonts.GetMonospaced());
-	mcFonts.Kill();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimCircuit::RemoveFontFamily(Ptr<CFontFamily> pFamily)
-{
-	if (pFamily.IsNotNull())
-	{
-		ORoot()->Remove(pFamily);
-	}
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 //
 // Simulates the circuit being edited afresh.
@@ -101,7 +127,7 @@ void CLogicimCircuit::RemoveFontFamily(Ptr<CFontFamily> pFamily)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::CreateSimulation(void)
 {
-	return mcEditor.Simulate(mcEditor.GetCircuit() != NULL ? mcEditor.GetCircuit()->GetTypeName() : LOGICIM_MAIN_CIRCUIT);
+	return mpEditor->Simulate(mpEditor->GetCircuit() != NULL ? mpEditor->GetCircuit()->GetTypeName() : LOGICIM_MAIN_CIRCUIT);
 }
 
 
@@ -125,9 +151,9 @@ bool CLogicimCircuit::Reset(void)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::Run(int64 iTimeForward)
 {
-	if ((mcEditor.GetSimulation() != NULL) && mcEditor.CanRun())
+	if ((mpEditor->GetSimulation() != NULL) && mpEditor->CanRun())
 	{
-		return mcEditor.GetSimulation()->RunToTime(iTimeForward);
+		return mpEditor->GetSimulation()->RunToTime(iTimeForward);
 	}
 	return false;
 }
@@ -139,7 +165,7 @@ bool CLogicimCircuit::Run(int64 iTimeForward)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::Save(const char* szFilename)
 {
-	return mcEditor.Save(szFilename);
+	return mpEditor->Save(szFilename);
 }
 
 
@@ -149,7 +175,7 @@ bool CLogicimCircuit::Save(const char* szFilename)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::Load(const char* szFilename)
 {
-	return mcEditor.Load(szFilename);
+	return mpEditor->Load(szFilename);
 }
 
 
@@ -193,7 +219,7 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 	bResult = cFile.Load((char*)szFilename);
 	cNetlist.Init(&cFile);
 	cCircuits.Init();
-	cConverter.Init(&cFile, &cNetlist, &cCircuits, &mcFonts);
+	cConverter.Init(&cFile, &cNetlist, &cCircuits, mpEditor->GetFonts());
 	bResult = bResult && cNetlist.Build() && cConverter.Convert(szName.Text());
 	if (bResult)
 	{
@@ -201,12 +227,12 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 		SaveCircuitsXML(&cCircuits, cConverter.GetCircuit(), NULL, &cWriter);
 		cMarkup.Init();
 		pcRoot = ReadCircuitTextRoot(&cMarkup, cWriter.GetText(), szFilename, "Circuits");
-		bResult = (pcRoot != NULL) && mcEditor.LoadXML(pcRoot, szFilename);
+		bResult = (pcRoot != NULL) && mpEditor->LoadXML(pcRoot, szFilename);
 		cMarkup.Kill();
 		cWriter.Kill();
 		if (bResult)
 		{
-			mcEditor.PushUndo(false);
+			mpEditor->PushUndo(false);
 		}
 	}
 
@@ -223,7 +249,7 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CCircuitEditor* CLogicimCircuit::GetEditor(void) { return &mcEditor; }
+CCircuitEditor* CLogicimCircuit::GetEditor(void) { return &mpEditor; }
 CCircuitColours* CLogicimCircuit::GetColours(void) { return &mcColours; }
-CCircuitFonts* CLogicimCircuit::GetFonts(void) { return &mcFonts; }
-int64 CLogicimCircuit::GetTime(void) { return (mcEditor.GetSimulation() != NULL) ? mcEditor.GetSimulation()->GetTime() : -1; }
+CCircuitFonts* CLogicimCircuit::GetFonts(void) { return mpEditor->GetFonts(); }
+int64 CLogicimCircuit::GetTime(void) { return (mpEditor->GetSimulation() != NULL) ? mpEditor->GetSimulation()->GetTime() : -1; }

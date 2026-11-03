@@ -145,14 +145,18 @@ enum EEditTransform
 //saved onto an undo stack (see CUndoStack), and undoing or redoing loads one of those again, simulation and all.  A
 //change that only changed the selection is marked so: Undo and Redo skip it, as if it were part of the change before
 //or after it, and stepping (as Logicim does) doesn't.
-class CCircuitEditor
+//
+//The editor is an object; keep it under the root.  It holds its simulation and fonts.
+class CCircuitEditor : public CObject
 {
+CONSTRUCTABLE(CCircuitEditor);
+DESTRUCTABLE(CCircuitEditor);
 protected:
 	CCircuitViews*						mpcCircuits;
 	CCircuitView*						mpcCircuit;
-	CCircuitSimulation*					mpcSimulation;
+	Ptr<CCircuitSimulation>				mpSimulation;
 	CFamilyVoltageConfigurationStore*	mpcFamilies;
-	CCircuitFonts*						mpcFonts;
+	Ptr<CCircuitFonts>					mpFonts;
 	CCircuitSelection					mcSelection;
 	CUndoStack							mcUndo;
 	CCircuitEdit*						mpcEdit;
@@ -177,8 +181,12 @@ protected:
 	bool								mbShift;
 
 public:
-	void				Init(CFamilyVoltageConfigurationStore* pcFamilies, CCircuitFonts* pcFonts);
-	void				Kill(void);
+	void				Init(CFamilyVoltageConfigurationStore* pcFamilies, Ptr<CCircuitFonts> pFonts);
+	void				Class(void) override;
+	void				Free(void) override;
+
+	bool				Save(CObjectWriter* pcFile) override;
+	bool				Load(CObjectReader* pcFile) override;
 
 	CCircuitView*		AddCircuit(const char* szTypeName);
 	bool				Simulate(const char* szTypeName);
@@ -221,6 +229,7 @@ public:
 	CCircuitView*		GetCircuit(void);
 	CViewPath*			GetViewPath(void);
 	CCircuitSimulation*	GetSimulation(void);
+	CCircuitFonts*		GetFonts(void);
 	CCircuitSelection*	GetSelection(void);
 	CComponentView*		GetHover(void);
 	bool				GetHoverConnection(SInt32Vec2* psConnection);
@@ -267,11 +276,11 @@ protected:
 	void				GetEditedPaths(CArrayViewPathPtr* papcViewPaths);
 	void				CreateComponents(CArrayComponentViewPtr* papcComponents);
 	bool				Rewire(CArrayComponentViewPtr* papcDetachedComponents = NULL, CArrayTraceViewPtr* papcDetachedTraces = NULL);
-	void				KillProject(void);
+	void				KillProject(bool bFreeing = false);
 	bool				LoadUndo(size uiIndex);
 	size				FindComponentIndex(CComponentView* pcComponent);
 	size				FindTraceIndex(CTraceView* pcTrace);
-	void				KillSimulation(void);
+	void				KillSimulation(bool bFreeing = false);
 };
 
 
