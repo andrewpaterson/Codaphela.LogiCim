@@ -60,6 +60,7 @@ void CPortView::Init(CComponentView* pcOwner, CArrayChars* paszPortNames, int32 
 	masClockNotch[2].Init(0, 0);
 	mbDrawn = true;
 	masPorts.Init();
+	InitComponentSpriteMemo(&msSpriteMemo);
 }
 
 
@@ -286,21 +287,14 @@ void CPortView::Paint(CCircuitPainter* pcPainter)
 	CCircuitColours*	pcColours;
 	ARGB32				sColour;
 	CArrayPortPtr*		papcPorts;
+	uint64				uiState;
 
 	if (!mbDrawn)
 	{
 		return;
 	}
-	pcColours = pcPainter->GetColours();
-	if (mbClock)
-	{
-		pcPainter->Polygon(masClockNotch, 3, false, true, PORT_CLOCK_NOTCH_WIDTH, 0, pcColours->msShapeBorder);
-	}
-	if (mbInverting)
-	{
-		pcPainter->Circle(msBubbleCentre.x, msBubbleCentre.y, mfBubbleDiameter / 2, false, true, SHAPE_LINE_WIDTH, 0, pcColours->msShapeBorder);
-	}
 
+	pcColours = pcPainter->GetColours();
 	papcPorts = GetPorts(pcPainter->GetViewPath(), pcPainter->GetCircuitSimulation());
 	if ((papcPorts != NULL) && (papcPorts->NumElements() > 0))
 	{
@@ -310,7 +304,57 @@ void CPortView::Paint(CCircuitPainter* pcPainter)
 	{
 		sColour = pcColours->msDisconnectedTrace;
 	}
+
+	//A port looks the same as every other of its kind and colour, so with a sprite cache it is blitted from one sprite.
+	if (pcPainter->GetSpriteCache())
+	{
+		uiState = GetSpriteState(pcPainter, sColour);
+		if (pcPainter->DrawMemo(&msSpriteMemo, uiState, msRelativePosition.x, msRelativePosition.y))
+		{
+			return;
+		}
+		pcPainter->BeginSprite(msRelativePosition.x, msRelativePosition.y);
+	}
+
+	if (mbClock)
+	{
+		pcPainter->Polygon(masClockNotch, 3, false, true, PORT_CLOCK_NOTCH_WIDTH, 0, pcColours->msShapeBorder);
+	}
+	if (mbInverting)
+	{
+		pcPainter->Circle(msBubbleCentre.x, msBubbleCentre.y, mfBubbleDiameter / 2, false, true, SHAPE_LINE_WIDTH, 0, pcColours->msShapeBorder);
+	}
 	pcPainter->Dot(msRelativePosition.x, msRelativePosition.y, pcPainter->GetViewport()->GetConnectionRadius(), sColour);
+	if (pcPainter->GetSpriteCache())
+	{
+		pcPainter->EndSprite(&msSpriteMemo, uiState);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Everything the port's sprite depends on: where and how the painter
+// draws it, its notch and bubble, the border colour and its dot's colour.
+//
+//////////////////////////////////////////////////////////////////////////
+uint64 CPortView::GetSpriteState(CCircuitPainter* pcPainter, ARGB32 sColour)
+{
+	uint64		uiState;
+	float64		fRadius;
+
+	fRadius = pcPainter->GetViewport()->GetConnectionRadius();
+	uiState = pcPainter->GetSpriteState(msRelativePosition.x, msRelativePosition.y);
+	uiState = HashSpriteState(uiState, &msRelativePosition, sizeof(SInt32Vec2));
+	uiState = HashSpriteState(uiState, &mbClock, sizeof(bool));
+	uiState = HashSpriteState(uiState, masClockNotch, sizeof(masClockNotch));
+	uiState = HashSpriteState(uiState, &mbInverting, sizeof(bool));
+	uiState = HashSpriteState(uiState, &msBubbleCentre, sizeof(SFloat64Vec2));
+	uiState = HashSpriteState(uiState, &mfBubbleDiameter, sizeof(float64));
+	uiState = HashSpriteState(uiState, &pcPainter->GetColours()->msShapeBorder, sizeof(ARGB32));
+	uiState = HashSpriteState(uiState, &sColour, sizeof(ARGB32));
+	uiState = HashSpriteState(uiState, &fRadius, sizeof(float64));
+	return uiState;
 }
 
 

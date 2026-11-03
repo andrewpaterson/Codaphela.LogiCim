@@ -38,6 +38,7 @@ void CCircuitCanvasDraw::Init(CLogicimCircuit* pcCircuit)
 	mpcPreview = NULL;
 	mpMap = OMalloc<CGeometryMap>();
 	mpSprites = OMalloc<CSpriteMap>();
+	mpSpriteCache = OMalloc<CComponentSpriteCache>();
 	mpDestImage = NULL;
 	mcViewport.Init(0, 0);
 	mbGrid = true;
@@ -56,6 +57,7 @@ void CCircuitCanvasDraw::Class(void)
 	U_Pointer(mpcPreview);
 	M_Pointer(mpMap);
 	M_Pointer(mpSprites);
+	M_Pointer(mpSpriteCache);
 	M_Pointer(mpDestImage);
 	U_Data(CCircuitViewport, mcViewport);
 	U_Bool(mbGrid);
@@ -118,6 +120,8 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 	else
 	{
 		cPainter.InitImage(pImage, &mcViewport, &mpMap, &mpSprites, pcColours, mpcCircuit->GetFonts(), mpcCircuit->GetEditor()->GetViewPath(), mpcCircuit->GetEditor()->GetSimulation());
+		mpSpriteCache->BeginFrame();
+		cPainter.SetSpriteCache(&mpSpriteCache);
 		if (mbGrid)
 		{
 			PaintCircuitGrid(&cPainter);

@@ -4,6 +4,7 @@
     <ClCompile Include="TestLogicimLib.cpp" />
     <ClCompile Include="TestCircuitFile.cpp" />
     <ClCompile Include="TestTextViews.cpp" />
+    <ClCompile Include="TestComponentSprites.cpp" />
     <ClCompile Include="TestWiring.cpp" />
     <ClCompile Include="TestTraceAutoConnector.cpp" />
     <ClCompile Include="TestLogic74Views.cpp" />

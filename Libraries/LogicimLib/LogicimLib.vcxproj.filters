@@ -78,6 +78,9 @@
     <ClCompile Include="ComponentShapes.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentSpriteCache.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
     <ClCompile Include="Rotation.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
@@ -234,6 +237,9 @@
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="ComponentShapes.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentSpriteCache.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="Rotation.h">

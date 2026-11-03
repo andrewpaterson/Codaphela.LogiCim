@@ -25,6 +25,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ArrayChars.h"
 #include "CircuitFonts.h"
 #include "CircuitPainter.h"
+#include "ComponentSpriteCache.h"
 
 
 #define SHAPE_LINE_WIDTH		2.0
@@ -92,13 +93,17 @@ typedef CArrayTemplate<SComponentShape>	CArrayComponentShape;
 typedef CArrayTemplate<SFloat64Vec2>	CArrayShapePoint;
 
 
-//The shapes a component is drawn with, in the order they're drawn.
+//The shapes a component is drawn with, in the order they're drawn.  With a sprite cache every shape but text is
+//blitted from a sprite (see Paint); the memo finds it again while nothing but text has changed.  The revision counts
+//changes to the shapes' geometry, which, with each shape's colours, width and visibility, is the memo's state.
 class CComponentShapes
 {
 protected:
 	CArrayComponentShape	masShapes;
 	CArrayShapePoint		masPoints;
 	CArrayChars				maszTexts;
+	uint32					muiRevision;
+	SComponentSpriteMemo	msSpriteMemo;
 
 public:
 	void				Init(void);
@@ -131,6 +136,7 @@ protected:
 	SComponentShape*	AddShape(EComponentShape eType, bool bFill, bool bBorder);
 	ARGB32				GetFill(CCircuitPainter* pcPainter, SComponentShape* psShape);
 	ARGB32				GetBorder(CCircuitPainter* pcPainter, SComponentShape* psShape);
+	uint64				GetSpriteState(CCircuitPainter* pcPainter);
 };
 
 

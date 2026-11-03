@@ -57,6 +57,8 @@ void CComponentShapes::Init(void)
 	masShapes.Init();
 	masPoints.Init();
 	maszTexts.Init();
+	muiRevision = 0;
+	InitComponentSpriteMemo(&msSpriteMemo);
 }
 
 
@@ -81,6 +83,7 @@ void CComponentShapes::Clear(void)
 	maszTexts.ReInit();
 	masPoints.ReInit();
 	masShapes.ReInit();
+	muiRevision++;
 }
 
 
@@ -92,6 +95,7 @@ SComponentShape* CComponentShapes::AddShape(EComponentShape eType, bool bFill, b
 {
 	SComponentShape*	psShape;
 
+	muiRevision++;
 	psShape = masShapes.Add();
 	psShape->eType = eType;
 	psShape->bFill = bFill;
@@ -297,6 +301,7 @@ SComponentShape* CComponentShapes::AddCentredText(float64 x, float64 y, const ch
 void CComponentShapes::SetVisible(size uiShape, bool bVisible)
 {
 	masShapes.Get(uiShape)->bVisible = bVisible;
+	muiRevision++;
 }
 
 
@@ -426,12 +431,86 @@ ARGB32 CComponentShapes::GetBorder(CCircuitPainter* pcPainter, SComponentShape* 
 //////////////////////////////////////////////////////////////////////////
 void CComponentShapes::Paint(CCircuitPainter* pcPainter)
 {
-	size	i;
+	size				i;
+	SComponentShape*	psShape;
+	uint64				uiState;
+
+	if (pcPainter->GetSpriteCache() == NULL)
+	{
+		for (i = 0; i < masShapes.NumElements(); i++)
+		{
+			Paint(pcPainter, masShapes.Get(i));
+		}
+		return;
+	}
+
+	//Every shape but text is blitted from the component's sprite.  Text can change every tick (a value, say) so it is
+	//drawn each paint, over the shapes as it always is.  The memo finds the sprite without painting the shapes.
+	uiState = GetSpriteState(pcPainter);
+	if (!pcPainter->DrawMemo(&msSpriteMemo, uiState, 0, 0))
+	{
+		pcPainter->BeginSprite();
+		for (i = 0; i < masShapes.NumElements(); i++)
+		{
+			psShape = masShapes.Get(i);
+			if (psShape->eType != CS_Text)
+			{
+				Paint(pcPainter, psShape);
+			}
+		}
+		pcPainter->EndSprite(&msSpriteMemo, uiState);
+	}
 
 	for (i = 0; i < masShapes.NumElements(); i++)
 	{
-		Paint(pcPainter, masShapes.Get(i));
+		psShape = masShapes.Get(i);
+		if (psShape->eType == CS_Text)
+		{
+			Paint(pcPainter, psShape);
+		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Everything the sprite of the shapes but text depends on: where and how
+// the painter draws them, their geometry (the revision) and each one's
+// colours, width and visibility.  Text isn't in it, so changing text
+// draws the same sprite.
+//
+//////////////////////////////////////////////////////////////////////////
+uint64 CComponentShapes::GetSpriteState(CCircuitPainter* pcPainter)
+{
+	uint64				uiState;
+	size				i;
+	SComponentShape*	psShape;
+	ARGB32				sFill;
+	ARGB32				sBorder;
+
+	uiState = pcPainter->GetSpriteState(0, 0);
+	uiState = HashSpriteState(uiState, &muiRevision, sizeof(uint32));
+	for (i = 0; i < masShapes.NumElements(); i++)
+	{
+		psShape = masShapes.Get(i);
+		if (psShape->eType == CS_Text)
+		{
+			continue;
+		}
+		uiState = HashSpriteState(uiState, &psShape->bVisible, sizeof(bool));
+		if (!psShape->bVisible)
+		{
+			continue;
+		}
+		sFill = GetFill(pcPainter, psShape);
+		sBorder = GetBorder(pcPainter, psShape);
+		uiState = HashSpriteState(uiState, &psShape->bFill, sizeof(bool));
+		uiState = HashSpriteState(uiState, &psShape->bBorder, sizeof(bool));
+		uiState = HashSpriteState(uiState, &psShape->fLineWidth, sizeof(float64));
+		uiState = HashSpriteState(uiState, &sFill, sizeof(ARGB32));
+		uiState = HashSpriteState(uiState, &sBorder, sizeof(ARGB32));
+	}
+	return uiState;
 }
 
 

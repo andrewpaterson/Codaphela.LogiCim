@@ -24,6 +24,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/UTF8.h"
 #include "SupportLib/Glyph.h"
 #include "MicroprocessorLib/CircuitSimulation.h"
+#include "ComponentSpriteCache.h"
 #include "CircuitPainter.h"
 
 
@@ -51,6 +52,9 @@ void CCircuitPainter::Init(CCircuitViewport* pcViewport, CGeometryMap* pcMap, CS
 	mpcViewPath = pcViewPath;
 	mpcCircuitSimulation = pcCircuitSimulation;
 	miTime = (pcCircuitSimulation != NULL) ? pcCircuitSimulation->GetTime() : -1;
+	mpcSpriteCache = NULL;
+	mpcFrameMap = NULL;
+	msSpriteOrigin.Init(0, 0);
 	ClearTransform();
 }
 
@@ -153,6 +157,119 @@ void CCircuitPainter::ToScreen(SFloat64Vec2* psScreen, SFloat64Vec2* psLocal)
 	sGrid.x += msPosition.x;
 	sGrid.y += msPosition.y;
 	mpcViewport->GridToScreen(psScreen, &sGrid);
+	psScreen->x -= msSpriteOrigin.x;
+	psScreen->y -= msSpriteOrigin.y;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The cache components' shapes are blitted from, NULL to rasterise them
+// every paint.  Set after Init.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitPainter::SetSpriteCache(CComponentSpriteCache* pcSpriteCache)
+{
+	mpcSpriteCache = pcSpriteCache;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Shapes painted until EndSprite are a sprite, in pixels from the pixel
+// that x, y (in the transform's grid space, the component's origin by
+// default) is in.  Things that look the same about their origins share a
+// sprite, as all of a component's ports of a colour do about their own.
+// Only with a sprite cache.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitPainter::BeginSprite(float64 x, float64 y)
+{
+	SFloat64Vec2	sFraction;
+
+	msSpriteOrigin = GetSpriteOrigin(x, y, &sFraction);
+	mpcFrameMap = mpcMap;
+	mpcMap = mpcSpriteCache->BeginShapes();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The pixel x, y (in the transform's grid space) is in, and how far into
+// it.
+//
+//////////////////////////////////////////////////////////////////////////
+SInt32Vec2 CCircuitPainter::GetSpriteOrigin(float64 x, float64 y, SFloat64Vec2* psFraction)
+{
+	SFloat64Vec2	sScreen;
+	SInt32Vec2		sPixel;
+
+	ToScreen(&sScreen, x, y);
+	sPixel.Init((int32)floor(sScreen.x), (int32)floor(sScreen.y));
+	psFraction->Init(sScreen.x - sPixel.x, sScreen.y - sPixel.y);
+	return sPixel;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// What the painter adds to a sprite's state about x, y: the zoom, the
+// transform's turn and mirroring, and where in a pixel x, y is.  The
+// caller adds what its shapes look like (see HashSpriteState).
+//
+//////////////////////////////////////////////////////////////////////////
+uint64 CCircuitPainter::GetSpriteState(float64 x, float64 y)
+{
+	uint64			uiState;
+	SFloat64Vec2	sFraction;
+	float64			fZoom;
+	int32			iRotation;
+	bool			bMirrored;
+
+	GetSpriteOrigin(x, y, &sFraction);
+	fZoom = mpcViewport->GetZoom();
+	iRotation = (int32)meRotation;
+	bMirrored = mbMirrored;
+	uiState = COMPONENT_SPRITE_STATE_START;
+	uiState = HashSpriteState(uiState, &fZoom, sizeof(float64));
+	uiState = HashSpriteState(uiState, &iRotation, sizeof(int32));
+	uiState = HashSpriteState(uiState, &bMirrored, sizeof(bool));
+	uiState = HashSpriteState(uiState, &sFraction.x, sizeof(float64));
+	uiState = HashSpriteState(uiState, &sFraction.y, sizeof(float64));
+	return uiState;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Blits the memo's sprite, the shapes drawn about x, y, if it is still
+// good for uiState.  Returns false if the shapes must be painted.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitPainter::DrawMemo(SComponentSpriteMemo* psMemo, uint64 uiState, float64 x, float64 y)
+{
+	SFloat64Vec2	sFraction;
+
+	return mpcSpriteCache->DrawMemo(psMemo, uiState, mpcMap, GetSpriteOrigin(x, y, &sFraction));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Blits the sprite of the shapes painted since BeginSprite, made if it
+// isn't in the cache, into the frame's map where they would have been.
+// psMemo, if not NULL, remembers it for uiState.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitPainter::EndSprite(SComponentSpriteMemo* psMemo, uint64 uiState)
+{
+	SInt32Vec2	sOrigin;
+
+	sOrigin = msSpriteOrigin;
+	mpcMap = mpcFrameMap;
+	mpcFrameMap = NULL;
+	msSpriteOrigin.Init(0, 0);
+	mpcSpriteCache->EndShapes(mpcMap, sOrigin, psMemo, uiState);
 }
 
 
@@ -562,6 +679,7 @@ CCircuitViewport* CCircuitPainter::GetViewport(void) { return mpcViewport; }
 CCircuitColours* CCircuitPainter::GetColours(void) { return mpcColours; }
 CCircuitFonts* CCircuitPainter::GetFonts(void) { return mpcFonts; }
 CGeometryMap* CCircuitPainter::GetMap(void) { return mpcMap; }
+CComponentSpriteCache* CCircuitPainter::GetSpriteCache(void) { return mpcSpriteCache; }
 int64 CCircuitPainter::GetTime(void) { return miTime; }
 CViewPath* CCircuitPainter::GetViewPath(void) { return mpcViewPath; }
 CCircuitSimulation* CCircuitPainter::GetCircuitSimulation(void) { return mpcCircuitSimulation; }

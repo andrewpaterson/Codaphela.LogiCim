@@ -44,6 +44,7 @@
     <ClCompile Include="CircuitView.cpp" />
     <ClCompile Include="CircuitViewport.cpp" />
     <ClCompile Include="ComponentShapes.cpp" />
+    <ClCompile Include="ComponentSpriteCache.cpp" />
     <ClCompile Include="ComponentStateXML.cpp" />
     <ClCompile Include="ComponentView.cpp" />
     <ClCompile Include="ComponentViewFactory.cpp" />
@@ -98,6 +99,7 @@
     <ClInclude Include="CircuitView.h" />
     <ClInclude Include="CircuitViewport.h" />
     <ClInclude Include="ComponentShapes.h" />
+    <ClInclude Include="ComponentSpriteCache.h" />
     <ClInclude Include="ComponentStateXML.h" />
     <ClInclude Include="ComponentView.h" />
     <ClInclude Include="ComponentViewFactory.h" />

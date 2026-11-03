@@ -27,6 +27,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/Port.h"
 #include "Rotation.h"
 #include "CircuitPainter.h"
+#include "ComponentSpriteCache.h"
 
 
 #define PORT_BUBBLE_DIAMETER	0.9
@@ -71,6 +72,7 @@ protected:
 	SFloat64Vec2		masClockNotch[3];
 	bool				mbDrawn;
 	CArrayViewPathPorts	masPorts;
+	SComponentSpriteMemo	msSpriteMemo;  //With a sprite cache the port is drawn from a sprite shared by every port like it.
 
 public:
 	void				Init(CComponentView* pcOwner, const char* szPortName, int32 x, int32 y);
@@ -87,6 +89,7 @@ public:
 	void				Disconnect(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 
 	void				Paint(CCircuitPainter* pcPainter);
+	uint64				GetSpriteState(CCircuitPainter* pcPainter, ARGB32 sColour);
 	bool				IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
 
 	SInt32Vec2			GetRelativePosition(void);

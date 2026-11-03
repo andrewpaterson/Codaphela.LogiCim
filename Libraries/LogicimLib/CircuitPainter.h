@@ -32,6 +32,8 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 class CViewPath;
 class CCircuitSimulation;
+class CComponentSpriteCache;
+struct SComponentSpriteMemo;
 
 
 //Draws a circuit's shapes into a geometry map.  Shapes are given in the grid space of the component being drawn,
@@ -42,6 +44,11 @@ class CCircuitSimulation;
 //
 //InitImage paints into a whole image, as the circuit canvas does: the viewport is made the image's size and the maps
 //are cleared onto the image with the background drawn.  Paint, then BlitImage puts the maps on the image.
+//
+//Given a sprite cache, components' shapes are blitted as sprites rather than rasterised every paint (see
+//CComponentShapes::Paint and CComponentSpriteCache): between BeginSprite and EndSprite shapes go into the cache's map
+//in pixels from the component's origin pixel.  A memo given to EndSprite draws the sprite again (DrawMemo) while the
+//state it was given is the same: GetSpriteState is the part of it the painter decides.
 class CCircuitPainter
 {
 protected:
@@ -56,6 +63,9 @@ protected:
 	SInt32Vec2			msPosition;
 	ERotation			meRotation;
 	bool				mbMirrored;
+	CComponentSpriteCache*	mpcSpriteCache;  //NULL to rasterise every shape every paint.
+	CGeometryMap*		mpcFrameMap;  //The map shapes go back to after a sprite's.
+	SInt32Vec2			msSpriteOrigin;  //The pixel screen positions are from while a sprite's shapes are painted.
 
 public:
 	void				Init(CCircuitViewport* pcViewport, CGeometryMap* pcMap, CSpriteMap* pcSprites, CCircuitColours* pcColours, CCircuitFonts* pcFonts, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
@@ -65,6 +75,12 @@ public:
 	bool				BlitImage(void);
 
 	void				SetTransform(SInt32Vec2 sPosition, ERotation eRotation, bool bMirrored);
+	void				SetSpriteCache(CComponentSpriteCache* pcSpriteCache);
+	CComponentSpriteCache*	GetSpriteCache(void);
+	void				BeginSprite(float64 x = 0, float64 y = 0);
+	void				EndSprite(SComponentSpriteMemo* psMemo = NULL, uint64 uiState = 0);
+	uint64				GetSpriteState(float64 x, float64 y);
+	bool				DrawMemo(SComponentSpriteMemo* psMemo, uint64 uiState, float64 x, float64 y);
 	void				ClearTransform(void);
 	void				ToScreen(SFloat64Vec2* psScreen, SFloat64Vec2* psLocal);
 	void				ToScreen(SFloat64Vec2* psScreen, float64 x, float64 y);
@@ -88,6 +104,7 @@ public:
 protected:
 	size				NumArcSegments(float64 fRadiusX, float64 fRadiusY, float64 fArcAngle);
 	float64				GetTextWidthAdjust(float64 fOffset, float64 fWidth, ETextAlignment eAlignment);
+	SInt32Vec2			GetSpriteOrigin(float64 x, float64 y, SFloat64Vec2* psFraction);
 	void				TextLine(CCircuitTextLine* pcLine, EFontTurn eTurn, int32 iPen, int32 iBaseline);
 	void				TextDecorations(CCircuitTextLine* pcLine, uint8 uiDecoration, EFontTurn eTurn, int32 iPen, int32 iBaseline);
 };

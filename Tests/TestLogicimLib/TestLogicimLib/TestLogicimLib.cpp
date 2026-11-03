@@ -11,6 +11,7 @@ void TestGateViews(void);
 void TestCircuitFile(void);
 void TestSimulationState(void);
 void TestTextViews(void);
+void TestComponentSprites(void);
 void TestWiring(void);
 void TestTraceAutoConnector(void);
 void TestLogic74Views(void);
@@ -34,6 +35,7 @@ int __cdecl main(void)
 	TestCircuitFile();
 	TestSimulationState();
 	TestTextViews();
+	TestComponentSprites();
 	TestWiring();
 	TestTraceAutoConnector();
 	TestLogic74Views();

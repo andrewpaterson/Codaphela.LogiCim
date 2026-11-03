@@ -25,6 +25,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "SupportLib/SpriteMap.h"
 #include "WindowLib/CanvasDraw.h"
 #include "LogicimLib/CircuitViewport.h"
+#include "LogicimLib/ComponentSpriteCache.h"
 
 
 class CLogicimCircuit;
@@ -47,6 +48,7 @@ protected:
 	CComponentView*		mpcPreview;
 	Ptr<CGeometryMap>	mpMap;
 	Ptr<CSpriteMap>		mpSprites;
+	Ptr<CComponentSpriteCache>	mpSpriteCache;  //Components' shapes, rasterised once.
 	Ptr<CImage>			mpDestImage;
 	CCircuitViewport	mcViewport;
 	bool				mbGrid;
