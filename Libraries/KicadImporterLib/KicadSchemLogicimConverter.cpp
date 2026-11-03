@@ -1465,7 +1465,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 			iRight++;
 		}
 	}
-	pcView->Kill();
+	SafeKill(pcView);
 	if (!bMapped)
 	{
 		apcPorts.Kill();

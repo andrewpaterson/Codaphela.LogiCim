@@ -1,4 +1,5 @@
 #include "BaseLib/ConstructorCall.h"
+#include "BaseLib/PointerFunctions.h"
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "BaseLib/DataMemory.h"
 #include "BaseLib/FileUtil.h"
@@ -113,7 +114,7 @@ void TestLogic74PackageViewGeometry(void)
 	AssertDouble(-10, sMinimum.y, 6);
 	AssertDouble(6, sMaximum.x, 6);
 	AssertDouble(10, sMaximum.y, 6);
-	pcPackage->Kill();
+	SafeKill(pcPackage);
 
 	pcPackage = NewMalloc<CLogic74PackageView>();
 	pcPackage->Init(0, 0, ROT_East, "U6", "LVC", false, "04");
@@ -124,20 +125,20 @@ void TestLogic74PackageViewGeometry(void)
 	AssertTrue(pcPackage->GetLocalBounds(&sMinimum, &sMaximum));
 	AssertDouble(-8, sMinimum.y, 6);
 	AssertDouble(8, sMaximum.y, 6);
-	pcPackage->Kill();
+	SafeKill(pcPackage);
 
 	pcPackage = NewMalloc<CLogic74PackageView>();
 	pcPackage->Init(0, 0, ROT_East, "U7", "LVC", false, "86");
 	AssertGridPosition(-5, -7, pcPackage->GetPortView("1A"));
 	AssertGridPosition(6, 6, pcPackage->GetPortView("4Y"));
-	pcPackage->Kill();
+	SafeKill(pcPackage);
 
 	//A part with no row is an empty box.
 	pcPackage = NewMalloc<CLogic74PackageView>();
 	pcPackage->Init(0, 0, ROT_East, "U8", "LVC", false, "9999");
 	AssertNull(pcPackage->GetPart());
 	AssertSize(0, pcPackage->NumPortViews());
-	pcPackage->Kill();
+	SafeKill(pcPackage);
 }
 
 
@@ -172,8 +173,8 @@ void TestLogic74UnitViewGeometry(void)
 	AssertChar('D', ((CLogic74UnitView*)pcNext)->GetUnitLetter());
 	AssertString("U5", pcNext->GetName());
 	AssertNull(pcNext->NewNextUnit());
-	pcNext->Kill();
-	pcUnit->Kill();
+	SafeKill(pcNext);
+	SafeKill(pcUnit);
 
 	//An inverter unit is a triangle with a bubble.
 	pcUnit = NewMalloc<CLogic74UnitView>();
@@ -187,12 +188,12 @@ void TestLogic74UnitViewGeometry(void)
 	{
 		pcNext = pcUnit->NewNextUnit();
 		AssertNotNull(pcNext);
-		pcUnit->Kill();
+		SafeKill(pcUnit);
 		pcUnit = (CLogic74UnitView*)pcNext;
 	}
 	AssertChar('F', pcUnit->GetUnitLetter());
 	AssertNull(pcUnit->NewNextUnit());
-	pcUnit->Kill();
+	SafeKill(pcUnit);
 
 	//An exclusive OR's inputs are a grid unit further back.
 	pcUnit = NewMalloc<CLogic74UnitView>();
@@ -201,7 +202,7 @@ void TestLogic74UnitViewGeometry(void)
 	AssertGridPosition(-2, -1, pcUnit->GetPortView("Input 0"));
 	AssertGridPosition(2, 0, pcUnit->GetPortView("Output"));
 	AssertFalse(pcUnit->GetPortView("Output")->IsInverting());
-	pcUnit->Kill();
+	SafeKill(pcUnit);
 }
 
 
