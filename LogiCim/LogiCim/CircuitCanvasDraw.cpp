@@ -39,6 +39,7 @@ void CCircuitCanvasDraw::Init(CLogicimCircuit* pcCircuit)
 	mpMap = OMalloc<CGeometryMap>();
 	mpSprites = OMalloc<CSpriteMap>();
 	mpSpriteCache = OMalloc<CComponentSpriteCache>();
+	mpGrid = OMalloc<CCircuitGrid>();
 	mpDestImage = NULL;
 	mcViewport.Init(0, 0);
 	mbGrid = true;
@@ -58,6 +59,7 @@ void CCircuitCanvasDraw::Class(void)
 	M_Pointer(mpMap);
 	M_Pointer(mpSprites);
 	M_Pointer(mpSpriteCache);
+	M_Pointer(mpGrid);
 	M_Pointer(mpDestImage);
 	U_Data(CCircuitViewport, mcViewport);
 	U_Bool(mbGrid);
@@ -119,12 +121,13 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 	}
 	else
 	{
-		cPainter.InitImage(pImage, &mcViewport, &mpMap, &mpSprites, pcColours, mpcCircuit->GetFonts(), mpcCircuit->GetEditor()->GetViewPath(), mpcCircuit->GetEditor()->GetSimulation());
+		//The grid's tiles cover the canvas, background and all, so nothing is drawn under them.
+		cPainter.InitImage(pImage, &mcViewport, &mpMap, &mpSprites, pcColours, mpcCircuit->GetFonts(), mpcCircuit->GetEditor()->GetViewPath(), mpcCircuit->GetEditor()->GetSimulation(), false);
 		mpSpriteCache->BeginFrame();
 		cPainter.SetSpriteCache(&mpSpriteCache);
-		if (mbGrid)
+		if (!mbGrid || !mpGrid->Paint(&cPainter))
 		{
-			PaintCircuitGrid(&cPainter);
+			cPainter.PaintBackground();
 		}
 		mpcCircuit->GetEditor()->Paint(&cPainter);
 	}

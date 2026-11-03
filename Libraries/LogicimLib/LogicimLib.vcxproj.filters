@@ -30,6 +30,9 @@
     <ClCompile Include="CircuitColours.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
+    <ClCompile Include="CircuitGrid.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
     <ClCompile Include="CircuitPainter.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
@@ -189,6 +192,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CircuitColours.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="CircuitGrid.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="CircuitPainter.h">

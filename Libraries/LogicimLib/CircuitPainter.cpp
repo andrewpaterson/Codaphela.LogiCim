@@ -65,7 +65,7 @@ void CCircuitPainter::Init(CCircuitViewport* pcViewport, CGeometryMap* pcMap, CS
 // the one it was last on, so painting the same image again reuses it.
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitPainter::InitImage(Ptr<CImage> pImage, CCircuitViewport* pcViewport, CGeometryMap* pcMap, CSpriteMap* pcSprites, CCircuitColours* pcColours, CCircuitFonts* pcFonts, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
+void CCircuitPainter::InitImage(Ptr<CImage> pImage, CCircuitViewport* pcViewport, CGeometryMap* pcMap, CSpriteMap* pcSprites, CCircuitColours* pcColours, CCircuitFonts* pcFonts, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, bool bBackground)
 {
 	pcViewport->SetSize(pImage->GetWidth(), pImage->GetHeight());
 	pcMap->Clear();
@@ -76,8 +76,25 @@ void CCircuitPainter::InitImage(Ptr<CImage> pImage, CCircuitViewport* pcViewport
 		pcSprites->SetViewport(pImage);
 		pcSprites->SetBlitterCache(pcSprites->CreateBlitterCache());
 	}
-	pcMap->AddRectangle(0, 0, pImage->GetWidth(), pImage->GetHeight(), pcColours->msBackground);
 	Init(pcViewport, pcMap, pcSprites, pcColours, pcFonts, pcViewPath, pcCircuitSimulation);
+	if (bBackground)
+	{
+		PaintBackground();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The background over the whole image, before anything else is painted.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitPainter::PaintBackground(void)
+{
+	SInt32Vec2	sSize;
+
+	sSize = mpcViewport->GetSize();
+	mpcMap->AddRectangle(0, 0, sSize.x, sSize.y, mpcColours->msBackground);
 }
 
 

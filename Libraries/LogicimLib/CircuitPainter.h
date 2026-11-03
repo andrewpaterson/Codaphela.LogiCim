@@ -43,7 +43,9 @@ struct SComponentSpriteMemo;
 //(see CCircuitTextMarkupParser): overlines are rectangles in the geometry map.
 //
 //InitImage paints into a whole image, as the circuit canvas does: the viewport is made the image's size and the maps
-//are cleared onto the image with the background drawn.  Paint, then BlitImage puts the maps on the image.
+//are cleared onto the image with the background drawn, unless something else will cover the image (the grid's tiles,
+//see CCircuitGrid), when PaintBackground can draw it first if needed.  Paint, then BlitImage puts the maps on the
+//image.
 //
 //Given a sprite cache, components' shapes are blitted as sprites rather than rasterised every paint (see
 //CComponentShapes::Paint and CComponentSpriteCache): between BeginSprite and EndSprite shapes go into the cache's map
@@ -69,7 +71,8 @@ protected:
 
 public:
 	void				Init(CCircuitViewport* pcViewport, CGeometryMap* pcMap, CSpriteMap* pcSprites, CCircuitColours* pcColours, CCircuitFonts* pcFonts, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
-	void				InitImage(Ptr<CImage> pImage, CCircuitViewport* pcViewport, CGeometryMap* pcMap, CSpriteMap* pcSprites, CCircuitColours* pcColours, CCircuitFonts* pcFonts, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
+	void				InitImage(Ptr<CImage> pImage, CCircuitViewport* pcViewport, CGeometryMap* pcMap, CSpriteMap* pcSprites, CCircuitColours* pcColours, CCircuitFonts* pcFonts, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, bool bBackground = true);
+	void				PaintBackground(void);
 	void				Kill(void);
 
 	bool				BlitImage(void);

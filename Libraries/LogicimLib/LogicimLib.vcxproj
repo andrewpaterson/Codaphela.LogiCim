@@ -23,6 +23,7 @@
     <ClCompile Include="BufferView.cpp" />
     <ClCompile Include="CircuitColours.cpp" />
     <ClCompile Include="CircuitFile.cpp" />
+    <ClCompile Include="CircuitGrid.cpp" />
     <ClCompile Include="CircuitPainter.cpp" />
     <ClCompile Include="ClockView.cpp" />
     <ClCompile Include="LabelView.cpp" />
@@ -78,6 +79,7 @@
     <ClInclude Include="BufferView.h" />
     <ClInclude Include="CircuitColours.h" />
     <ClInclude Include="CircuitFile.h" />
+    <ClInclude Include="CircuitGrid.h" />
     <ClInclude Include="CircuitPainter.h" />
     <ClInclude Include="ClockView.h" />
     <ClInclude Include="LabelView.h" />
