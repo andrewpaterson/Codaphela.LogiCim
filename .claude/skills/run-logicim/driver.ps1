@@ -22,6 +22,9 @@ public static class LogiCimU {
   [DllImport("user32.dll")] public static extern uint MapVirtualKey(uint code, uint type);
   [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h, IntPtr hdc, uint f);
   [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
+  [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr h);
 }
 "@
 }
@@ -59,7 +62,25 @@ function Start-LogiCim([string]$Config = "Debug", [string]$Platform = "x64") {
 
 function Stop-LogiCim { Stop-Process -Name "LogiCim" -Confirm:$false -ErrorAction SilentlyContinue }
 
-function Focus-LogiCim { [LogiCimU]::SetForegroundWindow((Get-LogiCimWindow)) | Out-Null; Start-Sleep -Milliseconds 200 }
+# Windows refuses SetForegroundWindow while the user is busy in another window, and then keys would go to that window
+# (the terminal: an Escape there cancels a tool call).  A tapped Alt lifts the foreground lock; if LogiCim still isn't
+# in front, stop rather than type into something else.
+function Focus-LogiCim {
+  $h = Get-LogiCimWindow
+  for ($i = 0; $i -lt 5; $i++) {
+    if ([LogiCimU]::GetForegroundWindow() -eq $h) { return }
+    [LogiCimU]::keybd_event(0x12, [byte][LogiCimU]::MapVirtualKey(0x12, 0), 0, [IntPtr]::Zero)
+    [LogiCimU]::keybd_event(0x12, [byte][LogiCimU]::MapVirtualKey(0x12, 0), 2, [IntPtr]::Zero)
+    [LogiCimU]::ShowWindow($h, 9) | Out-Null; [LogiCimU]::BringWindowToTop($h) | Out-Null
+    [LogiCimU]::SetForegroundWindow($h) | Out-Null; Start-Sleep -Milliseconds 200
+  }
+  if ([LogiCimU]::GetForegroundWindow() -ne $h) { throw "LogiCim couldn't be brought to the front; not sending input." }
+}
+
+# Every key checks LogiCim is still in front first, so a key can't land in another window.
+function Assert-LogiCimForeground {
+  if ([LogiCimU]::GetForegroundWindow() -ne (Get-LogiCimWindow)) { throw "LogiCim isn't the foreground window; not sending keys." }
+}
 
 function Move-Client([int]$x, [int]$y) {
   $p = New-Object LogiCimU+POINT; $p.X = $x; $p.Y = $y
@@ -101,6 +122,7 @@ function Drag-Grid {
 
 # Left control down or up.  A drag with it held moves views connected (their wires rubber band); without, detached.
 function Set-Control([bool]$Down) {
+  if ($Down) { Assert-LogiCimForeground }
   $sc = [byte][LogiCimU]::MapVirtualKey(0x11, 0)
   [LogiCimU]::keybd_event(0x11, $sc, $(if ($Down) { 0 } else { 2 }), [IntPtr]::Zero); Start-Sleep -Milliseconds 60
 }
@@ -124,6 +146,7 @@ function Release-Grid([double]$gx, [double]$gy) {
 
 # A key by virtual key code.  Raw input reads the scan code, so it must be sent; extended keys (Delete, arrows) need -Extended.
 function Send-VKey([byte]$Vk, [switch]$Shift, [switch]$Extended) {
+  Assert-LogiCimForeground
   $sc = [byte][LogiCimU]::MapVirtualKey($Vk, 0); $shiftSc = [byte][LogiCimU]::MapVirtualKey(0x10, 0)
   $ext = if ($Extended) { 1 } else { 0 }
   if ($Shift) { [LogiCimU]::keybd_event(0x10, $shiftSc, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 30 }
