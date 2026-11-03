@@ -244,6 +244,7 @@
     <ClCompile Include="LogicimComponentChooser.cpp" />
     <ClCompile Include="LogicimWindowContent.cpp" />
     <ClCompile Include="LogicimWindowData.cpp" />
+    <ClCompile Include="LogicimApp.cpp" />
     <ClCompile Include="LogicimWindowTick.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -254,6 +255,7 @@
     <ClInclude Include="LogicimComponentChooser.h" />
     <ClInclude Include="LogicimWindowContent.h" />
     <ClInclude Include="LogicimWindowData.h" />
+    <ClInclude Include="LogicimApp.h" />
     <ClInclude Include="LogicimWindowTick.h" />
   </ItemGroup>
   <ItemGroup>

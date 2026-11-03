@@ -24,15 +24,9 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/GlobalMemory.h"
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "StandardLib/Objects.h"
-#include "InputLib/Input.h"
-#include "WindowLib/Window.h"
-#include "WindowLib/ClearCanvasDraw.h"
-#include "WindowLib/JewelColours.h"
-#include "WindowLib/ComponentInput.h"
 #include "X11Lib/X11WindowFactory.h"
 #include "X11Lib/X11Input.h"
-#include "LogicimWindowTick.h"
-#include "LogicimWindowContent.h"
+#include "LogicimApp.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,14 +48,8 @@ int main(int argc, char* argv[])
 
 	{
 		CX11WindowFactory			cNativeFactory;
-		Ptr<CWindow>				pLogicimWindow;
-		Ptr<CLogicimWindowTick>		pTick;
-		SLogicimWindowData			sData;
-		Ptr<CLogicimWindowContent>	pContent;
-		CInput						cInput;
 		CX11Input					cX11Input;
-		Ptr<CWindowInputSource>		pInputSource;
-		CComponentInput				cComponentInput;
+		Ptr<CLogicimApp>			pApp;
 
 		bResult = cNativeFactory.Init(&gcMemoryAllocator, NULL);
 		if (bResult)
@@ -69,54 +57,19 @@ int main(int argc, char* argv[])
 			//Validating every object each time one changes is too slow for the text's glyphs.  They are validated once at the end.
 			gcObjects.DisableValidation();
 
-			//The window is in the root so that changing pointers into its components doesn't make the objects work out again which
-			//of them are still on the stack.  Its tick is allocated, not on the stack, because stack objects can't be under the root.
-			pTick = OMalloc<CLogicimWindowTick>(&sData);
-			if (getenv("LOGICIM_SNAPSHOT") != NULL)
-			{
-				pTick->SetSnapshot(getenv("LOGICIM_SNAPSHOT"), (getenv("LOGICIM_SNAPSHOT_TICKS") != NULL) ? atoi(getenv("LOGICIM_SNAPSHOT_TICKS")) : 60);
-			}
-			pLogicimWindow = OMalloc<CWindow>("LogiCim", &cNativeFactory, pTick, OMalloc<CClearCanvasDraw>(JEWEL_PANEL), CFT_RGBX, CCO_BGR, CRGB_24bit, ARGB_8bit);
-			ORoot()->Add(pLogicimWindow);
+			//The app's input reads the devices from the XML, then adds these.
+			cX11Input.Init();
+			cNativeFactory.SetInput(&cX11Input);
 
-			pContent = OMalloc<CLogicimWindowContent>();
-			ORoot()->Add(pContent);
-			if (pContent->Setup(pLogicimWindow, &sData, "Resources/InterVariable.ttf", "Resources/Icons", "Resources/PropagationTimes.csv", "Resources/Fonts"))
-			{
-				//The devices are described by the XML so they are added after it is read.
-				cInput.Init(NULL);
-				cInput.Read("../../../commonlibraries/Libraries/WinInputLib/xml");
-				cX11Input.Init();
-				cInput.AddNativeInput(&cX11Input);
-				cNativeFactory.SetInput(&cX11Input);
+			//The app (its window, content and input) is held by the root while it runs.
+			pApp = OMalloc<CLogicimApp>(&cNativeFactory, &cX11Input, "../../../commonlibraries/Libraries/WinInputLib/xml");
+			ORoot()->Add(pApp);
+			bResult = pApp->Run();
+			ORoot()->Remove(pApp);
+			pApp = NULL;
 
-				pInputSource = OMalloc<CWindowInputSource>(&cInput);
-				cComponentInput.Init(&pInputSource, &pLogicimWindow);
-				cComponentInput.AddKeyboards();
-				cComponentInput.AddMice();
-				pLogicimWindow->SetComponentInput(&cComponentInput);
-
-				pLogicimWindow->SetWindowSize(1280, 800);
-				pLogicimWindow->Show();
-
-				pLogicimWindow->SetComponentInput(NULL);
-				cNativeFactory.SetInput(NULL);
-				cComponentInput.Kill();
-				pInputSource = NULL;
-				cInput.Kill();
-				cX11Input.Kill();
-			}
-			else
-			{
-				bResult = false;
-			}
-
-			ORoot()->Remove(pContent);
-			pContent = NULL;
-			ORoot()->Remove(pLogicimWindow);
-			pLogicimWindow = NULL;
-			pTick = NULL;
-			ORoot()->RemoveAll();
+			cNativeFactory.SetInput(NULL);
+			cX11Input.Kill();
 
 			gcObjects.EnableValidation();
 			gcObjects.ValidateObjectsConsistency();

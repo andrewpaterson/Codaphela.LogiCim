@@ -30,6 +30,9 @@
     <ClCompile Include="LogicimWindowData.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LogicimApp.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="LogicimWindowTick.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -54,6 +57,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimWindowData.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimApp.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimWindowTick.h">

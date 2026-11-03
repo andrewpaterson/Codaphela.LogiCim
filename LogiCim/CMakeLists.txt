@@ -112,6 +112,7 @@ set(LOGICIM_SOURCES
 	"${LOGICIM_DIR}/LogicimWindowContent.cpp"
 	"${LOGICIM_DIR}/LogicimWindowData.cpp"
 	"${LOGICIM_DIR}/LogicimWindowTick.cpp"
+	"${LOGICIM_DIR}/LogicimApp.cpp"
 )
 
 
