@@ -85,6 +85,11 @@ enum ELogicimAction
 };
 
 
+class CDialog;
+class CFileChooser;
+class CLogicimComponentChooser;
+
+
 //LogiCim's window, laid out like Logicim's in IntelliJ IDEA's new UI dark style.  From the top: the menu bar, the
 //main toolbar (load and save, the simulation's controls, rotate and flip), then the editor between the view stripe on
 //the left and the add stripe on the right, then the status bar.  The editor has the subcircuits' tool window on its
@@ -132,6 +137,9 @@ protected:
 	CLogicimListListener		mcListListener;
 
 	Ptr<CLogicimCircuit>	mpLogicimCircuit;
+	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
+	Ptr<CLogicimComponentChooser>	mpComponentChooser;
+	Ptr<CFileChooser>				mpFileChooser;
 	CChars					mszProjectFilename;  //The project last loaded or saved.
 	CChars					mszKicadFilename;  //The KiCad schematic last imported.
 	CChars					mszChooserSelected;  //The component last chosen.

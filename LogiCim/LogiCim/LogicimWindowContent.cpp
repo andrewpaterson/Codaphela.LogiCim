@@ -171,8 +171,8 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpFont);
 	M_Pointer(mpDimFont);
 	M_Pointer(mpTheme);
-	M_Pointer(msDialogLook.pTheme);
-	M_Pointer(msDialogLook.pDimFont);
+	U_Pointer(msDialogLook.pcTheme);
+	U_Pointer(msDialogLook.pcDimFont);
 	U_Data(ARGB32, msDialogLook.sBackground);
 	U_Data(ARGB32, msDialogLook.sDivider);
 	M_Embedded(mapIcons);
@@ -198,6 +198,9 @@ void CLogicimWindowContent::Class(void)
 	U_Unknown(CLogicimMenuListener, mcMenuListener);
 	U_Unknown(CLogicimListListener, mcListListener);
 	M_Pointer(mpLogicimCircuit);
+	M_Pointer(mpDialog);
+	M_Pointer(mpComponentChooser);
+	M_Pointer(mpFileChooser);
 	U_String(mszProjectFilename);
 	U_String(mszKicadFilename);
 	U_String(mszChooserSelected);
@@ -389,8 +392,8 @@ void CLogicimWindowContent::CreateLooks(void)
 {
 	//The dialogs share the window's theme, they have the same colour format.
 	mpTheme = CJewelTheme::CreateDarkTheme(mpWindow, mpFont);
-	msDialogLook.pTheme = mpTheme;
-	msDialogLook.pDimFont = mpDimFont;
+	msDialogLook.pcTheme = &mpTheme;
+	msDialogLook.pcDimFont = &mpDimFont;
 	msDialogLook.sBackground = JEWEL_PANEL;
 	msDialogLook.sDivider = JEWEL_SEPARATOR;
 }
@@ -1241,7 +1244,6 @@ void CLogicimWindowContent::ShowDialog(ELogicimDialog eDialog)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowPropertiesDialog(void)
 {
-	CDialog					cDialog;
 	const char*				aszRotations[] = { "North", "East", "South", "West" };
 	CCircuitEditor*			pcEditor;
 	CComponentView*			pcComponent;
@@ -1271,15 +1273,15 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 
 	sz.Init(pcComponent->GetType());
 	sz.Append(" Properties");
-	cDialog.Init(mpWindow, &msDialogLook, sz.Text());
+	mpDialog = OMalloc<CDialog>(mpWindow, &msDialogLook, sz.Text());
 	sz.Kill();
 
 	aTextFields.Init();
 	aCheckBoxes.Init();
 	aComboBoxes.Init();
 	aiEditors.Init();
-	pRotation = cDialog.AddComboBox("Rotation", aszRotations, 4, pcComponent->GetRotation() - ROT_North);
-	pMirrored = cDialog.AddCheckBox("Mirrored", pcComponent->IsMirrored());
+	pRotation = mpDialog->AddComboBox("Rotation", aszRotations, 4, pcComponent->GetRotation() - ROT_North);
+	pMirrored = mpDialog->AddCheckBox("Mirrored", pcComponent->IsMirrored());
 	for (i = 0; i < cProperties.NumProperties(); i++)
 	{
 		psProperty = cProperties.Get(i);
@@ -1287,22 +1289,22 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 		{
 		case CPT_Boolean:
 			aiEditors.Add((int)aCheckBoxes.Size());
-			aCheckBoxes.Add(cDialog.AddCheckBox(psProperty->szLabel.Text(), psProperty->szValue.Equals("true")));
+			aCheckBoxes.Add(mpDialog->AddCheckBox(psProperty->szLabel.Text(), psProperty->szValue.Equals("true")));
 			break;
 		case CPT_Choice:
-			pComboBox = OMalloc<CComboBox>(cDialog.GetWindow(), msDialogLook.pTheme);
+			pComboBox = OMalloc<CComboBox>(mpDialog->GetWindow(), msDialogLook.pcTheme);
 			for (j = 0; j < psProperty->aszChoices.NumElements(); j++)
 			{
 				pComboBox->AddItem(psProperty->aszChoices.GetText(j));
 			}
 			pComboBox->Select((int32)cProperties.GetChoice(psProperty->szName.Text(), 0));
 			pComboBox->SetAlignment(CSH_Stretch, CSV_Center);
-			cDialog.AddEditor(psProperty->szLabel.Text(), pComboBox);
+			mpDialog->AddEditor(psProperty->szLabel.Text(), pComboBox);
 			aiEditors.Add((int)aComboBoxes.Size());
 			aComboBoxes.Add(pComboBox);
 			break;
 		case CPT_Divider:
-			cDialog.AddDivider(psProperty->szLabel.Text());
+			mpDialog->AddDivider(psProperty->szLabel.Text());
 			aiEditors.Add(-1);
 			break;
 		default:
@@ -1314,13 +1316,13 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 				sz.Append(")");
 			}
 			aiEditors.Add((int)aTextFields.Size());
-			aTextFields.Add(cDialog.AddTextField(sz.Text(), psProperty->szValue.Text()));
+			aTextFields.Add(mpDialog->AddTextField(sz.Text(), psProperty->szValue.Text()));
 			sz.Kill();
 			break;
 		}
 	}
 
-	if (cDialog.Show(LOGICIM_DIALOG_WIDTH))
+	if (mpDialog->Show(LOGICIM_DIALOG_WIDTH))
 	{
 		for (i = 0; i < cProperties.NumProperties(); i++)
 		{
@@ -1352,7 +1354,7 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 	aComboBoxes.Kill();
 	aCheckBoxes.Kill();
 	aTextFields.Kill();
-	cDialog.Kill();
+	mpDialog = NULL;
 	cProperties.Kill();
 }
 
@@ -1363,14 +1365,13 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 {
-	CDialog				cDialog;
 	Ptr<CTextField>		pName;
 	char*				szName;
 
-	cDialog.Init(mpWindow, &msDialogLook, "New Subcircuit");
-	pName = cDialog.AddTextField("Name", "");
+	mpDialog = OMalloc<CDialog>(mpWindow, &msDialogLook, "New Subcircuit");
+	pName = mpDialog->AddTextField("Name", "");
 
-	if (cDialog.Show(LOGICIM_DIALOG_WIDTH))
+	if (mpDialog->Show(LOGICIM_DIALOG_WIDTH))
 	{
 		szName = pName->GetText();
 		if (szName[0] != '\0')
@@ -1382,7 +1383,7 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 	}
 
 	pName = NULL;
-	cDialog.Kill();
+	mpDialog = NULL;
 }
 
 
@@ -1393,7 +1394,6 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowNewSimulationDialog(void)
 {
-	CDialog				cDialog;
 	Ptr<CTextField>		pName;
 	CChars				szDefault;
 	char*				szName;
@@ -1403,11 +1403,11 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 	szDefault.Append(" ");
 	szDefault.Append(miSimulationCount + 1);
 
-	cDialog.Init(mpWindow, &msDialogLook, "New Simulation");
-	pName = cDialog.AddTextField("Name", szDefault.Text());
+	mpDialog = OMalloc<CDialog>(mpWindow, &msDialogLook, "New Simulation");
+	pName = mpDialog->AddTextField("Name", szDefault.Text());
 	szDefault.Kill();
 
-	if (cDialog.Show(LOGICIM_DIALOG_WIDTH))
+	if (mpDialog->Show(LOGICIM_DIALOG_WIDTH))
 	{
 		szName = pName->GetText();
 		if (szName[0] != '\0')
@@ -1420,7 +1420,7 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 	}
 
 	pName = NULL;
-	cDialog.Kill();
+	mpDialog = NULL;
 }
 
 
@@ -1433,7 +1433,6 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowSelectZoomDialog(void)
 {
-	CDialog				cDialog;
 	Ptr<CTextField>		pZoom;
 	Ptr<CCircuitCanvasDraw>	pDraw;
 	CChars				szZoom;
@@ -1444,11 +1443,11 @@ void CLogicimWindowContent::ShowSelectZoomDialog(void)
 	pDraw = mpCircuit->GetCircuitDraw();
 	szZoom.Init();
 	AppendTenths(&szZoom, pDraw->GetZoom());
-	cDialog.Init(mpWindow, &msDialogLook, "Select Zoom");
-	pZoom = cDialog.AddTextField("Zoom (1 is 100%)", szZoom.Text());
+	mpDialog = OMalloc<CDialog>(mpWindow, &msDialogLook, "Select Zoom");
+	pZoom = mpDialog->AddTextField("Zoom (1 is 100%)", szZoom.Text());
 	szZoom.Kill();
 
-	if (cDialog.Show(LOGICIM_DIALOG_WIDTH))
+	if (mpDialog->Show(LOGICIM_DIALOG_WIDTH))
 	{
 		szText = pZoom->GetText();
 		fZoom = strtod(szText, &szEnd);
@@ -1464,7 +1463,7 @@ void CLogicimWindowContent::ShowSelectZoomDialog(void)
 	}
 
 	pZoom = NULL;
-	cDialog.Kill();
+	mpDialog = NULL;
 }
 
 
@@ -1477,7 +1476,6 @@ void CLogicimWindowContent::ShowSelectZoomDialog(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowComponentChooser(void)
 {
-	CLogicimComponentChooser	cChooser;
 	CCircuitEditor*			pcEditor;
 	char*					szChosen;
 	bool					bSubcircuit;
@@ -1486,10 +1484,10 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 	SFloat64Vec2			sGrid;
 	SInt32Vec2				sSize;
 
-	cChooser.Init(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text());
-	if (cChooser.Show())
+	mpComponentChooser = OMalloc<CLogicimComponentChooser>(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text());
+	if (mpComponentChooser->Show())
 	{
-		szChosen = cChooser.GetChosen(&bSubcircuit);
+		szChosen = mpComponentChooser->GetChosen(&bSubcircuit);
 		mszChooserSelected.Set(szChosen);
 		pcEditor = mpLogicimCircuit->GetEditor();
 		bPlaced = bSubcircuit ? pcEditor->StartPlaceSubcircuit(szChosen) : pcEditor->StartPlaceComponent(szChosen);
@@ -1509,7 +1507,7 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 			}
 		}
 	}
-	cChooser.Kill();
+	mpComponentChooser = NULL;
 }
 
 
@@ -1521,14 +1519,13 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 {
-	CFileChooser		cChooser;
 	char*				szFilename;
 	bool				bResult;
 
-	cChooser.Init(mpWindow, &msDialogLook, bSave ? "Save Project" : "Load Project", bSave, mszProjectFilename.Text(), gasProjectFileTypes, sizeof(gasProjectFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
-	if (cChooser.Show())
+	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, bSave ? "Save Project" : "Load Project", bSave, mszProjectFilename.Text(), gasProjectFileTypes, sizeof(gasProjectFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
+	if (mpFileChooser->Show())
 	{
-		szFilename = cChooser.GetChosen();
+		szFilename = mpFileChooser->GetChosen();
 		mszProjectFilename.Set(szFilename);
 		bResult = bSave ? mpLogicimCircuit->Save(szFilename) : mpLogicimCircuit->Load(szFilename);
 		if (bResult)
@@ -1537,7 +1534,7 @@ void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 		}
 		UpdateInfo();
 	}
-	cChooser.Kill();
+	mpFileChooser = NULL;
 }
 
 
@@ -1551,13 +1548,12 @@ void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowImportKicadDialog(void)
 {
-	CFileChooser		cChooser;
 	char*				szFilename;
 
-	cChooser.Init(mpWindow, &msDialogLook, "Import KiCad Schematic", false, mszKicadFilename.Text(), gasKicadFileTypes, sizeof(gasKicadFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
-	if (cChooser.Show())
+	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, "Import KiCad Schematic", false, mszKicadFilename.Text(), gasKicadFileTypes, sizeof(gasKicadFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
+	if (mpFileChooser->Show())
 	{
-		szFilename = cChooser.GetChosen();
+		szFilename = mpFileChooser->GetChosen();
 		mszKicadFilename.Set(szFilename);
 		if (mpLogicimCircuit->ImportKicadSchematic(szFilename))
 		{
@@ -1572,7 +1568,7 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 		}
 		UpdateInfo();
 	}
-	cChooser.Kill();
+	mpFileChooser = NULL;
 }
 
 

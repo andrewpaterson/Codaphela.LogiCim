@@ -70,10 +70,12 @@ public:
 //enter) opens or closes it.  Typing in the filter shows only the components with every word of it in
 //them, their libraries opened; clearing it closes them again.  A double click on a component (or enter, or OK)
 //chooses it.
-class CLogicimComponentChooser
+class CLogicimComponentChooser : public CObject
 {
+CONSTRUCTABLE(CLogicimComponentChooser);
+DESTRUCTABLE(CLogicimComponentChooser);
 protected:
-	CDialog					mcDialog;
+	Ptr<CDialog>			mpDialog;
 	CLogicimCircuit*			mpcCircuit;
 	Ptr<CTextField>			mpFilter;
 	Ptr<CListContainer>		mpList;
@@ -95,7 +97,11 @@ protected:
 
 public:
 	void			Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected);
-	void			Kill(void);
+	void			Class(void) override;
+	void			Free(void) override;
+
+	bool			Save(CObjectWriter* pcFile) override;
+	bool			Load(CObjectReader* pcFile) override;
 
 	bool			Show(void);
 	char*			GetChosen(bool* pbSubcircuit);

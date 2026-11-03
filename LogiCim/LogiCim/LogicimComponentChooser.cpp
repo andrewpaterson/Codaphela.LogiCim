@@ -20,6 +20,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/PointerFunctions.h"
 #include "StandardLib/Objects.h"
+#include "StandardLib/ObjectReader.h"
+#include "StandardLib/ObjectWriter.h"
 #include "WindowLib/ClearCanvasDraw.h"
 #include "WindowLib/FillContainer.h"
 #include "WindowLib/RoundedBoxCanvasDraw.h"
@@ -108,6 +110,8 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	int					iLibrary;
 	int					iEntry;
 
+	PreInit();
+
 	mpcCircuit = pcCircuit;
 	maiExpanded.Init();
 	mpcPreview = NULL;
@@ -119,12 +123,12 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	mcListListener.Init(this);
 	mcFilterListener.Init(this);
 
-	mcDialog.Init(pOwner, psLook, "Choose Component");
-	mcDialog.GetWindow()->GetColourFormat(&cFormat);
+	mpDialog = OMalloc<CDialog>(pOwner, psLook, "Choose Component");
+	mpDialog->GetWindow()->GetColourFormat(&cFormat);
 	mpCollapsedChevron = CJewelImageGenerator::CreateChevron(JEWEL_ICON, &cFormat);
 	mpExpandedChevron = CJewelImageGenerator::CreateDownChevron(JEWEL_ICON, &cFormat);
 	pBody = CreateBody();
-	mcDialog.SetBody(pBody, mpFilter);
+	mpDialog->SetBody(pBody, mpFilter);
 
 	FindSubcircuits();
 	for (i = 0; i < NumLibraries(); i++)
@@ -137,6 +141,8 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	iEntry = -1;
 	FindEntry(szSelected, &iLibrary, &iEntry);
 	FillList(iLibrary, -1);
+
+	PostInit();
 }
 
 
@@ -144,22 +150,63 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimComponentChooser::Kill(void)
+void CLogicimComponentChooser::Class(void)
 {
-	mpFilter->RemoveListener(&mcFilterListener);
-	mpList->RemoveListener(&mcListListener);
-	mpPreviewDraw->SetPreview(NULL);
-	KillPreview();
+	M_Pointer(mpDialog);
+	U_Pointer(mpcCircuit);
+	M_Pointer(mpFilter);
+	M_Pointer(mpList);
+	M_Pointer(mpPreviewDraw);
+	M_Pointer(mpName);
+	M_Pointer(mpDescription);
+	M_Pointer(mpLibrary);
+	U_Unknown(CChooserListListener, mcListListener);
+	U_Unknown(CChooserFilterListener, mcFilterListener);
+	M_Pointer(mpCollapsedChevron);
+	M_Pointer(mpExpandedChevron);
+	U_Unknown(CArrayInt, maiExpanded);
+	U_Unknown(CArrayInt, maiRowLibraries);
+	U_Unknown(CArrayInt, maiRowEntries);
+	U_Unknown(CArrayChars, maszSubcircuits);
+	U_Pointer(mpcPreview);
+	U_String(mszChosen);
+	U_Bool(mbChosenSubcircuit);
+}
 
-	mpLibrary = NULL;
-	mpDescription = NULL;
-	mpName = NULL;
-	mpPreviewDraw = NULL;
-	mpExpandedChevron = NULL;
-	mpCollapsedChevron = NULL;
-	mpList = NULL;
-	mpFilter = NULL;
-	mcDialog.Kill();
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A chooser isn't saved.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimComponentChooser::Save(CObjectWriter* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimComponentChooser::Load(CObjectReader* pcFile)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimComponentChooser::Free(void)
+{
+	//An object's memory is freed without its destructor running so the listeners take themselves off the widgets still
+	//here.  The dialog, the widgets and the preview's draw are freed with the chooser's pointers; the draw only points
+	//to the preview.
+	mcListListener.RemoveFromListenerCalls();
+	mcFilterListener.RemoveFromListenerCalls();
+	KillPreview();
 
 	maszSubcircuits.Kill();
 	maiRowEntries.Kill();
@@ -188,11 +235,11 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	SInsets					sInsets;
 	int						aiInsets[4] = { 0, 6, 0, 6 };
 
-	pWindow = mcDialog.GetWindow();
-	psLook = mcDialog.GetLook();
+	pWindow = mpDialog->GetWindow();
+	psLook = mpDialog->GetLook();
 	pBody = OMalloc<CGridContainer>(pWindow);
 
-	mpFilter = OMalloc<CTextField>(pWindow, psLook->pTheme, "");
+	mpFilter = OMalloc<CTextField>(pWindow, psLook->pcTheme, "");
 	mpFilter->SetColumns(10);
 	mpFilter->SetAlignment(CSH_Stretch, CSV_Center);
 	pBody->AddComponent(mpFilter, 0, 0, 3, 1, 1, 0);
@@ -202,11 +249,11 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	pBody->AddComponent(pGap, 0, 1);
 
 	sInsets.Init(aiInsets);
-	mpList = OMalloc<CListContainer>(pWindow, psLook->pTheme);
-	mpList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(psLook->pTheme->GetListSelectedColour(), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(psLook->pTheme->GetListHoverColour(), 4, &sInsets));
+	mpList = OMalloc<CListContainer>(pWindow, psLook->pcTheme);
+	mpList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetListSelectedColour(), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetListHoverColour(), 4, &sInsets));
 	mpList->SetAlignment(CSH_Stretch, CSV_Top);
 	mpList->AddListener(&mcListListener);
-	pScrollPane = OMalloc<CScrollPane>(pWindow, psLook->pTheme);
+	pScrollPane = OMalloc<CScrollPane>(pWindow, psLook->pcTheme);
 	pScrollPane->SetContent(mpList);
 	pScrollPane->SetAlignment(CSH_Stretch, CSV_Stretch);
 	pBody->AddComponent(pScrollPane, 0, 2, 1, 1, 1, 1);
@@ -227,11 +274,11 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 
 	pDetails = OMalloc<CGridContainer>(pWindow);
 	pDetails->SetAlignment(CSH_Stretch, CSV_Top);
-	mpName = OMalloc<CLabel>(pWindow, psLook->pTheme->GetFont(), " ");
+	mpName = OMalloc<CLabel>(pWindow, psLook->pcTheme->GetFont(), " ");
 	mpName->SetAlignment(CSH_Left, CSV_Center);
-	mpDescription = OMalloc<CLabel>(pWindow, psLook->pDimFont, " ");
+	mpDescription = OMalloc<CLabel>(pWindow, psLook->pcDimFont, " ");
 	mpDescription->SetAlignment(CSH_Left, CSV_Center);
-	mpLibrary = OMalloc<CLabel>(pWindow, psLook->pDimFont, " ");
+	mpLibrary = OMalloc<CLabel>(pWindow, psLook->pcDimFont, " ");
 	mpLibrary->SetAlignment(CSH_Left, CSV_Center);
 	pDetails->AddComponent(mpName, 0, 0, 1, 1, 1, 0);
 	pDetails->AddComponent(mpDescription, 0, 1, 1, 1, 1, 0);
@@ -496,13 +543,13 @@ void CLogicimComponentChooser::AddLibraryRow(int iLibrary)
 	Ptr<CLabel>				pLabel;
 	int32					iRow;
 
-	pWindow = mcDialog.GetWindow();
+	pWindow = mpDialog->GetWindow();
 	iRow = mpList->AddRow(true);
 	pGap = OMalloc<CFillContainer>(pWindow);
 	pGap->SetDesiredSize(CHOOSER_INDENT, CHOOSER_ROW_HEIGHT);
 	pChevron = OMalloc<CIconComponent>(pWindow, maiExpanded.GetValue(iLibrary) ? mpExpandedChevron : mpCollapsedChevron, CHOOSER_CHEVRON_WIDTH, CHOOSER_ROW_HEIGHT);
 	pChevron->SetCelAlignment(CSH_Left, CSV_Center);
-	pLabel = OMalloc<CLabel>(pWindow, mcDialog.GetLook()->pTheme->GetFont(), GetLibraryName(iLibrary));
+	pLabel = OMalloc<CLabel>(pWindow, mpDialog->GetLook()->pcTheme->GetFont(), GetLibraryName(iLibrary));
 	pLabel->SetAlignment(CSH_Left, CSV_Center);
 	mpList->AddToRow(iRow, pGap, 0);
 	mpList->AddToRow(iRow, pChevron, 1);
@@ -526,14 +573,14 @@ void CLogicimComponentChooser::AddComponentRow(int iLibrary, int iEntry)
 	Ptr<CLabel>				pDescription;
 	int32					iRow;
 
-	pWindow = mcDialog.GetWindow();
+	pWindow = mpDialog->GetWindow();
 	iRow = mpList->AddRow(true);
 	pGap = OMalloc<CFillContainer>(pWindow);
 	pGap->SetDesiredSize(CHOOSER_INDENT, CHOOSER_ROW_HEIGHT);
-	pName = OMalloc<CLabel>(pWindow, mcDialog.GetLook()->pTheme->GetFont(), GetEntryName(iLibrary, iEntry));
+	pName = OMalloc<CLabel>(pWindow, mpDialog->GetLook()->pcTheme->GetFont(), GetEntryName(iLibrary, iEntry));
 	pName->SetDesiredSize(CHOOSER_NAME_WIDTH, -1);
 	pName->SetAlignment(CSH_Left, CSV_Center);
-	pDescription = OMalloc<CLabel>(pWindow, mcDialog.GetLook()->pDimFont, GetEntryDescription(iLibrary, iEntry));
+	pDescription = OMalloc<CLabel>(pWindow, mpDialog->GetLook()->pcDimFont, GetEntryDescription(iLibrary, iEntry));
 	pDescription->SetAlignment(CSH_Left, CSV_Center);
 	mpList->AddToRow(iRow, pGap, 0, 2);
 	mpList->AddToRow(iRow, pName, 2);
@@ -654,7 +701,7 @@ bool CLogicimComponentChooser::Show(void)
 	const char*	szName;
 	int32		iRow;
 
-	if (!mcDialog.Show(CHOOSER_WIDTH, CHOOSER_HEIGHT))
+	if (!mpDialog->Show(CHOOSER_WIDTH, CHOOSER_HEIGHT))
 	{
 		return false;
 	}
@@ -742,7 +789,7 @@ void CLogicimComponentChooser::ItemActivated(void)
 	}
 	if (maiRowEntries.GetValue(iRow) != -1)
 	{
-		mcDialog.Close("OK");
+		mpDialog->Close("OK");
 		return;
 	}
 	iLibrary = maiRowLibraries.GetValue(iRow);
