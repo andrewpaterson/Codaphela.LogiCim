@@ -28,19 +28,33 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The window and its content.  The devices are described by the XML in
-// szInputDirectory; pcNativeInput (the platform's keyboard and mouse) is
-// added to them.  Run fails if anything here did.
+// Before it is set up.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimApp::Init(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory)
+void CLogicimApp::Init(void)
 {
-	Ptr<CLogicimWindowTick>	pTick;
-
 	PreInit();
 
 	memset(&msData, 0, sizeof(SLogicimWindowData));
+	mbValid = false;
 	mbInputs = false;
+
+	PostInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The window and its content.  The devices are described by the XML in
+// szInputDirectory; pcNativeInput (the platform's keyboard and mouse) is
+// added to them.  Run fails if anything here did.
+// Call it once the app is in the root, so that what is made here is
+// built under the root rather than as an unrooted graph.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory)
+{
+	Ptr<CLogicimWindowTick>	pTick;
 
 	pTick = OMalloc<CLogicimWindowTick>(&msData);
 	if (getenv("LOGICIM_SNAPSHOT") != NULL)
@@ -64,8 +78,7 @@ void CLogicimApp::Init(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNa
 		mpWindow->SetComponentInput(&mcComponentInput);
 		mpWindow->SetWindowSize(1280, 800);
 	}
-
-	PostInit();
+	return mbValid;
 }
 
 

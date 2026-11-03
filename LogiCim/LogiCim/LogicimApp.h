@@ -49,7 +49,8 @@ protected:
 	bool						mbInputs;  //The component input is initialised.
 
 public:
-	void	Init(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory);
+	void	Init(void);
+	bool	Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory);
 	void	Class(void) override;
 	void	Free(void) override;
 
