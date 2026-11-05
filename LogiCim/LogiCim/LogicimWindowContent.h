@@ -133,7 +133,6 @@ protected:
 	CArrayInt				maiMenuItemActions;
 
 	CLogicimMenuListener		mcMenuListener;
-	CLogicimListListener		mcListListener;
 
 	Ptr<CLogicimCircuit>	mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
@@ -159,7 +158,6 @@ public:
 
 	void			ButtonClicked(CButton* pcButton);
 	void			MenuItemClicked(CMenuItem* pcItem);
-	void			ListSelectionChanged(CListContainer* pcList);
 	void			PointerOverCircuit(int x, int y);
 	void			Zoom(float32 fZoom);
 	void			ZoomToFit(bool bSelection);
@@ -185,6 +183,7 @@ protected:
 
 	Ptr<CButton>			CreateToolButton(ELogicimAction eAction);
 	void					RemoveFromButtons(void);
+	void					RemoveFromList(Ptr<CListContainer> pList);
 	Ptr<CCanvas>			CreateLine(int32 iWidth, int32 iHeight, ARGB32 sColour);
 	Ptr<CListContainer>		CreateList(void);
 	void					AddListItem(Ptr<CListContainer> pList, CArray<CLabel>* paLabels, const char* szText);

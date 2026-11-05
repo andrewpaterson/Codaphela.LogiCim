@@ -18,9 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "WindowLib/Button.h"
 #include "WindowLib/MenuItem.h"
-#include "WindowLib/ListContainer.h"
 #include "LogicimWindowContent.h"
 #include "LogicimButtonListener.h"
 
@@ -42,25 +40,5 @@ void CLogicimMenuListener::Init(CLogicimWindowContent* pcContent)
 void CLogicimMenuListener::MenuItemClicked(CUnknown* pcSource, void* pvContext)
 {
 	mpcContent->MenuItemClicked((CMenuItem*)pcSource);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimListListener::Init(CLogicimWindowContent* pcContent)
-{
-	mpcContent = pcContent;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimListListener::SelectionChanged(CUnknown* pcSource, void* pvContext)
-{
-	mpcContent->ListSelectionChanged((CListContainer*)pcSource);
 }
 

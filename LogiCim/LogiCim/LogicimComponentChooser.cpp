@@ -48,36 +48,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CChooserListListener::Init(CLogicimComponentChooser* pcChooser)
-{
-	mpcChooser = pcChooser;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CChooserListListener::SelectionChanged(CUnknown* pcSource, void* pvContext)
-{
-	mpcChooser->SelectionChanged();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CChooserListListener::ItemActivated(CUnknown* pcSource, void* pvContext)
-{
-	mpcChooser->ItemActivated();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
 void CChooserFilterListener::Init(CLogicimComponentChooser* pcChooser)
 {
 	mpcChooser = pcChooser;
@@ -120,7 +90,6 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	maiRowLibraries.Init();
 	maiRowEntries.Init();
 	maszSubcircuits.Init();
-	mcListListener.Init(this);
 	mcFilterListener.Init(this);
 
 	mpDialog = OMalloc<CDialog>(pOwner, psLook, "Choose Component");
@@ -160,7 +129,6 @@ void CLogicimComponentChooser::Class(void)
 	M_Pointer(mpName);
 	M_Pointer(mpDescription);
 	M_Pointer(mpLibrary);
-	U_Unknown(CChooserListListener, mcListListener);
 	U_Unknown(CChooserFilterListener, mcFilterListener);
 	M_Pointer(mpCollapsedChevron);
 	M_Pointer(mpExpandedChevron);
@@ -201,10 +169,14 @@ bool CLogicimComponentChooser::Load(CObjectReader* pcFile)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimComponentChooser::Free(void)
 {
-	//An object's memory is freed without its destructor running so the listeners take themselves off the widgets still
-	//here.  The dialog, the widgets and the preview's draw are freed with the chooser's pointers; the draw only points
-	//to the preview.
-	mcListListener.RemoveFromListenerCalls();
+	//An object's memory is freed without its destructor running so the chooser and its listener take themselves off
+	//the widgets still here.  The dialog, the widgets and the preview's draw are freed with the chooser's pointers; the
+	//draw only points to the preview.
+	if (mpList.IsNotNull())
+	{
+		mpList->GetSelectionEvent()->Remove(this);
+		mpList->GetActivationEvent()->Remove(this);
+	}
 	mcFilterListener.RemoveFromListenerCalls();
 	KillPreview();
 
@@ -252,7 +224,8 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	mpList = OMalloc<CListContainer>(pWindow, psLook->pcTheme);
 	mpList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetListSelectedColour(), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetListHoverColour(), 4, &sInsets));
 	mpList->SetAlignment(CSH_Stretch, CSV_Top);
-	mpList->AddListener(&mcListListener);
+	mpList->GetSelectionEvent()->Add(this, &CLogicimComponentChooser::SelectionChanged);
+	mpList->GetActivationEvent()->Add(this, &CLogicimComponentChooser::ItemActivated);
 	pScrollPane = OMalloc<CScrollPane>(pWindow, psLook->pcTheme);
 	pScrollPane->SetContent(mpList);
 	pScrollPane->SetAlignment(CSH_Stretch, CSV_Stretch);
@@ -478,7 +451,8 @@ void CLogicimComponentChooser::FillList(int iSelectLibrary, int iSelectEntry)
 	int		iMatches;
 	int32	iSelect;
 
-	mpList->RemoveListener(&mcListListener);
+	//The chooser doesn't hear the rows it takes away and puts back, only the row it selects after.
+	mpList->GetSelectionEvent()->Remove(this);
 	mpList->RemoveAllComponents();
 	maiRowLibraries.ReInit();
 	maiRowEntries.ReInit();
@@ -524,7 +498,7 @@ void CLogicimComponentChooser::FillList(int iSelectLibrary, int iSelectEntry)
 		iSelect = 0;
 	}
 
-	mpList->AddListener(&mcListListener);
+	mpList->GetSelectionEvent()->Add(this, &CLogicimComponentChooser::SelectionChanged);
 	mpList->Select(iSelect);
 	ShowComponent(iSelect);
 }

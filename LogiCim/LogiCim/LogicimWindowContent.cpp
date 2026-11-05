@@ -148,7 +148,6 @@ void CLogicimWindowContent::Init(void)
 	maSubcircuitLabels.Init();
 	maSimulationLabels.Init();
 	mcMenuListener.Init(this);
-	mcListListener.Init(this);
 	mszProjectFilename.Init("Project.xml");
 	mszKicadFilename.Init("Schematic.kicad_sch");
 	mszChooserSelected.Init();
@@ -194,7 +193,6 @@ void CLogicimWindowContent::Class(void)
 	M_Embedded(maMenuItems);
 	U_Unknown(CArrayInt, maiMenuItemActions);
 	U_Unknown(CLogicimMenuListener, mcMenuListener);
-	U_Unknown(CLogicimListListener, mcListListener);
 	M_Pointer(mpLogicimCircuit);
 	M_Pointer(mpDialog);
 	M_Pointer(mpComponentChooser);
@@ -302,8 +300,9 @@ void CLogicimWindowContent::Free(void)
 	//listeners unhook themselves from the widgets still listened to.  The widgets, the theme, the fonts and the circuit
 	//are freed with the content's pointers.
 	RemoveFromButtons();
+	RemoveFromList(mpSubcircuits);
+	RemoveFromList(mpSimulations);
 	mcMenuListener.RemoveFromListenerCalls();
-	mcListListener.RemoveFromListenerCalls();
 	if (mpsData)
 	{
 		mpsData->pcContent = NULL;
@@ -599,8 +598,21 @@ Ptr<CListContainer> CLogicimWindowContent::CreateList(void)
 	pList = OMalloc<CListContainer>(mpWindow, mpTheme);
 	pList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetListSelectedColour(), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetListHoverColour(), 4, &sInsets));
 	pList->SetAlignment(CSH_Stretch, CSV_Top);
-	pList->AddListener(&mcListListener);
+	pList->GetSelectionEvent()->Add(this, &CLogicimWindowContent::UpdateInfo);
 	return pList;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::RemoveFromList(Ptr<CListContainer> pList)
+{
+	if (pList.IsNotNull())
+	{
+		pList->GetSelectionEvent()->Remove(this);
+	}
 }
 
 
@@ -986,16 +998,6 @@ void CLogicimWindowContent::MenuItemClicked(CMenuItem* pcItem)
 			return;
 		}
 	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::ListSelectionChanged(CListContainer* pcList)
-{
-	UpdateInfo();
 }
 
 

@@ -23,7 +23,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArrayChars.h"
 #include "WindowLib/ListContainer.h"
-#include "WindowLib/ListListener.h"
 #include "WindowLib/TextFieldListener.h"
 #include "WindowLib/ScrollPane.h"
 #include "WindowLib/Label.h"
@@ -34,19 +33,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 class CLogicimComponentChooser;
 class CLogicimCircuit;
 class CComponentView;
-
-
-//The chooser can't be every kind of listener itself, each is a CListener, so these pass what they hear on.
-class CChooserListListener : public CListListener
-{
-CONSTRUCTABLE(CChooserListListener);
-public:
-	CLogicimComponentChooser*	mpcChooser;
-
-	void	Init(CLogicimComponentChooser* pcChooser);
-	void	SelectionChanged(CUnknown* pcSource, void* pvContext) override;
-	void	ItemActivated(CUnknown* pcSource, void* pvContext) override;
-};
 
 
 //Filters the chooser's tree as the filter's text is typed (see CLogicimComponentChooser::FilterChanged).
@@ -83,7 +69,6 @@ protected:
 	Ptr<CLabel>				mpName;
 	Ptr<CLabel>				mpDescription;
 	Ptr<CLabel>				mpLibrary;
-	CChooserListListener	mcListListener;
 	CChooserFilterListener	mcFilterListener;
 	Ptr<CImageCel>			mpCollapsedChevron;
 	Ptr<CImageCel>			mpExpandedChevron;

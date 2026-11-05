@@ -21,14 +21,13 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __LOGICIM_BUTTON_LISTENER_H__
 #define __LOGICIM_BUTTON_LISTENER_H__
 #include "WindowLib/MenuListener.h"
-#include "WindowLib/ListListener.h"
 
 
 class CLogicimWindowContent;
 
 
-//The window content can't be every kind of listener itself, each is a CListener, so these pass what they hear on.
-//This one passes on the menu bar's item clicks (see CLogicimWindowContent::MenuItemClicked).
+//Passes on the menu bar's item clicks (see CLogicimWindowContent::MenuItemClicked), so the window content needn't be a
+//CMenuListener itself.
 class CLogicimMenuListener : public CMenuListener
 {
 CONSTRUCTABLE(CLogicimMenuListener);
@@ -37,18 +36,6 @@ public:
 
 	void	Init(CLogicimWindowContent* pcContent);
 	void	MenuItemClicked(CUnknown* pcSource, void* pvContext) override;
-};
-
-
-//Passes on the subcircuit and simulation lists' selection changes (see CLogicimWindowContent::ListSelectionChanged).
-class CLogicimListListener : public CListListener
-{
-CONSTRUCTABLE(CLogicimListListener);
-public:
-	CLogicimWindowContent*	mpcContent;
-
-	void	Init(CLogicimWindowContent* pcContent);
-	void	SelectionChanged(CUnknown* pcSource, void* pvContext) override;
 };
 
 
