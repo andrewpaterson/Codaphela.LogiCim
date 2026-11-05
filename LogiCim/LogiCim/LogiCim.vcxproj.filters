@@ -15,9 +15,6 @@
     <ClCompile Include="CircuitCanvasDraw.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="LogicimButtonListener.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="LogicimCircuit.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -42,9 +39,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="CircuitCanvasDraw.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="LogicimButtonListener.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimCircuit.h">

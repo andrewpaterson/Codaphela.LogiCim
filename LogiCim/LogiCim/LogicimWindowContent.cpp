@@ -147,7 +147,6 @@ void CLogicimWindowContent::Init(void)
 	mapIcons.Init();
 	maSubcircuitLabels.Init();
 	maSimulationLabels.Init();
-	mcMenuListener.Init(this);
 	mszProjectFilename.Init("Project.xml");
 	mszKicadFilename.Init("Schematic.kicad_sch");
 	mszChooserSelected.Init();
@@ -192,7 +191,6 @@ void CLogicimWindowContent::Class(void)
 	U_Unknown(CArrayInt, maiButtonActions);
 	M_Embedded(maMenuItems);
 	U_Unknown(CArrayInt, maiMenuItemActions);
-	U_Unknown(CLogicimMenuListener, mcMenuListener);
 	M_Pointer(mpLogicimCircuit);
 	M_Pointer(mpDialog);
 	M_Pointer(mpComponentChooser);
@@ -296,13 +294,15 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Free(void)
 {
-	//An object's memory is freed without its destructor running so the content takes itself off the buttons and its
-	//listeners unhook themselves from the widgets still listened to.  The widgets, the theme, the fonts and the circuit
-	//are freed with the content's pointers.
+	//An object's memory is freed without its destructor running so the content takes itself off the widgets still
+	//here.  The widgets, the theme, the fonts and the circuit are freed with the content's pointers.
 	RemoveFromButtons();
 	RemoveFromList(mpSubcircuits);
 	RemoveFromList(mpSimulations);
-	mcMenuListener.RemoveFromListenerCalls();
+	if (mpMenuBar.IsNotNull())
+	{
+		mpMenuBar->GetItemClickEvent()->Remove(this);
+	}
 	if (mpsData)
 	{
 		mpsData->pcContent = NULL;
@@ -446,7 +446,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 	mpMenuBar->AddMenu("View", CreateMenu(aeView, sizeof(aeView) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Simulation", CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Place", CreateMenu(aePlace, sizeof(aePlace) / sizeof(ELogicimAction)));
-	mpMenuBar->AddListener(&mcMenuListener);
+	mpMenuBar->GetItemClickEvent()->Add(this, &CLogicimWindowContent::MenuItemClicked);
 	mpMenuBar->SetAlignment(CSH_Stretch, CSV_Stretch);
 	return mpMenuBar;
 }

@@ -106,7 +106,6 @@ set(LOGICIM_SOURCES
 	"${LOGICIM_DIR}/LogiCimLinux.cpp"
 	"${LOGICIM_DIR}/CircuitCanvas.cpp"
 	"${LOGICIM_DIR}/CircuitCanvasDraw.cpp"
-	"${LOGICIM_DIR}/LogicimButtonListener.cpp"
 	"${LOGICIM_DIR}/LogicimCircuit.cpp"
 	"${LOGICIM_DIR}/LogicimComponentChooser.cpp"
 	"${LOGICIM_DIR}/LogicimWindowContent.cpp"

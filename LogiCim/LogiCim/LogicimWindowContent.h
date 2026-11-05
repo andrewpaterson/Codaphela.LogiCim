@@ -30,7 +30,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/MenuBar.h"
 #include "WindowLib/Button.h"
 #include "WindowLib/Label.h"
-#include "LogicimButtonListener.h"
 #include "LogicimWindowData.h"
 #include "WindowLib/Dialog.h"
 #include "CircuitCanvas.h"
@@ -131,8 +130,6 @@ protected:
 	CArrayInt				maiButtonActions;
 	CArray<CMenuItem>		maMenuItems;
 	CArrayInt				maiMenuItemActions;
-
-	CLogicimMenuListener		mcMenuListener;
 
 	Ptr<CLogicimCircuit>	mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
