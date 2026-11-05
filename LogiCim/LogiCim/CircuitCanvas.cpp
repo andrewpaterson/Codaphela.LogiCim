@@ -57,7 +57,7 @@ void CCircuitCanvas::Init(Ptr<CWindow> pWindow, Ptr<CCircuitCanvasDraw> pDraw, C
 	miLastRelease = 0;
 	msLastRelease.Init(0, 0);
 	SetCanGetFocus(true);
-	AddInputActions(gaeCircuitCanvasCommands, sizeof(gaeCircuitCanvasCommands) / sizeof(EComponentInputCommand), this, &CCircuitCanvas::CommandAction);
+	AddInputActions(gaeCircuitCanvasCommands, this, &CCircuitCanvas::CommandAction);
 	AddInputAction(IAF_Printable, NULL, this, &CCircuitCanvas::PrintableAction);
 	AddInputAction(IAF_Wheel, NULL, this, &CCircuitCanvas::WheelAction);
 	PostInit();
