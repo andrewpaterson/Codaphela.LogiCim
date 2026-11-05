@@ -20,7 +20,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __LOGICIM_BUTTON_LISTENER_H__
 #define __LOGICIM_BUTTON_LISTENER_H__
-#include "WindowLib/ButtonListener.h"
 #include "WindowLib/MenuListener.h"
 #include "WindowLib/ListListener.h"
 
@@ -29,19 +28,7 @@ class CLogicimWindowContent;
 
 
 //The window content can't be every kind of listener itself, each is a CListener, so these pass what they hear on.
-//This one passes on the toolbar's and the stripes' button clicks (see CLogicimWindowContent::ButtonClicked).
-class CLogicimButtonListener : public CButtonListener
-{
-CONSTRUCTABLE(CLogicimButtonListener);
-public:
-	CLogicimWindowContent*	mpcContent;
-
-	void	Init(CLogicimWindowContent* pcContent);
-	void	ButtonClicked(CUnknown* pcSource, void* pvContext) override;
-};
-
-
-//Passes on the menu bar's item clicks (see CLogicimWindowContent::MenuItemClicked).
+//This one passes on the menu bar's item clicks (see CLogicimWindowContent::MenuItemClicked).
 class CLogicimMenuListener : public CMenuListener
 {
 CONSTRUCTABLE(CLogicimMenuListener);

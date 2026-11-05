@@ -132,7 +132,6 @@ protected:
 	CArray<CMenuItem>		maMenuItems;
 	CArrayInt				maiMenuItemActions;
 
-	CLogicimButtonListener	mcButtonListener;
 	CLogicimMenuListener		mcMenuListener;
 	CLogicimListListener		mcListListener;
 
@@ -185,6 +184,7 @@ protected:
 	Ptr<CComponent>			CreateStatusBar(void);
 
 	Ptr<CButton>			CreateToolButton(ELogicimAction eAction);
+	void					RemoveFromButtons(void);
 	Ptr<CCanvas>			CreateLine(int32 iWidth, int32 iHeight, ARGB32 sColour);
 	Ptr<CListContainer>		CreateList(void);
 	void					AddListItem(Ptr<CListContainer> pList, CArray<CLabel>* paLabels, const char* szText);

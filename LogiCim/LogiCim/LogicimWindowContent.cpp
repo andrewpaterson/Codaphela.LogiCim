@@ -147,7 +147,6 @@ void CLogicimWindowContent::Init(void)
 	mapIcons.Init();
 	maSubcircuitLabels.Init();
 	maSimulationLabels.Init();
-	mcButtonListener.Init(this);
 	mcMenuListener.Init(this);
 	mcListListener.Init(this);
 	mszProjectFilename.Init("Project.xml");
@@ -194,7 +193,6 @@ void CLogicimWindowContent::Class(void)
 	U_Unknown(CArrayInt, maiButtonActions);
 	M_Embedded(maMenuItems);
 	U_Unknown(CArrayInt, maiMenuItemActions);
-	U_Unknown(CLogicimButtonListener, mcButtonListener);
 	U_Unknown(CLogicimMenuListener, mcMenuListener);
 	U_Unknown(CLogicimListListener, mcListListener);
 	M_Pointer(mpLogicimCircuit);
@@ -300,9 +298,10 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Free(void)
 {
-	//An object's memory is freed without its destructor running so its listeners unhook themselves from the widgets
-	//still listened to.  The widgets, the theme, the fonts and the circuit are freed with the content's pointers.
-	mcButtonListener.RemoveFromListenerCalls();
+	//An object's memory is freed without its destructor running so the content takes itself off the buttons and its
+	//listeners unhook themselves from the widgets still listened to.  The widgets, the theme, the fonts and the circuit
+	//are freed with the content's pointers.
+	RemoveFromButtons();
 	mcMenuListener.RemoveFromListenerCalls();
 	mcListListener.RemoveFromListenerCalls();
 	if (mpsData)
@@ -466,7 +465,7 @@ Ptr<CButton> CLogicimWindowContent::CreateToolButton(ELogicimAction eAction)
 	pButton = OMalloc<CButton>(mpWindow, mpTheme, BL_Flat, mapIcons.Get(eAction), (const char*)NULL);
 	pButton->SetPadding(0, 0);
 	pButton->SetShowsPushed(true);
-	pButton->AddListener(&mcButtonListener);
+	pButton->GetClickEvent()->Add(this, &CLogicimWindowContent::ButtonClicked);
 	pButton->SetAlignment(CSH_Center, CSV_Center);
 	maButtons.Add(pButton);
 	maiButtonActions.Add(eAction);
@@ -929,6 +928,26 @@ void CLogicimWindowContent::ShowZoom(void)
 void CLogicimWindowContent::EditProperties(void)
 {
 	mpsData->eDialog = LDG_Properties;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::RemoveFromButtons(void)
+{
+	size			i;
+	Ptr<CButton>	pButton;
+
+	for (i = 0; i < maButtons.Size(); i++)
+	{
+		pButton = maButtons.Get(i);
+		if (pButton.IsNotNull())
+		{
+			pButton->GetClickEvent()->Remove(this);
+		}
+	}
 }
 
 
