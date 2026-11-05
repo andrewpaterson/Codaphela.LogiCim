@@ -23,28 +23,14 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArrayChars.h"
 #include "WindowLib/ListContainer.h"
-#include "WindowLib/TextFieldListener.h"
 #include "WindowLib/ScrollPane.h"
 #include "WindowLib/Label.h"
 #include "WindowLib/Dialog.h"
 #include "CircuitCanvasDraw.h"
 
 
-class CLogicimComponentChooser;
 class CLogicimCircuit;
 class CComponentView;
-
-
-//Filters the chooser's tree as the filter's text is typed (see CLogicimComponentChooser::FilterChanged).
-class CChooserFilterListener : public CTextFieldListener
-{
-CONSTRUCTABLE(CChooserFilterListener);
-public:
-	CLogicimComponentChooser*	mpcChooser;
-
-	void	Init(CLogicimComponentChooser* pcChooser);
-	void	TextChanged(CUnknown* pcSource, void* pvContext) override;
-};
 
 
 //Logicim's Select Component dialog, laid out as KiCad's symbol chooser: a filter along the top; a tree of the libraries
@@ -69,7 +55,6 @@ protected:
 	Ptr<CLabel>				mpName;
 	Ptr<CLabel>				mpDescription;
 	Ptr<CLabel>				mpLibrary;
-	CChooserFilterListener	mcFilterListener;
 	Ptr<CImageCel>			mpCollapsedChevron;
 	Ptr<CImageCel>			mpExpandedChevron;
 	CArrayInt				maiExpanded;  //1 for each library that's open, the subcircuits last.

@@ -46,26 +46,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
-//////////////////////////////////////////////////////////////////////////
-void CChooserFilterListener::Init(CLogicimComponentChooser* pcChooser)
-{
-	mpcChooser = pcChooser;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CChooserFilterListener::TextChanged(CUnknown* pcSource, void* pvContext)
-{
-	mpcChooser->FilterChanged();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Starts with no filter and every library closed, the library of the
 // component of that element (or subcircuit) name selected, otherwise the
 // first.  The circuit (its editor, colours and fonts) must outlive the
@@ -90,7 +70,6 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	maiRowLibraries.Init();
 	maiRowEntries.Init();
 	maszSubcircuits.Init();
-	mcFilterListener.Init(this);
 
 	mpDialog = OMalloc<CDialog>(pOwner, psLook, "Choose Component");
 	mpDialog->GetWindow()->GetColourFormat(&cFormat);
@@ -104,7 +83,7 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	{
 		maiExpanded.Add(0);
 	}
-	mpFilter->AddListener(&mcFilterListener);
+	mpFilter->GetChangeEvent()->Add(this, &CLogicimComponentChooser::FilterChanged);
 
 	iLibrary = -1;
 	iEntry = -1;
@@ -129,7 +108,6 @@ void CLogicimComponentChooser::Class(void)
 	M_Pointer(mpName);
 	M_Pointer(mpDescription);
 	M_Pointer(mpLibrary);
-	U_Unknown(CChooserFilterListener, mcFilterListener);
 	M_Pointer(mpCollapsedChevron);
 	M_Pointer(mpExpandedChevron);
 	U_Unknown(CArrayInt, maiExpanded);
@@ -169,15 +147,18 @@ bool CLogicimComponentChooser::Load(CObjectReader* pcFile)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimComponentChooser::Free(void)
 {
-	//An object's memory is freed without its destructor running so the chooser and its listener take themselves off
-	//the widgets still here.  The dialog, the widgets and the preview's draw are freed with the chooser's pointers; the
-	//draw only points to the preview.
+	//An object's memory is freed without its destructor running so the chooser takes itself off the widgets still
+	//here.  The dialog, the widgets and the preview's draw are freed with the chooser's pointers; the draw only points
+	//to the preview.
 	if (mpList.IsNotNull())
 	{
 		mpList->GetSelectionEvent()->Remove(this);
 		mpList->GetActivationEvent()->Remove(this);
 	}
-	mcFilterListener.RemoveFromListenerCalls();
+	if (mpFilter.IsNotNull())
+	{
+		mpFilter->GetChangeEvent()->Remove(this);
+	}
 	KillPreview();
 
 	maszSubcircuits.Kill();
