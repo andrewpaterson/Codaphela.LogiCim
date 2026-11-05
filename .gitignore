@@ -19,3 +19,4 @@ Log.txt
 # Files the tests write
 /Tests/TestLogicimLib/TestLogicimLib/Output/
 /Tests/TestKicadImporterLib/TestKicadImporterLib/Output/
+*.layout.user
