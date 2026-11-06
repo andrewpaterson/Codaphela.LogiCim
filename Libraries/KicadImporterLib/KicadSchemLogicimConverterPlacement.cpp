@@ -389,7 +389,7 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 			continue;
 		}
 		//A splitter beside its component is put there, not lined up.
-		if (IsPlacedSplitter(masItems.Get(psFrom->uiItem)->pcView) || IsPlacedSplitter(masItems.Get(psTo->uiItem)->pcView))
+		if (masItems.Get(psFrom->uiItem)->bPlacedSplitter || masItems.Get(psTo->uiItem)->bPlacedSplitter)
 		{
 			continue;
 		}
@@ -612,27 +612,6 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 			psSplitter->pcSplitter->SetPosition(sPosition.x + iAlong, sPosition.y + iAcross);
 		}
 	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Whether the view is a splitter PlaceSplitters puts beside its
-// component.
-//
-//////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::IsPlacedSplitter(CComponentView* pcView)
-{
-	size	i;
-
-	for (i = 0; i < masSplitters.NumElements(); i++)
-	{
-		if ((masSplitters.Get(i)->pcSplitter == pcView) && (masSplitters.Get(i)->uiNumPairs > 0))
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 

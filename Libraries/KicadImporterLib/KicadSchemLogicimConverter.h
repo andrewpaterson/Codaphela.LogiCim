@@ -32,6 +32,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 class CKicadSchemBoard;
 class CKicadSchemBoardConnector;
 class CKicadSchemBoardSource;
+class CPinView;
 
 
 //KiCad's 2.54mm (100 mil) pin spacing, its grid.
@@ -88,6 +89,18 @@ enum EKicadSchemLogicimAlign
 #define KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS	400
 
 
+//What the converter made an item for.
+enum EKicadSchemLogicimItemKind
+{
+	KSLIK_Part,			//A symbol's component: a gate, flip flop, 74 part, logic block...
+	KSLIK_Supply,		//A power symbol's supply.
+	KSLIK_Tunnel,		//A label's or a bus's tunnel.
+	KSLIK_Splitter,		//A bus's splitter.
+	KSLIK_BoardPin,		//A connector pin's subcircuit pin.
+	KSLIK_Subcircuit,	//A board or placeholder instance.
+};
+
+
 //A component made in the Logicim circuit and where KiCad has it, in Logicim grid units (see KICAD_SCHEM_LOGICIM_SCALE).  The anchor is the point of the view
 //that goes there (a power symbol's port, otherwise the view's position), from its position.  A tunnel or power
 //supply has one port; if KiCad has it right on a pin it's attached to that pin's port: it goes port to port with it
@@ -95,6 +108,8 @@ enum EKicadSchemLogicimAlign
 struct SKicadSchemLogicimItem
 {
 	CComponentView*		pcView;
+	EKicadSchemLogicimItemKind	eKind;
+	bool				bPlacedSplitter;  //A splitter PlaceSplitters puts beside its component.
 	SFloat64Vec2		sKicadPosition;
 	SInt32Vec2			sAnchor;
 	SInt32Vec2			sOffset;
@@ -315,15 +330,18 @@ protected:
 	void							AlignItems(void);
 	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet, size uiSubnet);
 
-	size							AddItem(CComponentView* pcView, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor);
+	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor);
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);
 	void							JoinSplitterPins(void);
 	size							FindPortTerminal(CPortView* pcPortView);
-	bool							IsPlacedSplitter(CComponentView* pcView);
 	int								GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins);
 	CPortView*						GetTapPin(SKicadSchemBusTap* psTap);
+	bool							IsComponentPin(SKicadSchemLogicimTerminal* psTerminal);
+	CPortView*						GetComponentPin(CKicadSchemSubnet* pcSubnet, CComponentView* pcOwner, int iFacing);
+	bool							HasTunnel(CKicadSchemSubnet* pcSubnet);
+	CPinView*						FindBoardPin(const char* szName);
 	bool							GetItemBox(size uiItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 	void							MeasureImportBoxes(void);
 	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);

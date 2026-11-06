@@ -462,7 +462,7 @@ bool CKicadSchemLogicimConverter::AddLogicParts(CKicadSchemSymbol* pcSymbol, CKi
 		}
 		szName.Kill();
 
-		uiItem = AddItem(pcView, &sCentre, NULL);
+		uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL);
 		if (eFunction == KSLF_DFlipFlop)
 		{
 			for (i = 0; i < apcPins.NumElements(); i++)
@@ -634,7 +634,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Part(CKicadSchemSymbol* pcSymbol, CK
 		pcUnit = NewMalloc<CLogic74UnitView>();
 		pcUnit->Init(0, 0, GetKicadSchemFacing(&sInputs, &sOutputs), pcSymbol->GetReference(), szFamily, false, szPartType, iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 		pcView = pcUnit;
-		uiItem = AddItem(pcView, &sCentre, NULL);
+		uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL);
 		for (j = 0; j < aiInputs.NumElements(); j++)
 		{
 			szPortName.Init();
@@ -650,7 +650,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Part(CKicadSchemSymbol* pcSymbol, CK
 		pcPackage = NewMalloc<CLogic74PackageView>();
 		pcPackage->Init(0, 0, GetKicadSchemFacing(&sInputs, &sOutputs), pcSymbol->GetReference(), szFamily, false, szPartType, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 		pcView = pcPackage;
-		uiItem = AddItem(pcView, &sCentre, NULL);
+		uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL);
 		for (i = 0; i < papcPins->NumElements(); i++)
 		{
 			szPortName.Init();
@@ -959,7 +959,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 
 	pcView = NewKicadSchemLogic74View(pcSymbol, eRotation, szFamily, szPartType, bUnit, iUnit);
 	MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
-	uiItem = AddItem(pcView, &sCentre, NULL);
+	uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL);
 	for (i = 0; i < apcPins.NumElements(); i++)
 	{
 		AddPinTerminal(pcSymbol, apcPins.GetPtr(i), apcPorts.GetPtr(i), uiItem);

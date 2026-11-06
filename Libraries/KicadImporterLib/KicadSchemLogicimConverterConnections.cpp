@@ -97,7 +97,7 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 		psItem = masItems.Get(i);
 		if (aiNewIndices.GetValue(i) == -1)
 		{
-			if (StringCompare(psItem->pcView->GetXMLName(), "Tunnel") == 0)
+			if (psItem->eKind == KSLIK_Tunnel)
 			{
 				muiTunnels--;
 			}

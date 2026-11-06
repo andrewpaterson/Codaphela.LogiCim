@@ -303,17 +303,19 @@ ERotation GetKicadSchemFacing(SKicadSchemPoint* psFrom, SKicadSchemPoint* psTo)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Adds the view, made at (0, 0), to the circuit.  The anchor is the port
+// Adds the view, made at (0, 0), to the circuit, as what eKind says.  The anchor is the port
 // that goes where KiCad has the thing, if not the view's position.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor)
+size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor)
 {
 	SKicadSchemLogicimItem*		psItem;
 
 	mpcCircuit->Add(pcView);
 	psItem = masItems.Add();
 	psItem->pcView = pcView;
+	psItem->eKind = eKind;
+	psItem->bPlacedSplitter = false;
 	psItem->sKicadPosition.Init(psKicadPosition->fX / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->fY / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
 	psItem->pcPort = pcAnchor;
 	psItem->pcAttachedTo = NULL;
@@ -371,16 +373,24 @@ void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CK
 
 //////////////////////////////////////////////////////////////////////////
 //
+// KiCad's angle in anticlockwise quarter turns (to the nearest), 0 to 3.
+//
+//////////////////////////////////////////////////////////////////////////
+int GetKicadSchemQuarterTurns(float64 fAngle)
+{
+	return (((int)floor(fAngle / 90.0 + 0.5)) % 4 + 4) % 4;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The rotation of a thing that is eUpright when KiCad hasn't turned it,
 // turned anticlockwise by KiCad's angle (to the nearest right angle).
 //
 //////////////////////////////////////////////////////////////////////////
 ERotation CKicadSchemLogicimConverter::GetKicadRotation(ERotation eUpright, float64 fAngle)
 {
-	int		iQuarters;
-
-	iQuarters = (((int)floor(fAngle / 90.0 + 0.5)) % 4 + 4) % 4;
-	return RotateRight(eUpright, (4 - iQuarters) % 4);
+	return RotateRight(eUpright, (4 - GetKicadSchemQuarterTurns(fAngle)) % 4);
 }
 
 

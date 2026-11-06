@@ -93,28 +93,6 @@ static bool IsKicadSchemPowerNetName(const char* szName)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The circuit's pin named szName, NULL if there isn't one.
-//
-//////////////////////////////////////////////////////////////////////////
-static CPinView* FindKicadSchemBoardPin(CCircuitView* pcCircuit, const char* szName)
-{
-	size				i;
-	CComponentView*		pcView;
-
-	for (i = 0; i < pcCircuit->NumComponents(); i++)
-	{
-		pcView = pcCircuit->GetComponent(i);
-		if ((StringCompare(pcView->GetXMLName(), "Pin") == 0) && (StringCompare(pcView->GetName(), szName) == 0))
-		{
-			return (CPinView*)pcView;
-		}
-	}
-	return NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Whether the port's terminal (see AddTerminal) is of the subnet.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -130,6 +108,28 @@ static bool IsKicadSchemTerminalSubnet(CArrayKicadSchemLogicimTerminal* pasTermi
 		}
 	}
 	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The board pin named szName made already, NULL if there isn't one.
+//
+//////////////////////////////////////////////////////////////////////////
+CPinView* CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
+{
+	size						i;
+	SKicadSchemLogicimItem*		psItem;
+
+	for (i = 0; i < masItems.NumElements(); i++)
+	{
+		psItem = masItems.Get(i);
+		if ((psItem->eKind == KSLIK_BoardPin) && (StringCompare(psItem->pcView->GetName(), szName) == 0))
+		{
+			return (CPinView*)psItem->pcView;
+		}
+	}
+	return NULL;
 }
 
 
@@ -223,7 +223,7 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 
 		//The pin points into the connector's body from where it's wired (library Y is up).
 		mpcFile->GetPinPosition(&sOuter, pcSymbol, pcPin);
-		iAngle = ((int)floor(pcPin->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
+		iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
 		sLibrary.Init(pcPin->GetPosition()->fX + aiDX[iAngle] * pcPin->GetLength(), pcPin->GetPosition()->fY + aiDY[iAngle] * pcPin->GetLength());
 		pcSymbol->GetSheetPosition(&sInner, &sLibrary);
 		eRotation = GetKicadSchemFacing(&sInner, &sOuter);
@@ -235,14 +235,14 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 		default:		eAlignment = PA_Right;	break;
 		}
 
-		pcPinView = FindKicadSchemBoardPin(mpcCircuit, szName.Text());
+		pcPinView = FindBoardPin(szName.Text());
 		if (pcPinView == NULL)
 		{
 			pcPinView = NewMalloc<CPinView>();
 			pcPinView->Init(0, 0, eRotation, szName.Text(), "LVC", false, 1, RADIX_Binary, mpcFonts);
 			pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, atoi(szNumber), false, false);
 			//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
-			uiItem = AddItem(pcPinView, &sOuter, NULL);
+			uiItem = AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL);
 			muiBoardPins++;
 			if (pcConnector != NULL)
 			{
@@ -303,7 +303,7 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
 	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = AddItem(pcInstance, pcSymbol->GetPosition(), NULL);
+	uiItem = AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL);
 
 	apcPins.Init();
 	aszNames.Init();
@@ -343,7 +343,7 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 
 	//A pin points into the body, so a pin pointing right (0) is on the left.
 	pcPin = papcPins->GetPtr(i);
-	iAngle = ((int)floor(pcPin->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
+	iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
 	switch (iAngle)
 	{
 	case 1:		*peAlignment = PA_Bottom;	break;
@@ -356,7 +356,7 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 	for (j = 0; j < papcPins->NumElements(); j++)
 	{
 		pcOther = papcPins->GetPtr(j);
-		iOtherAngle = ((int)floor(pcOther->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
+		iOtherAngle = GetKicadSchemQuarterTurns(pcOther->GetAngle());
 		if ((j == i) || (iOtherAngle != iAngle))
 		{
 			continue;
@@ -445,7 +445,7 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
 	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = AddItem(pcInstance, pcSymbol->GetPosition(), NULL);
+	uiItem = AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL);
 
 	//Two of the symbol's pins on one circuit pin (one net on the board) are joined to it once.
 	apcJoined.Init();

@@ -45,6 +45,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 //The helpers the files of KicadSchemLogicimConverter share.
 bool IsKicadSchemPowerPinName(const char* szName);
 ERotation GetKicadSchemFacing(SKicadSchemPoint* psFrom, SKicadSchemPoint* psTo);
+int GetKicadSchemQuarterTurns(float64 fAngle);
 extern ERotation gaeKicadSchemLogicimRotations[];
 
 
