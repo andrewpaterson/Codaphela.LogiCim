@@ -38,7 +38,8 @@ class CCircuitEditor;
 //until the next click (see CCircuitEditor::StartMove); Delete deletes; Escape stops the edit and clears the selection;
 //e (or E) edits the properties of the component under the pointer or selected, and a double click those of the
 //component it's on, or enters it if it's a subcircuit instance; the right button selects the component it's on and
-//opens its menu (see CLogicimWindowContent::PrepareCanvasMenu); and letters
+//opens its menu (see CLogicimWindowContent::PrepareCanvasMenu); Alt+Backspace leaves the subcircuit entered, as KiCad's
+//Leave Sheet; and letters
 //place components, as Logicim's KeyInputsFactory (g a ground, v a supply, p a pin, c a constant; with shift: A an AND
 //gate, O an OR, X an XOR, N an inverter, C a clock, P a probe, S a splitter, T a tunnel, L a label and F a flip flop).
 //Logicim's control and alt placements aren't printable keys and aren't here.
