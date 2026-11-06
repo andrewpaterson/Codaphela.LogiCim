@@ -96,6 +96,7 @@ void TestViewPathTop(void)
 	cPaths.Kill();
 	cOther.Kill();
 	cCircuit.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -193,6 +194,7 @@ void TestViewPathTwoSimulations(void)
 	ORoot()->Remove(pFirst);
 	pFirst = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -247,6 +249,7 @@ void TestViewPathCreateErrors(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 

@@ -334,6 +334,7 @@ void TestLogic74ViewsSimulation(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 

@@ -447,6 +447,7 @@ void TestGateViewsRender(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -588,6 +589,7 @@ void TestCircuitViewSimulation(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -661,6 +663,7 @@ void TestCircuitViewGroundDrivesInverters(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -755,6 +758,7 @@ void TestCircuitViewRingOscillator(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 

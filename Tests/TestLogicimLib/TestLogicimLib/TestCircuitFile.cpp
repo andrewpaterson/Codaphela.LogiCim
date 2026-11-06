@@ -304,6 +304,7 @@ void TestCircuitFileRoundTrip(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 
 	cFileUtil.Delete("Output" _FS_ "Every.xml");

@@ -200,6 +200,7 @@ void TestSimulationStateRingRoundTrip(void)
 	pOriginal = NULL;
 	cPaths.Kill();
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 
 	cFileUtil.Delete("Output" _FS_ "Ring.xml");
@@ -243,6 +244,7 @@ void TestSimulationStateFreshStart(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -419,6 +421,7 @@ void TestSimulationStateStates(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -463,6 +466,7 @@ bool LoadSimulationText(const char* szSimulation)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 
 	cFileUtil.Delete("Output" _FS_ "BadSimulation.xml");
@@ -651,6 +655,7 @@ void TestSimulationStateW65C816Core(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 	CW65C816InstructionFactory::GetInstance()->Kill();
 }
@@ -768,6 +773,7 @@ void TestSimulationState65C64Core(void)
 	ORoot()->Remove(pSimulation);
 	pSimulation = NULL;
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 }
 
@@ -898,6 +904,7 @@ void TestSimulationStateW65C816RoundTrip(void)
 	pOriginal = NULL;
 	cPaths.Kill();
 	cFamilies.Kill();
+	ObjectsDiscard();
 	ObjectsKill();
 	CW65C816InstructionFactory::GetInstance()->Kill();
 

@@ -65,10 +65,7 @@ struct SWiringTest
 		ORoot()->Remove(pSimulation);
 		pSimulation = NULL;
 		cFamilies.Kill();
-		if (bRooted)
-		{
-			ObjectsFlush();
-		}
+		ObjectsDiscard();
 		ObjectsKill(!bRooted);
 	}
 };
