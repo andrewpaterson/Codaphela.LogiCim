@@ -170,6 +170,7 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	AddBuses();
 	RemoveUnconnectedItems();
 	AttachItems();
+	MeasureImportBoxes();
 	AddConnections();
 	FindAlignments();
 
@@ -1784,7 +1785,7 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts);
+	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 	uiItem = AddItem(pcInstance, pcSymbol->GetPosition(), NULL);
 
 	apcPins.Init();
@@ -1926,7 +1927,7 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts);
+	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 	uiItem = AddItem(pcInstance, pcSymbol->GetPosition(), NULL);
 
 	//Two of the symbol's pins on one circuit pin (one net on the board) are joined to it once.
@@ -2690,6 +2691,9 @@ size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, SKicadSchemPoi
 	psItem->eAlign = KSLA_None;
 	psItem->pcSymbol = mpcAddingSymbol;
 	psItem->sOffset.Init(0, 0);
+	psItem->sImportMinimum.Init(0, 0);
+	psItem->sImportMaximum.Init(0, 0);
+	psItem->bImportBox = false;
 	if (pcAnchor != NULL)
 	{
 		psItem->sAnchor = pcAnchor->GetGridPosition();
@@ -3319,7 +3323,55 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The item's box and the boxes of the items attached to it.
+// Each item's import box: its bounding box and the text it draws outside
+// it.  Placed items only move, so it's measured once, from the item's
+// position, once the attached items are turned.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
+{
+	size						i;
+	SKicadSchemLogicimItem*		psItem;
+	SInt32Vec2					sPosition;
+
+	for (i = 0; i < masItems.NumElements(); i++)
+	{
+		psItem = masItems.Get(i);
+		psItem->bImportBox = psItem->pcView->GetImportBoundingBox(mpcFonts, &psItem->sImportMinimum, &psItem->sImportMaximum);
+		if (psItem->bImportBox)
+		{
+			sPosition = psItem->pcView->GetPosition();
+			psItem->sImportMinimum.Init(psItem->sImportMinimum.x - sPosition.x, psItem->sImportMinimum.y - sPosition.y);
+			psItem->sImportMaximum.Init(psItem->sImportMaximum.x - sPosition.x, psItem->sImportMaximum.y - sPosition.y);
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item's import box where it is now.  Its bounding box if it hasn't
+// been measured.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+{
+	SInt32Vec2	sPosition;
+
+	if (!psItem->bImportBox)
+	{
+		return psItem->pcView->GetBoundingBox(psMinimum, psMaximum);
+	}
+	sPosition = psItem->pcView->GetPosition();
+	psMinimum->Init(psItem->sImportMinimum.x + sPosition.x, psItem->sImportMinimum.y + sPosition.y);
+	psMaximum->Init(psItem->sImportMaximum.x + sPosition.x, psItem->sImportMaximum.y + sPosition.y);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item's import box and the import boxes of the items attached to it.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
@@ -3331,14 +3383,14 @@ bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Vec2* psMinimu
 	SFloat64Vec2				sMaximum;
 
 	psItem = masItems.Get(uiItem);
-	if (!psItem->pcView->GetBoundingBox(psMinimum, psMaximum))
+	if (!GetItemImportBox(psItem, psMinimum, psMaximum))
 	{
 		return false;
 	}
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
 		psOther = masItems.Get(i);
-		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && psOther->pcView->GetBoundingBox(&sMinimum, &sMaximum))
+		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && GetItemImportBox(psOther, &sMinimum, &sMaximum))
 		{
 			IncludeBoundsPoint(psMinimum, psMaximum, sMinimum.x, sMinimum.y);
 			IncludeBoundsPoint(psMinimum, psMaximum, sMaximum.x, sMaximum.y);
@@ -3518,6 +3570,9 @@ size CKicadSchemLogicimConverter::Route(void)
 	int								iFromItem;
 	int								iToItem;
 	size							uiUnconnected;
+	SKicadSchemLogicimItem*			psItem;
+	SFloat64Vec2					sBoxMinimum;
+	SFloat64Vec2					sBoxMaximum;
 
 	mpcCircuit->KillTraces();
 
@@ -3547,6 +3602,14 @@ size CKicadSchemLogicimConverter::Route(void)
 	}
 
 	cConnector.Init(mpcCircuit);
+	for (i = 0; i < masItems.NumElements(); i++)
+	{
+		psItem = masItems.Get(i);
+		if (psItem->bImportBox && GetItemImportBox(psItem, &sBoxMinimum, &sBoxMaximum))
+		{
+			cConnector.SetComponentBox(psItem->pcView, sBoxMinimum, sBoxMaximum);
+		}
+	}
 	aiRuns.Init();
 	for (i = 0; i < aiRunCounts.NumElements(); i++)
 	{

@@ -691,7 +691,6 @@ void TestKicadSchemLogicimBoards(void)
 	size						uiInstances;
 	CFileUtil					cFileUtil;
 	CChars						szProblems;
-	size						uiUnconnected;
 
 	ObjectsInit();
 	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
@@ -712,17 +711,7 @@ void TestKicadSchemLogicimBoards(void)
 	{
 		pcBoard = cImporter.GetBoard(i);
 		AssertNotNull(pcBoard->GetCircuit());
-		if (pcBoard->GetCircuit() == pcTop)
-		{
-			//IC2's A13 pin is boxed in: its tunnel is on it, its placeholder's pins are a grid unit apart, and the A13 tap
-			//of the address bus's splitter is wired to it too.
-			uiUnconnected = 1;
-		}
-		else
-		{
-			uiUnconnected = 0;
-		}
-		if ((pcBoard->NumOverlaps() != 0) || (pcBoard->NumUnconnected() != uiUnconnected))
+		if ((pcBoard->NumOverlaps() != 0) || (pcBoard->NumUnconnected() != 0))
 		{
 			szProblems.Append(pcBoard->GetCircuit()->GetTypeName());
 			szProblems.Append(": ");

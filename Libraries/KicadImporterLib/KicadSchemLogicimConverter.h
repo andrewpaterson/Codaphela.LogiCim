@@ -40,6 +40,10 @@ class CKicadSchemBoardSource;
 //Logicim grid units to one of KiCad's.  Logicim's parts are bigger than KiCad's symbols for their pins.
 #define KICAD_SCHEM_LOGICIM_SCALE			2.0
 
+//The grid units between the pins of the subcircuit instances made for KiCad's symbols (placeholders and boards): a
+//KiCad grid unit, so a tunnel or label fits on each pin.
+#define KICAD_SCHEM_LOGICIM_PIN_SPACING		2
+
 //How far the components are spread out from where KiCad has them (scaled), at most and at least, and how many times the
 //spread between is halved looking for the least that wires as well as the most.
 #define KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM	1.5
@@ -91,6 +95,9 @@ struct SKicadSchemLogicimItem
 	CPortView*			pcAttachedTo;
 	EKicadSchemLogicimAlign	eAlign;
 	CKicadSchemSymbol*	pcSymbol;  //The symbol it was made for.  NULL for tunnels and splitters.
+	SFloat64Vec2		sImportMinimum;  //Its import box (see CComponentView::GetImportBoundingBox), from its position.
+	SFloat64Vec2		sImportMaximum;
+	bool				bImportBox;
 };
 
 
@@ -286,6 +293,8 @@ protected:
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	bool							GetItemBox(size uiItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+	void							MeasureImportBoxes(void);
+	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SKicadSchemPoint* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
 
