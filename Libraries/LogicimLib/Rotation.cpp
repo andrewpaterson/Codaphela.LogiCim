@@ -121,26 +121,25 @@ bool IsRotationEastWest(ERotation eRotation)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Turns a point drawn facing East to face eRotation.
+// RotatePoint for any vector with x, y and Init(x, y).
 //
 //////////////////////////////////////////////////////////////////////////
-void RotatePoint(ERotation eRotation, SFloat64Vec2* psPoint)
+template<class V>
+static void RotateVector(ERotation eRotation, V* psPoint)
 {
-	float64		x;
-	float64		y;
+	V	sPoint;
 
-	x = psPoint->x;
-	y = psPoint->y;
+	sPoint = *psPoint;
 	switch (eRotation)
 	{
 	case ROT_North:
-		psPoint->Init(y, -x);
+		psPoint->Init(sPoint.y, -sPoint.x);
 		break;
 	case ROT_South:
-		psPoint->Init(-y, x);
+		psPoint->Init(-sPoint.y, sPoint.x);
 		break;
 	case ROT_West:
-		psPoint->Init(-x, -y);
+		psPoint->Init(-sPoint.x, -sPoint.y);
 		break;
 	default:
 		break;
@@ -150,29 +149,22 @@ void RotatePoint(ERotation eRotation, SFloat64Vec2* psPoint)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Turns a point drawn facing East to face eRotation.
+//
+//////////////////////////////////////////////////////////////////////////
+void RotatePoint(ERotation eRotation, SFloat64Vec2* psPoint)
+{
+	RotateVector(eRotation, psPoint);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void RotatePoint(ERotation eRotation, SInt32Vec2* psPoint)
 {
-	int32	x;
-	int32	y;
-
-	x = psPoint->x;
-	y = psPoint->y;
-	switch (eRotation)
-	{
-	case ROT_North:
-		psPoint->Init(y, -x);
-		break;
-	case ROT_South:
-		psPoint->Init(-y, x);
-		break;
-	case ROT_West:
-		psPoint->Init(-x, -y);
-		break;
-	default:
-		break;
-	}
+	RotateVector(eRotation, psPoint);
 }
 
 
