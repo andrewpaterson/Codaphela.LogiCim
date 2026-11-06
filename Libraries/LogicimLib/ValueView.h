@@ -56,12 +56,7 @@ enum EPinAnchour
 
 struct SValueViewXML
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
+	SIntegratedCircuitXML	sIntegratedCircuit;
 	int32		iBitWidth;
 	ERadix		eRadix;
 	SInt32Vec2	sBoxMinimum;
@@ -101,6 +96,10 @@ public:
 	static	void			MeasureBox(CCircuitFonts* pcFonts, int32 iBitWidth, ERadix eRadix, SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum);
 	static	bool			LoadValueXML(CMarkupTag* pcTag, SValueViewXML* psValue);
 
+	virtual bool			LoadXML(CMarkupTag* pcTag);
+	virtual bool			InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool			InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
+
 protected:
 	virtual	void			SaveXMLAttributes(CXMLWriter* pcWriter);
 			void			CreateValuePortViews(const char* szPortName);
@@ -119,8 +118,7 @@ public:
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
-	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-	virtual bool					LoadXML(CMarkupTag* pcTag);
+	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 };
 
@@ -136,8 +134,7 @@ public:
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
-	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-	virtual bool					LoadXML(CMarkupTag* pcTag);
+	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 };
 
@@ -165,6 +162,7 @@ public:
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);

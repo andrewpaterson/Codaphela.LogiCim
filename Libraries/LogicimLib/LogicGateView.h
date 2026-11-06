@@ -41,12 +41,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //The properties a gate is saved with.  The strings point into the tag they were read from.
 struct SLogicGateXML
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
+	SIntegratedCircuitXML	sIntegratedCircuit;
 	int32		iInputCount;
 	int32		iInputWidth;
 	int32		iPinSpacing;
@@ -83,6 +78,10 @@ public:
 	static	void	GetPortNames(CArrayChars* paszNames, const char* szName, int iPortNumber, int iInputWidth, int iInputCount);
 
 	static	bool	LoadLogicGateXML(CMarkupTag* pcTag, SLogicGateXML* psGate);
+
+	virtual bool	LoadXML(CMarkupTag* pcTag);
+	virtual bool	InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool	InitGate(SLogicGateXML* psGate);
 
 protected:
 	virtual	void	SaveXMLAttributes(CXMLWriter* pcWriter);

@@ -798,19 +798,14 @@ void CLogicBlockView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicBlockView::LoadXML(CMarkupTag* pcTag)
 {
-	int32				x;
-	int32				y;
-	ERotation			eRotation;
-	char*				szName;
-	char*				szFamily;
-	bool				bExplicitPowerPorts;
+	SIntegratedCircuitXML	sIntegratedCircuit;
 	ELogicBlockKind		eKind;
 	SLogicBlockParams	sParams;
 	int32				iValue;
 	bool				bValue;
 
 	eKind = GetBlockKind();
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
+	if (!LoadIntegratedCircuitXML(pcTag, &sIntegratedCircuit))
 	{
 		return false;
 	}
@@ -847,7 +842,7 @@ bool CLogicBlockView::LoadXML(CMarkupTag* pcTag)
 	{
 		sParams.iPinSpacing = iValue;
 	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, eKind, &sParams);
+	Init(sIntegratedCircuit.x, sIntegratedCircuit.y, sIntegratedCircuit.eRotation, sIntegratedCircuit.szName, sIntegratedCircuit.szFamily, sIntegratedCircuit.bExplicitPowerPorts, eKind, &sParams);
 	return true;
 }
 

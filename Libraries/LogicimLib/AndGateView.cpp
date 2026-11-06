@@ -138,17 +138,10 @@ const char* CAndGateView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CAndGateView::LoadXML(CMarkupTag* pcTag)
+bool CAndGateView::InitGate(SLogicGateXML* psGate)
 {
-	SLogicGateXML	sGate;
-
-	if (!LoadLogicGateXML(pcTag, &sGate))
-	{
-		return false;
-	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth, sGate.iPinSpacing);
+	Init(psGate->sIntegratedCircuit.x, psGate->sIntegratedCircuit.y, psGate->sIntegratedCircuit.eRotation, psGate->sIntegratedCircuit.szName, psGate->sIntegratedCircuit.szFamily, psGate->sIntegratedCircuit.bExplicitPowerPorts, psGate->iInputCount, psGate->iInputWidth, psGate->iPinSpacing);
 	return true;
 }
 
@@ -165,38 +158,10 @@ const char* CNandGateView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CNandGateView::LoadXML(CMarkupTag* pcTag)
+bool CNandGateView::InitGate(SLogicGateXML* psGate)
 {
-	SLogicGateXML	sGate;
-
-	if (!LoadLogicGateXML(pcTag, &sGate))
-	{
-		return false;
-	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth, sGate.iPinSpacing);
+	Init(psGate->sIntegratedCircuit.x, psGate->sIntegratedCircuit.y, psGate->sIntegratedCircuit.eRotation, psGate->sIntegratedCircuit.szName, psGate->sIntegratedCircuit.szFamily, psGate->sIntegratedCircuit.bExplicitPowerPorts, psGate->iInputCount, psGate->iInputWidth, psGate->iPinSpacing);
 	return true;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CAndGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
-	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CNandGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
-	return true;
-}

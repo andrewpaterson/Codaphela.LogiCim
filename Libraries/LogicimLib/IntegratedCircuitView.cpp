@@ -152,6 +152,81 @@ bool CIntegratedCircuitView::LoadXMLFamily(CMarkupTag* pcTag, char** pszFamily, 
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Its placement and family, as every IC is saved with.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CIntegratedCircuitView::LoadIntegratedCircuitXML(CMarkupTag* pcTag, SIntegratedCircuitXML* psIntegratedCircuit)
+{
+	return LoadXMLPlacement(pcTag, &psIntegratedCircuit->x, &psIntegratedCircuit->y, &psIntegratedCircuit->eRotation, &psIntegratedCircuit->szName) &&
+		   LoadXMLFamily(pcTag, &psIntegratedCircuit->szFamily, &psIntegratedCircuit->bExplicitPowerPorts);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The placement and the name and family properties, the IC's own as
+// they are for any missing.
+//
+//////////////////////////////////////////////////////////////////////////
+void CIntegratedCircuitView::GetIntegratedCircuitProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SIntegratedCircuitXML* psIntegratedCircuit)
+{
+	psIntegratedCircuit->x = x;
+	psIntegratedCircuit->y = y;
+	psIntegratedCircuit->eRotation = eRotation;
+	psIntegratedCircuit->szName = (char*)pcProperties->GetText("name", "");
+	psIntegratedCircuit->szFamily = (char*)pcProperties->GetText("family", "");
+	psIntegratedCircuit->bExplicitPowerPorts = pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An IC saved with only its placement and family (see
+// InitIntegratedCircuit).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CIntegratedCircuitView::LoadXML(CMarkupTag* pcTag)
+{
+	SIntegratedCircuitXML	sIntegratedCircuit;
+
+	if (!LoadIntegratedCircuitXML(pcTag, &sIntegratedCircuit))
+	{
+		return false;
+	}
+	return InitIntegratedCircuit(&sIntegratedCircuit);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An IC with only placement, name and family properties (see
+// InitIntegratedCircuit).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CIntegratedCircuitView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
+{
+	SIntegratedCircuitXML	sIntegratedCircuit;
+
+	GetIntegratedCircuitProperties(x, y, eRotation, pcProperties, &sIntegratedCircuit);
+	return InitIntegratedCircuit(&sIntegratedCircuit);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Made from only its placement and family, by an IC that has nothing
+// else to be saved with, so LoadXML and InitFromProperties needn't be its
+// own.  An IC with more overrides those instead.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CIntegratedCircuitView::InitIntegratedCircuit(SIntegratedCircuitXML* psIntegratedCircuit)
+{
+	return gcLogger.Error2(__METHOD__, " [", GetType(), "] isn't made from only its placement and family.", NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Makes the IC in the path's subcircuit simulation and connects the port
 // views to it.
 //

@@ -42,6 +42,31 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
+// What a 74 series package and unit are both saved with: their placement,
+// family, part type and pin spacing (1 when it isn't written).
+//
+//////////////////////////////////////////////////////////////////////////
+static bool LoadLogic74XML(CMarkupTag* pcTag, SLogic74XML* psPart)
+{
+	if (!CIntegratedCircuitView::LoadIntegratedCircuitXML(pcTag, &psPart->sIntegratedCircuit))
+	{
+		return false;
+	}
+	psPart->szPartType = pcTag->GetStringAttribute("partType");
+	if (StrEmpty(psPart->szPartType))
+	{
+		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a partType attribute.", NULL);
+	}
+	if (!pcTag->GetInt32Attribute("pinSpacing", &psPart->iPinSpacing))
+	{
+		psPart->iPinSpacing = 1;
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Half the height of a gate as its view draws it: a buffer's triangle or
 // a gate's body.
 //
@@ -413,29 +438,13 @@ void CLogic74PackageView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool CLogic74PackageView::LoadXML(CMarkupTag* pcTag)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
-	char*		szPartType;
-	int32		iPinSpacing;
+	SLogic74XML	sPart;
 
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
+	if (!LoadLogic74XML(pcTag, &sPart))
 	{
 		return false;
 	}
-	szPartType = pcTag->GetStringAttribute("partType");
-	if (StrEmpty(szPartType))
-	{
-		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a partType attribute.", NULL);
-	}
-	if (!pcTag->GetInt32Attribute("pinSpacing", &iPinSpacing))
-	{
-		iPinSpacing = 1;
-	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, szPartType, iPinSpacing);
+	Init(sPart.sIntegratedCircuit.x, sPart.sIntegratedCircuit.y, sPart.sIntegratedCircuit.eRotation, sPart.sIntegratedCircuit.szName, sPart.sIntegratedCircuit.szFamily, sPart.sIntegratedCircuit.bExplicitPowerPorts, sPart.szPartType, sPart.iPinSpacing);
 	return true;
 }
 
@@ -721,35 +730,19 @@ void CLogic74UnitView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool CLogic74UnitView::LoadXML(CMarkupTag* pcTag)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
-	char*		szPartType;
+	SLogic74XML	sPart;
 	char*		szUnit;
-	int32		iPinSpacing;
 
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
+	if (!LoadLogic74XML(pcTag, &sPart))
 	{
 		return false;
-	}
-	szPartType = pcTag->GetStringAttribute("partType");
-	if (StrEmpty(szPartType))
-	{
-		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a partType attribute.", NULL);
 	}
 	szUnit = pcTag->GetStringAttribute("unit");
 	if ((szUnit == NULL) || (szUnit[0] < 'A') || (szUnit[0] >= 'A' + LOGIC_74_MAX_UNITS) || (szUnit[1] != '\0'))
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a unit letter.", NULL);
 	}
-	if (!pcTag->GetInt32Attribute("pinSpacing", &iPinSpacing))
-	{
-		iPinSpacing = 1;
-	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, szPartType, szUnit[0] - 'A', iPinSpacing);
+	Init(sPart.sIntegratedCircuit.x, sPart.sIntegratedCircuit.y, sPart.sIntegratedCircuit.eRotation, sPart.sIntegratedCircuit.szName, sPart.sIntegratedCircuit.szFamily, sPart.sIntegratedCircuit.bExplicitPowerPorts, sPart.szPartType, szUnit[0] - 'A', sPart.iPinSpacing);
 	return true;
 }
 

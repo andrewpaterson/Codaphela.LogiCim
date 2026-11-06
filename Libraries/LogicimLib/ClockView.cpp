@@ -140,16 +140,11 @@ void CClockView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool CClockView::LoadXML(CMarkupTag* pcTag)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
+	SIntegratedCircuitXML	sIntegratedCircuit;
 	float64		fFrequency;
 	bool		bInverseOut;
 
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
+	if (!LoadIntegratedCircuitXML(pcTag, &sIntegratedCircuit))
 	{
 		return false;
 	}
@@ -161,7 +156,7 @@ bool CClockView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] inverseOut must be true or false.", NULL);
 	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, fFrequency, bInverseOut);
+	Init(sIntegratedCircuit.x, sIntegratedCircuit.y, sIntegratedCircuit.eRotation, sIntegratedCircuit.szName, sIntegratedCircuit.szFamily, sIntegratedCircuit.bExplicitPowerPorts, fFrequency, bInverseOut);
 	return true;
 }
 

@@ -112,16 +112,11 @@ void CCounterView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool CCounterView::LoadXML(CMarkupTag* pcTag)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
+	SIntegratedCircuitXML	sIntegratedCircuit;
 	int32		iBitWidth;
 	int64		iTerminalValue;
 
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
+	if (!LoadIntegratedCircuitXML(pcTag, &sIntegratedCircuit))
 	{
 		return false;
 	}
@@ -133,7 +128,7 @@ bool CCounterView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a whole number terminalValue.", NULL);
 	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, (uint32)iTerminalValue);
+	Init(sIntegratedCircuit.x, sIntegratedCircuit.y, sIntegratedCircuit.eRotation, sIntegratedCircuit.szName, sIntegratedCircuit.szFamily, sIntegratedCircuit.bExplicitPowerPorts, iBitWidth, (uint32)iTerminalValue);
 	return true;
 }
 

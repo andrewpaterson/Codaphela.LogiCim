@@ -218,6 +218,56 @@ void CValueView::SaveXMLAttributes(CXMLWriter* pcWriter)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A value view saved with its placement, family, bits, radix and box (see
+// InitValue).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CValueView::LoadXML(CMarkupTag* pcTag)
+{
+	SValueViewXML	sValue;
+
+	if (!LoadValueXML(pcTag, &sValue))
+	{
+		return false;
+	}
+	return InitValue(&sValue, NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A value view from its properties, the view's own for any missing, its
+// box measured with the fonts (see InitValue).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CValueView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
+{
+	SValueViewXML	sValue;
+
+	GetIntegratedCircuitProperties(x, y, eRotation, pcProperties, &sValue.sIntegratedCircuit);
+	sValue.iBitWidth = (int32)pcProperties->GetInteger("bitWidth", miBitWidth);
+	sValue.eRadix = GetRadixProperty(pcProperties, meRadix);
+	sValue.sBoxMinimum.Init(0, 0);
+	sValue.sBoxMaximum.Init(0, 0);
+	return InitValue(&sValue, psContext->pcFonts);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Made from what a value view is saved with, its box measured with the
+// fonts unless they're NULL, so LoadXML and InitFromProperties needn't be
+// each view's own.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CValueView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
+{
+	return gcLogger.Error2(__METHOD__, " [", GetType(), "] isn't made from a value view's settings.", NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The box is loaded rather than measured, so the component keeps the size
 // it was made with.
 //
@@ -226,11 +276,7 @@ bool CValueView::LoadValueXML(CMarkupTag* pcTag, SValueViewXML* psValue)
 {
 	char*	szRadix;
 
-	if (!LoadXMLPlacement(pcTag, &psValue->x, &psValue->y, &psValue->eRotation, &psValue->szName))
-	{
-		return false;
-	}
-	if (!LoadXMLFamily(pcTag, &psValue->szFamily, &psValue->bExplicitPowerPorts))
+	if (!LoadIntegratedCircuitXML(pcTag, &psValue->sIntegratedCircuit))
 	{
 		return false;
 	}
@@ -308,17 +354,17 @@ const char* CConstantView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CConstantView::LoadXML(CMarkupTag* pcTag)
+bool CConstantView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
 {
-	SValueViewXML	sValue;
-
-	if (!LoadValueXML(pcTag, &sValue))
+	if (pcFonts != NULL)
 	{
-		return false;
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, pcFonts);
 	}
-	Init(sValue.x, sValue.y, sValue.eRotation, sValue.szName, sValue.szFamily, sValue.bExplicitPowerPorts, sValue.iBitWidth, sValue.eRadix, sValue.sBoxMinimum, sValue.sBoxMaximum);
+	else
+	{
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, psValue->sBoxMinimum, psValue->sBoxMaximum);
+	}
 	return true;
 }
 
@@ -400,17 +446,17 @@ const char* CProbeView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CProbeView::LoadXML(CMarkupTag* pcTag)
+bool CProbeView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
 {
-	SValueViewXML	sValue;
-
-	if (!LoadValueXML(pcTag, &sValue))
+	if (pcFonts != NULL)
 	{
-		return false;
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, pcFonts);
 	}
-	Init(sValue.x, sValue.y, sValue.eRotation, sValue.szName, sValue.szFamily, sValue.bExplicitPowerPorts, sValue.iBitWidth, sValue.eRadix, sValue.sBoxMinimum, sValue.sBoxMaximum);
+	else
+	{
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, psValue->sBoxMinimum, psValue->sBoxMaximum);
+	}
 	return true;
 }
 
@@ -529,6 +575,23 @@ void CPinView::SaveXMLAttributes(CXMLWriter* pcWriter)
 
 //////////////////////////////////////////////////////////////////////////
 //
+//////////////////////////////////////////////////////////////////////////
+bool CPinView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
+{
+	if (pcFonts != NULL)
+	{
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, pcFonts);
+	}
+	else
+	{
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, psValue->sBoxMinimum, psValue->sBoxMaximum);
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 bool CPinView::LoadXML(CMarkupTag* pcTag)
@@ -554,7 +617,7 @@ bool CPinView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a whole number weight and inverting and clockNotch true or false.", NULL);
 	}
-	Init(sValue.x, sValue.y, sValue.eRotation, sValue.szName, sValue.szFamily, sValue.bExplicitPowerPorts, sValue.iBitWidth, sValue.eRadix, sValue.sBoxMinimum, sValue.sBoxMaximum);
+	InitValue(&sValue, NULL);
 	SetSubcircuitAppearance(eAlignment, eAnchour, iWeight, bInverting, bClockNotch);
 	return true;
 }
@@ -778,28 +841,6 @@ ERadix GetRadixProperty(CComponentProperties* pcProperties, ERadix eDefault)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
-//////////////////////////////////////////////////////////////////////////
-bool CConstantView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int32)pcProperties->GetInteger("bitWidth", miBitWidth), GetRadixProperty(pcProperties, meRadix), psContext->pcFonts);
-	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CProbeView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int32)pcProperties->GetInteger("bitWidth", miBitWidth), GetRadixProperty(pcProperties, meRadix), psContext->pcFonts);
-	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // As Logicim's PinProperties: where and how it's shown on an instance of
 // its subcircuit after its name, width and power.
 //
@@ -829,7 +870,7 @@ void CPinView::GetProperties(CComponentProperties* pcProperties, SComponentPrope
 //////////////////////////////////////////////////////////////////////////
 bool CPinView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int32)pcProperties->GetInteger("bitWidth", miBitWidth), GetRadixProperty(pcProperties, meRadix), psContext->pcFonts);
+	CValueView::InitFromProperties(x, y, eRotation, pcProperties, psContext);
 	SetSubcircuitAppearance((EPinAlignment)(PA_Left + pcProperties->GetChoice("alignment", (size)meAlignment - PA_Left)), (EPinAnchour)(PAN_Negative + pcProperties->GetChoice("anchour", (size)meAnchour - PAN_Negative)), (int32)pcProperties->GetInteger("weight", miWeight), pcProperties->GetBoolean("inverting", mbInverting), pcProperties->GetBoolean("clockNotch", mbClockNotch));
 	return true;
 }

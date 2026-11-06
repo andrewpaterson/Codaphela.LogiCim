@@ -66,22 +66,10 @@ const char* CDTypeFlipFlopView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CDTypeFlipFlopView::LoadXML(CMarkupTag* pcTag)
+bool CDTypeFlipFlopView::InitIntegratedCircuit(SIntegratedCircuitXML* psIntegratedCircuit)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
-
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
-	{
-		return false;
-	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts);
+	Init(psIntegratedCircuit->x, psIntegratedCircuit->y, psIntegratedCircuit->eRotation, psIntegratedCircuit->szName, psIntegratedCircuit->szFamily, psIntegratedCircuit->bExplicitPowerPorts);
 	return true;
 }
 
@@ -109,13 +97,3 @@ void CDTypeFlipFlopView::GetProperties(CComponentProperties* pcProperties, SComp
 	AddPowerProperties(pcProperties, psContext);
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CDTypeFlipFlopView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts));
-	return true;
-}

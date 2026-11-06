@@ -43,6 +43,53 @@ void CLogicGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szN
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A gate saved with its placement, family and inputs (see InitGate).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicGateView::LoadXML(CMarkupTag* pcTag)
+{
+	SLogicGateXML	sGate;
+
+	if (!LoadLogicGateXML(pcTag, &sGate))
+	{
+		return false;
+	}
+	return InitGate(&sGate);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A gate from its properties, the gate's own for any missing (see
+// InitGate).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
+{
+	SLogicGateXML	sGate;
+
+	GetIntegratedCircuitProperties(x, y, eRotation, pcProperties, &sGate.sIntegratedCircuit);
+	sGate.iInputCount = (int32)pcProperties->GetInteger("inputCount", miInputCount);
+	sGate.iInputWidth = (int32)pcProperties->GetInteger("inputWidth", miInputWidth);
+	sGate.iPinSpacing = (int32)pcProperties->GetInteger("pinSpacing", miPinSpacing);
+	return InitGate(&sGate);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Made from what a gate is saved with, so LoadXML and InitFromProperties
+// needn't be each gate's own.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicGateView::InitGate(SLogicGateXML* psGate)
+{
+	return gcLogger.Error2(__METHOD__, " [", GetType(), "] isn't made from a gate's settings.", NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicGateView::SaveXMLAttributes(CXMLWriter* pcWriter)
@@ -64,11 +111,7 @@ void CLogicGateView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicGateView::LoadLogicGateXML(CMarkupTag* pcTag, SLogicGateXML* psGate)
 {
-	if (!LoadXMLPlacement(pcTag, &psGate->x, &psGate->y, &psGate->eRotation, &psGate->szName))
-	{
-		return false;
-	}
-	if (!LoadXMLFamily(pcTag, &psGate->szFamily, &psGate->bExplicitPowerPorts))
+	if (!LoadIntegratedCircuitXML(pcTag, &psGate->sIntegratedCircuit))
 	{
 		return false;
 	}

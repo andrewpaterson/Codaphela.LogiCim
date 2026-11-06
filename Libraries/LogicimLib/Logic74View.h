@@ -29,6 +29,15 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define LOGIC_74_MAX_UNITS			26
 
 
+//What a 74 series package and unit are both saved with.  The strings point into the tag they were read from.
+struct SLogic74XML
+{
+	SIntegratedCircuitXML	sIntegratedCircuit;
+	char*					szPartType;
+	int32					iPinSpacing;
+};
+
+
 //A whole real 74 series part (see SLogic74Part) drawn as one block, its part type saved with it.  A part of gates is a
 //box with its gates drawn inside one above the other, each gate's inputs out to the left of the box and its output out
 //to the right, named as the part's pins are ("1A", "1B" and "1Y").  Its description ("Quad 2-Input NAND") is at the

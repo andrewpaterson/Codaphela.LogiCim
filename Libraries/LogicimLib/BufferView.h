@@ -33,8 +33,7 @@ public:
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
-	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-	virtual bool					LoadXML(CMarkupTag* pcTag);
+	virtual bool					InitGate(SLogicGateXML* psGate);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
 	static	void					AddBufferShape(CComponentShapes* pcShapes, float64 x, float64 y, float64 fHalfWidth);
@@ -55,8 +54,7 @@ public:
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
-	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-	virtual bool					LoadXML(CMarkupTag* pcTag);
+	virtual bool					InitGate(SLogicGateXML* psGate);
 };
 
 

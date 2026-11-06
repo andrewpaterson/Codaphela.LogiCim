@@ -47,6 +47,18 @@ struct SPortViewCreator
 //implied Vcc, if it has one, otherwise the family's default (TTL) voltage, when it's made.  A KiCad import gives the
 //ICs a voltage regulator powers its voltage.  Explicit power ports are drawn as a VCC port on the left of the
 //bounding box and a GND port on the right, each with a grid unit of line to the shapes.
+//What every IC is saved with: its placement and its family.  The strings point into the tag they were read from.
+struct SIntegratedCircuitXML
+{
+	int32		x;
+	int32		y;
+	ERotation	eRotation;
+	char*		szName;
+	char*		szFamily;
+	bool		bExplicitPowerPorts;
+};
+
+
 class CIntegratedCircuitView : public CComponentView
 {
 CONSTRUCTABLE(CIntegratedCircuitView);
@@ -68,6 +80,10 @@ public:
 			bool					IsExplicitPowerPorts(void);
 			void					SetImpliedVcc(float32 fImpliedVcc);
 			float32					GetImpliedVcc(void);
+	static	bool					LoadIntegratedCircuitXML(CMarkupTag* pcTag, SIntegratedCircuitXML* psIntegratedCircuit);
+	virtual bool					LoadXML(CMarkupTag* pcTag);
+	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool					InitIntegratedCircuit(SIntegratedCircuitXML* psIntegratedCircuit);
 	virtual bool					LoadXMLAfterInit(CMarkupTag* pcTag);
 	virtual void					InitAfterProperties(CComponentProperties* pcProperties);
 			CIntegratedCircuit*		GetIntegratedCircuit(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
@@ -75,6 +91,7 @@ public:
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
 	static	bool					LoadXMLFamily(CMarkupTag* pcTag, char** pszFamily, bool* pbExplicitPowerPorts);
+			void					GetIntegratedCircuitProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SIntegratedCircuitXML* psIntegratedCircuit);
 			void					AddFamilyProperty(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 			void					AddPowerProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 			void					CreatePowerPortViews(void);

@@ -150,17 +150,10 @@ const char* CBufferView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CBufferView::LoadXML(CMarkupTag* pcTag)
+bool CBufferView::InitGate(SLogicGateXML* psGate)
 {
-	SLogicGateXML	sGate;
-
-	if (!LoadLogicGateXML(pcTag, &sGate))
-	{
-		return false;
-	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth);
+	Init(psGate->sIntegratedCircuit.x, psGate->sIntegratedCircuit.y, psGate->sIntegratedCircuit.eRotation, psGate->sIntegratedCircuit.szName, psGate->sIntegratedCircuit.szFamily, psGate->sIntegratedCircuit.bExplicitPowerPorts, psGate->iInputCount, psGate->iInputWidth);
 	return true;
 }
 
@@ -177,38 +170,10 @@ const char* CInverterView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool CInverterView::LoadXML(CMarkupTag* pcTag)
+bool CInverterView::InitGate(SLogicGateXML* psGate)
 {
-	SLogicGateXML	sGate;
-
-	if (!LoadLogicGateXML(pcTag, &sGate))
-	{
-		return false;
-	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth);
+	Init(psGate->sIntegratedCircuit.x, psGate->sIntegratedCircuit.y, psGate->sIntegratedCircuit.eRotation, psGate->sIntegratedCircuit.szName, psGate->sIntegratedCircuit.szFamily, psGate->sIntegratedCircuit.bExplicitPowerPorts, psGate->iInputCount, psGate->iInputWidth);
 	return true;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CBufferView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth));
-	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CInverterView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth));
-	return true;
-}

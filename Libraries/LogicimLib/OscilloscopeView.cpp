@@ -201,19 +201,14 @@ void COscilloscopeView::SaveXMLAttributes(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 bool COscilloscopeView::LoadXML(CMarkupTag* pcTag)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
+	SIntegratedCircuitXML	sIntegratedCircuit;
 	int32		iInputCount;
 	int32		iNumberOfDivsWide;
 	int32		iSamplesPerDiv;
 	int32		iDivHeight;
 	float64		fSampleFrequency;
 
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
+	if (!LoadIntegratedCircuitXML(pcTag, &sIntegratedCircuit))
 	{
 		return false;
 	}
@@ -228,7 +223,7 @@ bool COscilloscopeView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has a property out of range.", NULL);
 	}
-	Init(x, y, eRotation, szName, szFamily, iInputCount, iNumberOfDivsWide, iSamplesPerDiv, iDivHeight, fSampleFrequency);
+	Init(sIntegratedCircuit.x, sIntegratedCircuit.y, sIntegratedCircuit.eRotation, sIntegratedCircuit.szName, sIntegratedCircuit.szFamily, iInputCount, iNumberOfDivsWide, iSamplesPerDiv, iDivHeight, fSampleFrequency);
 	return true;
 }
 

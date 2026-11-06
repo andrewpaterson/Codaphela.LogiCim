@@ -237,22 +237,10 @@ const char* C65C64View::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
 //////////////////////////////////////////////////////////////////////////
-bool C65C64View::LoadXML(CMarkupTag* pcTag)
+bool C65C64View::InitIntegratedCircuit(SIntegratedCircuitXML* psIntegratedCircuit)
 {
-	int32		x;
-	int32		y;
-	ERotation	eRotation;
-	char*		szName;
-	char*		szFamily;
-	bool		bExplicitPowerPorts;
-
-	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
-	{
-		return false;
-	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts);
+	Init(psIntegratedCircuit->x, psIntegratedCircuit->y, psIntegratedCircuit->eRotation, psIntegratedCircuit->szName, psIntegratedCircuit->szFamily, psIntegratedCircuit->bExplicitPowerPorts);
 	return true;
 }
 
@@ -301,13 +289,3 @@ void C65C64View::GetProperties(CComponentProperties* pcProperties, SComponentPro
 	AddPowerProperties(pcProperties, psContext);
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool C65C64View::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
-{
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts));
-	return true;
-}
