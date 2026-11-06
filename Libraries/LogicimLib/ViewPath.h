@@ -146,6 +146,150 @@ M* FindViewPathSimulation(CArrayTemplate<M>* pasElements, CViewPath* pcViewPath,
 }
 
 
+//The pointers a view keeps for each view path and circuit simulation it's in: a port view's ports, a wire's traces.
+template<class M>
+class CViewPathPointers
+{
+protected:
+	struct SPathPointers
+	{
+		CViewPath*				pcViewPath;
+		CCircuitSimulation*		pcCircuitSimulation;
+		CArrayTemplatePtr<M>	apcPointers;
+	};
+
+	CArrayTemplate<SPathPointers>	masPaths;
+
+public:
+	void					Init(void);
+	void					Kill(void);
+
+	CArrayTemplatePtr<M>*	Set(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
+	void					Remove(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
+	CArrayTemplatePtr<M>*	Get(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
+	size					Num(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
+	M*						Get(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CViewPathPointers<M>::Init(void)
+{
+	masPaths.Init();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CViewPathPointers<M>::Kill(void)
+{
+	size	i;
+
+	for (i = 0; i < masPaths.NumElements(); i++)
+	{
+		masPaths.Get(i)->apcPointers.Kill();
+	}
+	masPaths.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The empty array for the path and simulation, replacing any it had.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+CArrayTemplatePtr<M>* CViewPathPointers<M>::Set(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
+{
+	SPathPointers*	psPath;
+
+	Remove(pcViewPath, pcCircuitSimulation);
+	psPath = masPaths.Add();
+	psPath->pcViewPath = pcViewPath;
+	psPath->pcCircuitSimulation = pcCircuitSimulation;
+	psPath->apcPointers.Init();
+	return &psPath->apcPointers;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CViewPathPointers<M>::Remove(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
+{
+	SPathPointers*	psPath;
+	size			uiIndex;
+
+	psPath = FindViewPathSimulation(&masPaths, pcViewPath, pcCircuitSimulation, &uiIndex);
+	if (psPath != NULL)
+	{
+		psPath->apcPointers.Kill();
+		masPaths.RemoveAt(uiIndex, true);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// NULL if the view has none for the path and simulation.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+CArrayTemplatePtr<M>* CViewPathPointers<M>::Get(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
+{
+	SPathPointers*	psPath;
+
+	psPath = FindViewPathSimulation(&masPaths, pcViewPath, pcCircuitSimulation, NULL);
+	if (psPath == NULL)
+	{
+		return NULL;
+	}
+	return &psPath->apcPointers;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+size CViewPathPointers<M>::Num(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
+{
+	CArrayTemplatePtr<M>*	papcPointers;
+
+	papcPointers = Get(pcViewPath, pcCircuitSimulation);
+	if (papcPointers == NULL)
+	{
+		return 0;
+	}
+	return papcPointers->NumElements();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// NULL past the end.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+M* CViewPathPointers<M>::Get(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex)
+{
+	CArrayTemplatePtr<M>*	papcPointers;
+
+	papcPointers = Get(pcViewPath, pcCircuitSimulation);
+	if (papcPointers == NULL)
+	{
+		return NULL;
+	}
+	return papcPointers->SafeGetPtr(uiIndex);
+}
+
+
 //Logicim's ViewPaths: every path from each top circuit down through the subcircuit instances in it.  It owns them;
 //they keep their place (and so the components keyed by them) for as long as the views they run through.
 class CViewPaths

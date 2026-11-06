@@ -28,6 +28,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "Rotation.h"
 #include "CircuitPainter.h"
 #include "ComponentSpriteCache.h"
+#include "ViewPath.h"
 
 
 #define PORT_BUBBLE_DIAMETER	0.9
@@ -38,18 +39,6 @@ class CComponentView;
 class CCircuitComponent;
 class CViewPath;
 class CCircuitSimulation;
-
-
-//A port view's ports in one circuit simulation of one view path.
-struct SViewPathPorts
-{
-	CViewPath*				pcViewPath;
-	CCircuitSimulation*		pcCircuitSimulation;
-	CArrayPortPtr			apcPorts;
-};
-
-
-typedef CArrayTemplate<SViewPathPorts>	CArrayViewPathPorts;
 
 
 //Where a component's ports join the circuit, as Logicim's PortView.  One view can stand for several ports (the bits
@@ -71,7 +60,7 @@ protected:
 	bool				mbClock;
 	SFloat64Vec2		masClockNotch[3];
 	bool				mbDrawn;
-	CArrayViewPathPorts	masPorts;
+	CViewPathPointers<CPort>	mcPorts;
 	SComponentSpriteMemo	msSpriteMemo;  //With a sprite cache the port is drawn from a sprite shared by every port like it.
 
 public:
@@ -104,9 +93,6 @@ public:
 	CPort*				GetPort(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex);
 	CArrayPortPtr*		GetPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 	CComponentView*		GetOwner(void);
-
-protected:
-	SViewPathPorts*		FindPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size* puiIndex);
 };
 
 

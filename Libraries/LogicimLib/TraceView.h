@@ -26,6 +26,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/MarkupTag.h"
 #include "MicroprocessorLib/Trace.h"
 #include "CircuitPainter.h"
+#include "ViewPath.h"
 
 
 typedef CArrayTemplatePtr<CTrace>	CArrayTraceViewTracePtr;
@@ -33,18 +34,6 @@ typedef CArrayTemplatePtr<CTrace>	CArrayTraceViewTracePtr;
 
 class CViewPath;
 class CCircuitSimulation;
-
-
-//A wire's traces in one circuit simulation of one view path.
-struct SViewPathTraces
-{
-	CViewPath*					pcViewPath;
-	CCircuitSimulation*			pcCircuitSimulation;
-	CArrayTraceViewTracePtr		apcTraces;
-};
-
-
-typedef CArrayTemplate<SViewPathTraces>	CArrayViewPathTraces;
 
 
 //A straight piece of wire between two grid points, as Logicim's TraceView.  It carries one trace per bit of the
@@ -57,7 +46,7 @@ CONSTRUCTABLE(CTraceView);
 protected:
 	SInt32Vec2					msStart;
 	SInt32Vec2					msEnd;
-	CArrayViewPathTraces		masTraces;
+	CViewPathPointers<CTrace>	mcTraces;
 	bool						mbStartJunction;
 	bool						mbEndJunction;
 
@@ -88,7 +77,6 @@ public:
 
 protected:
 			ARGB32				GetColour(CCircuitPainter* pcPainter);
-			SViewPathTraces*	FindTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size* puiIndex);
 };
 
 

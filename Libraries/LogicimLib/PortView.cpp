@@ -59,7 +59,7 @@ void CPortView::Init(CComponentView* pcOwner, CArrayChars* paszPortNames, int32 
 	masClockNotch[1].Init(0, 0);
 	masClockNotch[2].Init(0, 0);
 	mbDrawn = true;
-	masPorts.Init();
+	mcPorts.Init();
 	InitComponentSpriteMemo(&msSpriteMemo);
 }
 
@@ -70,13 +70,7 @@ void CPortView::Init(CComponentView* pcOwner, CArrayChars* paszPortNames, int32 
 //////////////////////////////////////////////////////////////////////////
 void CPortView::Kill(void)
 {
-	size	i;
-
-	for (i = 0; i < masPorts.NumElements(); i++)
-	{
-		masPorts.Get(i)->apcPorts.Kill();
-	}
-	masPorts.Kill();
+	mcPorts.Kill();
 	mszText.Kill();
 	maszPortNames.Kill();
 	mpcOwner = NULL;
@@ -174,13 +168,9 @@ bool CPortView::Connect(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimu
 	size				i;
 	CPort*				pcPort;
 	char*				szName;
-	SViewPathPorts*		psPorts;
+	CArrayPortPtr*		papcPorts;
 
-	Disconnect(pcViewPath, pcCircuitSimulation);
-	psPorts = masPorts.Add();
-	psPorts->pcViewPath = pcViewPath;
-	psPorts->pcCircuitSimulation = pcCircuitSimulation;
-	psPorts->apcPorts.Init();
+	papcPorts = mcPorts.Set(pcViewPath, pcCircuitSimulation);
 	for (i = 0; i < maszPortNames.NumElements(); i++)
 	{
 		szName = maszPortNames.GetText(i);
@@ -190,7 +180,7 @@ bool CPortView::Connect(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimu
 			Disconnect(pcViewPath, pcCircuitSimulation);
 			return gcLogger.Error2(__METHOD__, " Cannot find port [", szName, "] on [", pcComponent->GetComponentName(), "].", NULL);
 		}
-		psPorts->apcPorts.Add(pcPort);
+		papcPorts->Add(pcPort);
 	}
 	return true;
 }
@@ -202,25 +192,7 @@ bool CPortView::Connect(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimu
 //////////////////////////////////////////////////////////////////////////
 void CPortView::Disconnect(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
 {
-	SViewPathPorts*		psPorts;
-	size				uiIndex;
-
-	psPorts = FindPorts(pcViewPath, pcCircuitSimulation, &uiIndex);
-	if (psPorts != NULL)
-	{
-		psPorts->apcPorts.Kill();
-		masPorts.RemoveAt(uiIndex, true);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-SViewPathPorts* CPortView::FindPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size* puiIndex)
-{
-	return FindViewPathSimulation(&masPorts, pcViewPath, pcCircuitSimulation, puiIndex);
+	mcPorts.Remove(pcViewPath, pcCircuitSimulation);
 }
 
 
@@ -231,14 +203,7 @@ SViewPathPorts* CPortView::FindPorts(CViewPath* pcViewPath, CCircuitSimulation* 
 //////////////////////////////////////////////////////////////////////////
 CArrayPortPtr* CPortView::GetPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
 {
-	SViewPathPorts*		psPorts;
-
-	psPorts = FindPorts(pcViewPath, pcCircuitSimulation, NULL);
-	if (psPorts == NULL)
-	{
-		return NULL;
-	}
-	return &psPorts->apcPorts;
+	return mcPorts.Get(pcViewPath, pcCircuitSimulation);
 }
 
 
@@ -248,14 +213,7 @@ CArrayPortPtr* CPortView::GetPorts(CViewPath* pcViewPath, CCircuitSimulation* pc
 //////////////////////////////////////////////////////////////////////////
 size CPortView::NumPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
 {
-	CArrayPortPtr*	papcPorts;
-
-	papcPorts = GetPorts(pcViewPath, pcCircuitSimulation);
-	if (papcPorts == NULL)
-	{
-		return 0;
-	}
-	return papcPorts->NumElements();
+	return mcPorts.Num(pcViewPath, pcCircuitSimulation);
 }
 
 
@@ -265,14 +223,7 @@ size CPortView::NumPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSim
 //////////////////////////////////////////////////////////////////////////
 CPort* CPortView::GetPort(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex)
 {
-	CArrayPortPtr*	papcPorts;
-
-	papcPorts = GetPorts(pcViewPath, pcCircuitSimulation);
-	if (papcPorts == NULL)
-	{
-		return NULL;
-	}
-	return papcPorts->SafeGetPtr(uiIndex);
+	return mcPorts.Get(pcViewPath, pcCircuitSimulation, uiIndex);
 }
 
 

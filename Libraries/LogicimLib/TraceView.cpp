@@ -33,7 +33,7 @@ void CTraceView::Init(int32 x0, int32 y0, int32 x1, int32 y1)
 {
 	msStart.Init(x0, y0);
 	msEnd.Init(x1, y1);
-	masTraces.Init();
+	mcTraces.Init();
 	mbStartJunction = false;
 	mbEndJunction = false;
 }
@@ -83,13 +83,7 @@ void CTraceView::SaveXML(CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 void CTraceView::Kill(void)
 {
-	size	i;
-
-	for (i = 0; i < masTraces.NumElements(); i++)
-	{
-		masTraces.Get(i)->apcTraces.Kill();
-	}
-	masTraces.Kill();
+	mcTraces.Kill();
 }
 
 
@@ -224,17 +218,13 @@ bool CTraceView::Touches(CTraceView* pcOther)
 //////////////////////////////////////////////////////////////////////////
 void CTraceView::SetTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CArrayTraceViewTracePtr* papcTraces)
 {
-	size					i;
-	SViewPathTraces*		psTraces;
+	size						i;
+	CArrayTraceViewTracePtr*	papcPathTraces;
 
-	ClearTraces(pcViewPath, pcCircuitSimulation);
-	psTraces = masTraces.Add();
-	psTraces->pcViewPath = pcViewPath;
-	psTraces->pcCircuitSimulation = pcCircuitSimulation;
-	psTraces->apcTraces.Init();
+	papcPathTraces = mcTraces.Set(pcViewPath, pcCircuitSimulation);
 	for (i = 0; i < papcTraces->NumElements(); i++)
 	{
-		psTraces->apcTraces.Add(papcTraces->GetPtr(i));
+		papcPathTraces->Add(papcTraces->GetPtr(i));
 	}
 }
 
@@ -245,15 +235,7 @@ void CTraceView::SetTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitS
 //////////////////////////////////////////////////////////////////////////
 void CTraceView::ClearTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
 {
-	SViewPathTraces*	psTraces;
-	size				uiIndex;
-
-	psTraces = FindTraces(pcViewPath, pcCircuitSimulation, &uiIndex);
-	if (psTraces != NULL)
-	{
-		psTraces->apcTraces.Kill();
-		masTraces.RemoveAt(uiIndex, true);
-	}
+	mcTraces.Remove(pcViewPath, pcCircuitSimulation);
 }
 
 
@@ -264,14 +246,7 @@ void CTraceView::ClearTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircui
 //////////////////////////////////////////////////////////////////////////
 CArrayTraceViewTracePtr* CTraceView::GetTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
 {
-	SViewPathTraces*	psTraces;
-
-	psTraces = FindTraces(pcViewPath, pcCircuitSimulation, NULL);
-	if (psTraces == NULL)
-	{
-		return NULL;
-	}
-	return &psTraces->apcTraces;
+	return mcTraces.Get(pcViewPath, pcCircuitSimulation);
 }
 
 
@@ -281,14 +256,7 @@ CArrayTraceViewTracePtr* CTraceView::GetTraces(CViewPath* pcViewPath, CCircuitSi
 //////////////////////////////////////////////////////////////////////////
 size CTraceView::NumTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation)
 {
-	CArrayTraceViewTracePtr*	papcTraces;
-
-	papcTraces = GetTraces(pcViewPath, pcCircuitSimulation);
-	if (papcTraces == NULL)
-	{
-		return 0;
-	}
-	return papcTraces->NumElements();
+	return mcTraces.Num(pcViewPath, pcCircuitSimulation);
 }
 
 
@@ -298,24 +266,7 @@ size CTraceView::NumTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitS
 //////////////////////////////////////////////////////////////////////////
 CTrace* CTraceView::GetTrace(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex)
 {
-	CArrayTraceViewTracePtr*	papcTraces;
-
-	papcTraces = GetTraces(pcViewPath, pcCircuitSimulation);
-	if (papcTraces == NULL)
-	{
-		return NULL;
-	}
-	return papcTraces->SafeGetPtr(uiIndex);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-SViewPathTraces* CTraceView::FindTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size* puiIndex)
-{
-	return FindViewPathSimulation(&masTraces, pcViewPath, pcCircuitSimulation, puiIndex);
+	return mcTraces.Get(pcViewPath, pcCircuitSimulation, uiIndex);
 }
 
 
