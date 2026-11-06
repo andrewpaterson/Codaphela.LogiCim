@@ -24,6 +24,15 @@
     <ClCompile Include="LogicimWindowContent.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LogicimWindowContentSubcircuits.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentDialogs.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentLayout.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="LogicimWindowData.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -48,6 +57,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimWindowContent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowContentInternal.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimWindowData.h">
