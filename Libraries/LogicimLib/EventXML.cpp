@@ -48,20 +48,33 @@ CIntegratedCircuitEventXML* gapcIntegratedCircuitEventXMLs[] =
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The table's entry whose name (GetEventClassName or GetXMLName) is
+// szName; NULL if none.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M, size N>
+static M* FindEventXML(M* (&apcTable)[N], const char* (CEventXML::*GetName)(void), const char* szName)
+{
+	size	i;
+
+	for (i = 0; i < N; i++)
+	{
+		if (StringCompare((apcTable[i]->*GetName)(), szName) == 0)
+		{
+			return apcTable[i];
+		}
+	}
+	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 CPortEventXML* FindPortEventXMLForEvent(CEvent* pcEvent)
 {
-	size	i;
-
-	for (i = 0; i < sizeof(gapcPortEventXMLs) / sizeof(CPortEventXML*); i++)
-	{
-		if (StringCompare(gapcPortEventXMLs[i]->GetEventClassName(), pcEvent->ClassName()) == 0)
-		{
-			return gapcPortEventXMLs[i];
-		}
-	}
-	return NULL;
+	return FindEventXML(gapcPortEventXMLs, &CEventXML::GetEventClassName, pcEvent->ClassName());
 }
 
 
@@ -71,16 +84,7 @@ CPortEventXML* FindPortEventXMLForEvent(CEvent* pcEvent)
 //////////////////////////////////////////////////////////////////////////
 CPortEventXML* FindPortEventXMLForElement(const char* szXMLName)
 {
-	size	i;
-
-	for (i = 0; i < sizeof(gapcPortEventXMLs) / sizeof(CPortEventXML*); i++)
-	{
-		if (StringCompare(gapcPortEventXMLs[i]->GetXMLName(), szXMLName) == 0)
-		{
-			return gapcPortEventXMLs[i];
-		}
-	}
-	return NULL;
+	return FindEventXML(gapcPortEventXMLs, &CEventXML::GetXMLName, szXMLName);
 }
 
 
@@ -90,16 +94,7 @@ CPortEventXML* FindPortEventXMLForElement(const char* szXMLName)
 //////////////////////////////////////////////////////////////////////////
 CIntegratedCircuitEventXML* FindIntegratedCircuitEventXMLForEvent(CEvent* pcEvent)
 {
-	size	i;
-
-	for (i = 0; i < sizeof(gapcIntegratedCircuitEventXMLs) / sizeof(CIntegratedCircuitEventXML*); i++)
-	{
-		if (StringCompare(gapcIntegratedCircuitEventXMLs[i]->GetEventClassName(), pcEvent->ClassName()) == 0)
-		{
-			return gapcIntegratedCircuitEventXMLs[i];
-		}
-	}
-	return NULL;
+	return FindEventXML(gapcIntegratedCircuitEventXMLs, &CEventXML::GetEventClassName, pcEvent->ClassName());
 }
 
 
@@ -109,16 +104,7 @@ CIntegratedCircuitEventXML* FindIntegratedCircuitEventXMLForEvent(CEvent* pcEven
 //////////////////////////////////////////////////////////////////////////
 CIntegratedCircuitEventXML* FindIntegratedCircuitEventXMLForElement(const char* szXMLName)
 {
-	size	i;
-
-	for (i = 0; i < sizeof(gapcIntegratedCircuitEventXMLs) / sizeof(CIntegratedCircuitEventXML*); i++)
-	{
-		if (StringCompare(gapcIntegratedCircuitEventXMLs[i]->GetXMLName(), szXMLName) == 0)
-		{
-			return gapcIntegratedCircuitEventXMLs[i];
-		}
-	}
-	return NULL;
+	return FindEventXML(gapcIntegratedCircuitEventXMLs, &CEventXML::GetXMLName, szXMLName);
 }
 
 
@@ -161,6 +147,35 @@ bool CEventXML::LoadTimeAndID(CMarkupTag* pcTag, int64* piTime, int64* piID)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A port event saved with its time, ID and voltage: a drive or a
+// transition.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+static CPortEvent* LoadVoltageEvent(CMarkupTag* pcTag, CLogicPort* pcPort, const char* szMethod)
+{
+	M*			pcEvent;
+	int64		iTime;
+	int64		iID;
+	float32		fVoltage;
+
+	if (!CEventXML::LoadTimeAndID(pcTag, &iTime, &iID))
+	{
+		return NULL;
+	}
+	if (!pcTag->GetFloat32Attribute("voltage", &fVoltage))
+	{
+		gcLogger.Error2(szMethod, " [", pcTag->GetName(), "] needs a voltage.", NULL);
+		return NULL;
+	}
+	pcEvent = NewMalloc<M>();
+	pcEvent->Init(pcPort, iTime, iID, fVoltage);
+	return pcEvent;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 const char* CDriveEventXML::GetEventClassName(void) { return "CDriveEvent"; }
@@ -185,23 +200,7 @@ void CDriveEventXML::SaveAttributes(CXMLWriter* pcWriter, CEvent* pcEvent)
 //////////////////////////////////////////////////////////////////////////
 CPortEvent* CDriveEventXML::Load(CMarkupTag* pcTag, CLogicPort* pcPort)
 {
-	CDriveEvent*	pcEvent;
-	int64			iTime;
-	int64			iID;
-	float32			fVoltage;
-
-	if (!LoadTimeAndID(pcTag, &iTime, &iID))
-	{
-		return NULL;
-	}
-	if (!pcTag->GetFloat32Attribute("voltage", &fVoltage))
-	{
-		gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a voltage.", NULL);
-		return NULL;
-	}
-	pcEvent = NewMalloc<CDriveEvent>();
-	pcEvent->Init(pcPort, iTime, iID, fVoltage);
-	return pcEvent;
+	return LoadVoltageEvent<CDriveEvent>(pcTag, pcPort, __METHOD__);
 }
 
 
@@ -282,23 +281,7 @@ void CTransitionEventXML::SaveAttributes(CXMLWriter* pcWriter, CEvent* pcEvent)
 //////////////////////////////////////////////////////////////////////////
 CPortEvent* CTransitionEventXML::Load(CMarkupTag* pcTag, CLogicPort* pcPort)
 {
-	CTransitionEvent*	pcEvent;
-	int64				iTime;
-	int64				iID;
-	float32				fVoltage;
-
-	if (!LoadTimeAndID(pcTag, &iTime, &iID))
-	{
-		return NULL;
-	}
-	if (!pcTag->GetFloat32Attribute("voltage", &fVoltage))
-	{
-		gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a voltage.", NULL);
-		return NULL;
-	}
-	pcEvent = NewMalloc<CTransitionEvent>();
-	pcEvent->Init(pcPort, iTime, iID, fVoltage);
-	return pcEvent;
+	return LoadVoltageEvent<CTransitionEvent>(pcTag, pcPort, __METHOD__);
 }
 
 
