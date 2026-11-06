@@ -830,6 +830,33 @@ bool GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceView
 }
 
 
+//The nearest of the views hit, by the distance from the point to each one's centre.
+template<class M>
+struct SNearestHit
+{
+	M*		pcNearest;
+	float64	fNearest;
+
+	void Init(void)
+	{
+		pcNearest = NULL;
+		fNearest = 0;
+	}
+
+	void Include(M* pcView, float64 x, float64 y, float64 fCentreX, float64 fCentreY)
+	{
+		float64	fDistance;
+
+		fDistance = (x - fCentreX) * (x - fCentreX) + (y - fCentreY) * (y - fCentreY);
+		if ((pcNearest == NULL) || (fDistance < fNearest))
+		{
+			pcNearest = pcView;
+			fNearest = fDistance;
+		}
+	}
+};
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The component whose box the grid position is in, as Logicim's
@@ -839,34 +866,22 @@ bool GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceView
 //////////////////////////////////////////////////////////////////////////
 CComponentView* CCircuitView::GetComponentAt(SFloat64Vec2 sPosition)
 {
-	size				i;
-	CComponentView*		pcComponent;
-	CComponentView*		pcClosest;
-	SFloat64Vec2		sMinimum;
-	SFloat64Vec2		sMaximum;
-	float64				fDistance;
-	float64				fClosest;
-	float64				fDX;
-	float64				fDY;
+	size							i;
+	CComponentView*					pcComponent;
+	SFloat64Vec2					sMinimum;
+	SFloat64Vec2					sMaximum;
+	SNearestHit<CComponentView>		sHit;
 
-	pcClosest = NULL;
-	fClosest = 0;
+	sHit.Init();
 	for (i = 0; i < mapcComponents.NumElements(); i++)
 	{
 		pcComponent = mapcComponents.GetPtr(i);
 		if (pcComponent->GetBoundingBox(&sMinimum, &sMaximum) && IsInBox(sPosition, sMinimum, sMaximum))
 		{
-			fDX = sPosition.x - (sMinimum.x + sMaximum.x) / 2;
-			fDY = sPosition.y - (sMinimum.y + sMaximum.y) / 2;
-			fDistance = fDX * fDX + fDY * fDY;
-			if ((pcClosest == NULL) || (fDistance < fClosest))
-			{
-				pcClosest = pcComponent;
-				fClosest = fDistance;
-			}
+			sHit.Include(pcComponent, sPosition.x, sPosition.y, (sMinimum.x + sMaximum.x) / 2, (sMinimum.y + sMaximum.y) / 2);
 		}
 	}
-	return pcClosest;
+	return sHit.pcNearest;
 }
 
 
@@ -878,32 +893,20 @@ CComponentView* CCircuitView::GetComponentAt(SFloat64Vec2 sPosition)
 //////////////////////////////////////////////////////////////////////////
 CTraceView* CCircuitView::GetTraceAt(SInt32Vec2 sPoint)
 {
-	size			i;
-	CTraceView*		pcTrace;
-	CTraceView*		pcClosest;
-	float64			fDistance;
-	float64			fClosest;
-	float64			fDX;
-	float64			fDY;
+	size					i;
+	CTraceView*				pcTrace;
+	SNearestHit<CTraceView>	sHit;
 
-	pcClosest = NULL;
-	fClosest = 0;
+	sHit.Init();
 	for (i = 0; i < mapcTraces.NumElements(); i++)
 	{
 		pcTrace = mapcTraces.GetPtr(i);
 		if (pcTrace->Contains(sPoint))
 		{
-			fDX = sPoint.x - (pcTrace->GetStart().x + pcTrace->GetEnd().x) / 2.0;
-			fDY = sPoint.y - (pcTrace->GetStart().y + pcTrace->GetEnd().y) / 2.0;
-			fDistance = fDX * fDX + fDY * fDY;
-			if ((pcClosest == NULL) || (fDistance < fClosest))
-			{
-				pcClosest = pcTrace;
-				fClosest = fDistance;
-			}
+			sHit.Include(pcTrace, sPoint.x, sPoint.y, (pcTrace->GetStart().x + pcTrace->GetEnd().x) / 2.0, (pcTrace->GetStart().y + pcTrace->GetEnd().y) / 2.0);
 		}
 	}
-	return pcClosest;
+	return sHit.pcNearest;
 }
 
 
