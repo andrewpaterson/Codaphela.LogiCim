@@ -367,6 +367,16 @@ bool CTraceAutoConnector::Connect(void)
 		Route(psConnection, false, NULL);
 		uiRips++;
 	}
+
+	//Ripping a net unconnects all of its connections; when the rips run out some of them may not have been routed again.
+	for (i = 0; i < aiOrder.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(aiOrder.GetValue(i));
+		if (!psConnection->bConnected)
+		{
+			Route(psConnection, false, NULL);
+		}
+	}
 	aiConflicts.Kill();
 	aiFailed.Kill();
 	aiOrder.Kill();
