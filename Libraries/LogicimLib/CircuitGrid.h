@@ -43,6 +43,9 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //a time.  On a 990 pixel wide canvas, tiles of 256 pixels drew within 2% of tiles the canvas' width, the narrowest
 //that did (64 pixels took 10% longer, one dot's width 50%).  The tile is made again only when what it looks like
 //changes: the zoom, the colours, the canvas or where the columns fall in their pixels.
+class CGeometryMap;
+
+
 class CCircuitGrid : public CObject
 {
 CONSTRUCTABLE(CCircuitGrid);
@@ -82,6 +85,7 @@ protected:
 	void			Build(CCircuitViewport* pcViewport, Ptr<CImage> pViewport, int32 iTileWidth, int32 iTileHeight, bool bRepeats);
 	CImageCel*		GetCel(int32 iHeight);
 	int32			GetRowTop(CCircuitViewport* pcViewport, int32 iRow);
+	void			AddTiles(CCircuitViewport* pcViewport, CGeometryMap* pcMap, int32 iTileWidth, bool bRepeats);
 	uint32			GetLayout(Ptr<CImage> pImage);
 };
 

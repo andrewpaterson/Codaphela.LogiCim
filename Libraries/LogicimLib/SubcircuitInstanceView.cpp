@@ -474,52 +474,29 @@ bool CSubcircuitInstanceView::SetInstanceCircuitView(CCircuitView* pcInstanceCir
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-// As Logicim's createTypeGraphics and createPinsAndGraphics.  Logicim
-// works in a frame turned against the instance's; it's kept here, as R,
-// so the steps read as Logicim's, and turned into the instance's at the
-// end (R's x is -x and R's y is y).  The type name, comment and name are
-// stacked down the instance, each centred, and their box is padded; then
-// each side is widened to fit its pins and their labels.
-//
-//////////////////////////////////////////////////////////////////////////
-void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, int32 iPinSpacing, SSubcircuitInstanceLayout* psLayout)
+//The box of a subcircuit instance in Logicim's frame, R (see CSubcircuitInstanceView::MeasureLayout).
+struct SSubcircuitBoxR
 {
-	SCircuitTextSize	asSizes[3];
-	bool				abShown[3];
-	float64*			apfX[3];
-	float64				fHeight;
-	float64				fMaxOffset;
-	float64				fOffset;
-	float64				fMinX;
-	float64				fMaxX;
-	float64				fMaxY;
-	size				i;
-	bool				bFirst;
-	int					iLeftR;
-	int					iTopR;
-	int					iRightR;
-	int					iBottomR;
-	SPinSide			sTop;
-	SPinSide			sBottom;
-	SPinSide			sLeft;
-	SPinSide			sRight;
-	int					iMaxGridWidth;
-	int					iTop;
-	int					iBottom;
+	int		iLeft;
+	int		iTop;
+	int		iRight;
+	int		iBottom;
+};
 
-	asSizes[0] = pcFonts->Measure(CF_SansSerifBold, SUBCIRCUIT_TYPE_FONT_SIZE, pcInstanceCircuitView->GetTypeName());
-	abShown[0] = true;
-	asSizes[1] = pcFonts->Measure(CF_SansSerif, SUBCIRCUIT_TEXT_FONT_SIZE, szComment);
-	abShown[1] = !StrEmpty(szComment);
-	asSizes[2] = pcFonts->Measure(CF_SansSerif, SUBCIRCUIT_TEXT_FONT_SIZE, szName);
-	abShown[2] = !StrEmpty(szName);
-	apfX[0] = &psLayout->fTypeY;
-	apfX[1] = &psLayout->fCommentY;
-	apfX[2] = &psLayout->fNameY;
 
-	//TextView.centerHorizontally.
+//////////////////////////////////////////////////////////////////////////
+//
+// Stacks the texts shown down the instance, as Logicim's
+// TextView.centerHorizontally: each text's X in R (0 for those not shown).
+//
+//////////////////////////////////////////////////////////////////////////
+static void StackSubcircuitTexts(SCircuitTextSize* asSizes, bool* abShown, float64** apfX)
+{
+	float64		fHeight;
+	float64		fMaxOffset;
+	float64		fOffset;
+	size		i;
+
 	fHeight = 0;
 	fMaxOffset = 0;
 	for (i = 0; i < 3; i++)
@@ -543,8 +520,23 @@ void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView
 			fOffset += asSizes[i].fHeight;
 		}
 	}
+}
 
-	//The texts' box (TextView.calculateTopLeft and calculateBottomRight).
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The padded box around the texts shown, in R (TextView.calculateTopLeft
+// and calculateBottomRight, turned right into R).
+//
+//////////////////////////////////////////////////////////////////////////
+static void GetSubcircuitTextBox(SCircuitTextSize* asSizes, bool* abShown, float64** apfX, SSubcircuitBoxR* psBox)
+{
+	float64		fMinX;
+	float64		fMaxX;
+	float64		fMaxY;
+	size		i;
+	bool		bFirst;
+
 	bFirst = true;
 	fMinX = 0;
 	fMaxX = 0;
@@ -568,44 +560,94 @@ void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView
 			bFirst = false;
 		}
 	}
+	psBox->iLeft = -(int)ceil(fMaxY + 0.4);
+	psBox->iRight = -(int)floor(-fMaxY - 0.4);
+	psBox->iTop = (int)floor(fMinX);
+	psBox->iBottom = (int)ceil(fMaxX);
+}
 
-	//Turned right into R.
-	iLeftR = -(int)ceil(fMaxY + 0.4);
-	iRightR = -(int)floor(-fMaxY - 0.4);
-	iTopR = (int)floor(fMinX);
-	iBottomR = (int)ceil(fMaxX);
 
-	psLayout->iPinSpacing = (iPinSpacing >= 1) ? iPinSpacing : 1;
-	sTop.Init(pcInstanceCircuitView, PA_Top, psLayout->iPinSpacing);
-	sBottom.Init(pcInstanceCircuitView, PA_Bottom, psLayout->iPinSpacing);
-	sLeft.Init(pcInstanceCircuitView, PA_Left, psLayout->iPinSpacing);
-	sRight.Init(pcInstanceCircuitView, PA_Right, psLayout->iPinSpacing);
+//////////////////////////////////////////////////////////////////////////
+//
+// Widens each side of the box in R to fit its pins, iPinSpacing apart,
+// and their labels (Logicim's LeftRightPinViewOffsets and
+// TopBottomPinViewOffsets).
+//
+//////////////////////////////////////////////////////////////////////////
+static void FitSubcircuitPins(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, int32 iPinSpacing, SSubcircuitBoxR* psBox)
+{
+	SPinSide	sTop;
+	SPinSide	sBottom;
+	SPinSide	sLeft;
+	SPinSide	sRight;
+	int			iMaxGridWidth;
+	int			iTop;
+	int			iBottom;
+
+	sTop.Init(pcInstanceCircuitView, PA_Top, iPinSpacing);
+	sBottom.Init(pcInstanceCircuitView, PA_Bottom, iPinSpacing);
+	sLeft.Init(pcInstanceCircuitView, PA_Left, iPinSpacing);
+	sRight.Init(pcInstanceCircuitView, PA_Right, iPinSpacing);
 
 	//LeftRightPinViewOffsets.
 	iMaxGridWidth = CalculateMaxGridSize(sTop.iExtendedSize, sBottom.iExtendedSize);
-	iTopR = IntMin(iTopR, (int)ceil(iTopR - MaxPinLabelWidth(pcFonts, &sTop)));
-	iBottomR = IntMax(iBottomR, (int)floor(iBottomR + MaxPinLabelWidth(pcFonts, &sBottom)));
-	iLeftR = IntMin(iLeftR, -(iMaxGridWidth / 2));
-	iRightR = IntMax(iRightR, iMaxGridWidth - iMaxGridWidth / 2);
+	psBox->iTop = IntMin(psBox->iTop, (int)ceil(psBox->iTop - MaxPinLabelWidth(pcFonts, &sTop)));
+	psBox->iBottom = IntMax(psBox->iBottom, (int)floor(psBox->iBottom + MaxPinLabelWidth(pcFonts, &sBottom)));
+	psBox->iLeft = IntMin(psBox->iLeft, -(iMaxGridWidth / 2));
+	psBox->iRight = IntMax(psBox->iRight, iMaxGridWidth - iMaxGridWidth / 2);
 
 	//TopBottomPinViewOffsets.
-	iTop = iTopR;
-	iBottom = iBottomR;
+	iTop = psBox->iTop;
+	iBottom = psBox->iBottom;
 	FitLeftRightPins(&sLeft, &sRight, &iTop, &iBottom);
-	iTopR = IntMin(iTopR, iTop);
-	iBottomR = IntMax(iBottomR, iBottom);
+	psBox->iTop = IntMin(psBox->iTop, iTop);
+	psBox->iBottom = IntMax(psBox->iBottom, iBottom);
 
 	//The left side's pins go on R's right and the right side's on R's left.
-	iRightR = IntMax(iRightR, (int)ceil(iRightR + MaxPinLabelWidth(pcFonts, &sLeft)));
-	iLeftR = IntMin(iLeftR, (int)floor(iLeftR - MaxPinLabelWidth(pcFonts, &sRight)));
+	psBox->iRight = IntMax(psBox->iRight, (int)ceil(psBox->iRight + MaxPinLabelWidth(pcFonts, &sLeft)));
+	psBox->iLeft = IntMin(psBox->iLeft, (int)floor(psBox->iLeft - MaxPinLabelWidth(pcFonts, &sRight)));
 
 	sRight.Kill();
 	sLeft.Kill();
 	sBottom.Kill();
 	sTop.Kill();
+}
 
-	psLayout->sBoxMinimum.Init(-iRightR, iTopR);
-	psLayout->sBoxMaximum.Init(-iLeftR, iBottomR);
+
+//////////////////////////////////////////////////////////////////////////
+//
+// As Logicim's createTypeGraphics and createPinsAndGraphics.  Logicim
+// works in a frame turned against the instance's; it's kept here, as R,
+// so the steps read as Logicim's, and turned into the instance's at the
+// end (R's x is -x and R's y is y).  The type name, comment and name are
+// stacked down the instance, each centred, and their box is padded; then
+// each side is widened to fit its pins and their labels.
+//
+//////////////////////////////////////////////////////////////////////////
+void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, int32 iPinSpacing, SSubcircuitInstanceLayout* psLayout)
+{
+	SCircuitTextSize	asSizes[3];
+	bool				abShown[3];
+	float64*			apfX[3];
+	SSubcircuitBoxR		sBox;
+
+	asSizes[0] = pcFonts->Measure(CF_SansSerifBold, SUBCIRCUIT_TYPE_FONT_SIZE, pcInstanceCircuitView->GetTypeName());
+	abShown[0] = true;
+	asSizes[1] = pcFonts->Measure(CF_SansSerif, SUBCIRCUIT_TEXT_FONT_SIZE, szComment);
+	abShown[1] = !StrEmpty(szComment);
+	asSizes[2] = pcFonts->Measure(CF_SansSerif, SUBCIRCUIT_TEXT_FONT_SIZE, szName);
+	abShown[2] = !StrEmpty(szName);
+	apfX[0] = &psLayout->fTypeY;
+	apfX[1] = &psLayout->fCommentY;
+	apfX[2] = &psLayout->fNameY;
+
+	StackSubcircuitTexts(asSizes, abShown, apfX);
+	GetSubcircuitTextBox(asSizes, abShown, apfX, &sBox);
+	psLayout->iPinSpacing = (iPinSpacing >= 1) ? iPinSpacing : 1;
+	FitSubcircuitPins(pcFonts, pcInstanceCircuitView, psLayout->iPinSpacing, &sBox);
+
+	psLayout->sBoxMinimum.Init(-sBox.iRight, sBox.iTop);
+	psLayout->sBoxMaximum.Init(-sBox.iLeft, sBox.iBottom);
 }
 
 

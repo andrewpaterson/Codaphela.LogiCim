@@ -314,22 +314,55 @@ int CTraceAutoConnector::GetPortNet(CPortView* pcPortView)
 //////////////////////////////////////////////////////////////////////////
 bool CTraceAutoConnector::Connect(void)
 {
-	CArrayInt				aiOrder;
-	CArrayInt				aiFailed;
-	CArrayInt				aiConflicts;
-	size					i;
-	size					j;
-	size					uiStates;
-	size					uiHead;
-	size					uiRips;
-	size					uiMaxRips;
-	STraceAutoConnection*	psConnection;
-	int						iNet;
+	CArrayInt	aiOrder;
+	CArrayInt	aiFailed;
+	size		i;
 
 	if (masConnections.NumElements() == 0)
 	{
 		return true;
 	}
+
+	InitNets();
+	InitSearch();
+
+	aiOrder.Init();
+	aiFailed.Init();
+	SortConnections(&aiOrder);
+	for (i = 0; i < aiOrder.NumElements(); i++)
+	{
+		if (!Route(masConnections.Get(aiOrder.GetValue(i)), false, NULL))
+		{
+			aiFailed.Add(aiOrder.GetValue(i));
+		}
+	}
+	RipAndReroute(&aiOrder, &aiFailed);
+
+	//Ripping a net unconnects all of its connections; when the rips run out some of them may not have been routed again.
+	for (i = 0; i < aiOrder.NumElements(); i++)
+	{
+		if (!masConnections.Get(aiOrder.GetValue(i))->bConnected)
+		{
+			Route(masConnections.Get(aiOrder.GetValue(i)), false, NULL);
+		}
+	}
+	aiFailed.Kill();
+	aiOrder.Kill();
+
+	return NumUnconnected() == 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each net with no existing wires or new wires yet, and its first
+// connection's run.  Nothing has been ripped up and no wires added.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::InitNets(void)
+{
+	size					i;
+	STraceAutoConnection*	psConnection;
 
 	maiNetsWithExisting.ReInit();
 	maiNetRuns.ReInit();
@@ -351,6 +384,18 @@ bool CTraceAutoConnector::Connect(void)
 	}
 	mapcAddedTraces.ReInit();
 	maiAddedTraceNets.ReInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The grid with the circuit marked on it, and the search's arrays, one
+// element for each cell and direction.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::InitSearch(void)
+{
+	size	uiStates;
 
 	CreateGrid();
 	MarkComponents();
@@ -372,25 +417,33 @@ bool CTraceAutoConnector::Connect(void)
 	maiGoalStamps.GrowToAtLeastNumElements(uiStates / 2, true, 0);
 	miStamp = 0;
 	CacheArrays();
+}
 
-	aiOrder.Init();
-	aiFailed.Init();
-	SortConnections(&aiOrder);
-	for (i = 0; i < aiOrder.NumElements(); i++)
-	{
-		if (!Route(masConnections.Get(aiOrder.GetValue(i)), false, NULL))
-		{
-			aiFailed.Add(aiOrder.GetValue(i));
-		}
-	}
 
-	//Rip up what's in the way of each that failed and route it again.
+//////////////////////////////////////////////////////////////////////////
+//
+// Rips up what's in the way of each connection that failed and routes it
+// again.  The connections of a net ripped up are added to the failed
+// ones, to be routed again in their turn, up to a limit on rips.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFailed)
+{
+	CArrayInt				aiConflicts;
+	size					i;
+	size					j;
+	size					uiHead;
+	size					uiRips;
+	size					uiMaxRips;
+	STraceAutoConnection*	psConnection;
+	int						iNet;
+
 	aiConflicts.Init();
 	uiRips = 0;
-	uiMaxRips = 2 * aiFailed.NumElements() + 8;
-	for (uiHead = 0; (uiHead < aiFailed.NumElements()) && (uiRips < uiMaxRips); uiHead++)
+	uiMaxRips = 2 * paiFailed->NumElements() + 8;
+	for (uiHead = 0; (uiHead < paiFailed->NumElements()) && (uiRips < uiMaxRips); uiHead++)
 	{
-		psConnection = masConnections.Get(aiFailed.GetValue(uiHead));
+		psConnection = masConnections.Get(paiFailed->GetValue(uiHead));
 		if (psConnection->bConnected)
 		{
 			continue;
@@ -410,32 +463,18 @@ bool CTraceAutoConnector::Connect(void)
 		{
 			iNet = aiConflicts.GetValue(i);
 			RipNet(iNet);
-			for (j = 0; j < aiOrder.NumElements(); j++)
+			for (j = 0; j < paiOrder->NumElements(); j++)
 			{
-				if ((int)masConnections.Get(aiOrder.GetValue(j))->uiNet == iNet)
+				if ((int)masConnections.Get(paiOrder->GetValue(j))->uiNet == iNet)
 				{
-					aiFailed.Add(aiOrder.GetValue(j));
+					paiFailed->Add(paiOrder->GetValue(j));
 				}
 			}
 		}
 		Route(psConnection, false, NULL);
 		uiRips++;
 	}
-
-	//Ripping a net unconnects all of its connections; when the rips run out some of them may not have been routed again.
-	for (i = 0; i < aiOrder.NumElements(); i++)
-	{
-		psConnection = masConnections.Get(aiOrder.GetValue(i));
-		if (!psConnection->bConnected)
-		{
-			Route(psConnection, false, NULL);
-		}
-	}
 	aiConflicts.Kill();
-	aiFailed.Kill();
-	aiOrder.Kill();
-
-	return NumUnconnected() == 0;
 }
 
 
@@ -1048,42 +1087,34 @@ void CTraceAutoConnector::SortConnections(CArrayInt* paiOrder)
 //////////////////////////////////////////////////////////////////////////
 bool CTraceAutoConnector::Route(STraceAutoConnection* psConnection, bool bRipping, CArrayInt* paiConflicts)
 {
-	int							iNet;
-	int							iStart;
-	int							iTarget;
-	int							iFacing;
-	int							iArriving;
-	SInt32Vec2					sTarget;
+	STraceAutoConnectSearch		sSearch;
 	STraceAutoConnectHeapNode	sNode;
+	int							iNet;
 	int							iCell;
 	int							iDirection;
-	int							iNewDirection;
-	int							iNewCell;
-	int							iNewState;
-	int32						iCost;
-	int32						x;
-	int32						y;
 	size						uiPops;
 	size						uiMaxPops;
 
 	iNet = (int)psConnection->uiNet;
-	iStart = GetCell(psConnection->pcFrom->GetGridPosition());
-	sTarget = psConnection->pcTo->GetGridPosition();
-	iTarget = GetCell(sTarget);
+	sSearch.psConnection = psConnection;
+	sSearch.bRipping = bRipping;
+	sSearch.iStart = GetCell(psConnection->pcFrom->GetGridPosition());
+	sSearch.sTarget = psConnection->pcTo->GetGridPosition();
+	sSearch.iTarget = GetCell(sSearch.sTarget);
 	miStamp++;
-	MarkGoal(iTarget, iNet);
-	if ((iStart == iTarget) || IsGoal(iStart))
+	MarkGoal(sSearch.iTarget, iNet);
+	if ((sSearch.iStart == sSearch.iTarget) || IsGoal(sSearch.iStart))
 	{
 		psConnection->bConnected = true;
 		return true;
 	}
 
-	iFacing = GetPortFacing(psConnection->pcFrom);
-	iArriving = OppositeDirection(GetPortFacing(psConnection->pcTo));
+	sSearch.iFacing = GetPortFacing(psConnection->pcFrom);
+	sSearch.iArriving = OppositeDirection(GetPortFacing(psConnection->pcTo));
 
 	masHeap.ReInit();
-	SetVisited(iStart * 4 + iFacing, 0, -1);
-	PushHeap(GetHeuristic(iStart, sTarget), iStart * 4 + iFacing);
+	SetVisited(sSearch.iStart * 4 + sSearch.iFacing, 0, -1);
+	PushHeap(GetHeuristic(sSearch.iStart, sSearch.sTarget), sSearch.iStart * 4 + sSearch.iFacing);
 
 	uiPops = 0;
 	uiMaxPops = (size)miGridWidth * (size)miGridHeight * 4;
@@ -1097,74 +1128,24 @@ bool CTraceAutoConnector::Route(STraceAutoConnection* psConnection, bool bRippin
 
 		iCell = sNode.iState / 4;
 		iDirection = sNode.iState % 4;
-		if (sNode.iCost - GetHeuristic(iCell, sTarget) > mpiCosts[sNode.iState])
+		if (sNode.iCost - GetHeuristic(iCell, sSearch.sTarget) > mpiCosts[sNode.iState])
 		{
 			//A cheaper way here was found after this was pushed.
 			continue;
 		}
 
-		if (iCell != iStart)
+		if ((iCell != sSearch.iStart) && (((iCell == sSearch.iTarget) && (iDirection == sSearch.iArriving)) || ((iCell != sSearch.iTarget) && IsGoal(iCell) && CanNode(iCell, iNet))))
 		{
-			if (((iCell == iTarget) && (iDirection == iArriving)) || ((iCell != iTarget) && IsGoal(iCell) && CanNode(iCell, iNet)))
+			if (bRipping)
 			{
-				if (bRipping)
-				{
-					CollectConflicts(sNode.iState, iNet, paiConflicts);
-					return true;
-				}
-				AddRoute(sNode.iState, iNet);
-				psConnection->bConnected = true;
+				CollectConflicts(sNode.iState, iNet, paiConflicts);
 				return true;
 			}
+			AddRoute(sNode.iState, iNet);
+			psConnection->bConnected = true;
+			return true;
 		}
-
-		x = iCell % miGridWidth;
-		y = iCell / miGridWidth;
-		for (iNewDirection = 0; iNewDirection < 4; iNewDirection++)
-		{
-			if (iNewDirection == OppositeDirection(iDirection))
-			{
-				continue;
-			}
-			if ((iCell == iStart) && (iNewDirection != iFacing))
-			{
-				continue;
-			}
-			iCost = 0;
-			if ((iNewDirection != iDirection) && !CanNode(iCell, iNet))
-			{
-				if (!bRipping || !CanNodeRipping(iCell, iNet))
-				{
-					continue;
-				}
-				iCost += TRACE_AUTO_CONNECT_RIP_COST;
-			}
-			if ((x + gaiDirectionX[iNewDirection] < 0) || (x + gaiDirectionX[iNewDirection] >= miGridWidth) || (y + gaiDirectionY[iNewDirection] < 0) || (y + gaiDirectionY[iNewDirection] >= miGridHeight))
-			{
-				continue;
-			}
-			iNewCell = iCell + gaiDirectionX[iNewDirection] + gaiDirectionY[iNewDirection] * miGridWidth;
-			if (!CanPass(iNewCell, iNet, IsDirectionHorizontal(iNewDirection)))
-			{
-				if (!bRipping || !CanPassRipping(iNewCell, iNet, IsDirectionHorizontal(iNewDirection)))
-				{
-					continue;
-				}
-				iCost += TRACE_AUTO_CONNECT_RIP_COST;
-			}
-
-			iCost += mpiCosts[sNode.iState] + GetStepCost(psConnection, iNewCell, iNewDirection);
-			if (iNewDirection != iDirection)
-			{
-				iCost += TRACE_AUTO_CONNECT_BEND_COST;
-			}
-			iNewState = iNewCell * 4 + iNewDirection;
-			if (!IsVisited(iNewState) || (iCost < mpiCosts[iNewState]))
-			{
-				SetVisited(iNewState, iCost, sNode.iState);
-				PushHeap(iCost + GetHeuristic(iNewCell, sTarget), iNewState);
-			}
-		}
+		ExpandRoute(&sSearch, &sNode);
 	}
 	if (!bRipping)
 	{
@@ -1173,6 +1154,79 @@ bool CTraceAutoConnector::Route(STraceAutoConnection* psConnection, bool bRippin
 		psConnection->iFailedNetWires = maiNetWires.GetValue(iNet);
 	}
 	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Pushes each step on from the node's cell that the search can take: not
+// back the way it came, out of the start only the way the port faces,
+// turning only where the net can have a node and through only cells its
+// wires can pass (or, ripping, other nets' new wires, at a cost).
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::ExpandRoute(STraceAutoConnectSearch* psSearch, STraceAutoConnectHeapNode* psNode)
+{
+	int		iNet;
+	int		iCell;
+	int		iDirection;
+	int		iNewDirection;
+	int		iNewCell;
+	int		iNewState;
+	int32	iCost;
+	int32	x;
+	int32	y;
+
+	iNet = (int)psSearch->psConnection->uiNet;
+	iCell = psNode->iState / 4;
+	iDirection = psNode->iState % 4;
+	x = iCell % miGridWidth;
+	y = iCell / miGridWidth;
+	for (iNewDirection = 0; iNewDirection < 4; iNewDirection++)
+	{
+		if (iNewDirection == OppositeDirection(iDirection))
+		{
+			continue;
+		}
+		if ((iCell == psSearch->iStart) && (iNewDirection != psSearch->iFacing))
+		{
+			continue;
+		}
+		iCost = 0;
+		if ((iNewDirection != iDirection) && !CanNode(iCell, iNet))
+		{
+			if (!psSearch->bRipping || !CanNodeRipping(iCell, iNet))
+			{
+				continue;
+			}
+			iCost += TRACE_AUTO_CONNECT_RIP_COST;
+		}
+		if ((x + gaiDirectionX[iNewDirection] < 0) || (x + gaiDirectionX[iNewDirection] >= miGridWidth) || (y + gaiDirectionY[iNewDirection] < 0) || (y + gaiDirectionY[iNewDirection] >= miGridHeight))
+		{
+			continue;
+		}
+		iNewCell = iCell + gaiDirectionX[iNewDirection] + gaiDirectionY[iNewDirection] * miGridWidth;
+		if (!CanPass(iNewCell, iNet, IsDirectionHorizontal(iNewDirection)))
+		{
+			if (!psSearch->bRipping || !CanPassRipping(iNewCell, iNet, IsDirectionHorizontal(iNewDirection)))
+			{
+				continue;
+			}
+			iCost += TRACE_AUTO_CONNECT_RIP_COST;
+		}
+
+		iCost += mpiCosts[psNode->iState] + GetStepCost(psSearch->psConnection, iNewCell, iNewDirection);
+		if (iNewDirection != iDirection)
+		{
+			iCost += TRACE_AUTO_CONNECT_BEND_COST;
+		}
+		iNewState = iNewCell * 4 + iNewDirection;
+		if (!IsVisited(iNewState) || (iCost < mpiCosts[iNewState]))
+		{
+			SetVisited(iNewState, iCost, psNode->iState);
+			PushHeap(iCost + GetHeuristic(iNewCell, psSearch->sTarget), iNewState);
+		}
+	}
 }
 
 

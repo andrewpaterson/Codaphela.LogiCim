@@ -94,6 +94,30 @@ bool CCircuitGrid::Load(CObjectReader* pcFile) { return false; }
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The pixels across the fewest columns that are a whole number of pixels
+// (up to CIRCUIT_GRID_MAX_PERIOD columns), 0 if none are: the dots repeat
+// that far apart.
+//
+//////////////////////////////////////////////////////////////////////////
+static int32 GetCircuitGridPeriod(float64 fSpacing)
+{
+	int32		iColumns;
+	float64		fPeriod;
+
+	for (iColumns = 1; iColumns <= CIRCUIT_GRID_MAX_PERIOD; iColumns++)
+	{
+		fPeriod = iColumns * fSpacing;
+		if (fabs(fPeriod - floor(fPeriod + 0.5)) < 1e-9)
+		{
+			return (int32)floor(fPeriod + 0.5);
+		}
+	}
+	return 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Puts the grid's tiles first in the painter's map, covering its image.
 // Returns false if zoomed too far out for a grid (as PaintCircuitGrid):
 // nothing is drawn and the background must be.
@@ -107,25 +131,17 @@ bool CCircuitGrid::Paint(CCircuitPainter* pcPainter)
 	Ptr<CImage>			pViewport;
 	float64				fZoom;
 	float64				fSpacing;
-	float64				fPeriod;
 	SFloat64Vec2		sScreen;
 	SFloat64Vec2		sGrid;
 	SInt32Vec2			sSize;
 	int32				iDot;
 	ARGB32				sDot;
-	int32				iColumns;
 	int32				iPeriodPixels;
 	int32				iTileWidth;
 	int32				iTileHeight;
-	int32				iAnchor;
 	float64				fAnchorX;
 	int32				iTileLeft;
 	bool				bRepeats;
-	int32				iRow;
-	int32				iTop;
-	int32				iNextTop;
-	int32				x;
-	CImageCel*			pcCel;
 
 	pcViewport = pcPainter->GetViewport();
 	pcColours = pcPainter->GetColours();
@@ -146,20 +162,10 @@ bool CCircuitGrid::Paint(CCircuitPainter* pcPainter)
 	//The first column at or right of the canvas' left edge.
 	sScreen.Init(0, 0);
 	pcViewport->ScreenToGrid(&sGrid, &sScreen);
-	iAnchor = (int32)ceil(sGrid.x);
-	fAnchorX = pcViewport->GridToScreenX(iAnchor);
+	fAnchorX = pcViewport->GridToScreenX((int32)ceil(sGrid.x));
 
-	//The fewest columns that are a whole number of pixels.
-	iPeriodPixels = 0;
-	for (iColumns = 1; iColumns <= CIRCUIT_GRID_MAX_PERIOD; iColumns++)
-	{
-		fPeriod = iColumns * fSpacing;
-		if (fabs(fPeriod - floor(fPeriod + 0.5)) < 1e-9)
-		{
-			iPeriodPixels = (int32)floor(fPeriod + 0.5);
-			break;
-		}
-	}
+	//Tiles a whole number of periods wide, or the canvas wide if the dots don't repeat.
+	iPeriodPixels = GetCircuitGridPeriod(fSpacing);
 	bRepeats = (iPeriodPixels > 0);
 	if (bRepeats)
 	{
@@ -197,8 +203,30 @@ bool CCircuitGrid::Paint(CCircuitPainter* pcPainter)
 		miTileLeft = iTileLeft;
 		Build(pcViewport, pViewport, iTileWidth, iTileHeight, bRepeats);
 	}
+	AddTiles(pcViewport, pcMap, iTileWidth, bRepeats);
+	return true;
+}
 
-	//The first row at or above the canvas' top, so its tiles cover the top edge, down to past the bottom.
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The tiles from the first row at or above the canvas' top, so they cover
+// the top edge, down to past the bottom: across the canvas if the dots
+// repeat, otherwise one canvas wide tile a row.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitGrid::AddTiles(CCircuitViewport* pcViewport, CGeometryMap* pcMap, int32 iTileWidth, bool bRepeats)
+{
+	SFloat64Vec2	sScreen;
+	SFloat64Vec2	sGrid;
+	SInt32Vec2		sSize;
+	int32			iRow;
+	int32			iTop;
+	int32			iNextTop;
+	int32			x;
+	CImageCel*		pcCel;
+
+	sSize = pcViewport->GetSize();
 	sScreen.Init(0, 0);
 	pcViewport->ScreenToGrid(&sGrid, &sScreen);
 	iRow = (int32)floor(sGrid.y) - 1;
@@ -223,7 +251,6 @@ bool CCircuitGrid::Paint(CCircuitPainter* pcPainter)
 		iRow++;
 		iTop = iNextTop;
 	}
-	return true;
 }
 
 

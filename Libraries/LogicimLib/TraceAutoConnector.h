@@ -87,6 +87,20 @@ struct STraceAutoConnectHeapNode
 };
 
 
+//One search for a connection's route (see CTraceAutoConnector::Route): the cells it starts from and goes to, the way
+//it leaves the start and must arrive at the target, and whether it's ripping.
+struct STraceAutoConnectSearch
+{
+	STraceAutoConnection*	psConnection;
+	bool					bRipping;
+	int						iStart;
+	int						iTarget;
+	SInt32Vec2				sTarget;
+	int						iFacing;
+	int						iArriving;
+};
+
+
 typedef CArrayTemplate<STraceAutoConnectHeapNode>	CArrayTraceAutoConnectHeapNode;
 
 
@@ -178,6 +192,9 @@ protected:
 	bool			GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 	bool			AddPort(CPortView* pcPortView, size uiNet);
 	int				GetPortNet(CPortView* pcPortView);
+	void			InitNets(void);
+	void			InitSearch(void);
+	void			RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFailed);
 	void			CreateGrid(void);
 	void			MarkComponents(void);
 	void			MarkPorts(void);
@@ -187,6 +204,7 @@ protected:
 	void			CalculateRunBends(int iRun);
 	void			SortConnections(CArrayInt* paiOrder);
 	bool			Route(STraceAutoConnection* psConnection, bool bRipping, CArrayInt* paiConflicts);
+	void			ExpandRoute(STraceAutoConnectSearch* psSearch, STraceAutoConnectHeapNode* psNode);
 	void			AddRoute(int iGoalState, int iNet);
 	void			CollectConflicts(int iGoalState, int iNet, CArrayInt* paiConflicts);
 	void			AddConflict(int iOccupant, int iNet, CArrayInt* paiConflicts);
