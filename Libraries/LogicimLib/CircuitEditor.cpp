@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <stdlib.h>
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/PointerFunctions.h"
 #include "BaseLib/Logger.h"
@@ -38,7 +39,29 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "SelectionEdit.h"
 #include "WirePullEdit.h"
 #include "TraceAutoConnector.h"
+#include "SubcircuitInstanceView.h"
 #include "CircuitEditor.h"
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The component's index in the circuit, ARRAY_ELEMENT_NOT_FOUND if it
+// isn't in it.
+//
+//////////////////////////////////////////////////////////////////////////
+static size FindCircuitComponentIndex(CCircuitView* pcCircuit, CComponentView* pcComponent)
+{
+	size	i;
+
+	for (i = 0; i < pcCircuit->NumComponents(); i++)
+	{
+		if (pcCircuit->GetComponent(i) == pcComponent)
+		{
+			return i;
+		}
+	}
+	return ARRAY_ELEMENT_NOT_FOUND;
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,6 +77,7 @@ void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, Ptr<CCir
 	mpcCircuits = NewMalloc<CCircuitViews>();
 	mpcCircuits->Init();
 	mpcCircuit = NULL;
+	mpcViewPath = NULL;
 	mpcFamilies = pcFamilies;
 	mpFonts = pFonts;
 	mcSelection.Init();
@@ -108,6 +132,7 @@ void CCircuitEditor::Class(void)
 {
 	U_Pointer(mpcCircuits);
 	U_Pointer(mpcCircuit);
+	U_Pointer(mpcViewPath);
 	M_Pointer(mpSimulation);
 	U_Pointer(mpcFamilies);
 	M_Pointer(mpFonts);
@@ -177,6 +202,7 @@ void CCircuitEditor::KillProject(bool bFreeing)
 		mpcCircuits = NULL;
 	}
 	mpcCircuit = NULL;
+	mpcViewPath = NULL;
 }
 
 
@@ -191,9 +217,9 @@ void CCircuitEditor::KillSimulation(bool bFreeing)
 {
 	if (mpSimulation.IsNotNull())
 	{
-		if (mpcCircuit != NULL)
+		if (GetTopCircuit() != NULL)
 		{
-			mpcCircuit->DisconnectSimulation(GetViewPath(), &mpSimulation);
+			GetTopCircuit()->DisconnectSimulation(mpcCircuits->GetTopPath(GetTopCircuit()), &mpSimulation);
 		}
 		if (!bFreeing)
 		{
@@ -235,7 +261,8 @@ bool CCircuitEditor::Simulate(const char* szTypeName)
 	DiscardEdit();
 	mcSelection.Clear();
 	KillSimulation();
-	pcPrevious = mpcCircuit;
+	pcPrevious = GetTopCircuit();
+	mpcViewPath = NULL;
 	mpcCircuit = pcCircuit;
 	mpSimulation = OMalloc<CCircuitSimulation>(szTypeName);
 	UpdateHover();
@@ -914,13 +941,21 @@ bool CCircuitEditor::Save(const char* szFilename)
 void CCircuitEditor::SaveXML(CXMLWriter* pcWriter)
 {
 	size	i;
+	CChars	szPath;
 
 	pcWriter->Begin("Logicim");
 	pcWriter->Attribute("version", (int32)CIRCUIT_FILE_VERSION);
 	pcWriter->Begin("Editor");
 	if (mpcCircuit != NULL)
 	{
-		pcWriter->Attribute("circuit", mpcCircuit->GetTypeName());
+		pcWriter->Attribute("circuit", GetTopCircuit()->GetTypeName());
+	}
+	if (mpcViewPath != NULL)
+	{
+		szPath.Init();
+		GetInstancePathText(&szPath);
+		pcWriter->Attribute("path", szPath.Text());
+		szPath.Kill();
 	}
 	pcWriter->Attribute("rotation", RotationToString(meCreationRotation));
 	if (mbCreationMirrored)
@@ -946,7 +981,7 @@ void CCircuitEditor::SaveXML(CXMLWriter* pcWriter)
 	mpcCircuits->SaveXML(pcWriter);
 	if (mpSimulation.IsNotNull())
 	{
-		SaveSimulationXML(pcWriter, mpcCircuit, GetViewPath(), &mpSimulation);
+		SaveSimulationXML(pcWriter, GetTopCircuit(), mpcCircuits->GetTopPath(GetTopCircuit()), &mpSimulation);
 	}
 	pcWriter->End();
 }
@@ -998,6 +1033,10 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	char*						szCircuit;
 	char*						szRotation;
 	char*						szMirrored;
+	char*						szPath;
+	CCircuitView*				pcTop;
+	CArrayTemplatePtr<CCircuitInstanceView>	apcPath;
+	CViewPath*					pcViewPath;
 	CArrayTemplate<int64>		aiComponents;
 	CArrayTemplate<int64>		aiTraces;
 	int64						iIndex;
@@ -1011,12 +1050,15 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	eRotation = ROT_East;
 	bMirrored = false;
 	szCircuit = NULL;
+	szPath = NULL;
+	apcPath.Init();
 	aiComponents.Init();
 	aiTraces.Init();
 	pcEditorTag = pcRoot->GetTag("Editor");
 	if (pcEditorTag != NULL)
 	{
 		szCircuit = pcEditorTag->GetStringAttribute("circuit");
+		szPath = pcEditorTag->GetStringAttribute("path");
 		szRotation = pcEditorTag->GetStringAttribute("rotation");
 		if (szRotation != NULL)
 		{
@@ -1061,6 +1103,17 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 		}
 	}
 
+	//The path into the instance entered: each instance's index in the circuit before it.
+	pcTop = pcCircuit;
+	if (bResult && !StrEmpty(szPath))
+	{
+		pcCircuit = FindInstancePath(pcTop, szPath, &apcPath);
+		if (pcCircuit == NULL)
+		{
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a path [", szPath, "] that isn't a path of instances.", NULL);
+		}
+	}
+
 	if (bResult)
 	{
 		for (i = 0; i < aiComponents.NumElements(); i++)
@@ -1083,19 +1136,34 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 
 	if (bResult)
 	{
-		pSimulation = OMalloc<CCircuitSimulation>(pcCircuit->GetTypeName());
-		bResult = LoadCircuitFileSimulation(pcRoot, pcCircuit, pcCircuits->GetTopPath(pcCircuit), &pSimulation, mpcFamilies);
+		pSimulation = OMalloc<CCircuitSimulation>(pcTop->GetTypeName());
+		bResult = LoadCircuitFileSimulation(pcRoot, pcTop, pcCircuits->GetTopPath(pcTop), &pSimulation, mpcFamilies);
+	}
+
+	pcViewPath = NULL;
+	if (bResult && (apcPath.NumElements() > 0))
+	{
+		pcViewPath = pcCircuits->GetTopPath(pcTop);
+		for (i = 0; (i < apcPath.NumElements()) && (pcViewPath != NULL); i++)
+		{
+			pcViewPath = pcViewPath->GetChild(apcPath.GetPtr(i));
+		}
+		if (pcViewPath == NULL)
+		{
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a path [", szPath, "] that isn't simulated.", NULL);
+		}
 	}
 
 	if (!bResult)
 	{
 		if (pSimulation.IsNotNull())
 		{
-			pcCircuit->DisconnectSimulation(pcCircuits->GetTopPath(pcCircuit), &pSimulation);
+			pcTop->DisconnectSimulation(pcCircuits->GetTopPath(pcTop), &pSimulation);
 			pSimulation = NULL;
 		}
 		pcCircuits->Kill();
 		free(pcCircuits);
+		apcPath.Kill();
 		aiTraces.Kill();
 		aiComponents.Kill();
 		return false;
@@ -1104,7 +1172,9 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	KillProject();
 	mpcCircuits = pcCircuits;
 	mpcCircuit = pcCircuit;
+	mpcViewPath = pcViewPath;
 	mpSimulation = pSimulation;
+	apcPath.Kill();
 	meCreationRotation = eRotation;
 	mbCreationMirrored = bMirrored;
 	for (i = 0; i < aiComponents.NumElements(); i++)
@@ -1385,7 +1455,153 @@ CViewPath* CCircuitEditor::GetViewPath(void)
 	{
 		return NULL;
 	}
+	if (mpcViewPath != NULL)
+	{
+		return mpcViewPath;
+	}
 	return mpcCircuits->GetTopPath(mpcCircuit);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit simulated: the edited one at the top, otherwise the one the
+// path into the instance entered starts at.
+//
+//////////////////////////////////////////////////////////////////////////
+CCircuitView* CCircuitEditor::GetTopCircuit(void)
+{
+	if (mpcViewPath != NULL)
+	{
+		return mpcViewPath->GetTop()->GetCircuitView();
+	}
+	return mpcCircuit;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::IsInInstance(void)
+{
+	return mpcViewPath != NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Edits the circuit of a subcircuit instance in the edited circuit, as
+// it's simulated inside that instance (KiCad's entering a sheet): its
+// views are drawn with the instance's voltages, and edits to it are made
+// to every instance of it.  False if the view isn't an instance.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::EnterInstance(CComponentView* pcInstance)
+{
+	CCircuitInstanceView*	pcInstanceView;
+	CViewPath*				pcChild;
+
+	pcInstanceView = (pcInstance != NULL) ? pcInstance->GetCircuitInstanceView() : NULL;
+	if ((pcInstanceView == NULL) || (pcInstanceView->GetInstanceCircuitView() == NULL) || (mpcCircuit == NULL))
+	{
+		return false;
+	}
+	pcChild = GetViewPath()->GetChild(pcInstanceView);
+	if (pcChild == NULL)
+	{
+		return false;
+	}
+
+	DiscardEdit();
+	mcSelection.Clear();
+	mpcViewPath = pcChild;
+	mpcCircuit = pcInstanceView->GetInstanceCircuitView();
+	UpdateHover();
+	PushUndo(true);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Back to the circuit the instance entered is in, the instance selected.
+// False at the top.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::LeaveInstance(void)
+{
+	CViewPath*			pcPrevious;
+	CComponentView*		pcInstance;
+
+	if (mpcViewPath == NULL)
+	{
+		return false;
+	}
+	DiscardEdit();
+	mcSelection.Clear();
+	pcInstance = (CComponentView*)(CSubcircuitInstanceView*)mpcViewPath->GetLast();
+	pcPrevious = mpcViewPath->GetPrevious();
+	mpcViewPath = ((pcPrevious == NULL) || pcPrevious->IsTop()) ? NULL : pcPrevious;
+	mpcCircuit = (pcPrevious != NULL) ? pcPrevious->GetCircuitView() : GetTopCircuit();
+	if ((pcInstance != NULL) && (FindCircuitComponentIndex(mpcCircuit, pcInstance) != ARRAY_ELEMENT_NOT_FOUND))
+	{
+		mcSelection.Add(pcInstance);
+	}
+	UpdateHover();
+	PushUndo(true);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Back to the circuit simulated.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::LeaveInstances(void)
+{
+	while (LeaveInstance())
+	{
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The component of the edited circuit at the point (grid units), NULL if
+// none.
+//
+//////////////////////////////////////////////////////////////////////////
+CComponentView* CCircuitEditor::GetComponentAt(SFloat64Vec2 sPosition)
+{
+	if (mpcCircuit == NULL)
+	{
+		return NULL;
+	}
+	return mpcCircuit->GetComponentAt(sPosition);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Only the component selected, as a right click on it does.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::SelectOnly(CComponentView* pcComponent)
+{
+	if ((mcSelection.NumComponents() == 1) && (mcSelection.NumTraces() == 0) && mcSelection.Contains(pcComponent))
+	{
+		return;
+	}
+	DiscardEdit();
+	mcSelection.Clear();
+	if (pcComponent != NULL)
+	{
+		mcSelection.Add(pcComponent);
+	}
+	UpdateHover();
+	PushUndo(true);
 }
 
 
@@ -2689,3 +2905,75 @@ bool CircuitUses(CCircuitView* pcCircuit, CCircuitView* pcSubcircuit)
 	return false;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The path into the instance entered, as each instance's index in the
+// circuit before it ("12/3").
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::GetInstancePathText(CChars* psz)
+{
+	size				i;
+	CCircuitView*		pcCircuit;
+	CComponentView*		pcInstance;
+
+	if (mpcViewPath == NULL)
+	{
+		return;
+	}
+	//The path's first view is the top circuit itself; the instances follow it.
+	pcCircuit = mpcViewPath->GetTop()->GetCircuitView();
+	for (i = 1; i < mpcViewPath->Length(); i++)
+	{
+		pcInstance = (CComponentView*)(CSubcircuitInstanceView*)mpcViewPath->Get(i);
+		if (i > 1)
+		{
+			psz->Append('/');
+		}
+		psz->Append((int64)FindCircuitComponentIndex(pcCircuit, pcInstance));
+		pcCircuit = mpcViewPath->Get(i)->GetInstanceCircuitView();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit at the end of the path of instance indices from pcTop, and
+// the instances, NULL if the path doesn't follow instances.
+//
+//////////////////////////////////////////////////////////////////////////
+CCircuitView* CCircuitEditor::FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath)
+{
+	CCircuitView*			pcCircuit;
+	const char*				sz;
+	char*					szEnd;
+	long					lIndex;
+	CComponentView*			pcComponent;
+	CCircuitInstanceView*	pcInstanceView;
+
+	pcCircuit = pcTop;
+	sz = szPath;
+	while (*sz != '\0')
+	{
+		lIndex = strtol(sz, &szEnd, 10);
+		if ((szEnd == sz) || (lIndex < 0) || ((size)lIndex >= pcCircuit->NumComponents()))
+		{
+			return NULL;
+		}
+		pcComponent = pcCircuit->GetComponent((size)lIndex);
+		pcInstanceView = pcComponent->GetCircuitInstanceView();
+		if ((pcInstanceView == NULL) || (pcInstanceView->GetInstanceCircuitView() == NULL))
+		{
+			return NULL;
+		}
+		papcPath->Add(pcInstanceView);
+		pcCircuit = pcInstanceView->GetInstanceCircuitView();
+		sz = (*szEnd == '/') ? szEnd + 1 : szEnd;
+		if ((*szEnd != '/') && (*szEnd != '\0'))
+		{
+			return NULL;
+		}
+	}
+	return pcCircuit;
+}

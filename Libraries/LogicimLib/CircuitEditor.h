@@ -153,7 +153,8 @@ CONSTRUCTABLE(CCircuitEditor);
 DESTRUCTABLE(CCircuitEditor);
 protected:
 	CCircuitViews*						mpcCircuits;
-	CCircuitView*						mpcCircuit;
+	CCircuitView*						mpcCircuit;  //The circuit edited: the simulated one, or the one inside the instance entered.
+	CViewPath*							mpcViewPath;  //Into the instance entered (see EnterInstance), NULL at the top.
 	Ptr<CCircuitSimulation>				mpSimulation;
 	CFamilyVoltageConfigurationStore*	mpcFamilies;
 	Ptr<CCircuitFonts>					mpFonts;
@@ -227,7 +228,14 @@ public:
 	bool				IsEditing(void);
 	CCircuitViews*		GetCircuits(void);
 	CCircuitView*		GetCircuit(void);
+	CCircuitView*		GetTopCircuit(void);
 	CViewPath*			GetViewPath(void);
+	bool				IsInInstance(void);
+	bool				EnterInstance(CComponentView* pcInstance);
+	bool				LeaveInstance(void);
+	void				LeaveInstances(void);
+	CComponentView*		GetComponentAt(SFloat64Vec2 sPosition);
+	void				SelectOnly(CComponentView* pcComponent);
 	CCircuitSimulation*	GetSimulation(void);
 	CCircuitFonts*		GetFonts(void);
 	CCircuitSelection*	GetSelection(void);
@@ -281,6 +289,8 @@ protected:
 	size				FindComponentIndex(CComponentView* pcComponent);
 	size				FindTraceIndex(CTraceView* pcTrace);
 	void				KillSimulation(bool bFreeing = false);
+	void				GetInstancePathText(CChars* psz);
+	CCircuitView*		FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath);
 };
 
 

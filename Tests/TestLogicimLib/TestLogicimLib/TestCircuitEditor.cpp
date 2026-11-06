@@ -1389,6 +1389,66 @@ void TestCircuitEditorSubcircuit(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Entering an instance edits its subcircuit as it's simulated inside the
+// instance, its path saved with the editor so undo comes back to it;
+// leaving it goes back with the instance selected.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestCircuitEditorEnterInstance(void)
+{
+	SEditorTest					sTest;
+	CCircuitView*				pcMain;
+	CCircuitView*				pcInverter;
+	CSubcircuitInstanceView*	pcInstance;
+	CCircuitSimulation*			pcSimulation;
+	CViewPath*					pcTopPath;
+	SFloat64Vec2				sCentre;
+
+	sTest.Init(true);
+	AddEditorInverterSubcircuit(&sTest.pEditor, &sTest.pFonts);
+	pcInverter = sTest.pEditor->GetCircuits()->Get("Inverter");
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	sTest.PointAt(0, 0);
+	AssertTrue(sTest.pEditor->StartPlaceSubcircuit("Inverter"));
+	sTest.Click(5, 5);
+	sTest.pEditor->StopEdit();
+	pcInstance = (CSubcircuitInstanceView*)pcMain->GetComponent(0);
+	pcSimulation = sTest.pEditor->GetSimulation();
+	pcTopPath = sTest.pEditor->GetViewPath();
+	sCentre = GetCentre(pcInstance);
+	AssertPointer(pcInstance, sTest.pEditor->GetComponentAt(sCentre));
+	AssertFalse(sTest.pEditor->EnterInstance(NULL));
+	AssertFalse(sTest.pEditor->LeaveInstance());
+
+	AssertTrue(sTest.pEditor->EnterInstance(pcInstance));
+	AssertTrue(sTest.pEditor->IsInInstance());
+	AssertPointer(pcInverter, sTest.pEditor->GetCircuit());
+	AssertPointer(pcMain, sTest.pEditor->GetTopCircuit());
+	AssertPointer(pcSimulation, sTest.pEditor->GetSimulation());
+	AssertPointer(pcInstance, (CSubcircuitInstanceView*)sTest.pEditor->GetViewPath()->GetLast());
+	AssertPointer(pcTopPath, sTest.pEditor->GetViewPath()->GetPrevious());
+	AssertNotNull(pcInverter->GetComponent(2)->GetComponent(sTest.pEditor->GetViewPath(), pcSimulation));
+
+	//A selection change inside, then undoing it, stays inside.
+	sTest.pEditor->SelectOnly(pcInverter->GetComponent(2));
+	AssertTrue(sTest.pEditor->Undo(true));
+	AssertTrue(sTest.pEditor->IsInInstance());
+	AssertString("Inverter", sTest.pEditor->GetCircuit()->GetTypeName());
+	AssertString("Main", sTest.pEditor->GetTopCircuit()->GetTypeName());
+
+	AssertTrue(sTest.pEditor->LeaveInstance());
+	AssertFalse(sTest.pEditor->IsInInstance());
+	AssertString("Main", sTest.pEditor->GetCircuit()->GetTypeName());
+	AssertSize(1, sTest.pEditor->GetSelection()->NumComponents());
+	AssertString("Subcircuit", sTest.pEditor->GetSelection()->GetComponent(0)->GetType());
+
+	sTest.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 static void AssertTraceLine(int32 x0, int32 y0, int32 x1, int32 y1, CArrayTraceLine* pasLines, size uiIndex)
@@ -3515,6 +3575,7 @@ void TestCircuitEditor(void)
 	TestCircuitEditorPullWire();
 	TestCircuitEditorRouteWire();
 	TestCircuitEditorSubcircuit();
+	TestCircuitEditorEnterInstance();
 	TestCircuitEditorComponentLibraries();
 	TestCircuitEditorPlaceEveryComponent();
 	TestCircuitEditorPlaceUnits();
