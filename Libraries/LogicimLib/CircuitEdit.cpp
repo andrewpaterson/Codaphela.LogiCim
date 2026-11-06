@@ -20,6 +20,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/PointerFunctions.h"
 #include "CircuitView.h"
+#include "CircuitEditor.h"
 #include "CircuitEdit.h"
 
 
@@ -29,6 +30,65 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CStatefulEdit::Kill(void)
 {
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Most edits have nothing to set up.
+//
+//////////////////////////////////////////////////////////////////////////
+void CStatefulEdit::Start(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit)
+{
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Most edits carry on as they are when turned or flipped.
+//
+//////////////////////////////////////////////////////////////////////////
+CStatefulEdit* CStatefulEdit::Transform(CCircuitEdit* pcEdit)
+{
+	return this;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Most edits have nothing to put back.
+//
+//////////////////////////////////////////////////////////////////////////
+void CStatefulEdit::Discard(CCircuitEdit* pcEdit)
+{
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////
+bool CStatefulEdit::CanTransformComponents(void)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A click (a press and release without a move) selects what's under it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CStatefulEdit::SelectClicked(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit)
+{
+	CCircuitSelection	cPrevious;
+
+	cPrevious.Init();
+	cPrevious.Set(pcEdit->GetEditor()->GetSelection());
+	if (pcEdit->GetEditor()->SelectInRectangle(sPosition, sPosition, &cPrevious))
+	{
+		pcEdit->GetEditor()->PushUndo(true);
+	}
+	cPrevious.Kill();
 }
 
 

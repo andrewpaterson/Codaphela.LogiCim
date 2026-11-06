@@ -39,13 +39,16 @@ CONSTRUCTABLE(CStatefulEdit);
 public:
 	virtual void			Kill(void);
 
-	virtual void			Start(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit) =0;
+	virtual void			Start(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit);
 	virtual CStatefulEdit*	Move(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit) =0;
-	virtual CStatefulEdit*	Transform(CCircuitEdit* pcEdit) =0;
+	virtual CStatefulEdit*	Transform(CCircuitEdit* pcEdit);
 	virtual void			Done(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit) =0;
-	virtual void			Discard(CCircuitEdit* pcEdit) =0;
+	virtual void			Discard(CCircuitEdit* pcEdit);
 	virtual void			Paint(CCircuitPainter* pcPainter);
-	virtual bool			CanTransformComponents(void) =0;
+	virtual bool			CanTransformComponents(void);
+
+protected:
+	static	void			SelectClicked(SFloat64Vec2 sPosition, CCircuitEdit* pcEdit);
 };
 
 
