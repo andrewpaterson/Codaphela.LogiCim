@@ -24,7 +24,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "StandardLib/ObjectReader.h"
 #include "StandardLib/ObjectWriter.h"
 #include "LogicimLib/CircuitFile.h"
-#include "KicadImporterLib/KicadSchemLogicimConverter.h"
+#include "KicadImporterLib/KicadSchemBoards.h"
 #include "LogicimCircuit.h"
 
 
@@ -181,50 +181,35 @@ bool CLogicimCircuit::Load(const char* szFilename)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Converts the KiCad schematic to a circuit named as its file ("Counter
-// 16bit"), with the placeholder subcircuits made for its parts, and loads
-// them as a project is loaded so the import can be undone.  If it can't
-// be imported the project is left as it was.
+// Converts the KiCad schematic to a circuit named as its file ("Audio
+// Board"), with a circuit for each board drawn on it (a symbol with a
+// Schematic property, found through KiCad's path variables), and the
+// boards drawn on those, and the placeholder subcircuits made for its
+// parts, and loads them as a project is loaded so the import can be
+// undone.  If it can't be imported the project is left as it was.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 {
-	CKicadSchemFile					cFile;
-	CKicadSchemNetlist				cNetlist;
-	CCircuitViews					cCircuits;
-	CKicadSchemLogicimConverter		cConverter;
-	CXMLWriter						cWriter;
-	CMarkup							cMarkup;
-	CMarkupTag*						pcRoot;
-	CChars							szName;
-	const char*						szStart;
-	const char*						sz;
-	bool							bResult;
+	CKicadPathVariables			cVariables;
+	CCircuitViews				cCircuits;
+	CKicadSchemBoardImporter	cImporter;
+	CCircuitView*				pcTop;
+	CXMLWriter					cWriter;
+	CMarkup						cMarkup;
+	CMarkupTag*					pcRoot;
+	bool						bResult;
 
-	szStart = szFilename;
-	for (sz = szFilename; *sz != '\0'; sz++)
-	{
-		if ((*sz == '/') || (*sz == '\\'))
-		{
-			szStart = sz + 1;
-		}
-	}
-	szName.Init(szStart);
-	if (szName.EndsWith(".kicad_sch"))
-	{
-		szName.RemoveFromEnd(10);
-	}
-
-	cFile.Init();
-	bResult = cFile.Load((char*)szFilename);
-	cNetlist.Init(&cFile);
+	cVariables.Init();
+	cVariables.LoadKicadCommon();
 	cCircuits.Init();
-	cConverter.Init(&cFile, &cNetlist, &cCircuits, mpEditor->GetFonts());
-	bResult = bResult && cNetlist.Build() && cConverter.Convert(szName.Text());
+	cImporter.Init(&cCircuits, mpEditor->GetFonts(), &cVariables);
+	pcTop = cImporter.Import(szFilename);
+	bResult = pcTop != NULL;
 	if (bResult)
 	{
 		cWriter.Init();
-		SaveCircuitsXML(&cCircuits, cConverter.GetCircuit(), NULL, &cWriter);
+		SaveCircuitsXML(&cCircuits, pcTop, NULL, &cWriter);
 		cMarkup.Init();
 		pcRoot = ReadCircuitTextRoot(&cMarkup, cWriter.GetText(), szFilename, "Circuits");
 		bResult = (pcRoot != NULL) && mpEditor->LoadXML(pcRoot, szFilename);
@@ -236,11 +221,9 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 		}
 	}
 
-	cConverter.Kill();
+	cImporter.Kill();
 	cCircuits.Kill();
-	cNetlist.Kill();
-	cFile.Kill();
-	szName.Kill();
+	cVariables.Kill();
 	return bResult;
 }
 

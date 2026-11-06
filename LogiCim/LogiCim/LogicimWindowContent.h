@@ -163,6 +163,7 @@ public:
 	void			Redo(bool bStep);
 	void			ShowDialog(ELogicimDialog eDialog);
 	void			Tick(int64 iUpdateTimeInMilliseconds);
+	bool			ImportKicadSchematic(const char* szFilename);
 
 protected:
 	Ptr<CFont>				GenerateFont(const char* szFontFilename, const char* szName, float32 fPixelSize, EColourOrder eOrder);

@@ -1576,20 +1576,37 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 	{
 		szFilename = mpFileChooser->GetChosen();
 		mszKicadFilename.Set(szFilename);
-		if (mpLogicimCircuit->ImportKicadSchematic(szFilename))
-		{
-			mszProjectFilename.Set(szFilename);
-			if (mszProjectFilename.EndsWith(".kicad_sch"))
-			{
-				mszProjectFilename.RemoveFromEnd(10);
-			}
-			mszProjectFilename.Append(".xml");
-			gcLogger.Info2("Imported [", szFilename, "].", NULL);
-			ZoomToFit(false);
-		}
-		UpdateInfo();
+		ImportKicadSchematic(szFilename);
 	}
 	mpFileChooser = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Replaces the project with the circuit made from the KiCad schematic, as
+// the Import KiCad Schematic dialog does.  LOGICIM_IMPORT names one to
+// import at startup, for scripted checks.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
+{
+	bool	bResult;
+
+	bResult = mpLogicimCircuit->ImportKicadSchematic(szFilename);
+	if (bResult)
+	{
+		mszProjectFilename.Set(szFilename);
+		if (mszProjectFilename.EndsWith(".kicad_sch"))
+		{
+			mszProjectFilename.RemoveFromEnd(10);
+		}
+		mszProjectFilename.Append(".xml");
+		gcLogger.Info2("Imported [", szFilename, "].", NULL);
+		ZoomToFit(false);
+	}
+	UpdateInfo();
+	return bResult;
 }
 
 

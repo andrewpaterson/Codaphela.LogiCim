@@ -77,6 +77,10 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 		mcComponentInput.AddMice();
 		mpWindow->SetComponentInput(&mcComponentInput);
 		mpWindow->SetWindowSize(1280, 800);
+		if (getenv("LOGICIM_IMPORT") != NULL)
+		{
+			mpContent->ImportKicadSchematic(getenv("LOGICIM_IMPORT"));
+		}
 	}
 	return mbValid;
 }
