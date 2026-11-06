@@ -422,6 +422,7 @@ bool CComponentSpriteCache::FindOrMakeSprite(SComponentSprite* psSprite)
 
 	mauiKey.ReInit();
 	mpScratch->AppendKey(&mauiKey);
+	FoldKey();
 	psFound = (SComponentSprite*)mcSprites.Get(mauiKey.GetData(), mauiKey.NumElements());
 	if (psFound)
 	{
@@ -489,6 +490,32 @@ bool CComponentSpriteCache::FindOrMakeSprite(SComponentSprite* psSprite)
 	psSprite->sOffset = cBounds.msTopLeft;
 	mcSprites.Put(mauiKey.GetData(), mauiKey.NumElements(), psSprite, sizeof(SComponentSprite));
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A key longer than the map takes (a big component's shapes, such as a
+// board with many pins) keeps its first bytes, then the hash of all of it
+// and its length, so it fits.
+//
+//////////////////////////////////////////////////////////////////////////
+void CComponentSpriteCache::FoldKey(void)
+{
+	uint64	uiHash;
+	uint64	uiLength;
+	size	uiKept;
+
+	if (mauiKey.NumElements() <= MAX_KEY_SIZE)
+	{
+		return;
+	}
+	uiLength = (uint64)mauiKey.NumElements();
+	uiHash = HashSpriteState(COMPONENT_SPRITE_STATE_START, mauiKey.GetData(), mauiKey.NumElements());
+	uiKept = MAX_KEY_SIZE - sizeof(uint64) - sizeof(uint64);
+	mauiKey.SetUsedElements(uiKept);
+	memcpy(mauiKey.InsertNumAt(sizeof(uint64), mauiKey.NumElements()), &uiHash, sizeof(uint64));
+	memcpy(mauiKey.InsertNumAt(sizeof(uint64), mauiKey.NumElements()), &uiLength, sizeof(uint64));
 }
 
 

@@ -151,6 +151,7 @@ public:
 
 protected:
 	bool			FindOrMakeSprite(SComponentSprite* psSprite);
+	void			FoldKey(void);
 	bool			PlaceSprite(int32 iWidth, int32 iHeight, size* puiPage, SInt32Vec2* psPosition);
 	size			NewPage(int32 iWidth, int32 iHeight);
 	void			ResetPage(size uiPage, int32 iWidth, int32 iHeight);

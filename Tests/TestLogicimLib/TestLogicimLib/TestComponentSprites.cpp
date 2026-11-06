@@ -535,6 +535,68 @@ void TestComponentSpritesEviction(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Shapes whose key is longer than a map key (a board with many pins) are
+// still found again rather than made again each paint.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestComponentSpritesLongKeys(void)
+{
+	Ptr<CCircuitFonts>			pFonts;
+	Ptr<CComponentSpriteCache>	pCache;
+	CCircuitColours				cColours;
+	Ptr<CImage>					pImage;
+	Ptr<CGeometryMap>			pMap;
+	Ptr<CSpriteMap>				pSprites;
+	CCircuitViewport			cViewport;
+	CCircuitPainter				cPainter;
+	size						uiPaint;
+	size						i;
+	size						uiSprites;
+
+	ObjectsInit();
+	pFonts = LoadTestCircuitFonts();
+	cColours.InitLogicim();
+	pCache = OMalloc<CComponentSpriteCache>();
+	uiSprites = 0;
+	for (uiPaint = 0; uiPaint < 3; uiPaint++)
+	{
+		pImage = OMalloc<CImage>(200, 200, PT_uint8, IMAGE_DIFFUSE_RED, IMAGE_DIFFUSE_GREEN, IMAGE_DIFFUSE_BLUE, CHANNEL_STOP);
+		pMap = OMalloc<CGeometryMap>();
+		pSprites = OMalloc<CSpriteMap>();
+		cViewport.Init(200, 200);
+		cPainter.InitImage(pImage, &cViewport, &pMap, &pSprites, &cColours, &pFonts, NULL, NULL);
+		pCache->BeginFrame();
+		cPainter.SetSpriteCache(&pCache);
+		cPainter.BeginSprite(0, 0);
+		for (i = 0; i < 400; i++)
+		{
+			cPainter.Line(-5, (float64)i * 0.02, 5, (float64)i * 0.02, 0.1, cColours.msTraceUndriven);
+		}
+		cPainter.EndSprite();
+		AssertTrue(cPainter.BlitImage());
+		cPainter.Kill();
+		cViewport.Kill();
+		if (uiPaint == 0)
+		{
+			uiSprites = pCache->NumSprites();
+			AssertSize(1, pCache->NumMisses());
+		}
+	}
+	AssertSize(uiSprites, pCache->NumSprites());
+	AssertSize(1, pCache->NumMisses());
+	AssertSize(2, pCache->NumHits());
+
+	cColours.Kill();
+	pCache = NULL;
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
+	ObjectsFlush();
+	ObjectsKill(false);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestComponentSprites(void)
@@ -543,6 +605,7 @@ void TestComponentSprites(void)
 	DataIOInit();
 
 	TestComponentSpritesMatchShapes();
+	TestComponentSpritesLongKeys();
 	TestComponentSpritesShared();
 	TestComponentSpritesText();
 	TestComponentSpritesZoomsAndScrolls();
