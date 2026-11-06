@@ -187,7 +187,7 @@ protected:
 	Ptr<CComponent>			CreateMenuBar(void);
 	Ptr<CMenuContainer>		CreateMenu(ELogicimAction* aeActions, int iNumActions);
 	Ptr<CComponent>			CreateToolbar(void);
-	Ptr<CComponent>			CreateStripe(ELogicimAction* aeActions, int iNumActions);
+	Ptr<CComponent>			CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical);
 	Ptr<CComponent>			CreateEditor(void);
 	Ptr<CComponent>			CreateToolWindow(const char* szTitle, Ptr<CListContainer> pList);
 	Ptr<CComponent>			CreateStatusBar(void);

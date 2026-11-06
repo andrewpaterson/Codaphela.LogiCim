@@ -223,90 +223,60 @@ Ptr<CCanvas> CLogicimWindowContent::CreateLine(int32 iWidth, int32 iHeight, ARGB
 //////////////////////////////////////////////////////////////////////////
 Ptr<CComponent> CLogicimWindowContent::CreateToolbar(void)
 {
-	ELogicimAction			aeActions[] = { LA_LoadProject, LA_SaveProject, LA_Separator,
-											LA_NewSimulation, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed, LA_Separator,
-											LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically };
-	Ptr<CGridContainer>		pBar;
-	Ptr<CFillContainer>		pFiller;
-	Ptr<CCanvas>			pLine;
-	int						i;
-	int						iColumn;
+	ELogicimAction	aeActions[] = { LA_LoadProject, LA_SaveProject, LA_Separator,
+									LA_NewSimulation, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed, LA_Separator,
+									LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically };
 
-	//A grid only has a size if it is given one.
-	pBar = OMalloc<CGridContainer>(mpWindow);
-	pBar->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pBar->SetDesiredSize(-1, 40);
-
-	//A little space before the first button.
-	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pFiller->SetDesiredSize(4, 1);
-	pBar->AddComponent(pFiller, 0, 0);
-	iColumn = 1;
-	for (i = 0; i < (int)(sizeof(aeActions) / sizeof(ELogicimAction)); i++)
-	{
-		if (aeActions[i] == LA_Separator)
-		{
-			pLine = CreateLine(1, 22, JEWEL_SEPARATOR);
-			pFiller = OMalloc<CFillContainer>(mpWindow);
-			pFiller->SetDesiredSize(13, 22);
-			pFiller->AddComponent(pLine);
-			pBar->AddComponent(pFiller, iColumn, 0);
-		}
-		else
-		{
-			pBar->AddComponent(CreateToolButton(aeActions[i]), iColumn, 0);
-		}
-		iColumn++;
-	}
-
-	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pBar->AddComponent(pFiller, iColumn, 0, 1, 1, 1, 0);
-	return pBar;
+	return CreateToolStrip(aeActions, sizeof(aeActions) / sizeof(ELogicimAction), false);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A column of tool buttons like IntelliJ's tool window stripes; Logicim's
-// display and creation panels.
+// A row of tool buttons (the toolbar) or a column of them like IntelliJ's
+// tool window stripes (Logicim's display and creation panels), 40 pixels
+// across with a little space before the first button.  A separator is a
+// line across the strip.  The space after the last button takes up the
+// rest of the strip.
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CComponent> CLogicimWindowContent::CreateStripe(ELogicimAction* aeActions, int iNumActions)
+Ptr<CComponent> CLogicimWindowContent::CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical)
 {
-	Ptr<CGridContainer>		pStripe;
+	Ptr<CGridContainer>		pStrip;
 	Ptr<CFillContainer>		pFiller;
 	Ptr<CCanvas>			pLine;
 	int						i;
-	int						iRow;
+	int						iCell;
 
-	pStripe = OMalloc<CGridContainer>(mpWindow);
-	pStripe->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pStripe->SetDesiredSize(40, -1);
+	//A grid only has a size if it is given one.
+	pStrip = OMalloc<CGridContainer>(mpWindow);
+	pStrip->SetAlignment(CSH_Stretch, CSV_Stretch);
+	pStrip->SetDesiredSize(bVertical ? 40 : -1, bVertical ? -1 : 40);
 
 	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pFiller->SetDesiredSize(1, 4);
-	pStripe->AddComponent(pFiller, 0, 0);
-	iRow = 1;
+	pFiller->SetDesiredSize(bVertical ? 1 : 4, bVertical ? 4 : 1);
+	pStrip->AddComponent(pFiller, 0, 0);
+	iCell = 1;
 	for (i = 0; i < iNumActions; i++)
 	{
 		if (aeActions[i] == LA_Separator)
 		{
-			pLine = CreateLine(22, 1, JEWEL_SEPARATOR);
+			pLine = CreateLine(bVertical ? 22 : 1, bVertical ? 1 : 22, JEWEL_SEPARATOR);
 			pFiller = OMalloc<CFillContainer>(mpWindow);
-			pFiller->SetDesiredSize(22, 13);
+			pFiller->SetDesiredSize(bVertical ? 22 : 13, bVertical ? 13 : 22);
 			pFiller->AddComponent(pLine);
-			pStripe->AddComponent(pFiller, 0, iRow);
+			pStrip->AddComponent(pFiller, bVertical ? 0 : iCell, bVertical ? iCell : 0);
 		}
 		else
 		{
-			pStripe->AddComponent(CreateToolButton(aeActions[i]), 0, iRow);
+			pStrip->AddComponent(CreateToolButton(aeActions[i]), bVertical ? 0 : iCell, bVertical ? iCell : 0);
 		}
-		iRow++;
+		iCell++;
 	}
 
 	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pStripe->AddComponent(pFiller, 0, iRow, 1, 1, 0, 1);
-	return pStripe;
+	pStrip->AddComponent(pFiller, bVertical ? 0 : iCell, bVertical ? iCell : 0, 1, 1, bVertical ? 0 : 1, bVertical ? 1 : 0);
+	return pStrip;
 }
 
 
@@ -453,13 +423,13 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	pCentre->AddComponent(CreateLine(-1, 1, JEWEL_EDITOR), 0, 1, 1, 1, 1, 0);
 	pCentre->AddComponent(pSimulations, 0, 2, 1, 1, 1, 0);
 
-	pEditor->AddComponent(CreateStripe(aeDisplay, sizeof(aeDisplay) / sizeof(ELogicimAction)), 0, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(CreateToolStrip(aeDisplay, sizeof(aeDisplay) / sizeof(ELogicimAction), true), 0, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(CreateLine(1, -1, JEWEL_EDITOR), 1, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(pSubcircuits, 2, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(CreateLine(1, -1, JEWEL_EDITOR), 3, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(pCentre, 4, 0, 1, 1, 1, 1);
 	pEditor->AddComponent(CreateLine(1, -1, JEWEL_EDITOR), 5, 0, 1, 1, 0, 1);
-	pEditor->AddComponent(CreateStripe(aeCreation, sizeof(aeCreation) / sizeof(ELogicimAction)), 6, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(CreateToolStrip(aeCreation, sizeof(aeCreation) / sizeof(ELogicimAction), true), 6, 0, 1, 1, 0, 1);
 	return pEditor;
 }
 
