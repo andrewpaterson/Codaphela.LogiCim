@@ -48,6 +48,7 @@ Then Read the PNG to look at it. Stop with `Stop-LogiCim`.
 | `Place-Grid 'F' x y` | Canvas key then click to put it down. Keys (CCircuitCanvas::Printable): `F` flip flop, `C` clock, `v` 3.3V, `g` ground, `p` pin, `c` constant, `A`/`O`/`X`/`N` gates, `P` probe, `S` splitter, `T` tunnel, `L` label; `r` rotate anticlockwise, `R` clockwise, `x`/`y` flip horizontally/vertically, `e` properties, `m` move the selection (or the component under the pointer) until the next click |
 | `Send-Char 'x'` / `Send-VKey vk [-Shift] [-Extended]` / `Send-Delete` | Keys |
 | `Click-Client x y` / `Move-Client x y` | Raw client-area pixels, for toolbars and menus |
+| `RightClick-Client x y` / `DoubleClick-Client x y` | Button two (a context menu) / a double click of button one, at client pixels |
 | `Save-Screenshot path` | Whole window as PNG; the client area starts 8 px in and 31 px down in the image |
 
 Port positions for a D flip flop at (0,0) facing East: CP (-3,-3), SD (-4,-1), D (-3,1), RD (-4,3), Q (3,-1),

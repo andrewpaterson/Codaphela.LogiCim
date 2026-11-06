@@ -87,6 +87,18 @@ function Move-Client([int]$x, [int]$y) {
   [LogiCimU]::ClientToScreen((Get-LogiCimWindow), [ref]$p) | Out-Null
   [LogiCimU]::SetCursorPos($p.X, $p.Y) | Out-Null; Start-Sleep -Milliseconds 60
 }
+function RightClick-Client([int]$x, [int]$y) {
+  Move-Client $x $y
+  [LogiCimU]::mouse_event(0x8, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 60
+  [LogiCimU]::mouse_event(0x10, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 100
+}
+function DoubleClick-Client([int]$x, [int]$y) {
+  Move-Client $x $y
+  [LogiCimU]::mouse_event(0x2, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 40
+  [LogiCimU]::mouse_event(0x4, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 80
+  [LogiCimU]::mouse_event(0x2, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 40
+  [LogiCimU]::mouse_event(0x4, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 100
+}
 function Click-Client([int]$x, [int]$y) {
   Move-Client $x $y
   [LogiCimU]::mouse_event(0x2, 0, 0, 0, [IntPtr]::Zero); Start-Sleep -Milliseconds 60
