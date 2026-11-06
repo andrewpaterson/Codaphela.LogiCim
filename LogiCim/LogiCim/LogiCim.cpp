@@ -19,14 +19,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include <windows.h>
-#include "BaseLib/Logger.h"
-#include "BaseLib/FileUtil.h"
-#include "BaseLib/TypeNames.h"
-#include "BaseLib/TypeConverter.h"
 #include "BaseLib/GlobalMemory.h"
-#include "BaseLib/GlobalDataTypesIO.h"
-#include "BaseLib/DebugOutput.h"
-#include "StandardLib/Objects.h"
 #include "WinGdiLib/WinGDIWindowFactory.h"
 #include "WinInputLib/WinInput.h"
 #include "LogicimApp.h"
@@ -38,23 +31,14 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	bool	bResult;
+
 	_CrtSetBreakAlloc(0);
-
-	gcLogger.Init();
-	TypesInit();
-	TypeConverterInit();
-	MemoryInit();
-	DataIOInit();
-	ObjectsInit();
-
-	bool bResult;
-
-	bResult = true;
+	InitLogicimGlobals();
 
 	{
 		CWinGDIWindowFactory		cNativeFactory;
 		CWinInput					cWinInput;
-		Ptr<CLogicimApp>			pApp;
 
 		cNativeFactory.Init(&gcMemoryAllocator,
 			hInstance,
@@ -62,48 +46,18 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			nCmdShow,
 			"LogiCim");
 
-		//Validating every object each time one changes is too slow for the text's glyphs.  They are validated once at the end.
-		gcObjects.DisableValidation();
-
-		//The app's input reads the devices from the XML, then adds these.
 		cWinInput.Init(NULL, false);
 		cNativeFactory.SetRawInput(WinRawInputCallback, cWinInput.GetRaw());
 
-		//The app (its window, content and input) is held by the root while it runs.
-		pApp = OMalloc<CLogicimApp>();
-		ORoot()->Add(pApp);
-		bResult = pApp->Setup(&cNativeFactory, &cWinInput, "../../../CommonLibraries/Libraries/WinInputLib/xml") && pApp->Run();
-		ORoot()->Remove(pApp);
-		pApp = NULL;
+		bResult = RunLogicimApp(&cNativeFactory, &cWinInput, "../../../CommonLibraries/Libraries/WinInputLib/xml");
 
 		cNativeFactory.SetRawInput(NULL, NULL);
 		cWinInput.Kill();
-
-		gcObjects.EnableValidation();
-		gcObjects.ValidateObjectsConsistency();
-
 		cNativeFactory.Kill();
 	}
 
-
-	ObjectsFlush();
-	ObjectsKill();
-	DataIOKill();
-	MemoryKill();
-	TypeConverterKill();
-	TypesKill();
-
-	gcLogger.Kill();
-
+	KillLogicimGlobals();
 	_CrtDumpMemoryLeaks();
-
-	if (bResult)
-	{
-		return 0;
-	}
-	else
-	{
-		return 1;
-	}
+	return bResult ? 0 : 1;
 }
 

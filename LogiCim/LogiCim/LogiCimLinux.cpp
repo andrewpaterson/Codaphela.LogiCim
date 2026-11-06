@@ -18,12 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "BaseLib/Logger.h"
-#include "BaseLib/TypeNames.h"
-#include "BaseLib/TypeConverter.h"
 #include "BaseLib/GlobalMemory.h"
-#include "BaseLib/GlobalDataTypesIO.h"
-#include "StandardLib/Objects.h"
 #include "X11Lib/X11WindowFactory.h"
 #include "X11Lib/X11Input.h"
 #include "LogicimApp.h"
@@ -37,63 +32,29 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-	gcLogger.Init();
-	TypesInit();
-	TypeConverterInit();
-	MemoryInit();
-	DataIOInit();
-	ObjectsInit();
+	bool	bResult;
 
-	bool bResult;
+	InitLogicimGlobals();
 
 	{
 		CX11WindowFactory			cNativeFactory;
 		CX11Input					cX11Input;
-		Ptr<CLogicimApp>			pApp;
 
 		bResult = cNativeFactory.Init(&gcMemoryAllocator, NULL);
 		if (bResult)
 		{
-			//Validating every object each time one changes is too slow for the text's glyphs.  They are validated once at the end.
-			gcObjects.DisableValidation();
-
-			//The app's input reads the devices from the XML, then adds these.
 			cX11Input.Init();
 			cNativeFactory.SetInput(&cX11Input);
 
-			//The app (its window, content and input) is held by the root while it runs.
-			pApp = OMalloc<CLogicimApp>();
-			ORoot()->Add(pApp);
-			bResult = pApp->Setup(&cNativeFactory, &cX11Input, "../../../commonlibraries/Libraries/WinInputLib/xml") && pApp->Run();
-			ORoot()->Remove(pApp);
-			pApp = NULL;
+			bResult = RunLogicimApp(&cNativeFactory, &cX11Input, "../../../commonlibraries/Libraries/WinInputLib/xml");
 
 			cNativeFactory.SetInput(NULL);
 			cX11Input.Kill();
-
-			gcObjects.EnableValidation();
-			gcObjects.ValidateObjectsConsistency();
 		}
-
 		cNativeFactory.Kill();
 	}
 
-	ObjectsFlush();
-	ObjectsKill();
-	DataIOKill();
-	MemoryKill();
-	TypeConverterKill();
-	TypesKill();
-
-	gcLogger.Kill();
-
-	if (bResult)
-	{
-		return 0;
-	}
-	else
-	{
-		return 1;
-	}
+	KillLogicimGlobals();
+	return bResult ? 0 : 1;
 }
 

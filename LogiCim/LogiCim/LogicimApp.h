@@ -32,8 +32,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimWindowContent.h"
 
 
-//LogiCim: its window, the window's content and the input that drives it.  main makes it, adds it to the root, runs it and
-//removes it from the root.
+//LogiCim: its window, the window's content and the input that drives it.  RunLogicimApp makes it, adds it to the root,
+//runs it and removes it from the root.
 class CLogicimApp : public CObject
 {
 CONSTRUCTABLE(CLogicimApp);
@@ -59,6 +59,12 @@ public:
 
 	bool	Run(void);
 };
+
+
+//What every platform's main does around its native window factory and input.
+void	InitLogicimGlobals(void);
+void	KillLogicimGlobals(void);
+bool	RunLogicimApp(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory);
 
 
 #endif // __LOGICIM_APP_H__

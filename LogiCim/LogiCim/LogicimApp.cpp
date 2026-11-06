@@ -19,6 +19,11 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include <stdlib.h>
+#include "BaseLib/Logger.h"
+#include "BaseLib/TypeNames.h"
+#include "BaseLib/TypeConverter.h"
+#include "BaseLib/GlobalMemory.h"
+#include "BaseLib/GlobalDataTypesIO.h"
 #include "StandardLib/Objects.h"
 #include "WindowLib/ClearCanvasDraw.h"
 #include "WindowLib/JewelColours.h"
@@ -158,3 +163,63 @@ bool CLogicimApp::Run(void)
 	return mbValid;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The logger, types, memory and objects LogiCim runs with.
+//
+//////////////////////////////////////////////////////////////////////////
+void InitLogicimGlobals(void)
+{
+	gcLogger.Init();
+	TypesInit();
+	TypeConverterInit();
+	MemoryInit();
+	DataIOInit();
+	ObjectsInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void KillLogicimGlobals(void)
+{
+	ObjectsFlush();
+	ObjectsKill();
+	DataIOKill();
+	MemoryKill();
+	TypeConverterKill();
+	TypesKill();
+	gcLogger.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Runs LogiCim on the platform's window factory and input, which must be
+// initialised (the app's input reads the devices from the XML in
+// szInputDirectory, then adds the native input's).  The app (its window,
+// content and input) is held by the root while it runs.  Validating every
+// object each time one changes is too slow for the text's glyphs, so
+// they're validated once at the end.
+//
+//////////////////////////////////////////////////////////////////////////
+bool RunLogicimApp(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory)
+{
+	Ptr<CLogicimApp>	pApp;
+	bool				bResult;
+
+	gcObjects.DisableValidation();
+
+	pApp = OMalloc<CLogicimApp>();
+	ORoot()->Add(pApp);
+	bResult = pApp->Setup(pcNativeFactory, pcNativeInput, szInputDirectory) && pApp->Run();
+	ORoot()->Remove(pApp);
+	pApp = NULL;
+
+	gcObjects.EnableValidation();
+	gcObjects.ValidateObjectsConsistency();
+	return bResult;
+}
