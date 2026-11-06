@@ -41,6 +41,8 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 class CCircuitComponent;
 class CCircuitViewport;
+class CCircuitView;
+class CCircuitFonts;
 class CSubcircuitSimulation;
 class CFamilyVoltageConfigurationStore;
 class CComponentStateXML;
@@ -129,6 +131,7 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag) =0;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 			void					SaveXML(CXMLWriter* pcWriter);
 			bool					LoadXMLMirrored(CMarkupTag* pcTag);
 	virtual bool					LoadXMLAfterInit(CMarkupTag* pcTag);

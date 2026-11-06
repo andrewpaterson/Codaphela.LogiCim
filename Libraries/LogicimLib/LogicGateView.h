@@ -82,9 +82,11 @@ public:
 	virtual bool	LoadXML(CMarkupTag* pcTag);
 	virtual bool	InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool	InitGate(SLogicGateXML* psGate);
+	virtual bool	InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 
 protected:
 	virtual	void	SaveXMLAttributes(CXMLWriter* pcWriter);
+			bool	InitPlacedGate(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, int iInputCount);
 			void	CreateGatePortViews(int iInputOffset);
 			void	CreateBufferPortViews(void);
 	virtual	bool	IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);

@@ -29,6 +29,11 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define PLACED_PART_SEPARATOR	':'
 
 
+//The family placed chips are, and the prefix of their references.
+#define PLACED_FAMILY		"LVC"
+#define PLACED_REFERENCE	"U"
+
+
 //A new view, as the editor places it, of the component an element is saved as (see ComponentViewFactory.h), with
 //Logicim's initial properties for it (its ViewFactory's createInitialProperties): the LVC family, implicit power,
 //two inputs on a gate and so on.  A real 74 series part is placed by its element name and part type (see

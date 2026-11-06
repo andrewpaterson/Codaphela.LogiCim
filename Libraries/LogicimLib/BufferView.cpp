@@ -20,6 +20,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/ConstructorCall.h"
 #include "MicroprocessorLib/Buffer.h"
+#include "ComponentPlacement.h"
 #include "BufferView.h"
 
 
@@ -145,6 +146,17 @@ const char* CInverterView::GetType(void)
 const char* CBufferView::GetXMLName(void)
 {
 	return "Buffer";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new with one input.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CBufferView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	return InitPlacedGate(x, y, eRotation, pcCircuit, 1);
 }
 
 

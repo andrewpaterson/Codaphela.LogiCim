@@ -25,6 +25,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/Splitter.h"
 #include "ComponentStateXML.h"
 #include "Radix.h"
+#include "ComponentPlacement.h"
 #include "SplitterView.h"
 
 
@@ -664,6 +665,18 @@ void CSplitterView::GetProperties(CComponentProperties* pcProperties, SComponent
 	pcProperties->AddInteger("gridSpacing", miGridSpacing, 1, 16);
 	pcProperties->AddChoice("appearance", aszAppearances, 2, (size)meAppearance - SA_LeftHanded);
 	pcProperties->AddInteger("endOffset", miEndOffset, -RADIX_MAX_BIT_WIDTH, RADIX_MAX_BIT_WIDTH);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new splitting two bits into two ends.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CSplitterView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "", 2, 2, 2, SA_LeftHanded, -1);
+	return true;
 }
 
 

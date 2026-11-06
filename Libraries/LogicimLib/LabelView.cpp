@@ -20,6 +20,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/Logger.h"
+#include "ComponentPlacement.h"
 #include "LabelView.h"
 
 
@@ -217,6 +218,18 @@ void CLabelView::GetProperties(CComponentProperties* pcProperties, SComponentPro
 	pcProperties->AddBoolean("bold", mbBold);
 	pcProperties->AddBoolean("fill", mbFill);
 	pcProperties->AddBoolean("border", mbBorder);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new empty.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLabelView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "  ", TA_Left, false, true, true, pcFonts);
+	return true;
 }
 
 

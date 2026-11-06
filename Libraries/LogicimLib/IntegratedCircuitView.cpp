@@ -32,6 +32,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/Circuit.h"
 #include "ComponentStateXML.h"
 #include "CircuitTextMarkupParser.h"
+#include "ComponentPlacement.h"
 #include "IntegratedCircuitView.h"
 
 
@@ -209,6 +210,33 @@ bool CIntegratedCircuitView::InitFromProperties(int32 x, int32 y, ERotation eRot
 
 	GetIntegratedCircuitProperties(x, y, eRotation, pcProperties, &sIntegratedCircuit);
 	return InitIntegratedCircuit(&sIntegratedCircuit);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A chip made from only its placement and family (see
+// InitIntegratedCircuit): of the placed family, with implicit power and
+// the next free reference.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CIntegratedCircuitView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	SIntegratedCircuitXML	sIntegratedCircuit;
+	CChars					szName;
+	bool					bResult;
+
+	szName.Init();
+	GetFreeReference(&szName, pcCircuit, PLACED_REFERENCE);
+	sIntegratedCircuit.x = x;
+	sIntegratedCircuit.y = y;
+	sIntegratedCircuit.eRotation = eRotation;
+	sIntegratedCircuit.szName = szName.Text();
+	sIntegratedCircuit.szFamily = (char*)PLACED_FAMILY;
+	sIntegratedCircuit.bExplicitPowerPorts = false;
+	bResult = InitIntegratedCircuit(&sIntegratedCircuit);
+	szName.Kill();
+	return bResult;
 }
 
 

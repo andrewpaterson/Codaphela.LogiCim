@@ -34,6 +34,7 @@ public:
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
 	virtual bool					InitGate(SLogicGateXML* psGate);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
 	static	void					AddBufferShape(CComponentShapes* pcShapes, float64 x, float64 y, float64 fHalfWidth);

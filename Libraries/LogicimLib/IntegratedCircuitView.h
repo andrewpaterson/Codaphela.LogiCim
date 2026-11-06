@@ -84,6 +84,7 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitIntegratedCircuit(SIntegratedCircuitXML* psIntegratedCircuit);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXMLAfterInit(CMarkupTag* pcTag);
 	virtual void					InitAfterProperties(CComponentProperties* pcProperties);
 			CIntegratedCircuit*		GetIntegratedCircuit(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);

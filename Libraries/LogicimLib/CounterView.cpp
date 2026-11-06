@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/Logger.h"
 #include "MicroprocessorLib/Counter.h"
+#include "ComponentPlacement.h"
 #include "CounterView.h"
 
 
@@ -165,6 +166,23 @@ void CCounterView::GetProperties(CComponentProperties* pcProperties, SComponentP
 	AddPowerProperties(pcProperties, psContext);
 	pcProperties->AddInteger("bitWidth", miBitWidth, 1, 32);
 	pcProperties->AddInteger("terminalValue", muiTerminalValue, 0, 0xFFFFFFFFLL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new four bits wide, counting to 15.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCounterView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	CChars	szName;
+
+	szName.Init();
+	GetFreeReference(&szName, pcCircuit, PLACED_REFERENCE);
+	Init(x, y, eRotation, szName.Text(), PLACED_FAMILY, false, 4, 0xf);
+	szName.Kill();
+	return true;
 }
 
 

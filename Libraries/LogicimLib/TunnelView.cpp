@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/Logger.h"
+#include "ComponentPlacement.h"
 #include "TunnelView.h"
 
 
@@ -259,6 +260,18 @@ void CTunnelView::GetProperties(CComponentProperties* pcProperties, SComponentPr
 {
 	CComponentView::GetProperties(pcProperties, psContext);
 	pcProperties->AddBoolean("doubleSided", mbDoubleSided);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new unnamed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CTunnelView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "  ", false, pcFonts);
+	return true;
 }
 
 

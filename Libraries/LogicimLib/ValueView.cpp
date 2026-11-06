@@ -32,6 +32,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/CircuitSimulation.h"
 #include "BaseLib/StringHelper.h"
 #include "ComponentStateXML.h"
+#include "ComponentPlacement.h"
 #include "ValueView.h"
 
 
@@ -354,6 +355,18 @@ const char* CConstantView::GetXMLName(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Placed new two bits wide, in binary.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CConstantView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "", PLACED_FAMILY, false, 2, RADIX_Binary, pcFonts);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //////////////////////////////////////////////////////////////////////////
 bool CConstantView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
 {
@@ -441,6 +454,18 @@ const char* CProbeView::GetType(void)
 const char* CProbeView::GetXMLName(void)
 {
 	return "Probe";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new 32 bits wide, in hexadecimal.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CProbeView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "", PLACED_FAMILY, false, 32, RADIX_Hexadecimal, pcFonts);
+	return true;
 }
 
 
@@ -861,6 +886,23 @@ void CPinView::GetProperties(CComponentProperties* pcProperties, SComponentPrope
 	pcProperties->AddBoolean("inverting", mbInverting);
 	pcProperties->AddBoolean("clockNotch", mbClockNotch);
 	AddRadixProperty(pcProperties, meRadix);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new one bit wide, in binary, with a name no other pin in the
+// circuit has, as Logicim's ComponentNameHelper.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CPinView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	CChars	szName;
+
+	GetUniqueComponentName(&szName, pcCircuit, GetXMLName(), "Pin");
+	Init(x, y, eRotation, szName.Text(), PLACED_FAMILY, false, 1, RADIX_Binary, pcFonts);
+	szName.Kill();
+	return true;
 }
 
 

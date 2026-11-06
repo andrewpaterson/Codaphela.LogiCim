@@ -51,6 +51,7 @@ public:
 	virtual const char*				GetXMLName(void);
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 
 			ETextAlignment			GetAlignment(void);

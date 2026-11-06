@@ -24,6 +24,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/PowerPinNames.h"
 #include "MicroprocessorLib/Voltage.h"
 #include "ComponentStateXML.h"
+#include "ComponentPlacement.h"
 #include "PowerSourceView.h"
 
 
@@ -253,6 +254,16 @@ bool CPositivePowerView::LoadXML(CMarkupTag* pcTag)
 
 //////////////////////////////////////////////////////////////////////////
 //
+//////////////////////////////////////////////////////////////////////////
+bool CGroundView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "");
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 bool CGroundView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
@@ -271,6 +282,18 @@ void CPositivePowerView::GetProperties(CComponentProperties* pcProperties, SComp
 {
 	CComponentView::GetProperties(pcProperties, psContext);
 	pcProperties->AddFloat("voltage", "V", mfVoltage, 0.0, 100.0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new at 3.3V.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CPositivePowerView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "", 3.3f);
+	return true;
 }
 
 

@@ -33,6 +33,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/FlipFlopArray.h"
 #include "ComponentProperties.h"
 #include "CircuitTextMarkupParser.h"
+#include "ComponentPlacement.h"
 #include "LogicBlockView.h"
 
 
@@ -876,6 +877,25 @@ void CLogicBlockView::GetProperties(CComponentProperties* pcProperties, SCompone
 		pcProperties->AddBoolean("disabledHighImpedance", msParams.bDisabledHighImpedance);
 	}
 	pcProperties->AddInteger("pinSpacing", (msParams.iPinSpacing >= 1) ? msParams.iPinSpacing : 1, 1, LOGIC_BLOCK_MAX_PIN_SPACING);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new with its kind's default size.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicBlockView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	SLogicBlockParams	sParams;
+	CChars	szName;
+
+	szName.Init();
+	GetFreeReference(&szName, pcCircuit, PLACED_REFERENCE);
+	GetDefaultParams(GetBlockKind(), &sParams);
+	Init(x, y, eRotation, szName.Text(), PLACED_FAMILY, false, GetBlockKind(), &sParams);
+	szName.Kill();
+	return true;
 }
 
 

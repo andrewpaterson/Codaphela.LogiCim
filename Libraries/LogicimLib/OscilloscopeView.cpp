@@ -23,6 +23,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/Logger.h"
 #include "MicroprocessorLib/Oscilloscope.h"
 #include "MicroprocessorLib/Pins.h"
+#include "ComponentPlacement.h"
 #include "OscilloscopeView.h"
 
 
@@ -268,6 +269,18 @@ void COscilloscopeView::GetProperties(CComponentProperties* pcProperties, SCompo
 	pcProperties->AddInteger("divHeightInGrids", miDivHeight, 2, 6);
 	pcProperties->AddInteger("samplesPerDiv", miSamplesPerDiv, 4, 64);
 	pcProperties->AddFloat("samplingFrequency", "GHz", mfSampleFrequency / 1000000000.0, 0.00000000001, 999.0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new with two inputs.
+//
+//////////////////////////////////////////////////////////////////////////
+bool COscilloscopeView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	Init(x, y, eRotation, "", PLACED_FAMILY, 2, 32, 30, 4, 6000000000.0);
+	return true;
 }
 
 

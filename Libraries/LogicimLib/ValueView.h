@@ -119,6 +119,7 @@ public:
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
 	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 };
 
@@ -135,6 +136,7 @@ public:
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
 	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 };
 
@@ -164,6 +166,7 @@ public:
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);

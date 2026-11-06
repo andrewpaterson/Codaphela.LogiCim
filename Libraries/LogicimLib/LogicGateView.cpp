@@ -22,6 +22,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/Pins.h"
 #include "ComponentShapes.h"
 #include "Radix.h"
+#include "ComponentPlacement.h"
 #include "LogicGateView.h"
 
 
@@ -73,6 +74,46 @@ bool CLogicGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, C
 	sGate.iInputWidth = (int32)pcProperties->GetInteger("inputWidth", miInputWidth);
 	sGate.iPinSpacing = (int32)pcProperties->GetInteger("pinSpacing", miPinSpacing);
 	return InitGate(&sGate);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new with two inputs.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicGateView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	return InitPlacedGate(x, y, eRotation, pcCircuit, 2);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A gate of iInputCount one bit inputs (see InitGate), of the placed
+// family, with implicit power and the next free reference.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicGateView::InitPlacedGate(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, int iInputCount)
+{
+	SLogicGateXML	sGate;
+	CChars			szName;
+	bool			bResult;
+
+	szName.Init();
+	GetFreeReference(&szName, pcCircuit, PLACED_REFERENCE);
+	sGate.sIntegratedCircuit.x = x;
+	sGate.sIntegratedCircuit.y = y;
+	sGate.sIntegratedCircuit.eRotation = eRotation;
+	sGate.sIntegratedCircuit.szName = szName.Text();
+	sGate.sIntegratedCircuit.szFamily = (char*)PLACED_FAMILY;
+	sGate.sIntegratedCircuit.bExplicitPowerPorts = false;
+	sGate.iInputCount = iInputCount;
+	sGate.iInputWidth = 1;
+	sGate.iPinSpacing = 1;
+	bResult = InitGate(&sGate);
+	szName.Kill();
+	return bResult;
 }
 
 

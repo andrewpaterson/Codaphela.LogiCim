@@ -879,6 +879,22 @@ void CComponentView::GetProperties(CComponentProperties* pcProperties, SComponen
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The view as the editor places it new, with Logicim's initial properties
+// for it (its ViewFactory's createInitialProperties) and a name no other
+// component of the circuit has where it needs one (see
+// ComponentPlacement.h).  Views measured with fonts are measured with
+// pcFonts.  False for a view that isn't placed on its own: a 74 series
+// view needs its part type and a subcircuit instance its subcircuit.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CComponentView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Initialises the view, which must be new, from its properties, as
 // Logicim's ViewFactory makes a view from new properties.  Fails for a view
 // with no properties of its own.

@@ -29,6 +29,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "AndGateView.h"
 #include "OrGateView.h"
 #include "BufferView.h"
+#include "ComponentPlacement.h"
 #include "Logic74View.h"
 
 
@@ -465,6 +466,18 @@ void CLogic74PackageView::GetProperties(CComponentProperties* pcProperties, SCom
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Not placed on its own: it's placed with its part type (see
+// NewPlacedComponentView).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogic74PackageView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogic74PackageView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
@@ -768,6 +781,18 @@ void CLogic74UnitView::GetProperties(CComponentProperties* pcProperties, SCompon
 	}
 	pcProperties->AddChoice("unit", aszUnits, (size)iUnitCount, (size)miUnit);
 	pcProperties->AddInteger("pinSpacing", miPinSpacing, 1, LOGIC_GATE_MAX_PIN_SPACING);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Not placed on its own: it's placed with its part type (see
+// NewPlacedComponentView).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogic74UnitView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	return false;
 }
 
 

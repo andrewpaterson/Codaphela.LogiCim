@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/Logger.h"
 #include "MicroprocessorLib/ClockOscillator.h"
+#include "ComponentPlacement.h"
 #include "ClockView.h"
 
 
@@ -193,6 +194,23 @@ void CClockView::GetProperties(CComponentProperties* pcProperties, SComponentPro
 	AddPowerProperties(pcProperties, psContext);
 	pcProperties->AddFloat("frequency", "MHz", mfFrequency / 1000000.0, 0.000001, 999000.0);
 	pcProperties->AddBoolean("inverseOut", mbInverseOut);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed new at 25MHz.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CClockView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
+{
+	CChars	szName;
+
+	szName.Init();
+	GetFreeReference(&szName, pcCircuit, PLACED_REFERENCE);
+	Init(x, y, eRotation, szName.Text(), PLACED_FAMILY, false, 25000000.0, false);
+	szName.Kill();
+	return true;
 }
 
 
