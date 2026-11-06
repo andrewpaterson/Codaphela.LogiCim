@@ -76,6 +76,9 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	masConnections.Init();
 	masAlignments.Init();
 	masRegulated.Init();
+	masSplitters.Init();
+	mapcSplitterPins.Init();
+	mapcSplitterEnds.Init();
 	mpcAddingSymbol = NULL;
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
@@ -105,6 +108,9 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::Kill(void)
 {
+	mapcSplitterEnds.Kill();
+	mapcSplitterPins.Kill();
+	masSplitters.Kill();
 	masRegulated.Kill();
 	masAlignments.Kill();
 	masConnections.Kill();
@@ -701,6 +707,23 @@ static CComponentView* NewKicadSchemGateView(ERotation eRotation, const char* sz
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+// A gate of one bit inputs at the origin, with implied power, its inputs
+// KICAD_SCHEM_LOGICIM_PIN_SPACING apart.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+static CComponentView* NewKicadSchemSpacedGateView(ERotation eRotation, const char* szName, const char* szFamily, int iInputCount)
+{
+	M*	pcGate;
+
+	pcGate = NewMalloc<M>();
+	pcGate->Init(0, 0, eRotation, szName, szFamily, false, iInputCount, 1, KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	return pcGate;
+}
+
+
 //Which Logicim flip flop port a KiCad flip flop pin is, by its letters.
 struct SKicadSchemFlipFlopPin
 {
@@ -983,22 +1006,22 @@ bool CKicadSchemLogicimConverter::AddLogicParts(CKicadSchemSymbol* pcSymbol, CKi
 		switch (eFunction)
 		{
 		case KSLF_And:
-			pcView = NewKicadSchemGateView<CAndGateView>(eRotation, szName.Text(), szFamily, iInputs);
+			pcView = NewKicadSchemSpacedGateView<CAndGateView>(eRotation, szName.Text(), szFamily, iInputs);
 			break;
 		case KSLF_Nand:
-			pcView = NewKicadSchemGateView<CNandGateView>(eRotation, szName.Text(), szFamily, iInputs);
+			pcView = NewKicadSchemSpacedGateView<CNandGateView>(eRotation, szName.Text(), szFamily, iInputs);
 			break;
 		case KSLF_Or:
-			pcView = NewKicadSchemGateView<COrGateView>(eRotation, szName.Text(), szFamily, iInputs);
+			pcView = NewKicadSchemSpacedGateView<COrGateView>(eRotation, szName.Text(), szFamily, iInputs);
 			break;
 		case KSLF_Nor:
-			pcView = NewKicadSchemGateView<CNorGateView>(eRotation, szName.Text(), szFamily, iInputs);
+			pcView = NewKicadSchemSpacedGateView<CNorGateView>(eRotation, szName.Text(), szFamily, iInputs);
 			break;
 		case KSLF_Xor:
-			pcView = NewKicadSchemGateView<CXorGateView>(eRotation, szName.Text(), szFamily, iInputs);
+			pcView = NewKicadSchemSpacedGateView<CXorGateView>(eRotation, szName.Text(), szFamily, iInputs);
 			break;
 		case KSLF_Xnor:
-			pcView = NewKicadSchemGateView<CXnorGateView>(eRotation, szName.Text(), szFamily, iInputs);
+			pcView = NewKicadSchemSpacedGateView<CXnorGateView>(eRotation, szName.Text(), szFamily, iInputs);
 			break;
 		case KSLF_Buffer:
 			pcView = NewKicadSchemGateView<CBufferView>(eRotation, szName.Text(), szFamily, 1);
@@ -1183,7 +1206,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Part(CKicadSchemSymbol* pcSymbol, CK
 		//The unit's inputs in letter order, then its output, as the generic gate's.
 		iUnit = (pcLibSymbol->NumUnits() > 1) ? pcSymbol->GetUnit() - 1 : 0;
 		pcUnit = NewMalloc<CLogic74UnitView>();
-		pcUnit->Init(0, 0, GetKicadSchemFacing(&sInputs, &sOutputs), pcSymbol->GetReference(), szFamily, false, szPartType, iUnit);
+		pcUnit->Init(0, 0, GetKicadSchemFacing(&sInputs, &sOutputs), pcSymbol->GetReference(), szFamily, false, szPartType, iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 		pcView = pcUnit;
 		uiItem = AddItem(pcView, &sCentre, NULL);
 		for (j = 0; j < aiInputs.NumElements(); j++)
@@ -1199,7 +1222,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Part(CKicadSchemSymbol* pcSymbol, CK
 	else
 	{
 		pcPackage = NewMalloc<CLogic74PackageView>();
-		pcPackage->Init(0, 0, GetKicadSchemFacing(&sInputs, &sOutputs), pcSymbol->GetReference(), szFamily, false, szPartType);
+		pcPackage->Init(0, 0, GetKicadSchemFacing(&sInputs, &sOutputs), pcSymbol->GetReference(), szFamily, false, szPartType, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 		pcView = pcPackage;
 		uiItem = AddItem(pcView, &sCentre, NULL);
 		for (i = 0; i < papcPins->NumElements(); i++)
@@ -1394,11 +1417,11 @@ static CComponentView* NewKicadSchemLogic74View(CKicadSchemSymbol* pcSymbol, ERo
 	if (bUnit)
 	{
 		pcUnit = NewMalloc<CLogic74UnitView>();
-		pcUnit->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType, iUnit);
+		pcUnit->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType, iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 		return pcUnit;
 	}
 	pcPackage = NewMalloc<CLogic74PackageView>();
-	pcPackage->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType);
+	pcPackage->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 	return pcPackage;
 }
 
@@ -2165,6 +2188,10 @@ void CKicadSchemLogicimConverter::AddBus(CKicadSchemBus* pcBus, size uiBus)
 	CTunnelView*			pcTunnel;
 	size					uiItem;
 	bool					bBefore;
+	CArrayTemplatePtr<CPortView>	apcGrouped;
+	CArrayInt				aiGrouped;
+	CPortView*				pcPin;
+	CPortView*				pcOtherPin;
 
 	if (pcBus->NumMembers() == 0)
 	{
@@ -2233,12 +2260,60 @@ void CKicadSchemLogicimConverter::AddBus(CKicadSchemBus* pcBus, size uiBus)
 		aiTaps.InsertAt((int)i, j);
 	}
 
-	//Runs: the same side of the same piece of the bus, each tap no more than two entries' spacing from the last, and no member twice (a splitter
-	//has one end for each bit).
+	//The taps wired to a component's pins, one splitter for each component and way its pins face (one end for each
+	//bit, so a member twice starts another), beside it.
 	aiRun.Init();
+	apcGrouped.Init();
 	for (i = 0; i < aiTaps.NumElements(); i++)
 	{
-		psTap = pcBus->GetTap(aiTaps.GetValue(i));
+		pcPin = GetTapPin(pcBus->GetTap(aiTaps.GetValue(i)));
+		apcGrouped.Add(pcPin);
+	}
+	for (i = 0; i < aiTaps.NumElements(); i++)
+	{
+		pcPin = apcGrouped.GetPtr(i);
+		if (pcPin == NULL)
+		{
+			continue;
+		}
+		aiRun.ReInit();
+		aiUsed.ReInit();
+		for (j = i; j < aiTaps.NumElements(); j++)
+		{
+			pcOtherPin = apcGrouped.GetPtr(j);
+			if ((pcOtherPin == NULL) || (pcOtherPin->GetOwner() != pcPin->GetOwner()) || (CTraceAutoConnector::GetPortFacing(pcOtherPin) != CTraceAutoConnector::GetPortFacing(pcPin)))
+			{
+				continue;
+			}
+			psTap = pcBus->GetTap(aiTaps.GetValue(j));
+			uiMember = pcBus->GetMemberIndex(psTap->pcMember->GetNet()->GetName());
+			if (aiUsed.Find((int)uiMember) != ARRAY_ELEMENT_NOT_FOUND)
+			{
+				continue;
+			}
+			aiRun.Add(aiTaps.GetValue(j));
+			aiUsed.Add((int)uiMember);
+			apcGrouped.SetPtr(j, NULL);
+		}
+		psOther = pcBus->GetTap(aiRun.GetValue(0));
+		AddBusSplitter(pcBus, &aiRun, psOther->bVertical, GetKicadSchemTapSide(psOther));
+	}
+
+	//The rest in runs: the same side of the same piece of the bus, each tap no more than two entries' spacing from the
+	//last, and no member twice.
+	aiGrouped.Init();
+	for (i = 0; i < aiTaps.NumElements(); i++)
+	{
+		if (GetTapPin(pcBus->GetTap(aiTaps.GetValue(i))) == NULL)
+		{
+			aiGrouped.Add(aiTaps.GetValue(i));
+		}
+	}
+	aiRun.ReInit();
+	aiUsed.ReInit();
+	for (i = 0; i < aiGrouped.NumElements(); i++)
+	{
+		psTap = pcBus->GetTap(aiGrouped.GetValue(i));
 		if (aiRun.NumElements() > 0)
 		{
 			psOther = pcBus->GetTap(aiRun.GetValue(aiRun.NumElements() - 1));
@@ -2251,7 +2326,7 @@ void CKicadSchemLogicimConverter::AddBus(CKicadSchemBus* pcBus, size uiBus)
 				aiUsed.ReInit();
 			}
 		}
-		aiRun.Add(aiTaps.GetValue(i));
+		aiRun.Add(aiGrouped.GetValue(i));
 		aiUsed.Add((int)pcBus->GetMemberIndex(psTap->pcMember->GetNet()->GetName()));
 	}
 	if (aiRun.NumElements() > 0)
@@ -2259,6 +2334,8 @@ void CKicadSchemLogicimConverter::AddBus(CKicadSchemBus* pcBus, size uiBus)
 		psOther = pcBus->GetTap(aiRun.GetValue(aiRun.NumElements() - 1));
 		AddBusSplitter(pcBus, &aiRun, psOther->bVertical, GetKicadSchemTapSide(psOther));
 	}
+	aiGrouped.Kill();
+	apcGrouped.Kill();
 	aiRun.Kill();
 	aiUsed.Kill();
 	aiTaps.Kill();
@@ -2267,10 +2344,159 @@ void CKicadSchemLogicimConverter::AddBus(CKicadSchemBus* pcBus, size uiBus)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The first component pin the tap's member is wired to (not a tunnel's,
+// supply's or splitter's), NULL if none.
+//
+//////////////////////////////////////////////////////////////////////////
+CPortView* CKicadSchemLogicimConverter::GetTapPin(SKicadSchemBusTap* psTap)
+{
+	size							i;
+	SKicadSchemLogicimTerminal*		psTerminal;
+	SKicadSchemLogicimItem*			psItem;
+
+	for (i = 0; i < masTerminals.NumElements(); i++)
+	{
+		psTerminal = masTerminals.Get(i);
+		if ((psTerminal->pcSubnet != psTap->pcMember) || psTerminal->bBus)
+		{
+			continue;
+		}
+		psItem = masItems.Get(psTerminal->uiItem);
+		if ((psItem->pcPort == NULL) && (StringCompare(psItem->pcView->GetType(), "Splitter") != 0))
+		{
+			return psTerminal->pcPortView;
+		}
+	}
+	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The component pins the run's taps' members are wired to, by tap (NULL
+// for a tap wired to none), and the way most of them face, a
+// TRACE_DIRECTION (-1 if none are).  Each tap's pin is the first facing
+// that way on the component most of them are on.
+//
+//////////////////////////////////////////////////////////////////////////
+int CKicadSchemLogicimConverter::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins)
+{
+	size							i;
+	size							j;
+	size							k;
+	SKicadSchemBusTap*				psTap;
+	SKicadSchemLogicimTerminal*		psTerminal;
+	SKicadSchemLogicimItem*			psItem;
+	int								aiFacings[4];
+	int								iFacing;
+	CArrayTemplatePtr<CComponentView>	apcOwners;
+	CArrayInt						aiOwnerPins;
+	size							uiOwner;
+	CComponentView*					pcMost;
+	int								iMost;
+	CPortView*						pcPin;
+
+	for (i = 0; i < 4; i++)
+	{
+		aiFacings[i] = 0;
+	}
+	apcOwners.Init();
+	aiOwnerPins.Init();
+	for (k = 0; k < 2; k++)
+	{
+		for (i = 0; i < paiTaps->NumElements(); i++)
+		{
+			psTap = pcBus->GetTap(paiTaps->GetValue(i));
+			for (j = 0; j < masTerminals.NumElements(); j++)
+			{
+				psTerminal = masTerminals.Get(j);
+				if ((psTerminal->pcSubnet != psTap->pcMember) || psTerminal->bBus)
+				{
+					continue;
+				}
+				psItem = masItems.Get(psTerminal->uiItem);
+				if ((psItem->pcPort != NULL) || (StringCompare(psItem->pcView->GetType(), "Splitter") == 0))
+				{
+					continue;
+				}
+				if (k == 0)
+				{
+					aiFacings[CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView)]++;
+				}
+				else if (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing)
+				{
+					uiOwner = apcOwners.Find(psItem->pcView);
+					if (uiOwner == ARRAY_ELEMENT_NOT_FOUND)
+					{
+						apcOwners.Add(psItem->pcView);
+						aiOwnerPins.Add(1);
+					}
+					else
+					{
+						aiOwnerPins.SetValue(uiOwner, aiOwnerPins.GetValue(uiOwner) + 1);
+					}
+				}
+			}
+		}
+		if (k == 0)
+		{
+			iFacing = -1;
+			for (i = 0; i < 4; i++)
+			{
+				if ((aiFacings[i] > 0) && ((iFacing == -1) || (aiFacings[i] > aiFacings[iFacing])))
+				{
+					iFacing = (int)i;
+				}
+			}
+			if (iFacing == -1)
+			{
+				break;
+			}
+		}
+	}
+
+	pcMost = NULL;
+	iMost = 0;
+	for (i = 0; i < apcOwners.NumElements(); i++)
+	{
+		if (aiOwnerPins.GetValue(i) > iMost)
+		{
+			iMost = aiOwnerPins.GetValue(i);
+			pcMost = apcOwners.GetPtr(i);
+		}
+	}
+
+	for (i = 0; i < paiTaps->NumElements(); i++)
+	{
+		psTap = pcBus->GetTap(paiTaps->GetValue(i));
+		pcPin = NULL;
+		for (j = 0; (j < masTerminals.NumElements()) && (pcMost != NULL); j++)
+		{
+			psTerminal = masTerminals.Get(j);
+			if ((psTerminal->pcSubnet == psTap->pcMember) && !psTerminal->bBus && (psTerminal->pcPortView->GetOwner() == pcMost) && (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing))
+			{
+				pcPin = psTerminal->pcPortView;
+				break;
+			}
+		}
+		papcPins->Add(pcPin);
+	}
+	aiOwnerPins.Kill();
+	apcOwners.Kill();
+	return (pcMost != NULL) ? iFacing : -1;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A splitter of the whole bus for a run of taps (in order along the bus)
-// on the side iSide of it.  It's turned so its ends face the members, and
-// its ends are given to the taps in the order they're along the bus.  The
-// bus's other members go to an end of their own, after the taps'.
+// on the side iSide of it, its ends KICAD_SCHEM_LOGICIM_SPLITTER_SPACING
+// apart, or as close as the pins they line up with if those are closer.  It faces the component pins its members are wired to (the way
+// most of them face, see GetBusPins), its ends given to the taps in the
+// order of their pins along that side, and is kept beside that component
+// (see PlaceSplitters).  A run wired to no pins faces the members as KiCad
+// draws them, its ends in the order of the taps along the bus.  The bus's
+// other members go to an end of their own, after the taps'.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayInt* paiTaps, bool bVertical, int iSide)
@@ -2292,10 +2518,68 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	SKicadSchemBusTap*		psTap;
 	SKicadSchemPoint		sCentre;
 	CPortView*				pcEnd;
+	CArrayTemplatePtr<CPortView>	apcPins;
+	CArrayInt				aiOrder;
+	int						iPinFacing;
+	bool					bAlongY;
+	SKicadSchemLogicimSplitter*	psSplitter;
+	int32					iKey;
+	int32					iOtherKey;
+	size					uiTap;
+	int32					iSpacing;
+	CPortView*				pcSplitterPin;
 
 	uiTaps = paiTaps->NumElements();
 	iBitWidth = (int32)pcBus->NumMembers();
 	iFanOut = (int32)uiTaps + (((size)iBitWidth > uiTaps) ? 1 : 0);
+
+	//The pins it goes to decide the way its ends face, and the order its ends go to the taps.
+	apcPins.Init();
+	iPinFacing = GetBusPins(pcBus, paiTaps, &apcPins);
+	if (iPinFacing != -1)
+	{
+		iSide = CTraceAutoConnector::OppositeDirection(iPinFacing);
+	}
+	bAlongY = (iSide == TRACE_DIRECTION_EAST) || (iSide == TRACE_DIRECTION_WEST);
+	aiOrder.Init();
+	for (i = 0; i < uiTaps; i++)
+	{
+		j = aiOrder.NumElements();
+		if ((iPinFacing != -1) && (apcPins.GetPtr(i) != NULL))
+		{
+			iKey = bAlongY ? apcPins.GetPtr(i)->GetGridPosition().y : apcPins.GetPtr(i)->GetGridPosition().x;
+			for (j = 0; j < aiOrder.NumElements(); j++)
+			{
+				pcEnd = apcPins.GetPtr(aiOrder.GetValue(j));
+				if (pcEnd == NULL)
+				{
+					break;
+				}
+				iOtherKey = bAlongY ? pcEnd->GetGridPosition().y : pcEnd->GetGridPosition().x;
+				if (iKey < iOtherKey)
+				{
+					break;
+				}
+			}
+		}
+		aiOrder.InsertAt((int)i, j);
+	}
+
+	//Ends as far apart as the pins they're lined up with: two grid units for an instance's pins, one for a 74 part's.
+	iSpacing = KICAD_SCHEM_LOGICIM_SPLITTER_SPACING;
+	for (i = 1; (i < uiTaps) && (iPinFacing != -1); i++)
+	{
+		pcEnd = apcPins.GetPtr(aiOrder.GetValue(i - 1));
+		pcSplitterPin = apcPins.GetPtr(aiOrder.GetValue(i));
+		if ((pcEnd != NULL) && (pcSplitterPin != NULL))
+		{
+			iKey = bAlongY ? pcSplitterPin->GetGridPosition().y - pcEnd->GetGridPosition().y : pcSplitterPin->GetGridPosition().x - pcEnd->GetGridPosition().x;
+			if ((iKey > 0) && (iKey < iSpacing))
+			{
+				iSpacing = iKey;
+			}
+		}
+	}
 
 	//The rotation that has the ends facing the members, and where each end is along the bus.
 	eRotation = ROT_East;
@@ -2303,7 +2587,7 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	for (i = 0; i < 4; i++)
 	{
 		pcSplitter = NewMalloc<CSplitterView>();
-		pcSplitter->Init(0, 0, gaeKicadSchemLogicimRotations[i], "", iBitWidth, iFanOut, 1, SA_LeftHanded, 0);
+		pcSplitter->Init(0, 0, gaeKicadSchemLogicimRotations[i], "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0);
 		pcEnd = pcSplitter->GetEndPortView(0);
 		if ((pcEnd != NULL) && (CTraceAutoConnector::GetPortFacing(pcEnd) == iSide))
 		{
@@ -2314,7 +2598,7 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 				iAlong = 0;
 				if (pcEnd != NULL)
 				{
-					iAlong = bVertical ? pcEnd->GetGridPosition().y : pcEnd->GetGridPosition().x;
+					iAlong = bAlongY ? pcEnd->GetGridPosition().y : pcEnd->GetGridPosition().x;
 				}
 				aiAlongs.Add(iAlong);
 			}
@@ -2354,7 +2638,7 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	sCentre.Init();
 	for (i = 0; i < uiTaps; i++)
 	{
-		psTap = pcBus->GetTap(paiTaps->GetValue(i));
+		psTap = pcBus->GetTap(paiTaps->GetValue(aiOrder.GetValue(i)));
 		aiSplitIndices[pcBus->GetMemberIndex(psTap->pcMember->GetNet()->GetName())] = aiFans.GetValue(i);
 		sCentre.fX += psTap->sBusPoint.fX;
 		sCentre.fY += psTap->sBusPoint.fY;
@@ -2363,17 +2647,44 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	sCentre.fY /= (float64)uiTaps;
 
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(0, 0, eRotation, "", iBitWidth, iFanOut, 1, SA_LeftHanded, 0, aiSplitIndices);
+	pcSplitter->Init(0, 0, eRotation, "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0, aiSplitIndices);
 	free(aiSplitIndices);
 	uiItem = AddItem(pcSplitter, &sCentre, NULL);
 
 	psTap = pcBus->GetTap(paiTaps->GetValue(0));
 	AddTerminal(pcBus->GetSubnet(), &psTap->sBusPoint, pcSplitter->GetStartPortView(), uiItem, true);
+	psSplitter = masSplitters.Add();
+	psSplitter->pcSplitter = pcSplitter;
+	psSplitter->iFacing = iPinFacing;
+	psSplitter->iGap = KICAD_SCHEM_LOGICIM_SPLITTER_GAP;
 	for (i = 0; i < uiTaps; i++)
 	{
 		psTap = pcBus->GetTap(paiTaps->GetValue(i));
-		AddTerminal(psTap->pcMember, &psTap->sWirePoint, pcSplitter->GetEndPortView(aiFans.GetValue(i)), uiItem);
+		for (j = 0; j < masTerminals.NumElements(); j++)
+		{
+			if ((masTerminals.Get(j)->pcSubnet == psTap->pcMember) && (StringCompare(masItems.Get(masTerminals.Get(j)->uiItem)->pcView->GetType(), "Tunnel") == 0))
+			{
+				psSplitter->iGap = KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP;
+			}
+		}
 	}
+	psSplitter->uiFirstPair = mapcSplitterPins.NumElements();
+	psSplitter->uiNumPairs = 0;
+	for (i = 0; i < uiTaps; i++)
+	{
+		uiTap = aiOrder.GetValue(i);
+		psTap = pcBus->GetTap(paiTaps->GetValue(uiTap));
+		pcEnd = pcSplitter->GetEndPortView(aiFans.GetValue(i));
+		AddTerminal(psTap->pcMember, &psTap->sWirePoint, pcEnd, uiItem);
+		if ((iPinFacing != -1) && (apcPins.GetPtr(uiTap) != NULL) && (pcEnd != NULL))
+		{
+			mapcSplitterPins.Add(apcPins.GetPtr(uiTap));
+			mapcSplitterEnds.Add(pcEnd);
+			psSplitter->uiNumPairs++;
+		}
+	}
+	aiOrder.Kill();
+	apcPins.Kill();
 	aiFans.Kill();
 	aiAlongs.Kill();
 	muiSplitters++;
@@ -2383,7 +2694,8 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 //////////////////////////////////////////////////////////////////////////
 //
 // A tunnel named as its net at each label of each subnet of a net that
-// has more than one.
+// has more than one, unless they're all members of one bus, which joins
+// them (see IsJoinedByBus).
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddTunnels(void)
@@ -2400,7 +2712,7 @@ void CKicadSchemLogicimConverter::AddTunnels(void)
 	for (i = 0; i < mpcNetlist->NumNets(); i++)
 	{
 		pcNet = mpcNetlist->GetNet(i);
-		if (pcNet->NumSubnets() < 2)
+		if ((pcNet->NumSubnets() < 2) || IsJoinedByBus(pcNet))
 		{
 			continue;
 		}
@@ -2422,6 +2734,67 @@ void CKicadSchemLogicimConverter::AddTunnels(void)
 			}
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The bus the subnet is a member of (one of its taps' wires is the
+// subnet), NULL if none.
+//
+//////////////////////////////////////////////////////////////////////////
+CKicadSchemBus* CKicadSchemLogicimConverter::GetMemberBus(CKicadSchemSubnet* pcSubnet)
+{
+	size				i;
+	size				j;
+	CKicadSchemBus*		pcBus;
+
+	for (i = 0; i < mpcNetlist->NumBuses(); i++)
+	{
+		pcBus = mpcNetlist->GetBus(i);
+		for (j = 0; j < pcBus->NumTaps(); j++)
+		{
+			if (pcBus->GetTap(j)->pcMember == pcSubnet)
+			{
+				return pcBus;
+			}
+		}
+	}
+	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether every subnet of the net is a member of one bus (or of buses of
+// the same name, which their tunnels join), so the splitters join them
+// and its labels (in KiCad they name the bus's members) need no tunnels.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsJoinedByBus(CKicadSchemNet* pcNet)
+{
+	size				i;
+	CKicadSchemBus*		pcFirst;
+	CKicadSchemBus*		pcBus;
+
+	pcFirst = NULL;
+	for (i = 0; i < pcNet->NumSubnets(); i++)
+	{
+		pcBus = GetMemberBus(pcNet->GetSubnet(i));
+		if (pcBus == NULL)
+		{
+			return false;
+		}
+		if (pcFirst == NULL)
+		{
+			pcFirst = pcBus;
+		}
+		else if ((pcBus != pcFirst) && ((pcBus->GetName() == NULL) || (pcFirst->GetName() == NULL) || (StringCompare(pcBus->GetName(), pcFirst->GetName()) != 0)))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -2538,6 +2911,133 @@ void CKicadSchemLogicimConverter::AddConnections(void)
 	{
 		AddSubnetConnections(mpcNetlist->GetBus(i)->GetSubnet(), mpcNetlist->NumSubnets() + i);
 	}
+	JoinSplitterPins();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The terminal of the port, ARRAY_ELEMENT_NOT_FOUND if it has none.
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimConverter::FindPortTerminal(CPortView* pcPortView)
+{
+	size	i;
+
+	for (i = 0; i < masTerminals.NumElements(); i++)
+	{
+		if (masTerminals.Get(i)->pcPortView == pcPortView)
+		{
+			return i;
+		}
+	}
+	return ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each end of a splitter beside its component wired straight to its pin,
+// the short wire between them.  KiCad's wires can join the end to the pin
+// through another terminal (a label on the pin): that connection is
+// joined to the pin instead, so long as the other terminal still reaches
+// the pin by the other connections.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::JoinSplitterPins(void)
+{
+	size							i;
+	size							j;
+	size							k;
+	size							uiPin;
+	size							uiEnd;
+	size							uiOther;
+	SKicadSchemLogicimConnection*	psConnection;
+	SKicadSchemLogicimConnection*	psOther;
+	bool							bJoined;
+	bool							bOtherJoined;
+	CArrayInt						aiReached;
+	size							uiHead;
+	size							uiNext;
+
+	aiReached.Init();
+	for (i = 0; i < mapcSplitterPins.NumElements(); i++)
+	{
+		uiPin = FindPortTerminal(mapcSplitterPins.GetPtr(i));
+		uiEnd = FindPortTerminal(mapcSplitterEnds.GetPtr(i));
+		if ((uiPin == ARRAY_ELEMENT_NOT_FOUND) || (uiEnd == ARRAY_ELEMENT_NOT_FOUND))
+		{
+			continue;
+		}
+
+		bJoined = false;
+		for (j = 0; (j < masConnections.NumElements()) && !bJoined; j++)
+		{
+			psConnection = masConnections.Get(j);
+			bJoined = ((psConnection->uiFrom == uiEnd) && (psConnection->uiTo == uiPin)) || ((psConnection->uiFrom == uiPin) && (psConnection->uiTo == uiEnd));
+		}
+		for (j = 0; (j < masConnections.NumElements()) && !bJoined; j++)
+		{
+			psConnection = masConnections.Get(j);
+			if ((psConnection->uiFrom != uiEnd) && (psConnection->uiTo != uiEnd))
+			{
+				continue;
+			}
+			uiOther = (psConnection->uiFrom == uiEnd) ? psConnection->uiTo : psConnection->uiFrom;
+
+			//The other terminal must still reach the pin without this connection, or the subnet would come apart.
+			aiReached.ReInit();
+			aiReached.Add((int)uiOther);
+			bOtherJoined = false;
+			for (uiHead = 0; (uiHead < aiReached.NumElements()) && !bOtherJoined; uiHead++)
+			{
+				for (k = 0; k < masConnections.NumElements(); k++)
+				{
+					psOther = masConnections.Get(k);
+					if (k == j)
+					{
+						continue;
+					}
+					if (psOther->uiFrom == (size)aiReached.GetValue(uiHead))
+					{
+						uiNext = psOther->uiTo;
+					}
+					else if (psOther->uiTo == (size)aiReached.GetValue(uiHead))
+					{
+						uiNext = psOther->uiFrom;
+					}
+					else
+					{
+						continue;
+					}
+					if (uiNext == uiPin)
+					{
+						bOtherJoined = true;
+						break;
+					}
+					if (aiReached.Find((int)uiNext) == ARRAY_ELEMENT_NOT_FOUND)
+					{
+						aiReached.Add((int)uiNext);
+					}
+				}
+			}
+			if (!bOtherJoined)
+			{
+				continue;
+			}
+			if (psConnection->uiFrom == uiEnd)
+			{
+				psConnection->uiTo = uiPin;
+			}
+			else
+			{
+				psConnection->uiFrom = uiPin;
+			}
+			psConnection->fBend = 0.5;
+			bJoined = true;
+		}
+	}
+	aiReached.Kill();
 }
 
 
@@ -3087,6 +3587,11 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 		{
 			continue;
 		}
+		//A splitter beside its component is put there, not lined up.
+		if (IsPlacedSplitter(masItems.Get(psFrom->uiItem)->pcView) || IsPlacedSplitter(masItems.Get(psTo->uiItem)->pcView))
+		{
+			continue;
+		}
 		bHorizontal = fabs(psFrom->sKicadPosition.fY - psTo->sKicadPosition.fY) < 0.001;
 		bVertical = fabs(psFrom->sKicadPosition.fX - psTo->sKicadPosition.fX) < 0.001;
 		if (bHorizontal == bVertical)
@@ -3219,9 +3724,114 @@ void CKicadSchemLogicimConverter::Place(float64 fSpread)
 			psItem->pcView->SetPosition((int32)floor(psItem->sKicadPosition.x * fSpread + 0.5) - psItem->sAnchor.x + psItem->sOffset.x, (int32)floor(psItem->sKicadPosition.y * fSpread + 0.5) - psItem->sAnchor.y + psItem->sOffset.y);
 		}
 	}
+	PlaceSplitters();
 	PlaceAttachedItems();
 	AlignItems();
 	SeparateItems();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each splitter beside the component its ends go to: its ends
+// KICAD_SCHEM_LOGICIM_SPLITTER_GAP grid units out from the outermost of
+// their pins (KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP if a member has a
+// tunnel too), and along the side as near as they can be to their pins.
+// Ends that can't all line up with their pins are put that much further
+// out again, so the wires have room to step across.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::PlaceSplitters(void)
+{
+	size							i;
+	size							j;
+	SKicadSchemLogicimSplitter*		psSplitter;
+	SInt32Vec2						sPin;
+	SInt32Vec2						sEnd;
+	SInt32Vec2						sPosition;
+	bool							bAcrossX;
+	int								iOut;
+	int32							iPinAcross;
+	int32							iEndAcross;
+	int32							iAcross;
+	float64							fAlong;
+	int32							iAlong;
+	int32							iStep;
+	int32							iOffset;
+
+	for (i = 0; i < masSplitters.NumElements(); i++)
+	{
+		psSplitter = masSplitters.Get(i);
+		if (psSplitter->uiNumPairs == 0)
+		{
+			continue;
+		}
+		bAcrossX = (psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_WEST);
+		iOut = ((psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_SOUTH)) ? 1 : -1;
+
+		iPinAcross = 0;
+		iEndAcross = 0;
+		fAlong = 0;
+		for (j = 0; j < psSplitter->uiNumPairs; j++)
+		{
+			sPin = mapcSplitterPins.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
+			sEnd = mapcSplitterEnds.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
+			iAcross = bAcrossX ? sPin.x : sPin.y;
+			if ((j == 0) || (iAcross * iOut > iPinAcross * iOut))
+			{
+				iPinAcross = iAcross;
+			}
+			iEndAcross = bAcrossX ? sEnd.x : sEnd.y;
+			fAlong += bAcrossX ? (sPin.y - sEnd.y) : (sPin.x - sEnd.x);
+		}
+		iAlong = (int32)floor(fAlong / (float64)psSplitter->uiNumPairs + 0.5);
+
+		//Ends further apart than their pins (a 74 part's pins are a grid unit apart) need room for the wires to step in.
+		iStep = 0;
+		for (j = 0; j < psSplitter->uiNumPairs; j++)
+		{
+			sPin = mapcSplitterPins.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
+			sEnd = mapcSplitterEnds.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
+			iOffset = bAcrossX ? (sPin.y - sEnd.y - iAlong) : (sPin.x - sEnd.x - iAlong);
+			iOffset = (iOffset < 0) ? -iOffset : iOffset;
+			if (iOffset > iStep)
+			{
+				iStep = iOffset;
+			}
+		}
+		iAcross = iPinAcross + iOut * (psSplitter->iGap + iStep) - iEndAcross;
+
+		sPosition = psSplitter->pcSplitter->GetPosition();
+		if (bAcrossX)
+		{
+			psSplitter->pcSplitter->SetPosition(sPosition.x + iAcross, sPosition.y + iAlong);
+		}
+		else
+		{
+			psSplitter->pcSplitter->SetPosition(sPosition.x + iAlong, sPosition.y + iAcross);
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the view is a splitter PlaceSplitters puts beside its
+// component.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsPlacedSplitter(CComponentView* pcView)
+{
+	size	i;
+
+	for (i = 0; i < masSplitters.NumElements(); i++)
+	{
+		if ((masSplitters.Get(i)->pcSplitter == pcView) && (masSplitters.Get(i)->uiNumPairs > 0))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 
@@ -3297,7 +3907,8 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 				}
 			}
 		}
-		if (pcTarget == NULL)
+		//A pin wired to a splitter beside it keeps its way out for that wire; its tunnel stands on its own, wired too.
+		if ((pcTarget == NULL) || (mapcSplitterPins.Find(pcTarget) != ARRAY_ELEMENT_NOT_FOUND))
 		{
 			continue;
 		}
@@ -3447,7 +4058,8 @@ static int32 GetKicadSchemLogicimMoveCost(EKicadSchemLogicimAlign eAlign, int32 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Places the items one at a time, each where it is if that's clear of the
+// Places the items one at a time (parts and splitters, then the tunnels
+// and supplies standing on their own), each where it is if that's clear of the
 // ones already placed, otherwise at the nearest place that is (searching
 // out in rings).  An item lined up with another counts moving off its line
 // KICAD_SCHEM_LOGICIM_ALIGN_WEIGHT times as far.  An item's box takes in the items attached to it.  Items
@@ -3473,14 +4085,32 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 	int32							iDistance;
 	bool							bFound;
 	SInt32Vec2						sPosition;
+	CArrayInt						aiOrder;
+	size							uiPass;
+	size							uiOrder;
 
 	PlaceAttachedItems();
 	asMinimums.Init();
 	asMaximums.Init();
 	uiPlaced = 0;
 	muiOverlaps = 0;
-	for (i = 0; i < masItems.NumElements(); i++)
+
+	//The parts and splitters first, then the tunnels and supplies standing on their own, which are small and move aside.
+	aiOrder.Init();
+	for (uiPass = 0; uiPass < 2; uiPass++)
 	{
+		for (i = 0; i < masItems.NumElements(); i++)
+		{
+			if ((masItems.Get(i)->pcPort == NULL) == (uiPass == 0))
+			{
+				aiOrder.Add((int)i);
+			}
+		}
+	}
+
+	for (uiOrder = 0; uiOrder < aiOrder.NumElements(); uiOrder++)
+	{
+		i = (size)aiOrder.GetValue(uiOrder);
 		psItem = masItems.Get(i);
 		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sMinimum, &sMaximum))
 		{
@@ -3538,6 +4168,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 		asMaximums.Add(&sMaximum);
 		uiPlaced++;
 	}
+	aiOrder.Kill();
 	PlaceAttachedItems();
 	asMaximums.Kill();
 	asMinimums.Kill();
