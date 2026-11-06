@@ -63,7 +63,6 @@
     <ClCompile Include="LogicBlockView.cpp" />
     <ClCompile Include="Logic74Parts.cpp" />
     <ClCompile Include="CircuitSelection.cpp" />
-    <ClCompile Include="UndoStack.cpp" />
     <ClCompile Include="CircuitEdit.cpp" />
     <ClCompile Include="MoveComponentsEdit.cpp" />
     <ClCompile Include="SelectionEdit.cpp" />
@@ -119,7 +118,6 @@
     <ClInclude Include="LogicBlockView.h" />
     <ClInclude Include="Logic74Parts.h" />
     <ClInclude Include="CircuitSelection.h" />
-    <ClInclude Include="UndoStack.h" />
     <ClInclude Include="CircuitEdit.h" />
     <ClInclude Include="MoveComponentsEdit.h" />
     <ClInclude Include="SelectionEdit.h" />

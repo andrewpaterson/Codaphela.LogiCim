@@ -24,7 +24,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "CircuitFonts.h"
 #include "CircuitSelection.h"
 #include "CircuitEdit.h"
-#include "UndoStack.h"
+#include "BaseLib/UndoStack.h"
 
 
 class CCircuitSimulation;

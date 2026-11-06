@@ -24,7 +24,7 @@
 #include "TestLogicimRender.h"
 #include "LogicimLib/SubcircuitInstanceView.h"
 #include "LogicimLib/CircuitEditor.h"
-#include "LogicimLib/UndoStack.h"
+#include "BaseLib/UndoStack.h"
 #include "BaseLib/ArrayElementNotFound.h"
 #include "LogicimLib/ComponentLibraries.h"
 #include "LogicimLib/ComponentProperties.h"
