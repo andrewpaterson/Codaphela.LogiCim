@@ -42,7 +42,7 @@ struct SPinSide
 	int								iPinSize;
 	int								iExtendedSize;
 
-	void	Init(CCircuitView* pcCircuit, EPinAlignment eAlignment);
+	void	Init(CCircuitView* pcCircuit, EPinAlignment eAlignment, int iSpacing);
 	void	Kill(void);
 };
 
@@ -192,10 +192,13 @@ static void ReversePinViews(CArrayTemplatePtr<CPinView>* papcPins)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The circuit's pins on the side, as Logicim's QuadPinViewLists.
+// The circuit's pins on the side, as Logicim's QuadPinViewLists, iSpacing
+// grid units apart.  Its pin size is how far its pins and the gaps
+// between their groups reach along the side, and its extended size that
+// and a pin's room at each end, plus one.
 //
 //////////////////////////////////////////////////////////////////////////
-void SPinSide::Init(CCircuitView* pcCircuit, EPinAlignment eAlignment)
+void SPinSide::Init(CCircuitView* pcCircuit, EPinAlignment eAlignment, int iSpacing)
 {
 	CArrayTemplatePtr<CPinView>	apcPins;
 	size						i;
@@ -246,8 +249,8 @@ void SPinSide::Init(CCircuitView* pcCircuit, EPinAlignment eAlignment)
 	}
 	else
 	{
-		iPinSize = (iGroups - 1) + (int)(apcNegative.NumElements() + apcCentre.NumElements() + apcPositive.NumElements());
-		iExtendedSize = iPinSize + 2;
+		iPinSize = iSpacing * ((iGroups - 1) + (int)(apcNegative.NumElements() + apcCentre.NumElements() + apcPositive.NumElements()));
+		iExtendedSize = iPinSize + iSpacing + 1;
 	}
 }
 
@@ -266,11 +269,11 @@ void SPinSide::Kill(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Consecutive offsets from iOffset, and a space after them; the offset
+// Offsets iSpacing apart from iOffset, and a space after them; the offset
 // after that space.
 //
 //////////////////////////////////////////////////////////////////////////
-static int AddPinOffsets(CArrayPinOffset* pasOffsets, int iOffset, CArrayTemplatePtr<CPinView>* papcPins)
+static int AddPinOffsets(CArrayPinOffset* pasOffsets, int iOffset, int iSpacing, CArrayTemplatePtr<CPinView>* papcPins)
 {
 	size			i;
 	SPinOffset*		psOffset;
@@ -282,9 +285,9 @@ static int AddPinOffsets(CArrayPinOffset* pasOffsets, int iOffset, CArrayTemplat
 			psOffset = pasOffsets->Add();
 			psOffset->pcPin = papcPins->GetPtr(i);
 			psOffset->iOffset = iOffset;
-			iOffset++;
+			iOffset += iSpacing;
 		}
-		iOffset++;
+		iOffset += iSpacing;
 	}
 	return iOffset;
 }
@@ -294,18 +297,19 @@ static int AddPinOffsets(CArrayPinOffset* pasOffsets, int iOffset, CArrayTemplat
 //
 // Logicim's calculatePinViewOffsets: the negative pins from just after
 // iOffset, the positive pins up to iOpposite and the centre pins in the
-// middle of the space left, into an initialised array.
+// middle of the space left (on the pins' spacing), into an initialised
+// array.
 //
 //////////////////////////////////////////////////////////////////////////
-static void CalculatePinOffsets(CArrayPinOffset* pasOffsets, SPinSide* psSide, int iOffset, int iOpposite)
+static void CalculatePinOffsets(CArrayPinOffset* pasOffsets, SPinSide* psSide, int iOffset, int iOpposite, int iSpacing)
 {
 	int		iMissing;
 	int		iLastNegative;
 
 	iMissing = (iOpposite - iOffset) - psSide->iPinSize;
-	iLastNegative = AddPinOffsets(pasOffsets, iOffset + 1, &psSide->apcNegative);
-	AddPinOffsets(pasOffsets, iOpposite - (int)psSide->apcPositive.NumElements(), &psSide->apcPositive);
-	AddPinOffsets(pasOffsets, iLastNegative + iMissing / 2, &psSide->apcCentre);
+	iLastNegative = AddPinOffsets(pasOffsets, iOffset + iSpacing, iSpacing, &psSide->apcNegative);
+	AddPinOffsets(pasOffsets, iOpposite - iSpacing * (int)psSide->apcPositive.NumElements(), iSpacing, &psSide->apcPositive);
+	AddPinOffsets(pasOffsets, iLastNegative + (iMissing / (2 * iSpacing)) * iSpacing, iSpacing, &psSide->apcCentre);
 }
 
 
@@ -403,14 +407,15 @@ void GetCircuitPinViews(CCircuitView* pcCircuit, CArrayTemplatePtr<CPinView>* pa
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A new instance, laid out with the fonts.
+// A new instance, laid out with the fonts, its pins iPinSpacing grid
+// units apart.
 //
 //////////////////////////////////////////////////////////////////////////
-void CSubcircuitInstanceView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szComment, CCircuitView* pcInstanceCircuitView, CCircuitFonts* pcFonts)
+void CSubcircuitInstanceView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szComment, CCircuitView* pcInstanceCircuitView, CCircuitFonts* pcFonts, int32 iPinSpacing)
 {
 	SSubcircuitInstanceLayout	sLayout;
 
-	MeasureLayout(pcFonts, pcInstanceCircuitView, szName, szComment, &sLayout);
+	MeasureLayout(pcFonts, pcInstanceCircuitView, szName, szComment, iPinSpacing, &sLayout);
 	Init(x, y, eRotation, szName, szComment, pcInstanceCircuitView->GetTypeName(), &sLayout);
 	SetInstanceCircuitView(pcInstanceCircuitView);
 }
@@ -479,7 +484,7 @@ bool CSubcircuitInstanceView::SetInstanceCircuitView(CCircuitView* pcInstanceCir
 // each side is widened to fit its pins and their labels.
 //
 //////////////////////////////////////////////////////////////////////////
-void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, SSubcircuitInstanceLayout* psLayout)
+void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, int32 iPinSpacing, SSubcircuitInstanceLayout* psLayout)
 {
 	SCircuitTextSize	asSizes[3];
 	bool				abShown[3];
@@ -570,10 +575,11 @@ void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView
 	iTopR = (int)floor(fMinX);
 	iBottomR = (int)ceil(fMaxX);
 
-	sTop.Init(pcInstanceCircuitView, PA_Top);
-	sBottom.Init(pcInstanceCircuitView, PA_Bottom);
-	sLeft.Init(pcInstanceCircuitView, PA_Left);
-	sRight.Init(pcInstanceCircuitView, PA_Right);
+	psLayout->iPinSpacing = (iPinSpacing >= 1) ? iPinSpacing : 1;
+	sTop.Init(pcInstanceCircuitView, PA_Top, psLayout->iPinSpacing);
+	sBottom.Init(pcInstanceCircuitView, PA_Bottom, psLayout->iPinSpacing);
+	sLeft.Init(pcInstanceCircuitView, PA_Left, psLayout->iPinSpacing);
+	sRight.Init(pcInstanceCircuitView, PA_Right, psLayout->iPinSpacing);
 
 	//LeftRightPinViewOffsets.
 	iMaxGridWidth = CalculateMaxGridSize(sTop.iExtendedSize, sBottom.iExtendedSize);
@@ -633,20 +639,20 @@ void CSubcircuitInstanceView::LayOut(void)
 
 	mcShapes.AddRectangle(msLayout.sBoxMinimum.x, msLayout.sBoxMinimum.y, msLayout.sBoxMaximum.x, msLayout.sBoxMaximum.y, true, true);
 
-	sTop.Init(mpcInstanceCircuitView, PA_Top);
-	sBottom.Init(mpcInstanceCircuitView, PA_Bottom);
-	sLeft.Init(mpcInstanceCircuitView, PA_Left);
-	sRight.Init(mpcInstanceCircuitView, PA_Right);
+	sTop.Init(mpcInstanceCircuitView, PA_Top, msLayout.iPinSpacing);
+	sBottom.Init(mpcInstanceCircuitView, PA_Bottom, msLayout.iPinSpacing);
+	sLeft.Init(mpcInstanceCircuitView, PA_Left, msLayout.iPinSpacing);
+	sRight.Init(mpcInstanceCircuitView, PA_Right, msLayout.iPinSpacing);
 
 	iMaxGridWidth = CalculateMaxGridSize(sTop.iExtendedSize, sBottom.iExtendedSize);
-	AddSidePins(&sTop, -(iMaxGridWidth / 2), iMaxGridWidth - iMaxGridWidth / 2, iTopR, 0, -1, TA_Left, 1);
-	AddSidePins(&sBottom, -(iMaxGridWidth / 2), iMaxGridWidth - iMaxGridWidth / 2, iBottomR, 0, 1, TA_Right, 1);
+	AddSidePins(&sTop, -(iMaxGridWidth / 2), iMaxGridWidth - iMaxGridWidth / 2, msLayout.iPinSpacing, iTopR, 0, -1, TA_Left, 1);
+	AddSidePins(&sBottom, -(iMaxGridWidth / 2), iMaxGridWidth - iMaxGridWidth / 2, msLayout.iPinSpacing, iBottomR, 0, 1, TA_Right, 1);
 
 	iTop = iTopR;
 	iBottom = iBottomR;
 	FitLeftRightPins(&sLeft, &sRight, &iTop, &iBottom);
-	AddSidePins(&sLeft, iTop, iBottom, -iRightR, -1, 0, TA_Left, 0);
-	AddSidePins(&sRight, iTop, iBottom, -iLeftR, 1, 0, TA_Right, 0);
+	AddSidePins(&sLeft, iTop, iBottom, msLayout.iPinSpacing, -iRightR, -1, 0, TA_Left, 0);
+	AddSidePins(&sRight, iTop, iBottom, msLayout.iPinSpacing, -iLeftR, 1, 0, TA_Right, 0);
 
 	sRight.Kill();
 	sLeft.Kill();
@@ -671,20 +677,20 @@ void CSubcircuitInstanceView::LayOut(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // The side's pins between iOffset and iOpposite along it (Logicim's
-// offsets), on the box's edge at iEdge across it, their ports facing out
+// offsets), iSpacing apart, on the box's edge at iEdge across it, their ports facing out
 // along (iOutX, iOutY).  Top and bottom pins run right to left along x
 // and their edge is a y; left and right pins run down y and their edge is
 // an x.
 //
 //////////////////////////////////////////////////////////////////////////
-void CSubcircuitInstanceView::AddSidePins(SPinSide* psSide, int iOffset, int iOpposite, int iEdge, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations)
+void CSubcircuitInstanceView::AddSidePins(SPinSide* psSide, int iOffset, int iOpposite, int iSpacing, int iEdge, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations)
 {
 	CArrayPinOffset		asOffsets;
 	size				i;
 	SPinOffset*			psOffset;
 
 	asOffsets.Init();
-	CalculatePinOffsets(&asOffsets, psSide, iOffset, iOpposite);
+	CalculatePinOffsets(&asOffsets, psSide, iOffset, iOpposite, iSpacing);
 	for (i = 0; i < asOffsets.NumElements(); i++)
 	{
 		psOffset = asOffsets.Get(i);
@@ -813,6 +819,10 @@ void CSubcircuitInstanceView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	{
 		pcWriter->Attribute("nameY", msLayout.fNameY);
 	}
+	if (msLayout.iPinSpacing != 1)
+	{
+		pcWriter->Attribute("pinSpacing", msLayout.iPinSpacing);
+	}
 }
 
 
@@ -856,6 +866,11 @@ bool CSubcircuitInstanceView::LoadXML(CMarkupTag* pcTag)
 		(!StrEmpty(szName) && !pcTag->GetFloat64Attribute("nameY", &sLayout.fNameY)))
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs typeY, and commentY and nameY for its comment and name.", NULL);
+	}
+	sLayout.iPinSpacing = 1;
+	if ((pcTag->GetStringAttribute("pinSpacing") != NULL) && (!pcTag->GetInt32Attribute("pinSpacing", &sLayout.iPinSpacing) || (sLayout.iPinSpacing < 1)))
+	{
+		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "]'s pinSpacing must be a whole number from 1.", NULL);
 	}
 
 	Init(x, y, eRotation, szName, szComment, szTypeName, &sLayout);
@@ -1065,6 +1080,7 @@ void CSubcircuitInstanceView::GetProperties(CComponentProperties* pcProperties, 
 	pcProperties->AddText("subcircuitTypeName", mszTypeName.Text());
 	CComponentView::GetProperties(pcProperties, psContext);
 	pcProperties->AddText("comment", mszComment.Text());
+	pcProperties->AddInteger("pinSpacing", msLayout.iPinSpacing, 1, SUBCIRCUIT_MAXIMUM_PIN_SPACING);
 }
 
 
@@ -1086,6 +1102,6 @@ bool CSubcircuitInstanceView::InitFromProperties(int32 x, int32 y, ERotation eRo
 	{
 		return gcLogger.Error2(__METHOD__, " There is no subcircuit [", szTypeName, "].", NULL);
 	}
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("comment", ""), pcSubcircuit, psContext->pcFonts);
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("comment", ""), pcSubcircuit, psContext->pcFonts, (int32)pcProperties->GetInteger("pinSpacing", 1));
 	return true;
 }

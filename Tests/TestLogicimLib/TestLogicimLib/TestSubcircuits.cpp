@@ -127,6 +127,7 @@ static CSubcircuitInstanceView* AddTestInstance(CCircuitView* pcCircuit, int32 x
 	sLayout.fTypeY = 0;
 	sLayout.fCommentY = 0;
 	sLayout.fNameY = 0;
+	sLayout.iPinSpacing = 1;
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
 	pcInstance->Init(x, y, ROT_North, szName, "", pcSubcircuit->GetTypeName(), &sLayout);
 	AssertTrue(pcInstance->SetInstanceCircuitView(pcSubcircuit));
@@ -1319,6 +1320,116 @@ void TestSubcircuitLayoutRender(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A "Bus" subcircuit: A0 to A3 down the left from the top, Y0 and Y1 in
+// the middle of the right.
+//
+//////////////////////////////////////////////////////////////////////////
+static CCircuitView* AddBusSubcircuit(CCircuitViews* pcCircuits)
+{
+	CCircuitView*	pcBus;
+	CPinView*		pcPin;
+	char			szName[3];
+	int32			i;
+
+	pcBus = pcCircuits->Add("Bus");
+	szName[2] = '\0';
+	for (i = 0; i < 4; i++)
+	{
+		szName[0] = 'A';
+		szName[1] = (char)('0' + i);
+		pcPin = AddTestPin(pcBus, 0, 3 * i, szName, PA_Left, PAN_Negative);
+		pcPin->SetSubcircuitAppearance(PA_Left, PAN_Negative, i, false, false);
+	}
+	for (i = 0; i < 2; i++)
+	{
+		szName[0] = 'Y';
+		szName[1] = (char)('0' + i);
+		pcPin = AddTestPin(pcBus, 10, 3 * i, szName, PA_Right, PAN_Centre);
+		pcPin->SetSubcircuitAppearance(PA_Right, PAN_Centre, i, false, false);
+	}
+	return pcBus;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An instance's pins can be two grid units apart (as a KiCad import's
+// are): the side grows to fit them, and the spacing is kept in its file.
+// A spacing of one isn't written.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSubcircuitPinSpacing(void)
+{
+	SSubcircuitTest				sTest;
+	Ptr<CCircuitFonts>			pFonts;
+	CCircuitView*				pcBus;
+	CCircuitView*				pcTop;
+	CSubcircuitInstanceView*	pcOne;
+	CSubcircuitInstanceView*	pcTwo;
+	CSubcircuitInstanceView*	pcLoaded;
+	CCircuitViews				cLoaded;
+	CXMLWriter					cText;
+	CFileUtil					cFileUtil;
+	int32						i;
+	char						szName[3];
+	char						szPrevious[3];
+
+	sTest.Init();
+	pFonts = LoadTestCircuitFonts();
+	pcBus = AddBusSubcircuit(&sTest.cCircuits);
+	pcTop = sTest.cCircuits.Add("Top");
+	pcOne = NewMalloc<CSubcircuitInstanceView>();
+	pcOne->Init(0, 0, ROT_East, "U1", "", pcBus, &pFonts);
+	pcTop->Add(pcOne);
+	pcTwo = NewMalloc<CSubcircuitInstanceView>();
+	pcTwo->Init(20, 0, ROT_East, "U2", "", pcBus, &pFonts, 2);
+	pcTop->Add(pcTwo);
+	AssertInt(1, pcOne->GetLayout()->iPinSpacing);
+	AssertInt(2, pcTwo->GetLayout()->iPinSpacing);
+
+	//Down the left side, one and two apart.
+	szName[0] = 'A';
+	szName[2] = '\0';
+	szPrevious[0] = 'A';
+	szPrevious[2] = '\0';
+	for (i = 1; i < 4; i++)
+	{
+		szName[1] = (char)('0' + i);
+		szPrevious[1] = (char)('0' + i - 1);
+		AssertInt(GetPinPosition(pcOne, szPrevious).x, GetPinPosition(pcOne, szName).x);
+		AssertInt(1, GetPinPosition(pcOne, szName).y - GetPinPosition(pcOne, szPrevious).y);
+		AssertInt(2, GetPinPosition(pcTwo, szName).y - GetPinPosition(pcTwo, szPrevious).y);
+	}
+	AssertInt(2, abs(GetPinPosition(pcTwo, "Y1").y - GetPinPosition(pcTwo, "Y0").y));
+	AssertInt(1, abs(GetPinPosition(pcOne, "Y1").y - GetPinPosition(pcOne, "Y0").y));
+	AssertTrue((pcTwo->GetLayout()->sBoxMaximum.y - pcTwo->GetLayout()->sBoxMinimum.y) > (pcOne->GetLayout()->sBoxMaximum.y - pcOne->GetLayout()->sBoxMinimum.y));
+
+	cText.Init();
+	SaveCircuitsXML(&sTest.cCircuits, pcTop, NULL, &cText);
+	AssertTrue(strstr(cText.GetText(), "pinSpacing=\"2\"") != NULL);
+	AssertTrue(strstr(cText.GetText(), "pinSpacing=\"1\"") == NULL);
+	cText.Kill();
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitsFile(&sTest.cCircuits, pcTop, NULL, "Output" _FS_ "PinSpacing.xml"));
+	cLoaded.Init();
+	AssertTrue(LoadCircuitsFile(&cLoaded, "Top", NULL, NULL, "Output" _FS_ "PinSpacing.xml"));
+	pcLoaded = (CSubcircuitInstanceView*)cLoaded.Get("Top")->GetComponent(1);
+	AssertInt(2, pcLoaded->GetLayout()->iPinSpacing);
+	AssertInt(GetPinPosition(pcTwo, "A3").y, GetPinPosition(pcLoaded, "A3").y);
+	AssertInt(GetPinPosition(pcTwo, "Y1").y, GetPinPosition(pcLoaded, "Y1").y);
+	AssertInt(1, ((CSubcircuitInstanceView*)cLoaded.Get("Top")->GetComponent(0))->GetLayout()->iPinSpacing);
+	cLoaded.Kill();
+	cFileUtil.Delete("Output" _FS_ "PinSpacing.xml");
+
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
+	sTest.Kill(true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestSubcircuits(void)
@@ -1339,6 +1450,7 @@ void TestSubcircuits(void)
 	TestSubcircuitDuplicatePinNames();
 	TestSubcircuitFileRoundTrip();
 	TestSubcircuitLayoutRender();
+	TestSubcircuitPinSpacing();
 
 	DataMemoryKill();
 	DataIOKill();

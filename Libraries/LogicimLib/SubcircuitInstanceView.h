@@ -45,9 +45,14 @@ struct SSubcircuitPinView
 typedef CArrayTemplate<SSubcircuitPinView>	CArraySubcircuitPinView;
 
 
+//The most grid units apart an instance's pins may be.
+#define SUBCIRCUIT_MAXIMUM_PIN_SPACING	4
+
+
 //What Logicim measures with fonts when it lays an instance out: its box, in the instance's grid space, and where its
 //type name, comment and name are down it (x is 0 for all three).  It's measured when an instance is
-//made and then kept and saved, so a loaded instance keeps its shape whatever fonts it's drawn in.
+//made and then kept and saved, so a loaded instance keeps its shape whatever fonts it's drawn in.  Its pins are
+//iPinSpacing grid units apart along each side: 1 as Logicim's, 2 for a KiCad import, whose grid is two of Logicim's.
 struct SSubcircuitInstanceLayout
 {
 	SInt32Vec2	sBoxMinimum;
@@ -55,6 +60,7 @@ struct SSubcircuitInstanceLayout
 	float64		fTypeY;
 	float64		fCommentY;
 	float64		fNameY;
+	int32		iPinSpacing;
 };
 
 
@@ -80,7 +86,7 @@ protected:
 	CArraySubcircuitPinView		masPins;
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szComment, CCircuitView* pcInstanceCircuitView, CCircuitFonts* pcFonts);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szComment, CCircuitView* pcInstanceCircuitView, CCircuitFonts* pcFonts, int32 iPinSpacing = 1);
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szComment, const char* szTypeName, SSubcircuitInstanceLayout* psLayout);
 	virtual void					Kill(void);
 
@@ -106,12 +112,12 @@ public:
 			SSubcircuitPinView*		GetPin(const char* szPinName);
 			SSubcircuitPinView*		GetPin(CPinView* pcPin);
 
-	static	void					MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, SSubcircuitInstanceLayout* psLayout);
+	static	void					MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, int32 iPinSpacing, SSubcircuitInstanceLayout* psLayout);
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
 			void					LayOut(void);
-			void					AddSidePins(SPinSide* psSide, int iOffset, int iOpposite, int iEdge, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations);
+			void					AddSidePins(SPinSide* psSide, int iOffset, int iOpposite, int iSpacing, int iEdge, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations);
 			void					AddPin(CPinView* pcPin, int32 x, int32 y, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations);
 };
 
