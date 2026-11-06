@@ -137,6 +137,7 @@ protected:
 	Ptr<CFileChooser>				mpFileChooser;
 	CChars					mszProjectFilename;  //The project last loaded or saved.
 	CChars					mszKicadFilename;  //The KiCad schematic last imported.
+	CChars					mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars					mszChooserSelected;  //The component last chosen.
 	int						miSimulationCount;
 	bool					mbRunning;
@@ -164,6 +165,7 @@ public:
 	void			ShowDialog(ELogicimDialog eDialog);
 	void			Tick(int64 iUpdateTimeInMilliseconds);
 	bool			ImportKicadSchematic(const char* szFilename);
+	void			SetStartupImport(const char* szFilename);
 
 protected:
 	Ptr<CFont>				GenerateFont(const char* szFontFilename, const char* szName, float32 fPixelSize, EColourOrder eOrder);

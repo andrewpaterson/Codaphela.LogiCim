@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <stdio.h>
+#include <stdlib.h>
 #include "BaseLib/Logger.h"
 #include "BaseLib/FileUtil.h"
 #include "StandardLib/Objects.h"
@@ -149,6 +151,7 @@ void CLogicimWindowContent::Init(void)
 	maSimulationLabels.Init();
 	mszProjectFilename.Init("Project.xml");
 	mszKicadFilename.Init("Schematic.kicad_sch");
+	mszStartupImport.Init();
 	mszChooserSelected.Init();
 	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
 
@@ -197,6 +200,7 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpFileChooser);
 	U_String(mszProjectFilename);
 	U_String(mszKicadFilename);
+	U_String(mszStartupImport);
 	U_String(mszChooserSelected);
 	U_Int32(miSimulationCount);
 	U_Bool(mbRunning);
@@ -310,6 +314,7 @@ void CLogicimWindowContent::Free(void)
 
 	maiButtonActions.Kill();
 	maiMenuItemActions.Kill();
+	mszStartupImport.Kill();
 	mszKicadFilename.Kill();
 	mszProjectFilename.Kill();
 	mszChooserSelected.Kill();
@@ -1133,6 +1138,29 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 {
+	CChars			szImport;
+	SFloat64Vec2	sCentre;
+	SFloat64Vec2	sMinimum;
+	SFloat64Vec2	sMaximum;
+	float64			fSize;
+
+	//Once the window is laid out, so the import is zoomed to fit the canvas.
+	if (!mszStartupImport.Empty())
+	{
+		szImport.Init(mszStartupImport.Text());
+		mszStartupImport.Set("");
+		ImportKicadSchematic(szImport.Text());
+		szImport.Kill();
+
+		//LOGICIM_VIEW="x,y,size" shows the square of grid units about x, y instead, for scripted checks.
+		if ((getenv("LOGICIM_VIEW") != NULL) && (sscanf(getenv("LOGICIM_VIEW"), "%lf,%lf,%lf", &sCentre.x, &sCentre.y, &fSize) == 3))
+		{
+			sMinimum.Init(sCentre.x - fSize / 2, sCentre.y - fSize / 2);
+			sMaximum.Init(sCentre.x + fSize / 2, sCentre.y + fSize / 2);
+			mpCircuit->GetCircuitDraw()->ZoomToFit(sMinimum, sMaximum);
+			ShowZoom();
+		}
+	}
 	if (mbRunning)
 	{
 		if (mbRanLastTick && mpLogicimCircuit->Run(NanosecondsToTime(iUpdateTimeInMilliseconds * mfNanosecondsPerMillisecond)))
@@ -1584,9 +1612,20 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The schematic is imported at the first tick, as LOGICIM_IMPORT asks for
+// scripted checks.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::SetStartupImport(const char* szFilename)
+{
+	mszStartupImport.Set(szFilename);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Replaces the project with the circuit made from the KiCad schematic, as
-// the Import KiCad Schematic dialog does.  LOGICIM_IMPORT names one to
-// import at startup, for scripted checks.
+// the Import KiCad Schematic dialog does.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
