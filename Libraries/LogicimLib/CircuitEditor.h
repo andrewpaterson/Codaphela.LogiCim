@@ -256,6 +256,11 @@ public:
 	void				PullWire(CWirePullEdit* pcPull);
 
 protected:
+	CComponentView*		NewFromProperties(CComponentView* pcComponent, CComponentProperties* pcProperties, ERotation eRotation, bool bMirrored);
+	void				DestroyInSimulations(CComponentView* pcComponent);
+	void				GetMovedLines(CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasMovedLines);
+	void				AddPortTraces(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcSeeds);
+	void				SelectMoved(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcAdded, CArrayTraceLine* pasMovedLines);
 	void				StartEdit(CStatefulEdit* pcEdit, SFloat64Vec2 sStart);
 	void				DoneEdit(SFloat64Vec2 sPosition);
 	void				DiscardEdit(void);

@@ -424,25 +424,73 @@ void CCircuitEditor::GetProperties(CComponentView* pcComponent, CComponentProper
 //////////////////////////////////////////////////////////////////////////
 CComponentView* CCircuitEditor::SetProperties(CComponentView* pcComponent, CComponentProperties* pcProperties, ERotation eRotation, bool bMirrored)
 {
-	SComponentPropertiesContext	sContext;
 	CComponentView*				pcNew;
-	CCircuitInstanceView*		pcInstanceView;
-	CCircuitView*				pcSubcircuit;
 	CArrayComponentViewPtr		apcComponents;
 	CArrayTraceViewPtr			apcSeeds;
 	CArrayTraceLine				asNoLines;
-	CArrayViewPathPtr			apcViewPaths;
-	CViewPath*					pcViewPath;
-	CTraceView*					pcTrace;
-	SInt32Vec2					sPort;
 	bool						bSelected;
 	size						i;
-	size						j;
 
 	if ((mpcEdit != NULL) || (mpcCircuit == NULL))
 	{
 		return NULL;
 	}
+	pcNew = NewFromProperties(pcComponent, pcProperties, eRotation, bMirrored);
+	if (pcNew == NULL)
+	{
+		return NULL;
+	}
+
+	ClearHover();
+	DestroyInSimulations(pcComponent);
+	bSelected = mcSelection.Contains(pcComponent);
+	mcSelection.Remove(pcComponent);
+	mpcCircuit->Replace(pcComponent, pcNew);
+	SafeKill(pcComponent);
+	if (bSelected)
+	{
+		mcSelection.Add(pcNew);
+	}
+
+	apcComponents.Init();
+	apcComponents.Add(pcNew);
+	CreateComponents(&apcComponents);
+	apcSeeds.Init();
+	AddPortTraces(&apcComponents, &apcSeeds);
+	apcComponents.Kill();
+	if (apcSeeds.NumElements() > 0)
+	{
+		for (i = 0; i < apcSeeds.NumElements(); i++)
+		{
+			mcSelection.Remove(apcSeeds.GetPtr(i));
+		}
+		asNoLines.Init();
+		mpcCircuit->ReplaceWires(&asNoLines, &apcSeeds, NULL);
+		asNoLines.Kill();
+	}
+	apcSeeds.Kill();
+
+	Rewire();
+	UpdateHover();
+	PushUndo(false);
+	return pcNew;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A new component of the same kind made from the properties, where the
+// component is, turned and mirrored.  NULL (with an error for an
+// instance) if it can't be made, or would be an instance of a subcircuit
+// that holds the circuit being edited.
+//
+//////////////////////////////////////////////////////////////////////////
+CComponentView* CCircuitEditor::NewFromProperties(CComponentView* pcComponent, CComponentProperties* pcProperties, ERotation eRotation, bool bMirrored)
+{
+	SComponentPropertiesContext	sContext;
+	CComponentView*				pcNew;
+	CCircuitInstanceView*		pcInstanceView;
+	CCircuitView*				pcSubcircuit;
 
 	InitPropertiesContext(&sContext);
 	pcNew = NewComponentView(pcComponent->GetXMLName());
@@ -467,8 +515,24 @@ CComponentView* CCircuitEditor::SetProperties(CComponentView* pcComponent, CComp
 			return NULL;
 		}
 	}
+	return pcNew;
+}
 
-	ClearHover();
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Takes the component out of the simulations of every path the circuit
+// being edited is on, and an instance's paths through it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::DestroyInSimulations(CComponentView* pcComponent)
+{
+	CArrayViewPathPtr		apcViewPaths;
+	CViewPath*				pcViewPath;
+	CCircuitInstanceView*	pcInstanceView;
+	size					i;
+	size					j;
+
 	apcViewPaths.Init();
 	GetEditedPaths(&apcViewPaths);
 	for (i = 0; i < apcViewPaths.NumElements(); i++)
@@ -485,50 +549,6 @@ CComponentView* CCircuitEditor::SetProperties(CComponentView* pcComponent, CComp
 	{
 		mpcCircuits->GetViewPaths()->RemovePathsThrough(pcInstanceView);
 	}
-
-	bSelected = mcSelection.Contains(pcComponent);
-	mcSelection.Remove(pcComponent);
-	mpcCircuit->Replace(pcComponent, pcNew);
-	SafeKill(pcComponent);
-	if (bSelected)
-	{
-		mcSelection.Add(pcNew);
-	}
-
-	apcComponents.Init();
-	apcComponents.Add(pcNew);
-	CreateComponents(&apcComponents);
-	apcComponents.Kill();
-
-	apcSeeds.Init();
-	for (i = 0; i < pcNew->NumPortViews(); i++)
-	{
-		sPort = pcNew->GetPortView(i)->GetGridPosition();
-		for (j = 0; j < mpcCircuit->NumTraces(); j++)
-		{
-			pcTrace = mpcCircuit->GetTrace(j);
-			if (pcTrace->Contains(sPort) && (apcSeeds.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
-			{
-				apcSeeds.Add(pcTrace);
-			}
-		}
-	}
-	if (apcSeeds.NumElements() > 0)
-	{
-		for (i = 0; i < apcSeeds.NumElements(); i++)
-		{
-			mcSelection.Remove(apcSeeds.GetPtr(i));
-		}
-		asNoLines.Init();
-		mpcCircuit->ReplaceWires(&asNoLines, &apcSeeds, NULL);
-		asNoLines.Kill();
-	}
-	apcSeeds.Kill();
-
-	Rewire();
-	UpdateHover();
-	PushUndo(false);
-	return pcNew;
 }
 
 

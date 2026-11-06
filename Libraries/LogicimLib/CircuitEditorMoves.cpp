@@ -395,17 +395,10 @@ void CCircuitEditor::GetAnchorLines(SMoveAnchor* psAnchor, CArrayTraceLine* pasL
 void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, bool bSelect, bool bNew, bool bChanged)
 {
 	size				i;
-	size				j;
-	size				k;
 	CArrayTraceLine		asMovedLines;
+	CArrayTraceLine		asAnchorLines;
 	CArrayTraceViewPtr	apcSeeds;
 	CArrayTraceViewPtr	apcAdded;
-	CArrayTraceLine		asAnchorLines;
-	CTraceView*			pcTrace;
-	CComponentView*		pcComponent;
-	STraceLine*			psLine;
-	STraceLine			sAdded;
-	SInt32Vec2			sPort;
 
 	ClearHover();
 	if (bNew)
@@ -430,16 +423,7 @@ void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArra
 	masAnchors.ReInit();
 
 	asMovedLines.Init();
-	apcAdded.Init();
-	for (i = 0; i < papcTraces->NumElements(); i++)
-	{
-		pcTrace = papcTraces->GetPtr(i);
-		if (mapcFollowing.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND)
-		{
-			psLine = asMovedLines.Add();
-			psLine->Init(pcTrace->GetStart(), pcTrace->GetEnd());
-		}
-	}
+	GetMovedLines(papcTraces, &asMovedLines);
 	mapcFollowing.ReInit();
 
 	apcSeeds.Init();
@@ -453,28 +437,14 @@ void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArra
 	}
 	KillLeads();
 
+	apcAdded.Init();
 	if (bNew || bChanged)
 	{
 		for (i = 0; i < papcTraces->NumElements(); i++)
 		{
 			apcSeeds.Add(papcTraces->GetPtr(i));
 		}
-		for (i = 0; i < papcComponents->NumElements(); i++)
-		{
-			pcComponent = papcComponents->GetPtr(i);
-			for (j = 0; j < pcComponent->NumPortViews(); j++)
-			{
-				sPort = pcComponent->GetPortView(j)->GetGridPosition();
-				for (k = 0; k < mpcCircuit->NumTraces(); k++)
-				{
-					pcTrace = mpcCircuit->GetTrace(k);
-					if (pcTrace->Contains(sPort) && (apcSeeds.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
-					{
-						apcSeeds.Add(pcTrace);
-					}
-				}
-			}
-		}
+		AddPortTraces(papcComponents, &apcSeeds);
 		mpcCircuit->ReplaceWires(&asAnchorLines, &apcSeeds, &apcAdded);
 		Rewire();
 	}
@@ -495,23 +465,7 @@ void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArra
 	mcSelection.Clear();
 	if (bSelect)
 	{
-		for (i = 0; i < papcComponents->NumElements(); i++)
-		{
-			mcSelection.Add(papcComponents->GetPtr(i));
-		}
-		for (i = 0; i < apcAdded.NumElements(); i++)
-		{
-			pcTrace = apcAdded.GetPtr(i);
-			sAdded.Init(pcTrace->GetStart(), pcTrace->GetEnd());
-			for (j = 0; j < asMovedLines.NumElements(); j++)
-			{
-				if (sAdded.Overlaps(asMovedLines.Get(j), false))
-				{
-					mcSelection.Add(pcTrace);
-					break;
-				}
-			}
-		}
+		SelectMoved(papcComponents, &apcAdded, &asMovedLines);
 	}
 	apcAdded.Kill();
 	asMovedLines.Kill();
@@ -520,6 +474,95 @@ void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArra
 	if (bNew || bChanged)
 	{
 		PushUndo(false);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The lines of the wires moved (not those following a component).
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::GetMovedLines(CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasMovedLines)
+{
+	size			i;
+	CTraceView*		pcTrace;
+	STraceLine*		psLine;
+
+	for (i = 0; i < papcTraces->NumElements(); i++)
+	{
+		pcTrace = papcTraces->GetPtr(i);
+		if (mapcFollowing.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND)
+		{
+			psLine = pasMovedLines->Add();
+			psLine->Init(pcTrace->GetStart(), pcTrace->GetEnd());
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Adds the wires through the components' ports to the seeds, once each.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::AddPortTraces(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcSeeds)
+{
+	size				i;
+	size				j;
+	size				k;
+	CComponentView*		pcComponent;
+	CTraceView*			pcTrace;
+	SInt32Vec2			sPort;
+
+	for (i = 0; i < papcComponents->NumElements(); i++)
+	{
+		pcComponent = papcComponents->GetPtr(i);
+		for (j = 0; j < pcComponent->NumPortViews(); j++)
+		{
+			sPort = pcComponent->GetPortView(j)->GetGridPosition();
+			for (k = 0; k < mpcCircuit->NumTraces(); k++)
+			{
+				pcTrace = mpcCircuit->GetTrace(k);
+				if (pcTrace->Contains(sPort) && (papcSeeds->Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
+				{
+					papcSeeds->Add(pcTrace);
+				}
+			}
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Selects the moved components and the wires added along where the moved
+// wires went.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::SelectMoved(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcAdded, CArrayTraceLine* pasMovedLines)
+{
+	size			i;
+	size			j;
+	CTraceView*		pcTrace;
+	STraceLine		sAdded;
+
+	for (i = 0; i < papcComponents->NumElements(); i++)
+	{
+		mcSelection.Add(papcComponents->GetPtr(i));
+	}
+	for (i = 0; i < papcAdded->NumElements(); i++)
+	{
+		pcTrace = papcAdded->GetPtr(i);
+		sAdded.Init(pcTrace->GetStart(), pcTrace->GetEnd());
+		for (j = 0; j < pasMovedLines->NumElements(); j++)
+		{
+			if (sAdded.Overlaps(pasMovedLines->Get(j), false))
+			{
+				mcSelection.Add(pcTrace);
+				break;
+			}
+		}
 	}
 }
 

@@ -170,6 +170,155 @@ bool CCircuitEditor::Load(const char* szFilename)
 }
 
 
+//What a project's <Editor> says: the circuit being edited and the path into it, the creation rotation and mirroring,
+//and the selection as indices of components and traces in the circuit.  The strings point into the tag.
+struct SCircuitEditorXML
+{
+	char*					szCircuit;
+	char*					szPath;
+	ERotation				eRotation;
+	bool					bMirrored;
+	CArrayTemplate<int64>	aiComponents;
+	CArrayTemplate<int64>	aiTraces;
+
+	void	Init(void);
+	void	Kill(void);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// As it is with no <Editor>: the first circuit, facing East.
+//
+//////////////////////////////////////////////////////////////////////////
+void SCircuitEditorXML::Init(void)
+{
+	szCircuit = NULL;
+	szPath = NULL;
+	eRotation = ROT_East;
+	bMirrored = false;
+	aiComponents.Init();
+	aiTraces.Init();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void SCircuitEditorXML::Kill(void)
+{
+	aiTraces.Kill();
+	aiComponents.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Reads the <Editor> tag.  False (with an error naming szSource) if a
+// value is wrong; the rest are still read.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool LoadCircuitEditorXML(CMarkupTag* pcEditorTag, const char* szSource, SCircuitEditorXML* psEditor)
+{
+	CMarkupTag*		pcTag;
+	STagIterator	sIter;
+	char*			szRotation;
+	char*			szMirrored;
+	int64			iIndex;
+	bool			bResult;
+
+	bResult = true;
+	psEditor->szCircuit = pcEditorTag->GetStringAttribute("circuit");
+	psEditor->szPath = pcEditorTag->GetStringAttribute("path");
+	szRotation = pcEditorTag->GetStringAttribute("rotation");
+	if (szRotation != NULL)
+	{
+		psEditor->eRotation = StringToRotation(szRotation);
+		if (psEditor->eRotation == ROT_Cannot)
+		{
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has an unknown rotation [", szRotation, "].", NULL);
+		}
+	}
+	szMirrored = pcEditorTag->GetStringAttribute("mirrored");
+	if ((szMirrored != NULL) && !pcEditorTag->GetBoolAttribute("mirrored", &psEditor->bMirrored))
+	{
+		bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a mirrored that isn't true or false [", szMirrored, "].", NULL);
+	}
+
+	pcTag = pcEditorTag->GetTag("Selected", &sIter);
+	while (pcTag != NULL)
+	{
+		if (pcTag->GetInt64Attribute("component", &iIndex))
+		{
+			psEditor->aiComponents.Add(&iIndex);
+		}
+		else if (pcTag->GetInt64Attribute("trace", &iIndex))
+		{
+			psEditor->aiTraces.Add(&iIndex);
+		}
+		else
+		{
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a [Selected] that is neither a component nor a trace.", NULL);
+		}
+		pcTag = pcEditorTag->GetNextTag(&sIter);
+	}
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether every component and trace selected is in the circuit.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool CheckCircuitEditorSelection(SCircuitEditorXML* psEditor, CCircuitView* pcCircuit, const char* szSource)
+{
+	size	i;
+	int64	iIndex;
+	bool	bResult;
+
+	bResult = true;
+	for (i = 0; i < psEditor->aiComponents.NumElements(); i++)
+	{
+		iIndex = *psEditor->aiComponents.Get(i);
+		if ((iIndex < 0) || ((size)iIndex >= pcCircuit->NumComponents()))
+		{
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] selects component [", LongToString(iIndex), "], which isn't in the circuit.", NULL);
+		}
+	}
+	for (i = 0; i < psEditor->aiTraces.NumElements(); i++)
+	{
+		iIndex = *psEditor->aiTraces.Get(i);
+		if ((iIndex < 0) || ((size)iIndex >= pcCircuit->NumTraces()))
+		{
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] selects trace [", LongToString(iIndex), "], which isn't in the circuit.", NULL);
+		}
+	}
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The view path down the instances from the top circuit, NULL if one of
+// them isn't simulated.
+//
+//////////////////////////////////////////////////////////////////////////
+static CViewPath* GetCircuitEditorViewPath(CCircuitViews* pcCircuits, CCircuitView* pcTop, CArrayTemplatePtr<CCircuitInstanceView>* papcPath)
+{
+	CViewPath*	pcViewPath;
+	size		i;
+
+	pcViewPath = pcCircuits->GetTopPath(pcTop);
+	for (i = 0; (i < papcPath->NumElements()) && (pcViewPath != NULL); i++)
+	{
+		pcViewPath = pcViewPath->GetChild(papcPath->GetPtr(i));
+	}
+	return pcViewPath;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Replaces the project with the one under pcRoot, as Logicim's load: its
@@ -181,81 +330,33 @@ bool CCircuitEditor::Load(const char* szFilename)
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 {
-	CMarkupTag*					pcEditorTag;
-	CMarkupTag*					pcTag;
-	STagIterator				sIter;
-	CCircuitViews*				pcCircuits;
-	CCircuitView*				pcCircuit;
-	Ptr<CCircuitSimulation>		pSimulation;
-	ERotation					eRotation;
-	bool						bMirrored;
-	char*						szCircuit;
-	char*						szRotation;
-	char*						szMirrored;
-	char*						szPath;
-	CCircuitView*				pcTop;
+	CMarkupTag*								pcEditorTag;
+	SCircuitEditorXML						sEditor;
+	CCircuitViews*							pcCircuits;
+	CCircuitView*							pcCircuit;
+	CCircuitView*							pcTop;
+	Ptr<CCircuitSimulation>					pSimulation;
 	CArrayTemplatePtr<CCircuitInstanceView>	apcPath;
-	CViewPath*					pcViewPath;
-	CArrayTemplate<int64>		aiComponents;
-	CArrayTemplate<int64>		aiTraces;
-	int64						iIndex;
-	size						i;
-	bool						bResult;
+	CViewPath*								pcViewPath;
+	size									i;
+	bool									bResult;
 
 	pcCircuits = NewMalloc<CCircuitViews>();
 	pcCircuits->Init();
 	bResult = pcCircuits->LoadXML(pcRoot->GetTag("Circuits"));
 
-	eRotation = ROT_East;
-	bMirrored = false;
-	szCircuit = NULL;
-	szPath = NULL;
+	sEditor.Init();
 	apcPath.Init();
-	aiComponents.Init();
-	aiTraces.Init();
 	pcEditorTag = pcRoot->GetTag("Editor");
 	if (pcEditorTag != NULL)
 	{
-		szCircuit = pcEditorTag->GetStringAttribute("circuit");
-		szPath = pcEditorTag->GetStringAttribute("path");
-		szRotation = pcEditorTag->GetStringAttribute("rotation");
-		if (szRotation != NULL)
-		{
-			eRotation = StringToRotation(szRotation);
-			if (eRotation == ROT_Cannot)
-			{
-				bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has an unknown rotation [", szRotation, "].", NULL);
-			}
-		}
-		szMirrored = pcEditorTag->GetStringAttribute("mirrored");
-		if ((szMirrored != NULL) && !pcEditorTag->GetBoolAttribute("mirrored", &bMirrored))
-		{
-			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a mirrored that isn't true or false [", szMirrored, "].", NULL);
-		}
-
-		pcTag = pcEditorTag->GetTag("Selected", &sIter);
-		while (pcTag != NULL)
-		{
-			if (pcTag->GetInt64Attribute("component", &iIndex))
-			{
-				aiComponents.Add(&iIndex);
-			}
-			else if (pcTag->GetInt64Attribute("trace", &iIndex))
-			{
-				aiTraces.Add(&iIndex);
-			}
-			else
-			{
-				bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a [Selected] that is neither a component nor a trace.", NULL);
-			}
-			pcTag = pcEditorTag->GetNextTag(&sIter);
-		}
+		bResult &= LoadCircuitEditorXML(pcEditorTag, szSource, &sEditor);
 	}
 
 	pcCircuit = NULL;
 	if (bResult)
 	{
-		pcCircuit = (szCircuit != NULL) ? pcCircuits->Get(szCircuit) : pcCircuits->Get((size)0);
+		pcCircuit = (sEditor.szCircuit != NULL) ? pcCircuits->Get(sEditor.szCircuit) : pcCircuits->Get((size)0);
 		if (pcCircuit == NULL)
 		{
 			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has no circuit to edit.", NULL);
@@ -264,33 +365,17 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 
 	//The path into the instance entered: each instance's index in the circuit before it.
 	pcTop = pcCircuit;
-	if (bResult && !StrEmpty(szPath))
+	if (bResult && !StrEmpty(sEditor.szPath))
 	{
-		pcCircuit = FindInstancePath(pcTop, szPath, &apcPath);
+		pcCircuit = FindInstancePath(pcTop, sEditor.szPath, &apcPath);
 		if (pcCircuit == NULL)
 		{
-			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a path [", szPath, "] that isn't a path of instances.", NULL);
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a path [", sEditor.szPath, "] that isn't a path of instances.", NULL);
 		}
 	}
-
 	if (bResult)
 	{
-		for (i = 0; i < aiComponents.NumElements(); i++)
-		{
-			iIndex = *aiComponents.Get(i);
-			if ((iIndex < 0) || ((size)iIndex >= pcCircuit->NumComponents()))
-			{
-				bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] selects component [", LongToString(iIndex), "], which isn't in the circuit.", NULL);
-			}
-		}
-		for (i = 0; i < aiTraces.NumElements(); i++)
-		{
-			iIndex = *aiTraces.Get(i);
-			if ((iIndex < 0) || ((size)iIndex >= pcCircuit->NumTraces()))
-			{
-				bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] selects trace [", LongToString(iIndex), "], which isn't in the circuit.", NULL);
-			}
-		}
+		bResult = CheckCircuitEditorSelection(&sEditor, pcCircuit, szSource);
 	}
 
 	if (bResult)
@@ -302,16 +387,13 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	pcViewPath = NULL;
 	if (bResult && (apcPath.NumElements() > 0))
 	{
-		pcViewPath = pcCircuits->GetTopPath(pcTop);
-		for (i = 0; (i < apcPath.NumElements()) && (pcViewPath != NULL); i++)
-		{
-			pcViewPath = pcViewPath->GetChild(apcPath.GetPtr(i));
-		}
+		pcViewPath = GetCircuitEditorViewPath(pcCircuits, pcTop, &apcPath);
 		if (pcViewPath == NULL)
 		{
-			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a path [", szPath, "] that isn't simulated.", NULL);
+			bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has a path [", sEditor.szPath, "] that isn't simulated.", NULL);
 		}
 	}
+	apcPath.Kill();
 
 	if (!bResult)
 	{
@@ -322,9 +404,7 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 		}
 		pcCircuits->Kill();
 		free(pcCircuits);
-		apcPath.Kill();
-		aiTraces.Kill();
-		aiComponents.Kill();
+		sEditor.Kill();
 		return false;
 	}
 
@@ -333,19 +413,17 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	mpcCircuit = pcCircuit;
 	mpcViewPath = pcViewPath;
 	mpSimulation = pSimulation;
-	apcPath.Kill();
-	meCreationRotation = eRotation;
-	mbCreationMirrored = bMirrored;
-	for (i = 0; i < aiComponents.NumElements(); i++)
+	meCreationRotation = sEditor.eRotation;
+	mbCreationMirrored = sEditor.bMirrored;
+	for (i = 0; i < sEditor.aiComponents.NumElements(); i++)
 	{
-		mcSelection.Add(mpcCircuit->GetComponent((size)*aiComponents.Get(i)));
+		mcSelection.Add(mpcCircuit->GetComponent((size)*sEditor.aiComponents.Get(i)));
 	}
-	for (i = 0; i < aiTraces.NumElements(); i++)
+	for (i = 0; i < sEditor.aiTraces.NumElements(); i++)
 	{
-		mcSelection.Add(mpcCircuit->GetTrace((size)*aiTraces.Get(i)));
+		mcSelection.Add(mpcCircuit->GetTrace((size)*sEditor.aiTraces.Get(i)));
 	}
-	aiTraces.Kill();
-	aiComponents.Kill();
+	sEditor.Kill();
 	UpdateHover();
 	return true;
 }
