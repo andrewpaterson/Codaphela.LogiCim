@@ -205,6 +205,7 @@ protected:
 	void					UpdateInfo(void);
 	void					UpdateEditMenu(void);
 	void					ShowPropertiesDialog(void);
+	int						AddPropertyEditor(CComponentProperties* pcProperties, SComponentProperty* psProperty, CArray<CTextField>* paTextFields, CArray<CCheckBox>* paCheckBoxes, CArray<CComboBox>* paComboBoxes);
 	void					ShowNewSubcircuitDialog(void);
 	void					ShowNewSimulationDialog(void);
 	void					ShowSelectZoomDialog(void);

@@ -103,6 +103,30 @@ void CLogicimWindowContent::ShowDialog(ELogicimDialog eDialog)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The property's value from its editor (see AddPropertyEditor).
+//
+//////////////////////////////////////////////////////////////////////////
+static void ReadLogicimPropertyEditor(SComponentProperty* psProperty, int iEditor, CArray<CTextField>* paTextFields, CArray<CCheckBox>* paCheckBoxes, CArray<CComboBox>* paComboBoxes)
+{
+	switch (psProperty->eType)
+	{
+	case CPT_Boolean:
+		psProperty->szValue.Set(paCheckBoxes->Get(iEditor)->IsTicked() ? "true" : "false");
+		break;
+	case CPT_Choice:
+		psProperty->szValue.Set(paComboBoxes->Get(iEditor)->GetSelectedText());
+		break;
+	case CPT_Divider:
+		break;
+	default:
+		psProperty->szValue.Set(paTextFields->Get(iEditor)->GetText());
+		break;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Logicim's property editor dialog for the hovered or selected component,
 // as its ReflectivePropertiesPanel: its rotation, then an editor for each
 // of its properties (see CComponentProperties) in order, a text field for
@@ -118,18 +142,14 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 	CCircuitEditor*			pcEditor;
 	CComponentView*			pcComponent;
 	CComponentProperties	cProperties;
-	SComponentProperty*		psProperty;
 	Ptr<CComboBox>			pRotation;
 	Ptr<CCheckBox>			pMirrored;
 	CArray<CTextField>		aTextFields;
 	CArray<CCheckBox>		aCheckBoxes;
 	CArray<CComboBox>		aComboBoxes;
 	CArrayInt				aiEditors;  //Each property's editor in its type's array, -1 for a divider.
-	Ptr<CComboBox>			pComboBox;
 	CChars					sz;
 	size					i;
-	size					j;
-	int						iEditor;
 	ERotation				eRotation;
 
 	pcEditor = mpLogicimCircuit->GetEditor();
@@ -154,70 +174,19 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 	pMirrored = mpDialog->AddCheckBox("Mirrored", pcComponent->IsMirrored());
 	for (i = 0; i < cProperties.NumProperties(); i++)
 	{
-		psProperty = cProperties.Get(i);
-		switch (psProperty->eType)
-		{
-		case CPT_Boolean:
-			aiEditors.Add((int)aCheckBoxes.Size());
-			aCheckBoxes.Add(mpDialog->AddCheckBox(psProperty->szLabel.Text(), psProperty->szValue.Equals("true")));
-			break;
-		case CPT_Choice:
-			pComboBox = OMalloc<CComboBox>(mpDialog->GetWindow(), msDialogLook.pcTheme);
-			for (j = 0; j < psProperty->aszChoices.NumElements(); j++)
-			{
-				pComboBox->AddItem(psProperty->aszChoices.GetText(j));
-			}
-			pComboBox->Select((int32)cProperties.GetChoice(psProperty->szName.Text(), 0));
-			pComboBox->SetAlignment(CSH_Stretch, CSV_Center);
-			mpDialog->AddEditor(psProperty->szLabel.Text(), pComboBox);
-			aiEditors.Add((int)aComboBoxes.Size());
-			aComboBoxes.Add(pComboBox);
-			break;
-		case CPT_Divider:
-			mpDialog->AddDivider(psProperty->szLabel.Text());
-			aiEditors.Add(-1);
-			break;
-		default:
-			sz.Init(psProperty->szLabel);
-			if (!psProperty->szUnit.Empty())
-			{
-				sz.Append(" (");
-				sz.Append(psProperty->szUnit);
-				sz.Append(")");
-			}
-			aiEditors.Add((int)aTextFields.Size());
-			aTextFields.Add(mpDialog->AddTextField(sz.Text(), psProperty->szValue.Text()));
-			sz.Kill();
-			break;
-		}
+		aiEditors.Add(AddPropertyEditor(&cProperties, cProperties.Get(i), &aTextFields, &aCheckBoxes, &aComboBoxes));
 	}
 
 	if (mpDialog->Show(LOGICIM_DIALOG_WIDTH))
 	{
 		for (i = 0; i < cProperties.NumProperties(); i++)
 		{
-			psProperty = cProperties.Get(i);
-			iEditor = aiEditors.GetValue(i);
-			switch (psProperty->eType)
-			{
-			case CPT_Boolean:
-				psProperty->szValue.Set(aCheckBoxes.Get(iEditor)->IsTicked() ? "true" : "false");
-				break;
-			case CPT_Choice:
-				psProperty->szValue.Set(aComboBoxes.Get(iEditor)->GetSelectedText());
-				break;
-			case CPT_Divider:
-				break;
-			default:
-				psProperty->szValue.Set(aTextFields.Get(iEditor)->GetText());
-				break;
-			}
+			ReadLogicimPropertyEditor(cProperties.Get(i), aiEditors.GetValue(i), &aTextFields, &aCheckBoxes, &aComboBoxes);
 		}
 		eRotation = (ERotation)(ROT_North + pRotation->GetSelected());
 		pcEditor->SetProperties(pcComponent, &cProperties, eRotation, pMirrored->IsTicked());
 	}
 
-	pComboBox = NULL;
 	pRotation = NULL;
 	pMirrored = NULL;
 	aiEditors.Kill();
@@ -226,6 +195,57 @@ void CLogicimWindowContent::ShowPropertiesDialog(void)
 	aTextFields.Kill();
 	mpDialog = NULL;
 	cProperties.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Adds the property's editor to the dialog and to its type's array.
+// Returns its index in that array, -1 for a divider.
+//
+//////////////////////////////////////////////////////////////////////////
+int CLogicimWindowContent::AddPropertyEditor(CComponentProperties* pcProperties, SComponentProperty* psProperty, CArray<CTextField>* paTextFields, CArray<CCheckBox>* paCheckBoxes, CArray<CComboBox>* paComboBoxes)
+{
+	Ptr<CComboBox>	pComboBox;
+	CChars			sz;
+	size			j;
+	int				iEditor;
+
+	switch (psProperty->eType)
+	{
+	case CPT_Boolean:
+		iEditor = (int)paCheckBoxes->Size();
+		paCheckBoxes->Add(mpDialog->AddCheckBox(psProperty->szLabel.Text(), psProperty->szValue.Equals("true")));
+		return iEditor;
+	case CPT_Choice:
+		pComboBox = OMalloc<CComboBox>(mpDialog->GetWindow(), msDialogLook.pcTheme);
+		for (j = 0; j < psProperty->aszChoices.NumElements(); j++)
+		{
+			pComboBox->AddItem(psProperty->aszChoices.GetText(j));
+		}
+		pComboBox->Select((int32)pcProperties->GetChoice(psProperty->szName.Text(), 0));
+		pComboBox->SetAlignment(CSH_Stretch, CSV_Center);
+		mpDialog->AddEditor(psProperty->szLabel.Text(), pComboBox);
+		iEditor = (int)paComboBoxes->Size();
+		paComboBoxes->Add(pComboBox);
+		pComboBox = NULL;
+		return iEditor;
+	case CPT_Divider:
+		mpDialog->AddDivider(psProperty->szLabel.Text());
+		return -1;
+	default:
+		sz.Init(psProperty->szLabel);
+		if (!psProperty->szUnit.Empty())
+		{
+			sz.Append(" (");
+			sz.Append(psProperty->szUnit);
+			sz.Append(")");
+		}
+		iEditor = (int)paTextFields->Size();
+		paTextFields->Add(mpDialog->AddTextField(sz.Text(), psProperty->szValue.Text()));
+		sz.Kill();
+		return iEditor;
+	}
 }
 
 

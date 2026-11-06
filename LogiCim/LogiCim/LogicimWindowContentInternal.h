@@ -57,6 +57,8 @@ struct SLogicimActionDesc
 {
 	const char*		szName;
 	const char*		szIcon;  //The Logicim icon's name, without _24.png.  NULL for none.
+	ELogicimDialog	eDialog;  //The dialog the action shows (by the window's next tick), LDG_None if it doesn't.
+	const char*		szPlaced;  //The element name of the component the action places, NULL if it doesn't.
 };
 
 

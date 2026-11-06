@@ -53,46 +53,46 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //In ELogicimAction's order.
 SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 {
-	{ "Load Project", "directory_open" },
-	{ "Save Project", "save" },
-	{ "New Simulation...", "new_simulation" },
-	{ "Reset Simulation", "sim_reset" },
-	{ "Run Simulation", "sim_run" },
-	{ "Pause Simulation", "sim_stop" },
-	{ "Default Speed", "sim_default" },
-	{ "Increase Speed", "sim_faster" },
-	{ "Decrease Speed", "sim_slower" },
-	{ "Rotate Left", "rotate_ccw" },
-	{ "Rotate Right", "rotate_cw" },
-	{ "Flip Horizontally", "mirror_h" },
-	{ "Flip Vertically", "mirror_v" },
-	{ "Toggle Point View", "grid" },
-	{ "Zoom In", "zoom_in" },
-	{ "Zoom Out", "zoom_out" },
-	{ "Reset Zoom", "zoom_center_on_screen" },
-	{ "Select Zoom...", NULL },
-	{ "Zoom to Fit All", "zoom_fit_in_page" },
-	{ "Zoom to Fit Selection", "zoom_selection" },
-	{ "Simulation Tree...", "simulation_tree" },
-	{ "Add Component...", "add_component" },
-	{ "Add Trace", "add_line" },
-	{ "Add Splitter", "add_line2bus" },
-	{ "Add Tunnel", "add_glabel" },
-	{ "Add Connection", "add_junction" },
-	{ "Add Power", "add_power" },
-	{ "Add Label", "add_label" },
-	{ "Add Subcircuit", "module" },
-	{ "New Subcircuit...", "new_footprint" },
-	{ "Properties...", "edit" },
-	{ "Undo", "undo" },
-	{ "Redo", "redo" },
-	{ "Cut", "cut" },
-	{ "Copy", "copy" },
-	{ "Paste", NULL },
-	{ "Duplicate", "duplicate" },
-	{ "Delete", "trash" },
-	{ "Import KiCad Schematic...", "import" },
-	{ "Exit", "exit" },
+	{ "Load Project", "directory_open", LDG_LoadProject, NULL },
+	{ "Save Project", "save", LDG_SaveProject, NULL },
+	{ "New Simulation...", "new_simulation", LDG_NewSimulation, NULL },
+	{ "Reset Simulation", "sim_reset", LDG_None, NULL },
+	{ "Run Simulation", "sim_run", LDG_None, NULL },
+	{ "Pause Simulation", "sim_stop", LDG_None, NULL },
+	{ "Default Speed", "sim_default", LDG_None, NULL },
+	{ "Increase Speed", "sim_faster", LDG_None, NULL },
+	{ "Decrease Speed", "sim_slower", LDG_None, NULL },
+	{ "Rotate Left", "rotate_ccw", LDG_None, NULL },
+	{ "Rotate Right", "rotate_cw", LDG_None, NULL },
+	{ "Flip Horizontally", "mirror_h", LDG_None, NULL },
+	{ "Flip Vertically", "mirror_v", LDG_None, NULL },
+	{ "Toggle Point View", "grid", LDG_None, NULL },
+	{ "Zoom In", "zoom_in", LDG_None, NULL },
+	{ "Zoom Out", "zoom_out", LDG_None, NULL },
+	{ "Reset Zoom", "zoom_center_on_screen", LDG_None, NULL },
+	{ "Select Zoom...", NULL, LDG_SelectZoom, NULL },
+	{ "Zoom to Fit All", "zoom_fit_in_page", LDG_None, NULL },
+	{ "Zoom to Fit Selection", "zoom_selection", LDG_None, NULL },
+	{ "Simulation Tree...", "simulation_tree", LDG_None, NULL },
+	{ "Add Component...", "add_component", LDG_ChooseComponent, NULL },
+	{ "Add Trace", "add_line", LDG_None, NULL },
+	{ "Add Splitter", "add_line2bus", LDG_None, "Splitter" },
+	{ "Add Tunnel", "add_glabel", LDG_None, "Tunnel" },
+	{ "Add Connection", "add_junction", LDG_None, NULL },
+	{ "Add Power", "add_power", LDG_None, "PositivePower" },
+	{ "Add Label", "add_label", LDG_None, "Label" },
+	{ "Add Subcircuit", "module", LDG_None, NULL },
+	{ "New Subcircuit...", "new_footprint", LDG_NewSubcircuit, NULL },
+	{ "Properties...", "edit", LDG_Properties, NULL },
+	{ "Undo", "undo", LDG_None, NULL },
+	{ "Redo", "redo", LDG_None, NULL },
+	{ "Cut", "cut", LDG_None, NULL },
+	{ "Copy", "copy", LDG_None, NULL },
+	{ "Paste", NULL, LDG_None, NULL },
+	{ "Duplicate", "duplicate", LDG_None, NULL },
+	{ "Delete", "trash", LDG_None, NULL },
+	{ "Import KiCad Schematic...", "import", LDG_ImportKicadSchematic, NULL },
+	{ "Exit", "exit", LDG_None, NULL },
 };
 
 
@@ -516,8 +516,9 @@ void CLogicimWindowContent::MenuItemClicked(CMenuItem* pcItem)
 //////////////////////////////////////////////////////////////////////////
 //
 // The view, dialog and editing actions work, the rest are logged.  A
-// dialog is shown by the window's next tick.  Logicim's add actions don't
-// do anything yet; here those for a component place one.
+// dialog (see SLogicimActionDesc) is shown by the window's next tick.
+// Logicim's add actions don't do anything yet; here those for a component
+// place one.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::DoAction(ELogicimAction eAction)
@@ -527,17 +528,19 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 
 	pDraw = mpCircuit->GetCircuitDraw();
 	pcEditor = mpLogicimCircuit->GetEditor();
+	if (gasLogicimActions[eAction].eDialog != LDG_None)
+	{
+		mpsData->eDialog = gasLogicimActions[eAction].eDialog;
+		return;
+	}
+	if (gasLogicimActions[eAction].szPlaced != NULL)
+	{
+		pcEditor->StartPlaceComponent(gasLogicimActions[eAction].szPlaced);
+		return;
+	}
+
 	switch (eAction)
 	{
-	case LA_LoadProject:
-		mpsData->eDialog = LDG_LoadProject;
-		break;
-	case LA_SaveProject:
-		mpsData->eDialog = LDG_SaveProject;
-		break;
-	case LA_ImportKicadSchematic:
-		mpsData->eDialog = LDG_ImportKicadSchematic;
-		break;
 	case LA_RotateLeft:
 		pcEditor->RotateLeft();
 		break;
@@ -550,18 +553,6 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 	case LA_FlipVertically:
 		pcEditor->FlipVertically();
 		break;
-	case LA_AddSplitter:
-		pcEditor->StartPlaceComponent("Splitter");
-		break;
-	case LA_AddTunnel:
-		pcEditor->StartPlaceComponent("Tunnel");
-		break;
-	case LA_AddPower:
-		pcEditor->StartPlaceComponent("PositivePower");
-		break;
-	case LA_AddLabel:
-		pcEditor->StartPlaceComponent("Label");
-		break;
 	case LA_Undo:
 		Undo(false);
 		break;
@@ -570,18 +561,6 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 		break;
 	case LA_Delete:
 		pcEditor->Delete();
-		break;
-	case LA_NewSimulation:
-		mpsData->eDialog = LDG_NewSimulation;
-		break;
-	case LA_NewSubcircuit:
-		mpsData->eDialog = LDG_NewSubcircuit;
-		break;
-	case LA_AddComponent:
-		mpsData->eDialog = LDG_ChooseComponent;
-		break;
-	case LA_EditProperties:
-		mpsData->eDialog = LDG_Properties;
 		break;
 	case LA_RunSimulation:
 		mbRunning = true;
@@ -614,9 +593,6 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 		break;
 	case LA_ResetZoom:
 		Zoom(1.0f);
-		break;
-	case LA_SelectZoom:
-		mpsData->eDialog = LDG_SelectZoom;
 		break;
 	case LA_ZoomFitAll:
 		ZoomToFit(false);
