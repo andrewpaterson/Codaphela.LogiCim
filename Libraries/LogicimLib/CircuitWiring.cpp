@@ -110,17 +110,10 @@ void CCircuitWiring::SetDetached(CArrayComponentViewPtr* papcComponents, CArrayT
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitWiring::Wire(CViewPath* pcViewPath, bool bStart)
 {
-	size					i;
-	bool					bResult;
-	CArrayTraceViewTracePtr	apcBitTraces;
+	size	i;
+	bool	bResult;
 
-	bResult = JoinNodes(pcViewPath);
-	FindBits();
-	apcBitTraces.Init();
-	AddBitTraces(&apcBitTraces);
-	CreateNetTraces(&apcBitTraces);
-	apcBitTraces.Kill();
-
+	bResult = MakeTraces(pcViewPath, false);
 	for (i = 0; i < masLevels.NumElements(); i++)
 	{
 		SetLevelTraces(masLevels.Get(i));
@@ -129,14 +122,7 @@ bool CCircuitWiring::Wire(CViewPath* pcViewPath, bool bStart)
 	{
 		mpcSimulation->SimulationStarted();
 	}
-	for (i = 0; i < masLevels.NumElements(); i++)
-	{
-		bResult &= ConnectLevel(masLevels.Get(i), bStart);
-	}
-	for (i = 0; i < masLevels.NumElements(); i++)
-	{
-		masLevels.Get(i)->pcCircuit->CalculateJunctions();
-	}
+	bResult &= ConnectLevels(bStart);
 	return bResult;
 }
 
@@ -155,18 +141,10 @@ bool CCircuitWiring::Wire(CViewPath* pcViewPath, bool bStart)
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitWiring::Rewire(CViewPath* pcViewPath)
 {
-	size					i;
-	bool					bResult;
-	CArrayTraceViewTracePtr	apcBitTraces;
+	size	i;
+	bool	bResult;
 
-	bResult = JoinNodes(pcViewPath);
-	FindBits();
-	apcBitTraces.Init();
-	ReuseBitTraces(&apcBitTraces);
-	AddBitTraces(&apcBitTraces);
-	CreateNetTraces(&apcBitTraces);
-	apcBitTraces.Kill();
-
+	bResult = MakeTraces(pcViewPath, true);
 	for (i = 0; i < masLevels.NumElements(); i++)
 	{
 		DisconnectLevel(masLevels.Get(i));
@@ -175,15 +153,56 @@ bool CCircuitWiring::Rewire(CViewPath* pcViewPath)
 	{
 		SetLevelTraces(masLevels.Get(i));
 	}
+	bResult &= ConnectLevels(true);
+	RemoveUnusedTraces();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Joins the path's nodes into nets and makes the traces for their bits,
+// reusing the traces the bits are already on if bReuse.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitWiring::MakeTraces(CViewPath* pcViewPath, bool bReuse)
+{
+	bool					bResult;
+	CArrayTraceViewTracePtr	apcBitTraces;
+
+	bResult = JoinNodes(pcViewPath);
+	FindBits();
+	apcBitTraces.Init();
+	if (bReuse)
+	{
+		ReuseBitTraces(&apcBitTraces);
+	}
+	AddBitTraces(&apcBitTraces);
+	CreateNetTraces(&apcBitTraces);
+	apcBitTraces.Kill();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Connects every level's ports to their traces, then finds the junctions.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitWiring::ConnectLevels(bool bStart)
+{
+	size	i;
+	bool	bResult;
+
+	bResult = true;
 	for (i = 0; i < masLevels.NumElements(); i++)
 	{
-		bResult &= ConnectLevel(masLevels.Get(i), true);
+		bResult &= ConnectLevel(masLevels.Get(i), bStart);
 	}
 	for (i = 0; i < masLevels.NumElements(); i++)
 	{
 		masLevels.Get(i)->pcCircuit->CalculateJunctions();
 	}
-	RemoveUnusedTraces();
 	return bResult;
 }
 

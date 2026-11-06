@@ -86,6 +86,8 @@ public:
 	bool	Rewire(CViewPath* pcViewPath);
 
 protected:
+	bool	MakeTraces(CViewPath* pcViewPath, bool bReuse);
+	bool	ConnectLevels(bool bStart);
 	bool	JoinNodes(CViewPath* pcViewPath);
 	bool	AddLevels(CViewPath* pcViewPath, int iParent, CCircuitInstanceView* pcInstanceView);
 	void	JoinLevel(SWiringLevel* psLevel);
