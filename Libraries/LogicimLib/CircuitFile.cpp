@@ -34,6 +34,37 @@ static CMarkupTag* CheckCircuitRoot(CMarkupTag* pcRoot, const char* szSource, co
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The root element every circuit file starts with.
+//
+//////////////////////////////////////////////////////////////////////////
+static void BeginCircuitDocument(CXMLWriter* pcWriter)
+{
+	pcWriter->Begin("Logicim");
+	pcWriter->Attribute("version", (int32)CIRCUIT_FILE_VERSION);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Writes the document to the file and kills the writer.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool WriteCircuitDocument(CXMLWriter* pcWriter, const char* szFilename, const char* szMethod)
+{
+	bool	bResult;
+
+	bResult = pcWriter->Write(szFilename);
+	pcWriter->Kill();
+	if (!bResult)
+	{
+		return gcLogger.Error2(szMethod, " Could not write [", szFilename, "].", NULL);
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The whole document; the writer must be initialised and empty.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -50,8 +81,7 @@ void SaveCircuitXML(CCircuitView* pcCircuit, CXMLWriter* pcWriter)
 //////////////////////////////////////////////////////////////////////////
 void SaveCircuitXML(CCircuitView* pcCircuit, CViewPath* pcViewPath, CCircuitSimulation* pcSimulation, CXMLWriter* pcWriter)
 {
-	pcWriter->Begin("Logicim");
-	pcWriter->Attribute("version", (int32)CIRCUIT_FILE_VERSION);
+	BeginCircuitDocument(pcWriter);
 	pcCircuit->SaveXML(pcWriter);
 	if (pcSimulation != NULL)
 	{
@@ -78,17 +108,10 @@ bool SaveCircuitFile(CCircuitView* pcCircuit, const char* szFilename)
 bool SaveCircuitFile(CCircuitView* pcCircuit, CViewPath* pcViewPath, CCircuitSimulation* pcSimulation, const char* szFilename)
 {
 	CXMLWriter	cWriter;
-	bool		bResult;
 
 	cWriter.Init();
 	SaveCircuitXML(pcCircuit, pcViewPath, pcSimulation, &cWriter);
-	bResult = cWriter.Write(szFilename);
-	cWriter.Kill();
-	if (!bResult)
-	{
-		return gcLogger.Error2(__METHOD__, " Could not write [", szFilename, "].", NULL);
-	}
-	return true;
+	return WriteCircuitDocument(&cWriter, szFilename, __METHOD__);
 }
 
 
@@ -219,25 +242,13 @@ bool LoadCircuitFileSimulation(CMarkupTag* pcRoot, CCircuitView* pcCircuit, CVie
 //////////////////////////////////////////////////////////////////////////
 bool LoadCircuitFile(CCircuitView* pcCircuit, const char* szFilename)
 {
-	CXMLFile	cFile;
-	CMarkupTag*	pcRoot;
-	bool		bResult;
-
-	cFile.Init();
-	pcRoot = ReadCircuitFileRoot(&cFile, szFilename, "Circuit");
-	if (pcRoot == NULL)
-	{
-		cFile.Kill();
-		return false;
-	}
-	bResult = pcCircuit->LoadXML(pcRoot->GetTag("Circuit"));
-	cFile.Kill();
-	return bResult;
+	return LoadCircuitFile(pcCircuit, NULL, NULL, NULL, szFilename);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Without a simulation (NULL) a saved one is ignored.
 //
 //////////////////////////////////////////////////////////////////////////
 bool LoadCircuitFile(CCircuitView* pcCircuit, CViewPath* pcViewPath, CCircuitSimulation* pcSimulation, CFamilyVoltageConfigurationStore* pcFamilies, const char* szFilename)
@@ -255,7 +266,7 @@ bool LoadCircuitFile(CCircuitView* pcCircuit, CViewPath* pcViewPath, CCircuitSim
 	}
 
 	bResult = pcCircuit->LoadXML(pcRoot->GetTag("Circuit"));
-	if (bResult)
+	if (bResult && (pcSimulation != NULL))
 	{
 		bResult = LoadCircuitFileSimulation(pcRoot, pcCircuit, pcViewPath, pcSimulation, pcFamilies);
 	}
@@ -273,8 +284,7 @@ bool LoadCircuitFile(CCircuitView* pcCircuit, CViewPath* pcViewPath, CCircuitSim
 //////////////////////////////////////////////////////////////////////////
 void SaveCircuitsXML(CCircuitViews* pcCircuits, CCircuitView* pcTop, CCircuitSimulation* pcSimulation, CXMLWriter* pcWriter)
 {
-	pcWriter->Begin("Logicim");
-	pcWriter->Attribute("version", (int32)CIRCUIT_FILE_VERSION);
+	BeginCircuitDocument(pcWriter);
 	pcCircuits->SaveXML(pcWriter);
 	if (pcSimulation != NULL)
 	{
@@ -292,17 +302,10 @@ void SaveCircuitsXML(CCircuitViews* pcCircuits, CCircuitView* pcTop, CCircuitSim
 bool SaveCircuitsFile(CCircuitViews* pcCircuits, CCircuitView* pcTop, CCircuitSimulation* pcSimulation, const char* szFilename)
 {
 	CXMLWriter	cWriter;
-	bool		bResult;
 
 	cWriter.Init();
 	SaveCircuitsXML(pcCircuits, pcTop, pcSimulation, &cWriter);
-	bResult = cWriter.Write(szFilename);
-	cWriter.Kill();
-	if (!bResult)
-	{
-		return gcLogger.Error2(__METHOD__, " Could not write [", szFilename, "].", NULL);
-	}
-	return true;
+	return WriteCircuitDocument(&cWriter, szFilename, __METHOD__);
 }
 
 
