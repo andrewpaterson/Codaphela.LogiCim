@@ -35,7 +35,12 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "ViewPath.h"
 
 
+//The zoom GetImportBoundingBox paints at to measure.
+#define COMPONENT_IMPORT_BOX_ZOOM	2.0
+
+
 class CCircuitComponent;
+class CCircuitViewport;
 class CSubcircuitSimulation;
 class CFamilyVoltageConfigurationStore;
 class CComponentStateXML;
@@ -154,6 +159,7 @@ public:
 			void					CalculateBounds(void);
 			bool					GetLocalBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 			bool					GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+			bool					GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 
 protected:
 			CSubcircuitSimulation*	CanCreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
@@ -166,6 +172,7 @@ protected:
 	static	void					SaveXMLBox(CXMLWriter* pcWriter, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum);
 	static	bool					LoadXMLBox(CMarkupTag* pcTag, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum);
 	virtual	bool					IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
+	static	void					IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool* pbHasBounds);
 			void					PaintShapes(CCircuitPainter* pcPainter);
 			void					PaintPorts(CCircuitPainter* pcPainter);
 };

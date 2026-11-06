@@ -116,6 +116,9 @@ protected:
 	size							muiNumRuns;
 	CArrayPortViewPtr				mapcPorts;
 	CArrayInt						maiPortNets;
+	CArrayComponentViewPtr			mapcBoxComponents;  //Components with a box of their own to keep clear (see SetComponentBox).
+	CArrayTemplate<SFloat64Vec2>	masBoxMinimums;
+	CArrayTemplate<SFloat64Vec2>	masBoxMaximums;
 
 	SInt32Vec2						msGridMinimum;
 	int32							miGridWidth;
@@ -161,6 +164,7 @@ public:
 	size			AddRun(void);
 	bool			AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun = -1);
 
+	void			SetComponentBox(CComponentView* pcComponent, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum);
 	bool			Connect(void);
 
 	size			NumConnections(void);
@@ -171,6 +175,7 @@ public:
 	static int		OppositeDirection(int iDirection);
 
 protected:
+	bool			GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 	bool			AddPort(CPortView* pcPortView, size uiNet);
 	int				GetPortNet(CPortView* pcPortView);
 	void			CreateGrid(void);

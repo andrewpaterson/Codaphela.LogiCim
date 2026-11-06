@@ -1430,6 +1430,44 @@ void TestSubcircuitPinSpacing(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A view's import box holds the text it draws outside its bounding box: a
+// pin's name is past the end of its box.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestComponentImportBoundingBox(void)
+{
+	SSubcircuitTest		sTest;
+	Ptr<CCircuitFonts>	pFonts;
+	CCircuitView*		pcCircuit;
+	CPinView*			pcPin;
+	SFloat64Vec2		sMinimum;
+	SFloat64Vec2		sMaximum;
+	SFloat64Vec2		sImportMinimum;
+	SFloat64Vec2		sImportMaximum;
+
+	sTest.Init();
+	pFonts = LoadTestCircuitFonts();
+	pcCircuit = sTest.cCircuits.Add("Top");
+	pcPin = NewMalloc<CPinView>();
+	pcPin->Init(5, 7, ROT_East, "A Long Pin Name", "LVC", false, 1, RADIX_Binary, &pFonts);
+	pcCircuit->Add(pcPin);
+
+	AssertTrue(pcPin->GetBoundingBox(&sMinimum, &sMaximum));
+	AssertTrue(pcPin->GetImportBoundingBox(&pFonts, &sImportMinimum, &sImportMaximum));
+	AssertTrue(sImportMinimum.x <= sMinimum.x);
+	AssertTrue(sImportMinimum.y <= sMinimum.y);
+	AssertTrue(sImportMaximum.x >= sMaximum.x);
+	AssertTrue(sImportMaximum.y >= sMaximum.y);
+	AssertTrue(((sMinimum.x - sImportMinimum.x) + (sImportMaximum.x - sMaximum.x)) > 3);
+
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
+	sTest.Kill(true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestSubcircuits(void)
@@ -1451,6 +1489,7 @@ void TestSubcircuits(void)
 	TestSubcircuitFileRoundTrip();
 	TestSubcircuitLayoutRender();
 	TestSubcircuitPinSpacing();
+	TestComponentImportBoundingBox();
 
 	DataMemoryKill();
 	DataIOKill();

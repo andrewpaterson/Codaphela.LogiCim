@@ -83,6 +83,9 @@ void CTraceAutoConnector::Init(CCircuitView* pcCircuit)
 	muiNumRuns = 0;
 	mapcPorts.Init();
 	maiPortNets.Init();
+	mapcBoxComponents.Init();
+	masBoxMinimums.Init();
+	masBoxMaximums.Init();
 
 	msGridMinimum.Init(0, 0);
 	miGridWidth = 0;
@@ -144,6 +147,9 @@ void CTraceAutoConnector::Kill(void)
 	maiHorizontal.Kill();
 	maiOwners.Kill();
 
+	masBoxMaximums.Kill();
+	masBoxMinimums.Kill();
+	mapcBoxComponents.Kill();
 	maiPortNets.Kill();
 	mapcPorts.Kill();
 	masConnections.Kill();
@@ -208,6 +214,54 @@ bool CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView
 	psConnection->uiFailedRips = 0;
 	psConnection->iFailedNetWires = 0;
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The box, in grid units, that wires keep out of for the component
+// instead of its bounding box: an importer's box that holds the text
+// drawn outside the component too (see
+// CComponentView::GetImportBoundingBox).  Its ports still have their way
+// out.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum)
+{
+	size	uiIndex;
+
+	uiIndex = mapcBoxComponents.Find(pcComponent);
+	if (uiIndex == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		mapcBoxComponents.Add(pcComponent);
+		masBoxMinimums.Add(&sMinimum);
+		masBoxMaximums.Add(&sMaximum);
+	}
+	else
+	{
+		*masBoxMinimums.Get(uiIndex) = sMinimum;
+		*masBoxMaximums.Get(uiIndex) = sMaximum;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The box given for the component, otherwise its bounding box.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CTraceAutoConnector::GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+{
+	size	uiIndex;
+
+	uiIndex = mapcBoxComponents.Find(pcComponent);
+	if (uiIndex != ARRAY_ELEMENT_NOT_FOUND)
+	{
+		*psMinimum = *masBoxMinimums.Get(uiIndex);
+		*psMaximum = *masBoxMaximums.Get(uiIndex);
+		return true;
+	}
+	return pcComponent->GetBoundingBox(psMinimum, psMaximum);
 }
 
 
@@ -431,7 +485,7 @@ void CTraceAutoConnector::CreateGrid(void)
 	for (i = 0; i < mpcCircuit->NumComponents(); i++)
 	{
 		pcComponent = mpcCircuit->GetComponent(i);
-		if (pcComponent->GetBoundingBox(&sBoxMinimum, &sBoxMaximum))
+		if (GetComponentBox(pcComponent, &sBoxMinimum, &sBoxMaximum))
 		{
 			IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, (int32)floor(sBoxMinimum.x), (int32)floor(sBoxMinimum.y));
 			IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, (int32)ceil(sBoxMaximum.x), (int32)ceil(sBoxMaximum.y));
@@ -529,7 +583,7 @@ void CTraceAutoConnector::MarkComponents(void)
 	for (i = 0; i < mpcCircuit->NumComponents(); i++)
 	{
 		pcComponent = mpcCircuit->GetComponent(i);
-		if (!pcComponent->GetBoundingBox(&sBoxMinimum, &sBoxMaximum))
+		if (!GetComponentBox(pcComponent, &sBoxMinimum, &sBoxMaximum))
 		{
 			continue;
 		}

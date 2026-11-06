@@ -24,6 +24,11 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/Logger.h"
 #include "MicroprocessorLib/CircuitComponent.h"
 #include "MicroprocessorLib/CircuitSimulation.h"
+#include "SupportLib/GeometryMap.h"
+#include "SupportLib/SpriteMap.h"
+#include "StandardLib/Objects.h"
+#include "CircuitViewport.h"
+#include "CircuitColours.h"
 #include "ComponentView.h"
 
 
@@ -732,6 +737,78 @@ void CComponentView::CalculateBounds(void)
 		mbHasBounds = mapcPortViews.GetPtr(i)->IncludeBounds(&msBoundsMinimum, &msBoundsMaximum, mbHasBounds);
 	}
 	mbHasBounds = IncludeExtraBounds(&msBoundsMinimum, &msBoundsMaximum, mbHasBounds);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The box, in the circuit's grid space, of everything the view draws: its
+// bounding box and the text outside it (a part's name over it, a label's
+// words), which the bounding box leaves out.  It's measured by painting
+// the view, unsimulated, at a zoom of COMPONENT_IMPORT_BOX_ZOOM.  An importer keeps
+// other components and wires out of it, so the text stays readable.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+{
+	Ptr<CGeometryMap>	pMap;
+	Ptr<CSpriteMap>		pSprites;
+	CCircuitViewport	cViewport;
+	CCircuitColours		cColours;
+	CCircuitPainter		cPainter;
+	CInt32Rect			cPixels;
+	bool				bHasBounds;
+
+	bHasBounds = GetBoundingBox(psMinimum, psMaximum);
+
+	pMap = OMalloc<CGeometryMap>();
+	pSprites = OMalloc<CSpriteMap>();
+	cViewport.Init(0, 0);
+	cViewport.SetZoom(COMPONENT_IMPORT_BOX_ZOOM);
+	cColours.InitLogicim();
+	cPainter.Init(&cViewport, &pMap, &pSprites, &cColours, pcFonts, NULL, NULL);
+	Paint(&cPainter);
+	cPainter.Kill();
+
+	if (pMap->GetBounds(&cPixels))
+	{
+		IncludePixelBounds(&cViewport, &cPixels, psMinimum, psMaximum, &bHasBounds);
+	}
+	if (pSprites->GetFullDestBounds(&cPixels))
+	{
+		IncludePixelBounds(&cViewport, &cPixels, psMinimum, psMaximum, &bHasBounds);
+	}
+
+	cColours.Kill();
+	cViewport.Kill();
+	pSprites = NULL;
+	pMap = NULL;
+	return bHasBounds;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Grows the grid box to hold the screen pixels.
+//
+//////////////////////////////////////////////////////////////////////////
+void CComponentView::IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool* pbHasBounds)
+{
+	SFloat64Vec2	sScreen;
+	SFloat64Vec2	sGrid;
+
+	sScreen.Init(pcPixels->msTopLeft.x, pcPixels->msTopLeft.y);
+	pcViewport->ScreenToGrid(&sGrid, &sScreen);
+	if (!*pbHasBounds)
+	{
+		*psMinimum = sGrid;
+		*psMaximum = sGrid;
+		*pbHasBounds = true;
+	}
+	IncludeBoundsPoint(psMinimum, psMaximum, sGrid.x, sGrid.y);
+	sScreen.Init(pcPixels->msBottomRight.x, pcPixels->msBottomRight.y);
+	pcViewport->ScreenToGrid(&sGrid, &sScreen);
+	IncludeBoundsPoint(psMinimum, psMaximum, sGrid.x, sGrid.y);
 }
 
 
