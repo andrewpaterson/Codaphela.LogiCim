@@ -1,8 +1,8 @@
 #include "BaseLib/StringHelper.h"
 #include "BaseLib/TextFile.h"
 #include "BaseLib/ArrayChars.h"
-#include "KicadImporterLib/KicadSchemParser.h"
-#include "KicadImporterLib/KicadSchemNetlist.h"
+#include "KicadLib/KicadSchemParser.h"
+#include "KicadLib/KicadSchemNetlist.h"
 #include "TestLib/Assert.h"
 
 

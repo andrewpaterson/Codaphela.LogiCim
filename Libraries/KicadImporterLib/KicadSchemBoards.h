@@ -26,7 +26,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "LogicimLib/ValueView.h"
-#include "KicadPathVariables.h"
+#include "KicadLib/KicadPathVariables.h"
 
 
 //The property of a board's symbol that names the board's own schematic, as

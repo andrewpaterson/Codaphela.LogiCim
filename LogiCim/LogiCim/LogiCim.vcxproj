@@ -260,6 +260,9 @@
     <ProjectReference Include="..\..\..\CommonLibraries\Libraries\BaseLib\BaseLib.vcxproj">
       <Project>{e25d2dac-0e80-42b2-8fa7-99b837cf7588}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\CommonLibraries\Libraries\KicadLib\KicadLib.vcxproj">
+      <Project>{65d94101-60ae-4078-ab08-6678078e07d3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\Libraries\KicadImporterLib\KicadImporterLib.vcxproj">
       <Project>{b4fbd661-3262-4471-814b-429c08722cf2}</Project>
     </ProjectReference>

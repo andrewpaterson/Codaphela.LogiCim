@@ -24,9 +24,9 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/ArrayChars.h"
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/CircuitFonts.h"
-#include "KicadSchemNetlist.h"
+#include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicFunction.h"
-#include "KicadSchemSubnetGraph.h"
+#include "KicadLib/KicadSchemSubnetGraph.h"
 
 
 class CKicadSchemBoard;

@@ -22,8 +22,8 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/PointerFunctions.h"
 #include "BaseLib/FileUtil.h"
 #include "BaseLib/Logger.h"
-#include "KicadSchemFile.h"
-#include "KicadSchemNetlist.h"
+#include "KicadLib/KicadSchemFile.h"
+#include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicimConverter.h"
 #include "KicadSchemBoards.h"
 

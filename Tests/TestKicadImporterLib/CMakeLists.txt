@@ -41,6 +41,7 @@ set(STANDARDLIB_DIR "${COMMON_DIR}/StandardLib")
 set(SUPPORTLIB_DIR "${COMMON_DIR}/SupportLib")
 set(MICROPROCESSORLIB_DIR "${COMMON_DIR}/MicroprocessorLib")
 set(LOGICIMLIB_DIR "${LOGICIM_ROOT}/Libraries/LogicimLib")
+set(KICADLIB_DIR "${COMMON_DIR}/KicadLib")
 set(KICADIMPORTERLIB_DIR "${LOGICIM_ROOT}/Libraries/KicadImporterLib")
 set(TESTKICADIMPORTERLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/TestKicadImporterLib")
 
@@ -98,6 +99,8 @@ vcxproj_sources(SUPPORTLIB_SOURCES "${SUPPORTLIB_DIR}/SupportLib.vcxproj")
 vcxproj_sources(MICROPROCESSORLIB_SOURCES "${MICROPROCESSORLIB_DIR}/MicroprocessorLib.vcxproj")
 
 vcxproj_sources(LOGICIMLIB_SOURCES "${LOGICIMLIB_DIR}/LogicimLib.vcxproj")
+
+vcxproj_sources(KICADLIB_SOURCES "${KICADLIB_DIR}/KicadLib.vcxproj")
 
 vcxproj_sources(KICADIMPORTERLIB_SOURCES "${KICADIMPORTERLIB_DIR}/KicadImporterLib.vcxproj")
 
@@ -198,12 +201,16 @@ target_link_libraries(MicroprocessorLib PUBLIC StandardLib BaseLib)
 add_library(LogicimLib STATIC ${LOGICIMLIB_SOURCES})
 target_link_libraries(LogicimLib PUBLIC SupportLib MicroprocessorLib StandardLib BaseLib)
 
+# The KiCad schematic reader (CommonLibraries); KicadImporterLib makes Logicim circuits from what it reads.
+add_library(KicadLib STATIC ${KICADLIB_SOURCES})
+target_link_libraries(KicadLib PUBLIC BaseLib)
+
 # KicadImporterLib uses LogicimLib to write Logicim circuits.  LogicimLib must never depend on it.
 add_library(KicadImporterLib STATIC ${KICADIMPORTERLIB_SOURCES})
-target_link_libraries(KicadImporterLib PUBLIC LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
+target_link_libraries(KicadImporterLib PUBLIC KicadLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
 
 add_executable(TestKicadImporterLib ${TESTKICADIMPORTERLIB_SOURCES})
-target_link_libraries(TestKicadImporterLib PRIVATE TestLib KicadImporterLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
+target_link_libraries(TestKicadImporterLib PRIVATE TestLib KicadImporterLib KicadLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
 
 # The tests read their input (Input/ ...) relative to the project directory,
 # as Visual Studio does.

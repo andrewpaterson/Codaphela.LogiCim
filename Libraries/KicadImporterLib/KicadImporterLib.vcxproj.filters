@@ -30,89 +30,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="KicadSchemPoint.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemTransform.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemPinType.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemProperty.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemProperties.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemExpression.cpp">
-      <Filter>Source\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemExpressions.cpp">
-      <Filter>Source\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemParser.cpp">
-      <Filter>Source\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemLibSymbol.cpp">
-      <Filter>Source\Symbol</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemLibPin.cpp">
-      <Filter>Source\Symbol</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemSymbol.cpp">
-      <Filter>Source\Symbol</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemSymbolInstance.cpp">
-      <Filter>Source\Symbol</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemWire.cpp">
-      <Filter>Source\Wiring</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemJunction.cpp">
-      <Filter>Source\Wiring</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemNoConnect.cpp">
-      <Filter>Source\Wiring</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemBusEntry.cpp">
-      <Filter>Source\Wiring</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemLabel.cpp">
-      <Filter>Source\Wiring</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemSheet.cpp">
-      <Filter>Source\Sheet</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadPathVariables.cpp">
-      <Filter>Source\Logicim</Filter>
-    </ClCompile>
     <ClCompile Include="KicadSchemBoards.cpp">
       <Filter>Source\Logicim</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemSheetPin.cpp">
-      <Filter>Source\Sheet</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemFile.cpp">
-      <Filter>Source\File</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemImporter.cpp">
-      <Filter>Source\File</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemSubnet.cpp">
-      <Filter>Source\Netlist</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemNet.cpp">
-      <Filter>Source\Netlist</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemNetlist.cpp">
-      <Filter>Source\Netlist</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemSubnetGraph.cpp">
-      <Filter>Source\Netlist</Filter>
-    </ClCompile>
-    <ClCompile Include="KicadSchemBus.cpp">
-      <Filter>Source\Netlist</Filter>
     </ClCompile>
     <ClCompile Include="KicadSchemLogicFunction.cpp">
       <Filter>Source\Logicim</Filter>
@@ -122,89 +41,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KicadSchemPoint.h">
-      <Filter>Source\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemTransform.h">
-      <Filter>Source\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemPinType.h">
-      <Filter>Source\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemProperty.h">
-      <Filter>Source\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemProperties.h">
-      <Filter>Source\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemExpression.h">
-      <Filter>Source\Parser</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemExpressions.h">
-      <Filter>Source\Parser</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemParser.h">
-      <Filter>Source\Parser</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemLibSymbol.h">
-      <Filter>Source\Symbol</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemLibPin.h">
-      <Filter>Source\Symbol</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemSymbol.h">
-      <Filter>Source\Symbol</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemSymbolInstance.h">
-      <Filter>Source\Symbol</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemWire.h">
-      <Filter>Source\Wiring</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemJunction.h">
-      <Filter>Source\Wiring</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemNoConnect.h">
-      <Filter>Source\Wiring</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemBusEntry.h">
-      <Filter>Source\Wiring</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemLabel.h">
-      <Filter>Source\Wiring</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemSheet.h">
-      <Filter>Source\Sheet</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadPathVariables.h">
-      <Filter>Source\Logicim</Filter>
-    </ClInclude>
     <ClInclude Include="KicadSchemBoards.h">
       <Filter>Source\Logicim</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemSheetPin.h">
-      <Filter>Source\Sheet</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemFile.h">
-      <Filter>Source\File</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemImporter.h">
-      <Filter>Source\File</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemSubnet.h">
-      <Filter>Source\Netlist</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemNet.h">
-      <Filter>Source\Netlist</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemNetlist.h">
-      <Filter>Source\Netlist</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemSubnetGraph.h">
-      <Filter>Source\Netlist</Filter>
-    </ClInclude>
-    <ClInclude Include="KicadSchemBus.h">
-      <Filter>Source\Netlist</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemLogicFunction.h">
       <Filter>Source\Logicim</Filter>

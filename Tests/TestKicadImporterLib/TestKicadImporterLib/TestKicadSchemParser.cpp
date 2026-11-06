@@ -1,5 +1,5 @@
 #include "BaseLib/LogToMemory.h"
-#include "KicadImporterLib/KicadSchemParser.h"
+#include "KicadLib/KicadSchemParser.h"
 #include "TestLib/Assert.h"
 
 

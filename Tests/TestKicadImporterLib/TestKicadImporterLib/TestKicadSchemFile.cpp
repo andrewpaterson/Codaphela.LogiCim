@@ -1,7 +1,7 @@
 #include "BaseLib/StringHelper.h"
 #include "BaseLib/LogToMemory.h"
 #include "BaseLib/Chars.h"
-#include "KicadImporterLib/KicadSchemFile.h"
+#include "KicadLib/KicadSchemFile.h"
 #include "TestLib/Assert.h"
 
 
