@@ -11,6 +11,7 @@
 #include "MicroprocessorLib/Event.h"
 #include "MicroprocessorLib/Timeline.h"
 #include "LogicimLib/Logic74View.h"
+#include "LogicimLib/AndGateView.h"
 #include "LogicimLib/ComponentViewFactory.h"
 #include "LogicimLib/CircuitView.h"
 #include "LogicimLib/CircuitFile.h"
@@ -445,6 +446,123 @@ void TestLogic74BlocksRender(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The smallest gap between the y of the view's ports on one side (x below
+// its position, or above it), facing East.  0 if it has fewer than two.
+//
+//////////////////////////////////////////////////////////////////////////
+static int32 GetSmallestPortGap(CComponentView* pcView, bool bLeft)
+{
+	CArrayInt	aiYs;
+	size		i;
+	size		j;
+	int32		iGap;
+	int32		iSmallest;
+	SInt32Vec2	sPort;
+	int32		iTemp;
+
+	aiYs.Init();
+	for (i = 0; i < pcView->NumPortViews(); i++)
+	{
+		sPort = pcView->GetPortView(i)->GetGridPosition();
+		if ((sPort.x < pcView->GetPosition().x) == bLeft)
+		{
+			aiYs.Add(sPort.y);
+		}
+	}
+	for (i = 0; i < aiYs.NumElements(); i++)
+	{
+		for (j = i + 1; j < aiYs.NumElements(); j++)
+		{
+			if (aiYs.GetValue(j) < aiYs.GetValue(i))
+			{
+				iTemp = aiYs.GetValue(i);
+				aiYs.SetValue(i, aiYs.GetValue(j));
+				aiYs.SetValue(j, iTemp);
+			}
+		}
+	}
+	iSmallest = 0;
+	for (i = 1; i < aiYs.NumElements(); i++)
+	{
+		iGap = aiYs.GetValue(i) - aiYs.GetValue(i - 1);
+		if ((iGap > 0) && ((iSmallest == 0) || (iGap < iSmallest)))
+		{
+			iSmallest = iGap;
+		}
+	}
+	aiYs.Kill();
+	return iSmallest;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// With a pin spacing of two (a KiCad import's) a block's pins, a gate
+// array's and a three or four input gate's inputs are two grid units
+// apart, and the spacing is saved and loaded.  With one they're as they
+// were.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestLogic74PinSpacing(void)
+{
+	CCircuitView			cSaved;
+	CCircuitView			cLoaded;
+	CLogic74PackageView*	pcPackage;
+	CLogic74UnitView*		pcUnit;
+	CAndGateView*			pcAnd;
+	CFileUtil				cFileUtil;
+	size					i;
+
+	cSaved.Init();
+	pcPackage = NewMalloc<CLogic74PackageView>();
+	pcPackage->Init(0, 0, ROT_East, "U1", "LVC", false, "574");
+	AssertInt(1, GetSmallestPortGap(pcPackage, true));
+	SafeKill(pcPackage);
+
+	pcPackage = NewMalloc<CLogic74PackageView>();
+	pcPackage->Init(0, 0, ROT_East, "U1", "LVC", false, "574", 2);
+	AssertInt(2, GetSmallestPortGap(pcPackage, true));
+	AssertInt(2, GetSmallestPortGap(pcPackage, false));
+	cSaved.Add(pcPackage);
+
+	pcPackage = NewMalloc<CLogic74PackageView>();
+	pcPackage->Init(30, 0, ROT_East, "U2", "LVC", false, "10", 2);
+	AssertInt(2, GetSmallestPortGap(pcPackage, true));
+	cSaved.Add(pcPackage);
+
+	pcUnit = NewMalloc<CLogic74UnitView>();
+	pcUnit->Init(60, 0, ROT_East, "U3", "LVC", false, "11", 0, 2);
+	AssertInt(2, GetSmallestPortGap(pcUnit, true));
+	cSaved.Add(pcUnit);
+
+	pcAnd = NewMalloc<CAndGateView>();
+	pcAnd->Init(80, 0, ROT_East, "U4", "LVC", false, 4, 1);
+	AssertInt(1, GetSmallestPortGap(pcAnd, true));
+	SafeKill(pcAnd);
+	pcAnd = NewMalloc<CAndGateView>();
+	pcAnd->Init(80, 0, ROT_East, "U4", "LVC", false, 4, 1, 2);
+	AssertInt(2, GetSmallestPortGap(pcAnd, true));
+	cSaved.Add(pcAnd);
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitFile(&cSaved, "Output" _FS_ "Logic74Spacing.xml"));
+	cLoaded.Init();
+	AssertTrue(LoadCircuitFile(&cLoaded, "Output" _FS_ "Logic74Spacing.xml"));
+	AssertSize(cSaved.NumComponents(), cLoaded.NumComponents());
+	for (i = 0; i < cSaved.NumComponents(); i++)
+	{
+		AssertSize(cSaved.GetComponent(i)->NumPortViews(), cLoaded.GetComponent(i)->NumPortViews());
+		AssertInt(2, GetSmallestPortGap(cLoaded.GetComponent(i), true));
+		AssertInt(cSaved.GetComponent(i)->GetPortView(1)->GetGridPosition().y, cLoaded.GetComponent(i)->GetPortView(1)->GetGridPosition().y);
+	}
+	cLoaded.Kill();
+	cSaved.Kill();
+	cFileUtil.Delete("Output" _FS_ "Logic74Spacing.xml");
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestLogic74Views(void)
@@ -454,6 +572,7 @@ void TestLogic74Views(void)
 	DataMemoryInit();
 
 	TestLogic74Parts();
+	TestLogic74PinSpacing();
 	TestLogic74PackageViewGeometry();
 	TestLogic74UnitViewGeometry();
 	TestLogic74ViewsFile();

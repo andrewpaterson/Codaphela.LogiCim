@@ -44,7 +44,7 @@ protected:
 	SLogic74PartType	msType;
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType, int iPinSpacing = 1);
 	virtual void					Kill(void);
 
 	virtual const char*				GetType(void);
@@ -60,7 +60,7 @@ public:
 			void					GetPartNumber(CChars* psz);
 			void					GetDescription(CChars* psz);
 
-	static	int32					GetGatePitch(int iInputCount);
+	static	int32					GetGatePitch(int iInputCount, int iPinSpacing);
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
@@ -84,7 +84,7 @@ protected:
 	int					miUnit;
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType, int iUnit);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType, int iUnit, int iPinSpacing = 1);
 	virtual void					Kill(void);
 
 	virtual const char*				GetType(void);

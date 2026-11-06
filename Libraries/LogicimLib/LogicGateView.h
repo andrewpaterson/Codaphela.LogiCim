@@ -34,6 +34,10 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define OR_ARC_FILL_OFFSET		6
 
 
+//The most grid units apart a gate's inputs may be.
+#define LOGIC_GATE_MAX_PIN_SPACING	4
+
+
 //The properties a gate is saved with.  The strings point into the tag they were read from.
 struct SLogicGateXML
 {
@@ -45,12 +49,15 @@ struct SLogicGateXML
 	bool		bExplicitPowerPorts;
 	int32		iInputCount;
 	int32		iInputWidth;
+	int32		iPinSpacing;
 };
 
 
 //The gates and buffers, as Logicim's BaseGateView and LogicGateView.  A gate has its inputs on the bottom (grid y 1,
 //or further back) spread either side of its position, skipping 0 for an even count, and its output two grid units up.
-//Each input is iInputWidth ports wide; the IC has iInputCount * iInputWidth inputs named "Input n".
+//Each input is iInputWidth ports wide; the IC has iInputCount * iInputWidth inputs named "Input n".  With a pin
+//spacing of two (a KiCad import's, set by a subclass before its ports are made) the inputs are two grid units apart
+//and the body is drawn tall enough for them (see GetBodyInputCount).
 class CLogicGateView : public CIntegratedCircuitView
 {
 CONSTRUCTABLE(CLogicGateView);
@@ -58,6 +65,7 @@ protected:
 	int		miInputCount;
 	int		miInputWidth;
 	bool	mbNegated;
+	int		miPinSpacing;
 
 public:
 			void	Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated);
@@ -67,7 +75,10 @@ public:
 			int		GetInputWidth(void);
 			bool	IsNegated(void);
 
-	static	void	CalculatePortOffsets(CArrayInt* paiOffsets, int iInputCount);
+	static	void	CalculatePortOffsets(CArrayInt* paiOffsets, int iInputCount, int iPinSpacing = 1);
+	static	int		GetBodyInputCount(int iInputCount, int iPinSpacing);
+			int		GetPinSpacing(void);
+			void	SetPinSpacing(int iPinSpacing);
 	static	float64	CalculateWidth(int iInputCount);
 	static	void	GetPortNames(CArrayChars* paszNames, const char* szName, int iPortNumber, int iInputWidth, int iInputCount);
 

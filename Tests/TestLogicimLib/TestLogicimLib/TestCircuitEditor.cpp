@@ -2427,7 +2427,7 @@ void TestCircuitEditorPropertiesListed(void)
 
 	cProperties.Init();
 	sTest.pEditor->GetProperties(pcMain->GetComponent(0), &cProperties);
-	AssertSize(6, cProperties.NumProperties());
+	AssertSize(7, cProperties.NumProperties());
 	psProperty = cProperties.Get((size)0);
 	AssertString("name", psProperty->szName.Text());
 	AssertString("Name", psProperty->szLabel.Text());
@@ -2451,6 +2451,8 @@ void TestCircuitEditorPropertiesListed(void)
 	AssertInt(CPT_Integer, psProperty->eType);
 	AssertString("1", psProperty->szValue.Text());
 	AssertString("Input width", cProperties.Get(5)->szLabel.Text());
+	AssertString("Pin spacing", cProperties.Get(6)->szLabel.Text());
+	AssertString("1", cProperties.Get(6)->szValue.Text());
 	cProperties.Kill();
 
 	cProperties.Init();

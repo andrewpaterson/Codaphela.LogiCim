@@ -563,6 +563,7 @@ void CLogicBlockView::ClampParams(ELogicBlockKind eKind, SLogicBlockParams* psPa
 	{
 		psParams->iGroups = ClampLogicBlockInt(psParams->iGroups, 1, LOGIC_BLOCK_MAX_GROUPS);
 	}
+	psParams->iPinSpacing = ClampLogicBlockInt(psParams->iPinSpacing, 1, LOGIC_BLOCK_MAX_PIN_SPACING);
 }
 
 
@@ -601,7 +602,9 @@ void CLogicBlockView::CreateBlock(const char* szTitle, const char* szSubtitle)
 	SPortViewCreator		sCreator;
 	CPortView*				pcPortView;
 	int32					y;
+	int32					iSpacing;
 
+	iSpacing = (msParams.iPinSpacing >= 1) ? msParams.iPinSpacing : 1;
 	asPins.Init();
 	GetPins(meKind, &msParams, &asPins);
 	iRows = 1;
@@ -613,8 +616,8 @@ void CLogicBlockView::CreateBlock(const char* szTitle, const char* szSubtitle)
 		}
 	}
 	iFirst = -(iRows - 1) / 2;
-	fTop = iFirst - LOGIC_BLOCK_MARGIN;
-	fBottom = iFirst + iRows - 1 + LOGIC_BLOCK_MARGIN;
+	fTop = iSpacing * iFirst - LOGIC_BLOCK_MARGIN;
+	fBottom = iSpacing * (iFirst + iRows - 1) + LOGIC_BLOCK_MARGIN;
 	mcShapes.AddRectangle(LOGIC_BLOCK_LEFT, fTop, LOGIC_BLOCK_RIGHT, fBottom, true, true);
 
 	for (i = 0; i < asPins.NumElements(); i++)
@@ -625,7 +628,7 @@ void CLogicBlockView::CreateBlock(const char* szTitle, const char* szSubtitle)
 		sCreator.iPortCount = 1;
 		sCreator.bClock = psPin->bClock;
 		sCreator.bInverted = psPin->bInverted;
-		y = iFirst + psPin->iRow;
+		y = iSpacing * (iFirst + psPin->iRow);
 		if (psPin->bRight)
 		{
 			pcPortView = CreateLabelledPortView(&sCreator, LOGIC_BLOCK_RIGHT, y, ROT_East);
@@ -780,6 +783,10 @@ void CLogicBlockView::SaveXMLAttributes(CXMLWriter* pcWriter)
 		pcWriter->Attribute("channelEnables", msParams.bChannelEnables);
 		pcWriter->Attribute("disabledHighImpedance", msParams.bDisabledHighImpedance);
 	}
+	if (msParams.iPinSpacing > 1)
+	{
+		pcWriter->Attribute("pinSpacing", (int32)msParams.iPinSpacing);
+	}
 }
 
 
@@ -836,6 +843,10 @@ bool CLogicBlockView::LoadXML(CMarkupTag* pcTag)
 	{
 		sParams.bDisabledHighImpedance = bValue;
 	}
+	if (pcTag->GetInt32Attribute("pinSpacing", &iValue))
+	{
+		sParams.iPinSpacing = iValue;
+	}
 	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, eKind, &sParams);
 	return true;
 }
@@ -869,6 +880,7 @@ void CLogicBlockView::GetProperties(CComponentProperties* pcProperties, SCompone
 		pcProperties->AddBoolean("channelEnables", msParams.bChannelEnables);
 		pcProperties->AddBoolean("disabledHighImpedance", msParams.bDisabledHighImpedance);
 	}
+	pcProperties->AddInteger("pinSpacing", (msParams.iPinSpacing >= 1) ? msParams.iPinSpacing : 1, 1, LOGIC_BLOCK_MAX_PIN_SPACING);
 }
 
 
@@ -892,6 +904,7 @@ bool CLogicBlockView::InitFromProperties(int32 x, int32 y, ERotation eRotation, 
 	sParams.bInverting = pcProperties->GetBoolean("inverting", sParams.bInverting);
 	sParams.bChannelEnables = pcProperties->GetBoolean("channelEnables", sParams.bChannelEnables);
 	sParams.bDisabledHighImpedance = pcProperties->GetBoolean("disabledHighImpedance", sParams.bDisabledHighImpedance);
+	sParams.iPinSpacing = (int)pcProperties->GetInteger("pinSpacing", sParams.iPinSpacing);
 	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), GetBlockKind(), &sParams);
 	return true;
 }

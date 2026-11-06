@@ -28,6 +28,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define LOGIC_BLOCK_NAME_LENGTH		16
 #define LOGIC_BLOCK_MAX_BITS		32
 #define LOGIC_BLOCK_MAX_GROUPS		4
+#define LOGIC_BLOCK_MAX_PIN_SPACING	4
 
 
 //The generic chips drawn as a block of labelled pins.
@@ -61,6 +62,7 @@ struct SLogicBlockParams
 	bool	bDisabledHighImpedance;
 	bool	bSynchronousLoad;
 	bool	bOneBased;
+	int		iPinSpacing;  //Grid units between pins down a side: 1, or 2 for a KiCad import.  0 (a part table's) is 1.
 };
 
 
@@ -81,7 +83,7 @@ typedef CArrayTemplate<SLogicBlockPin>	CArrayLogicBlockPin;
 
 
 //A generic chip drawn as a box of labelled pins, inputs and controls down its left and outputs down its right a grid
-//unit apart, and its title at the top: a register, latch, bus buffer, bus transceiver, multiplexer, decoder, adder or
+//unit apart (or iPinSpacing), and its title at the top: a register, latch, bus buffer, bus transceiver, multiplexer, decoder, adder or
 //equality comparator of any size (see SLogicBlockParams).  Each kind is saved as its own element ("Register") and is
 //its own class below, so a view knows what it is before it's loaded.  The real 74 series parts made from them (see
 //CLogic74PackageView) are drawn the same way with their part's labels.

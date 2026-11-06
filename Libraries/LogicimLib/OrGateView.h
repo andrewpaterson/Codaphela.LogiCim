@@ -32,7 +32,7 @@ protected:
 	bool	mbExclusive;
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing = 1);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
@@ -44,7 +44,7 @@ public:
 	static	void					AddOrShapes(CComponentShapes* pcShapes, float64 x, float64 y, int iInputCount, bool bExclusive);
 
 protected:
-			void					InitOr(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated, bool bExclusive);
+			void					InitOr(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated, bool bExclusive, int iPinSpacing);
 			void					CreateShapes(void);
 };
 
@@ -53,7 +53,7 @@ class CNorGateView : public COrGateView
 {
 CONSTRUCTABLE(CNorGateView);
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing = 1);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
@@ -66,7 +66,7 @@ class CXorGateView : public COrGateView
 {
 CONSTRUCTABLE(CXorGateView);
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing = 1);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
@@ -79,7 +79,7 @@ class CXnorGateView : public COrGateView
 {
 CONSTRUCTABLE(CXnorGateView);
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing = 1);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);

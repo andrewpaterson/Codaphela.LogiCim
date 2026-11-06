@@ -28,9 +28,9 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void COrGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth)
+void COrGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing)
 {
-	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, false, false);
+	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, false, false, iPinSpacing);
 }
 
 
@@ -38,9 +38,10 @@ void COrGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void COrGateView::InitOr(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated, bool bExclusive)
+void COrGateView::InitOr(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated, bool bExclusive, int iPinSpacing)
 {
 	CLogicGateView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, bNegated);
+	SetPinSpacing(iPinSpacing);
 	mbExclusive = bExclusive;
 	CreateShapes();
 	CreateGatePortViews(mbExclusive ? 1 : 0);
@@ -56,7 +57,7 @@ void COrGateView::InitOr(int32 x, int32 y, ERotation eRotation, const char* szNa
 //////////////////////////////////////////////////////////////////////////
 void COrGateView::CreateShapes(void)
 {
-	AddOrShapes(&mcShapes, 0, 0, miInputCount, mbExclusive);
+	AddOrShapes(&mcShapes, 0, 0, GetBodyInputCount(miInputCount, miPinSpacing), mbExclusive);
 }
 
 
@@ -146,9 +147,9 @@ bool COrGateView::IsExclusive(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNorGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth)
+void CNorGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing)
 {
-	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, true, false);
+	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, true, false, iPinSpacing);
 }
 
 
@@ -166,9 +167,9 @@ const char* CNorGateView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CXorGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth)
+void CXorGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing)
 {
-	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, false, true);
+	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, false, true, iPinSpacing);
 }
 
 
@@ -186,9 +187,9 @@ const char* CXorGateView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CXnorGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth)
+void CXnorGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing)
 {
-	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, true, true);
+	InitOr(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, iInputWidth, true, true, iPinSpacing);
 }
 
 
@@ -225,7 +226,7 @@ bool COrGateView::LoadXML(CMarkupTag* pcTag)
 	{
 		return false;
 	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth);
+	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth, sGate.iPinSpacing);
 	return true;
 }
 
@@ -252,7 +253,7 @@ bool CNorGateView::LoadXML(CMarkupTag* pcTag)
 	{
 		return false;
 	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth);
+	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth, sGate.iPinSpacing);
 	return true;
 }
 
@@ -279,7 +280,7 @@ bool CXorGateView::LoadXML(CMarkupTag* pcTag)
 	{
 		return false;
 	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth);
+	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth, sGate.iPinSpacing);
 	return true;
 }
 
@@ -306,7 +307,7 @@ bool CXnorGateView::LoadXML(CMarkupTag* pcTag)
 	{
 		return false;
 	}
-	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth);
+	Init(sGate.x, sGate.y, sGate.eRotation, sGate.szName, sGate.szFamily, sGate.bExplicitPowerPorts, sGate.iInputCount, sGate.iInputWidth, sGate.iPinSpacing);
 	return true;
 }
 
@@ -317,7 +318,7 @@ bool CXnorGateView::LoadXML(CMarkupTag* pcTag)
 //////////////////////////////////////////////////////////////////////////
 bool COrGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth));
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
 	return true;
 }
 
@@ -328,7 +329,7 @@ bool COrGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CCom
 //////////////////////////////////////////////////////////////////////////
 bool CNorGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth));
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
 	return true;
 }
 
@@ -339,7 +340,7 @@ bool CNorGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CCo
 //////////////////////////////////////////////////////////////////////////
 bool CXorGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth));
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
 	return true;
 }
 
@@ -350,6 +351,6 @@ bool CXorGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CCo
 //////////////////////////////////////////////////////////////////////////
 bool CXnorGateView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth));
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), (int)pcProperties->GetInteger("inputCount", miInputCount), (int)pcProperties->GetInteger("inputWidth", miInputWidth), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
 	return true;
 }

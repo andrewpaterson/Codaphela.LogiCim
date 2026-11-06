@@ -46,13 +46,13 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 // a gate's body.
 //
 //////////////////////////////////////////////////////////////////////////
-static float64 GetLogic74GateHalfHeight(EGateFunction eFunction, int iInputCount)
+static float64 GetLogic74GateHalfHeight(EGateFunction eFunction, int iInputCount, int iPinSpacing)
 {
 	if (CGateArray::IsSingleInput(eFunction))
 	{
 		return 0.75;
 	}
-	return CLogicGateView::CalculateWidth(iInputCount);
+	return CLogicGateView::CalculateWidth(CLogicGateView::GetBodyInputCount(iInputCount, iPinSpacing));
 }
 
 
@@ -122,13 +122,14 @@ static void AddLogic74GateBody(CComponentShapes* pcShapes, EGateFunction eFuncti
 // empty box.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogic74PackageView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType)
+void CLogic74PackageView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType, int iPinSpacing)
 {
 	CIntegratedCircuitView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts);
 	mszPartType.Init(szPartType);
 	FindLogic74Part(&msType, szPartType);
 
 	CLogicBlockView::GetDefaultParams(LBK_Register, &msParams);
+	msParams.iPinSpacing = 1;
 	meKind = LBK_Register;
 
 	CreatePowerPortViews();
@@ -141,10 +142,14 @@ void CLogic74PackageView::Init(int32 x, int32 y, ERotation eRotation, const char
 	{
 		meKind = msType.psPart->eBlock;
 		msParams = msType.psPart->sParams;
+		msParams.iPinSpacing = iPinSpacing;
+		ClampParams(meKind, &msParams);
 		CreatePartBlock();
 	}
 	else
 	{
+		msParams.iPinSpacing = iPinSpacing;
+		ClampParams(meKind, &msParams);
 		CreateGates();
 	}
 	CalculateBounds();
@@ -165,16 +170,17 @@ void CLogic74PackageView::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // How far apart the gates are, so each gate's inputs (and its bubble) are
-// clear of the next's: two grid units for buffers.
+// clear of the next's: two grid units for buffers.  It's even, so with a
+// pin spacing of two every gate's inputs are on the same two unit grid.
 //
 //////////////////////////////////////////////////////////////////////////
-int32 CLogic74PackageView::GetGatePitch(int iInputCount)
+int32 CLogic74PackageView::GetGatePitch(int iInputCount, int iPinSpacing)
 {
 	if (iInputCount <= 1)
 	{
 		return 2;
 	}
-	return 2 * (int32)CLogicGateView::CalculateWidth(iInputCount) + 2;
+	return 2 * (int32)CLogicGateView::CalculateWidth(CLogicGateView::GetBodyInputCount(iInputCount, iPinSpacing)) + 2;
 }
 
 
@@ -200,9 +206,14 @@ void CLogic74PackageView::CreateGates(void)
 
 	psPart = msType.psPart;
 	iUnitCount = msType.iUnitCount;
-	iPitch = GetGatePitch(psPart->iInputCount);
+	iPitch = GetGatePitch(psPart->iInputCount, msParams.iPinSpacing);
 	iFirst = -((iUnitCount - 1) * iPitch) / 2;
-	fHalfHeight = CGateArray::IsSingleInput(psPart->eGateFunction) ? 0.5 : CLogicGateView::CalculateWidth(psPart->iInputCount);
+	if (msParams.iPinSpacing > 1)
+	{
+		//On the pins' grid.
+		iFirst -= iFirst % 2;
+	}
+	fHalfHeight = CGateArray::IsSingleInput(psPart->eGateFunction) ? 0.5 : CLogicGateView::CalculateWidth(CLogicGateView::GetBodyInputCount(psPart->iInputCount, msParams.iPinSpacing));
 	fTop = iFirst - fHalfHeight - LOGIC_74_MARGIN;
 	fBottom = iFirst + (iUnitCount - 1) * iPitch + fHalfHeight + LOGIC_74_MARGIN;
 
@@ -213,7 +224,7 @@ void CLogic74PackageView::CreateGates(void)
 	}
 
 	aiOffsets.Init();
-	CLogicGateView::CalculatePortOffsets(&aiOffsets, psPart->iInputCount);
+	CLogicGateView::CalculatePortOffsets(&aiOffsets, psPart->iInputCount, msParams.iPinSpacing);
 	for (i = 0; i < iUnitCount; i++)
 	{
 		for (j = 0; j < aiOffsets.NumElements(); j++)
@@ -249,10 +260,10 @@ void CLogic74PackageView::AddGateShapes(EGateFunction eFunction, float64 y, int 
 	size		i;
 	float64		fOutputX;
 
-	AddLogic74GateBody(&mcShapes, eFunction, 0, y, iInputCount);
+	AddLogic74GateBody(&mcShapes, eFunction, 0, y, CLogicGateView::GetBodyInputCount(iInputCount, msParams.iPinSpacing));
 
 	aiOffsets.Init();
-	CLogicGateView::CalculatePortOffsets(&aiOffsets, iInputCount);
+	CLogicGateView::CalculatePortOffsets(&aiOffsets, iInputCount, msParams.iPinSpacing);
 	for (i = 0; i < aiOffsets.NumElements(); i++)
 	{
 		mcShapes.AddLine(iInputX, y + aiOffsets.GetValue(i), GetLogic74GateInputX(eFunction), y + aiOffsets.GetValue(i));
@@ -389,6 +400,10 @@ void CLogic74PackageView::SaveXMLAttributes(CXMLWriter* pcWriter)
 {
 	CIntegratedCircuitView::SaveXMLAttributes(pcWriter);
 	pcWriter->Attribute("partType", mszPartType.Text());
+	if (msParams.iPinSpacing > 1)
+	{
+		pcWriter->Attribute("pinSpacing", (int32)msParams.iPinSpacing);
+	}
 }
 
 
@@ -405,6 +420,7 @@ bool CLogic74PackageView::LoadXML(CMarkupTag* pcTag)
 	char*		szFamily;
 	bool		bExplicitPowerPorts;
 	char*		szPartType;
+	int32		iPinSpacing;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
 	{
@@ -415,7 +431,11 @@ bool CLogic74PackageView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a partType attribute.", NULL);
 	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, szPartType);
+	if (!pcTag->GetInt32Attribute("pinSpacing", &iPinSpacing))
+	{
+		iPinSpacing = 1;
+	}
+	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, szPartType, iPinSpacing);
 	return true;
 }
 
@@ -430,6 +450,7 @@ void CLogic74PackageView::GetProperties(CComponentProperties* pcProperties, SCom
 	CComponentView::GetProperties(pcProperties, psContext);
 	AddPowerProperties(pcProperties, psContext);
 	pcProperties->AddText("partType", mszPartType.Text());
+	pcProperties->AddInteger("pinSpacing", (msParams.iPinSpacing >= 1) ? msParams.iPinSpacing : 1, 1, LOGIC_BLOCK_MAX_PIN_SPACING);
 }
 
 
@@ -439,7 +460,7 @@ void CLogic74PackageView::GetProperties(CComponentProperties* pcProperties, SCom
 //////////////////////////////////////////////////////////////////////////
 bool CLogic74PackageView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), pcProperties->GetText("partType", ""));
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), pcProperties->GetText("partType", ""), (int)pcProperties->GetInteger("pinSpacing", msParams.iPinSpacing));
 	return true;
 }
 
@@ -470,7 +491,7 @@ static bool IsLogic74FlipFlopPart(SLogic74PartType* psType)
 // drawn as a buffer and can't be simulated.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogic74UnitView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType, int iUnit)
+void CLogic74UnitView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, const char* szPartType, int iUnit, int iPinSpacing)
 {
 	EGateFunction	eFunction;
 	int				iInputCount;
@@ -480,6 +501,7 @@ void CLogic74UnitView::Init(int32 x, int32 y, ERotation eRotation, const char* s
 	iInputCount = ((msType.psPart != NULL) && (msType.psPart->eKind == L74K_Gates)) ? msType.psPart->iInputCount : 1;
 
 	CLogicGateView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iInputCount, 1, CGateArray::IsNegated(eFunction));
+	SetPinSpacing(iPinSpacing);
 	mszPartType.Init(szPartType);
 	if ((iUnit < 0) || (iUnit >= LOGIC_74_MAX_UNITS))
 	{
@@ -551,7 +573,7 @@ void CLogic74UnitView::CreateGate(void)
 	CChars			szUnit;
 
 	eFunction = ((msType.psPart != NULL) && (msType.psPart->eKind == L74K_Gates)) ? msType.psPart->eGateFunction : GF_Buffer;
-	AddLogic74GateBody(&mcShapes, eFunction, 0, 0, miInputCount);
+	AddLogic74GateBody(&mcShapes, eFunction, 0, 0, CLogicGateView::GetBodyInputCount(miInputCount, miPinSpacing));
 	if (CGateArray::IsSingleInput(eFunction))
 	{
 		CreateBufferPortViews();
@@ -561,7 +583,7 @@ void CLogic74UnitView::CreateGate(void)
 		CreateGatePortViews(-1 - GetLogic74GateInputX(eFunction));
 	}
 
-	fHalfHeight = GetLogic74GateHalfHeight(eFunction, miInputCount) + 0.75;
+	fHalfHeight = GetLogic74GateHalfHeight(eFunction, miInputCount, miPinSpacing) + 0.75;
 	szUnit.Init("Unit ");
 	szUnit.Append(GetUnitLetter());
 	mcShapes.AddText(0.5, -fHalfHeight, szUnit.Text(), CF_SansSerif, LOGIC_74_UNIT_FONT_SIZE, TA_Centre);
@@ -644,7 +666,7 @@ CComponentView* CLogic74UnitView::NewNextUnit(void)
 		return NULL;
 	}
 	pcNext = NewMalloc<CLogic74UnitView>();
-	pcNext->Init(msPosition.x, msPosition.y, meRotation, mszName.Text(), mszFamily.Text(), mbExplicitPowerPorts, mszPartType.Text(), miUnit + 1);
+	pcNext->Init(msPosition.x, msPosition.y, meRotation, mszName.Text(), mszFamily.Text(), mbExplicitPowerPorts, mszPartType.Text(), miUnit + 1, miPinSpacing);
 	pcNext->SetMirrored(mbMirrored);
 	pcNext->SetImpliedVcc(mfImpliedVcc);
 	return pcNext;
@@ -686,6 +708,10 @@ void CLogic74UnitView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	szUnit.Append(GetUnitLetter());
 	pcWriter->Attribute("unit", szUnit.Text());
 	szUnit.Kill();
+	if (miPinSpacing > 1)
+	{
+		pcWriter->Attribute("pinSpacing", (int32)miPinSpacing);
+	}
 }
 
 
@@ -703,6 +729,7 @@ bool CLogic74UnitView::LoadXML(CMarkupTag* pcTag)
 	bool		bExplicitPowerPorts;
 	char*		szPartType;
 	char*		szUnit;
+	int32		iPinSpacing;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName) || !LoadXMLFamily(pcTag, &szFamily, &bExplicitPowerPorts))
 	{
@@ -718,7 +745,11 @@ bool CLogic74UnitView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a unit letter.", NULL);
 	}
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, szPartType, szUnit[0] - 'A');
+	if (!pcTag->GetInt32Attribute("pinSpacing", &iPinSpacing))
+	{
+		iPinSpacing = 1;
+	}
+	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, szPartType, szUnit[0] - 'A', iPinSpacing);
 	return true;
 }
 
@@ -743,6 +774,7 @@ void CLogic74UnitView::GetProperties(CComponentProperties* pcProperties, SCompon
 		iUnitCount = miUnit + 1;
 	}
 	pcProperties->AddChoice("unit", aszUnits, (size)iUnitCount, (size)miUnit);
+	pcProperties->AddInteger("pinSpacing", miPinSpacing, 1, LOGIC_GATE_MAX_PIN_SPACING);
 }
 
 
@@ -752,7 +784,7 @@ void CLogic74UnitView::GetProperties(CComponentProperties* pcProperties, SCompon
 //////////////////////////////////////////////////////////////////////////
 bool CLogic74UnitView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), pcProperties->GetText("partType", ""), (int)pcProperties->GetChoice("unit", (size)miUnit));
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), pcProperties->GetBoolean("explicitPowerPorts", mbExplicitPowerPorts), pcProperties->GetText("partType", ""), (int)pcProperties->GetChoice("unit", (size)miUnit), (int)pcProperties->GetInteger("pinSpacing", miPinSpacing));
 	return true;
 }
 

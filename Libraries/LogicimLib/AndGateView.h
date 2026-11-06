@@ -28,7 +28,7 @@ class CAndGateView : public CLogicGateView
 {
 CONSTRUCTABLE(CAndGateView);
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing = 1);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
@@ -39,7 +39,7 @@ public:
 	static	void					AddAndShapes(CComponentShapes* pcShapes, float64 x, float64 y, int iInputCount);
 
 protected:
-			void					InitAnd(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated);
+			void					InitAnd(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated, int iPinSpacing);
 			void					CreateShapes(void);
 };
 
@@ -49,7 +49,7 @@ class CNandGateView : public CAndGateView
 {
 CONSTRUCTABLE(CNandGateView);
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, int iPinSpacing = 1);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);

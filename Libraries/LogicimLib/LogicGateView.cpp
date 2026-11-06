@@ -37,6 +37,7 @@ void CLogicGateView::Init(int32 x, int32 y, ERotation eRotation, const char* szN
 	miInputCount = (iInputCount < 1) ? 1 : iInputCount;
 	miInputWidth = (iInputWidth < 1) ? 1 : iInputWidth;
 	mbNegated = bNegated;
+	miPinSpacing = 1;
 }
 
 
@@ -49,6 +50,10 @@ void CLogicGateView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	CIntegratedCircuitView::SaveXMLAttributes(pcWriter);
 	pcWriter->Attribute("inputCount", (int32)miInputCount);
 	pcWriter->Attribute("inputWidth", (int32)miInputWidth);
+	if (miPinSpacing > 1)
+	{
+		pcWriter->Attribute("pinSpacing", (int32)miPinSpacing);
+	}
 }
 
 
@@ -75,6 +80,10 @@ bool CLogicGateView::LoadLogicGateXML(CMarkupTag* pcTag, SLogicGateXML* psGate)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] inputCount and inputWidth must be at least one.", NULL);
 	}
+	if (!pcTag->GetInt32Attribute("pinSpacing", &psGate->iPinSpacing))
+	{
+		psGate->iPinSpacing = 1;
+	}
 	return true;
 }
 
@@ -84,7 +93,7 @@ bool CLogicGateView::LoadLogicGateXML(CMarkupTag* pcTag, SLogicGateXML* psGate)
 // -n to n for 2n + 1 inputs and -n to n without 0 for 2n.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicGateView::CalculatePortOffsets(CArrayInt* paiOffsets, int iInputCount)
+void CLogicGateView::CalculatePortOffsets(CArrayInt* paiOffsets, int iInputCount, int iPinSpacing)
 {
 	int		iEnd;
 	int		i;
@@ -94,11 +103,44 @@ void CLogicGateView::CalculatePortOffsets(CArrayInt* paiOffsets, int iInputCount
 	bSkipZero = (iInputCount % 2) == 0;
 	for (i = -iEnd; i <= iEnd; i++)
 	{
-		if (!((i == 0) && bSkipZero))
+		if ((i == 0) && bSkipZero)
 		{
-			paiOffsets->Add(i);
+			continue;
+		}
+		if ((iPinSpacing <= 1) || !bSkipZero)
+		{
+			paiOffsets->Add(i * ((iPinSpacing <= 1) ? 1 : iPinSpacing));
+		}
+		else
+		{
+			//An even count skips zero: the inputs nearest it are a grid unit either side, the rest iPinSpacing on.
+			paiOffsets->Add((i > 0) ? (iPinSpacing * i - iPinSpacing + 1) : (iPinSpacing * i + iPinSpacing - 1));
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The input count a gate's body is drawn for (see CalculateWidth) so its
+// inputs, iPinSpacing apart, all fit on it: its own count with a spacing
+// of one.
+//
+//////////////////////////////////////////////////////////////////////////
+int CLogicGateView::GetBodyInputCount(int iInputCount, int iPinSpacing)
+{
+	CArrayInt	aiOffsets;
+	int			iFurthest;
+
+	if (iPinSpacing <= 1)
+	{
+		return iInputCount;
+	}
+	aiOffsets.Init();
+	CalculatePortOffsets(&aiOffsets, iInputCount, iPinSpacing);
+	iFurthest = (aiOffsets.NumElements() > 0) ? aiOffsets.GetValue(aiOffsets.NumElements() - 1) : 0;
+	aiOffsets.Kill();
+	return (2 * iFurthest + 1 > iInputCount) ? 2 * iFurthest + 1 : iInputCount;
 }
 
 
@@ -152,7 +194,7 @@ void CLogicGateView::CreateGatePortViews(int iInputOffset)
 	CreatePowerPortViews();
 
 	aiOffsets.Init();
-	CalculatePortOffsets(&aiOffsets, miInputCount);
+	CalculatePortOffsets(&aiOffsets, miInputCount, miPinSpacing);
 	for (i = 0; i < aiOffsets.NumElements(); i++)
 	{
 		aszNames.Init();
@@ -247,4 +289,13 @@ void CLogicGateView::GetProperties(CComponentProperties* pcProperties, SComponen
 	AddPowerProperties(pcProperties, psContext);
 	pcProperties->AddInteger("inputCount", miInputCount, 1, RADIX_MAX_BIT_WIDTH);
 	pcProperties->AddInteger("inputWidth", miInputWidth, 1, RADIX_MAX_BIT_WIDTH);
+	pcProperties->AddInteger("pinSpacing", miPinSpacing, 1, LOGIC_GATE_MAX_PIN_SPACING);
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CLogicGateView::GetPinSpacing(void) { return miPinSpacing; }
+void CLogicGateView::SetPinSpacing(int iPinSpacing) { miPinSpacing = (iPinSpacing < 1) ? 1 : ((iPinSpacing > LOGIC_GATE_MAX_PIN_SPACING) ? LOGIC_GATE_MAX_PIN_SPACING : iPinSpacing); }
