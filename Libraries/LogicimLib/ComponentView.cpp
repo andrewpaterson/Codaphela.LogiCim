@@ -45,9 +45,7 @@ void CComponentView::Init(int32 x, int32 y, ERotation eRotation, const char* szN
 	mszName.Init(szName);
 	mcShapes.Init();
 	mapcPortViews.Init();
-	msBoundsMinimum.Init(0, 0);
-	msBoundsMaximum.Init(0, 0);
-	mbHasBounds = false;
+	msBounds.Init();
 	masComponents.Init();
 }
 
@@ -731,12 +729,13 @@ void CComponentView::CalculateBounds(void)
 {
 	size	i;
 
-	mbHasBounds = mcShapes.IncludeBounds(&msBoundsMinimum, &msBoundsMaximum, false);
+	msBounds.Init();
+	mcShapes.IncludeBounds(&msBounds);
 	for (i = 0; i < mapcPortViews.NumElements(); i++)
 	{
-		mbHasBounds = mapcPortViews.GetPtr(i)->IncludeBounds(&msBoundsMinimum, &msBoundsMaximum, mbHasBounds);
+		mapcPortViews.GetPtr(i)->IncludeBounds(&msBounds);
 	}
-	mbHasBounds = IncludeExtraBounds(&msBoundsMinimum, &msBoundsMaximum, mbHasBounds);
+	IncludeExtraBounds(&msBounds);
 }
 
 
@@ -757,9 +756,10 @@ bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* 
 	CCircuitColours		cColours;
 	CCircuitPainter		cPainter;
 	CInt32Rect			cPixels;
-	bool				bHasBounds;
+	SFloat64Bounds		sBounds;
 
-	bHasBounds = GetBoundingBox(psMinimum, psMaximum);
+	sBounds.Init();
+	sBounds.bHasBounds = GetBoundingBox(&sBounds.sMinimum, &sBounds.sMaximum);
 
 	pMap = OMalloc<CGeometryMap>();
 	pSprites = OMalloc<CSpriteMap>();
@@ -772,18 +772,20 @@ bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* 
 
 	if (pMap->GetBounds(&cPixels))
 	{
-		IncludePixelBounds(&cViewport, &cPixels, psMinimum, psMaximum, &bHasBounds);
+		IncludePixelBounds(&cViewport, &cPixels, &sBounds);
 	}
 	if (pSprites->GetFullDestBounds(&cPixels))
 	{
-		IncludePixelBounds(&cViewport, &cPixels, psMinimum, psMaximum, &bHasBounds);
+		IncludePixelBounds(&cViewport, &cPixels, &sBounds);
 	}
 
 	cColours.Kill();
 	cViewport.Kill();
 	pSprites = NULL;
 	pMap = NULL;
-	return bHasBounds;
+	*psMinimum = sBounds.sMinimum;
+	*psMaximum = sBounds.sMaximum;
+	return sBounds.bHasBounds;
 }
 
 
@@ -792,23 +794,17 @@ bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* 
 // Grows the grid box to hold the screen pixels.
 //
 //////////////////////////////////////////////////////////////////////////
-void CComponentView::IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool* pbHasBounds)
+void CComponentView::IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Bounds* psBounds)
 {
 	SFloat64Vec2	sScreen;
 	SFloat64Vec2	sGrid;
 
 	sScreen.Init(pcPixels->msTopLeft.x, pcPixels->msTopLeft.y);
 	pcViewport->ScreenToGrid(&sGrid, &sScreen);
-	if (!*pbHasBounds)
-	{
-		*psMinimum = sGrid;
-		*psMaximum = sGrid;
-		*pbHasBounds = true;
-	}
-	IncludeBoundsPoint(psMinimum, psMaximum, sGrid.x, sGrid.y);
+	psBounds->Include(sGrid.x, sGrid.y);
 	sScreen.Init(pcPixels->msBottomRight.x, pcPixels->msBottomRight.y);
 	pcViewport->ScreenToGrid(&sGrid, &sScreen);
-	IncludeBoundsPoint(psMinimum, psMaximum, sGrid.x, sGrid.y);
+	psBounds->Include(sGrid.x, sGrid.y);
 }
 
 
@@ -817,9 +813,8 @@ void CComponentView::IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect
 // For subclasses whose box reaches past their shapes.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds)
+void CComponentView::IncludeExtraBounds(SFloat64Bounds* psBounds)
 {
-	return bHasBounds;
 }
 
 
@@ -829,9 +824,9 @@ bool CComponentView::IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* p
 //////////////////////////////////////////////////////////////////////////
 bool CComponentView::GetLocalBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
 {
-	*psMinimum = msBoundsMinimum;
-	*psMaximum = msBoundsMaximum;
-	return mbHasBounds;
+	*psMinimum = msBounds.sMinimum;
+	*psMaximum = msBounds.sMaximum;
+	return msBounds.bHasBounds;
 }
 
 
@@ -843,24 +838,22 @@ bool CComponentView::GetLocalBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMax
 bool CComponentView::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
 {
 	SFloat64Vec2	sCorner;
+	SFloat64Bounds	sBounds;
 
-	if (!mbHasBounds)
+	if (!msBounds.bHasBounds)
 	{
 		return false;
 	}
 
-	sCorner = msBoundsMinimum;
+	sBounds.Init();
+	sCorner = msBounds.sMinimum;
 	TransformPoint(meRotation, mbMirrored, &sCorner);
-	psMinimum->Init(sCorner.x, sCorner.y);
-	psMaximum->Init(sCorner.x, sCorner.y);
-	sCorner = msBoundsMaximum;
+	sBounds.Include(sCorner.x + msPosition.x, sCorner.y + msPosition.y);
+	sCorner = msBounds.sMaximum;
 	TransformPoint(meRotation, mbMirrored, &sCorner);
-	IncludeBoundsPoint(psMinimum, psMaximum, sCorner.x, sCorner.y);
-
-	psMinimum->x += msPosition.x;
-	psMinimum->y += msPosition.y;
-	psMaximum->x += msPosition.x;
-	psMaximum->y += msPosition.y;
+	sBounds.Include(sCorner.x + msPosition.x, sCorner.y + msPosition.y);
+	*psMinimum = sBounds.sMinimum;
+	*psMaximum = sBounds.sMaximum;
 	return true;
 }
 

@@ -22,6 +22,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __COMPONENT_SHAPES_H__
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/Float64Vec2.h"
+#include "BaseLib/Int32Vec2.h"
 #include "BaseLib/ArrayChars.h"
 #include "CircuitFonts.h"
 #include "CircuitPainter.h"
@@ -93,6 +94,84 @@ typedef CArrayTemplate<SComponentShape>	CArrayComponentShape;
 typedef CArrayTemplate<SFloat64Vec2>	CArrayShapePoint;
 
 
+//A box grown to hold points, as the box around everything a view draws.  It holds nothing (and has no corners) until
+//it's given its first point.
+template<class V, class T>
+struct SBoundsTemplate
+{
+	V		sMinimum;
+	V		sMaximum;
+	bool	bHasBounds;
+
+	void	Init(void);
+	void	Include(T x, T y);
+	void	Include(V sBoxMinimum, V sBoxMaximum);
+};
+
+
+typedef SBoundsTemplate<SFloat64Vec2, float64>	SFloat64Bounds;
+typedef SBoundsTemplate<SInt32Vec2, int32>		SInt32Bounds;
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class V, class T>
+void SBoundsTemplate<V, T>::Init(void)
+{
+	sMinimum.Init(0, 0);
+	sMaximum.Init(0, 0);
+	bHasBounds = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The first point is the whole box.
+//
+//////////////////////////////////////////////////////////////////////////
+template<class V, class T>
+void SBoundsTemplate<V, T>::Include(T x, T y)
+{
+	if (!bHasBounds)
+	{
+		sMinimum.Init(x, y);
+		sMaximum.Init(x, y);
+		bHasBounds = true;
+		return;
+	}
+	if (x < sMinimum.x)
+	{
+		sMinimum.x = x;
+	}
+	if (y < sMinimum.y)
+	{
+		sMinimum.y = y;
+	}
+	if (x > sMaximum.x)
+	{
+		sMaximum.x = x;
+	}
+	if (y > sMaximum.y)
+	{
+		sMaximum.y = y;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class V, class T>
+void SBoundsTemplate<V, T>::Include(V sBoxMinimum, V sBoxMaximum)
+{
+	Include(sBoxMinimum.x, sBoxMinimum.y);
+	Include(sBoxMaximum.x, sBoxMaximum.y);
+}
+
+
 //The shapes a component is drawn with, in the order they're drawn.  With a sprite cache every shape but text is
 //blitted from a sprite (see Paint); the memo finds it again while nothing but text has changed.  The revision counts
 //changes to the shapes' geometry, which, with each shape's colours, width and visibility, is the memo's state.
@@ -130,7 +209,7 @@ public:
 
 	void				Paint(CCircuitPainter* pcPainter);
 	void				Paint(CCircuitPainter* pcPainter, SComponentShape* psShape);
-	bool				IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
+	void				IncludeBounds(SFloat64Bounds* psBounds);
 
 protected:
 	SComponentShape*	AddShape(EComponentShape eType, bool bFill, bool bBorder);
@@ -138,9 +217,6 @@ protected:
 	ARGB32				GetBorder(CCircuitPainter* pcPainter, SComponentShape* psShape);
 	uint64				GetSpriteState(CCircuitPainter* pcPainter);
 };
-
-
-void IncludeBoundsPoint(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, float64 x, float64 y);
 
 
 #endif // __COMPONENT_SHAPES_H__

@@ -90,7 +90,7 @@ public:
 
 	void				Paint(CCircuitPainter* pcPainter);
 	uint64				GetSpriteState(CCircuitPainter* pcPainter, ARGB32 sColour);
-	bool				IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
+	void				IncludeBounds(SFloat64Bounds* psBounds);
 
 	SInt32Vec2			GetRelativePosition(void);
 	SInt32Vec2			GetGridPosition(void);

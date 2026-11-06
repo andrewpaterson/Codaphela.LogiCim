@@ -114,7 +114,7 @@ public:
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
-	virtual	bool					IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
+	virtual	void					IncludeExtraBounds(SFloat64Bounds* psBounds);
 			void					CreateGate(void);
 			void					CreateFlipFlop(void);
 };

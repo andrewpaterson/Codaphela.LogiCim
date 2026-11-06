@@ -89,7 +89,7 @@ protected:
 			bool	InitPlacedGate(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, int iInputCount);
 			void	CreateGatePortViews(int iInputOffset);
 			void	CreateBufferPortViews(void);
-	virtual	bool	IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
+	virtual	void	IncludeExtraBounds(SFloat64Bounds* psBounds);
 };
 
 

@@ -108,9 +108,7 @@ protected:
 	CChars					mszName;
 	CComponentShapes		mcShapes;
 	CArrayPortViewPtr		mapcPortViews;
-	SFloat64Vec2			msBoundsMinimum;
-	SFloat64Vec2			msBoundsMaximum;
-	bool					mbHasBounds;
+	SFloat64Bounds			msBounds;
 	CArrayViewPathComponent	masComponents;
 
 public:
@@ -174,8 +172,8 @@ protected:
 	static	bool					LoadXMLBox(CMarkupTag* pcTag, SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum);
 	static	void					SaveXMLBox(CXMLWriter* pcWriter, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum);
 	static	bool					LoadXMLBox(CMarkupTag* pcTag, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum);
-	virtual	bool					IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
-	static	void					IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool* pbHasBounds);
+	virtual	void					IncludeExtraBounds(SFloat64Bounds* psBounds);
+	static	void					IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Bounds* psBounds);
 			void					PaintShapes(CCircuitPainter* pcPainter);
 			void					PaintPorts(CCircuitPainter* pcPainter);
 };

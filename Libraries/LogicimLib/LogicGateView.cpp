@@ -339,16 +339,10 @@ void CLogicGateView::CreateBufferPortViews(void)
 // A gate is three grid units high at least, whatever its shape.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicGateView::IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds)
+void CLogicGateView::IncludeExtraBounds(SFloat64Bounds* psBounds)
 {
-	if (!bHasBounds)
-	{
-		psMinimum->Init(0, -1.5);
-		psMaximum->Init(0, 1.5);
-	}
-	IncludeBoundsPoint(psMinimum, psMaximum, 0, -1.5);
-	IncludeBoundsPoint(psMinimum, psMaximum, 0, 1.5);
-	return true;
+	psBounds->Include(0, -1.5);
+	psBounds->Include(0, 1.5);
 }
 
 

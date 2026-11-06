@@ -619,13 +619,13 @@ void CLogic74UnitView::CreateGate(void)
 // A buffer is only as wide as its triangle.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogic74UnitView::IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds)
+void CLogic74UnitView::IncludeExtraBounds(SFloat64Bounds* psBounds)
 {
 	if ((msType.psPart == NULL) || (msType.psPart->eKind != L74K_Gates) || CGateArray::IsSingleInput(msType.psPart->eGateFunction))
 	{
-		return bHasBounds;
+		return;
 	}
-	return CLogicGateView::IncludeExtraBounds(psMinimum, psMaximum, bHasBounds);
+	CLogicGateView::IncludeExtraBounds(psBounds);
 }
 
 

@@ -366,8 +366,7 @@ bool PowerPortsImplicitly(CSubcircuitSimulation* pcSimulation, CPort* pcCommon, 
 //////////////////////////////////////////////////////////////////////////
 void CIntegratedCircuitView::CreatePowerPortViews(void)
 {
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBounds;
 	int32			iTop;
 	int32			iBottom;
 
@@ -376,13 +375,10 @@ void CIntegratedCircuitView::CreatePowerPortViews(void)
 		return;
 	}
 
-	if (!mcShapes.IncludeBounds(&sMinimum, &sMaximum, false))
-	{
-		sMinimum.Init(0, 0);
-		sMaximum.Init(0, 0);
-	}
-	iTop = (int32)floor(sMinimum.y);
-	iBottom = (int32)ceil(sMaximum.y);
+	sBounds.Init();
+	mcShapes.IncludeBounds(&sBounds);
+	iTop = (int32)floor(sBounds.sMinimum.y);
+	iBottom = (int32)ceil(sBounds.sMaximum.y);
 
 	AddPortView(POWER_PIN_VCC, 0, iTop);
 	AddPortView(POWER_PIN_GND, 0, iBottom);

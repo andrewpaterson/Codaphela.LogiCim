@@ -362,23 +362,17 @@ uint64 CPortView::GetSpriteState(CCircuitPainter* pcPainter, ARGB32 sColour)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CPortView::IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds)
+void CPortView::IncludeBounds(SFloat64Bounds* psBounds)
 {
 	float64		fRadius;
 
-	if (!bHasBounds)
-	{
-		psMinimum->Init(msRelativePosition.x, msRelativePosition.y);
-		psMaximum->Init(msRelativePosition.x, msRelativePosition.y);
-	}
-	IncludeBoundsPoint(psMinimum, psMaximum, msRelativePosition.x, msRelativePosition.y);
+	psBounds->Include(msRelativePosition.x, msRelativePosition.y);
 	if (mbInverting)
 	{
 		fRadius = mfBubbleDiameter / 2;
-		IncludeBoundsPoint(psMinimum, psMaximum, msBubbleCentre.x - fRadius, msBubbleCentre.y - fRadius);
-		IncludeBoundsPoint(psMinimum, psMaximum, msBubbleCentre.x + fRadius, msBubbleCentre.y + fRadius);
+		psBounds->Include(msBubbleCentre.x - fRadius, msBubbleCentre.y - fRadius);
+		psBounds->Include(msBubbleCentre.x + fRadius, msBubbleCentre.y + fRadius);
 	}
-	return true;
 }
 
 

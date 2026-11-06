@@ -793,39 +793,31 @@ bool CCircuitView::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaxim
 bool GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
 {
 	size			i;
-	bool			bHasBounds;
+	SFloat64Bounds	sBounds;
 	SFloat64Vec2	sMinimum;
 	SFloat64Vec2	sMaximum;
 	CTraceView*		pcTrace;
 
-	bHasBounds = false;
+	sBounds.Init();
 	for (i = 0; i < papcComponents->NumElements(); i++)
 	{
 		if (papcComponents->GetPtr(i)->GetBoundingBox(&sMinimum, &sMaximum))
 		{
-			if (!bHasBounds)
-			{
-				*psMinimum = sMinimum;
-				*psMaximum = sMaximum;
-				bHasBounds = true;
-			}
-			IncludeBoundsPoint(psMinimum, psMaximum, sMinimum.x, sMinimum.y);
-			IncludeBoundsPoint(psMinimum, psMaximum, sMaximum.x, sMaximum.y);
+			sBounds.Include(sMinimum, sMaximum);
 		}
 	}
 	for (i = 0; i < papcTraces->NumElements(); i++)
 	{
 		pcTrace = papcTraces->GetPtr(i);
-		if (!bHasBounds)
-		{
-			psMinimum->Init(pcTrace->GetStart().x, pcTrace->GetStart().y);
-			psMaximum->Init(pcTrace->GetStart().x, pcTrace->GetStart().y);
-			bHasBounds = true;
-		}
-		IncludeBoundsPoint(psMinimum, psMaximum, pcTrace->GetStart().x, pcTrace->GetStart().y);
-		IncludeBoundsPoint(psMinimum, psMaximum, pcTrace->GetEnd().x, pcTrace->GetEnd().y);
+		sBounds.Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
+		sBounds.Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
 	}
-	return bHasBounds;
+	if (sBounds.bHasBounds)
+	{
+		*psMinimum = sBounds.sMinimum;
+		*psMaximum = sBounds.sMaximum;
+	}
+	return sBounds.bHasBounds;
 }
 
 
@@ -980,6 +972,7 @@ void CCircuitView::GetViewsInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, C
 	SFloat64Vec2		sPointPosition;
 	bool				bPoint;
 	bool				bIntersections;
+	SFloat64Bounds		sBounds;
 
 	sPoint.Init(RoundToGrid(sStart.x), RoundToGrid(sStart.y));
 	sEndPoint.Init(RoundToGrid(sEnd.x), RoundToGrid(sEnd.y));
@@ -1011,10 +1004,10 @@ void CCircuitView::GetViewsInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, C
 		}
 		else
 		{
-			sMinimum.Init(pcTrace->GetStart().x, pcTrace->GetStart().y);
-			sMaximum = sMinimum;
-			IncludeBoundsPoint(&sMinimum, &sMaximum, pcTrace->GetEnd().x, pcTrace->GetEnd().y);
-			if (IsBoxInRectangle(sStart, sEnd, sMinimum, sMaximum, bIntersections))
+			sBounds.Init();
+			sBounds.Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
+			sBounds.Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
+			if (IsBoxInRectangle(sStart, sEnd, sBounds.sMinimum, sBounds.sMaximum, bIntersections))
 			{
 				papcTraces->Add(pcTrace);
 			}

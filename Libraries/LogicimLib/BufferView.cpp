@@ -88,9 +88,8 @@ void CBufferView::AddBufferShape(CComponentShapes* pcShapes, float64 x, float64 
 // A buffer is only as wide as its triangles.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CBufferView::IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds)
+void CBufferView::IncludeExtraBounds(SFloat64Bounds* psBounds)
 {
-	return bHasBounds;
 }
 
 

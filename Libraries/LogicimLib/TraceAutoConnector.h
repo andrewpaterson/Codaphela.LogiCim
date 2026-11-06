@@ -179,7 +179,6 @@ protected:
 	bool			AddPort(CPortView* pcPortView, size uiNet);
 	int				GetPortNet(CPortView* pcPortView);
 	void			CreateGrid(void);
-	void			IncludeGridPoint(SInt32Vec2* psMinimum, SInt32Vec2* psMaximum, bool* pbHasBounds, int32 x, int32 y);
 	void			MarkComponents(void);
 	void			MarkPorts(void);
 	void			MarkExistingTraces(void);

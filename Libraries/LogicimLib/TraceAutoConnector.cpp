@@ -467,9 +467,7 @@ void CTraceAutoConnector::CacheArrays(void)
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::CreateGrid(void)
 {
-	SInt32Vec2			sMinimum;
-	SInt32Vec2			sMaximum;
-	bool				bHasBounds;
+	SInt32Bounds		sBounds;
 	size				i;
 	size				j;
 	CComponentView*		pcComponent;
@@ -479,33 +477,31 @@ void CTraceAutoConnector::CreateGrid(void)
 	CTraceView*			pcTrace;
 	size				uiCells;
 
-	bHasBounds = false;
-	sMinimum.Init(0, 0);
-	sMaximum.Init(0, 0);
+	sBounds.Init();
 	for (i = 0; i < mpcCircuit->NumComponents(); i++)
 	{
 		pcComponent = mpcCircuit->GetComponent(i);
 		if (GetComponentBox(pcComponent, &sBoxMinimum, &sBoxMaximum))
 		{
-			IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, (int32)floor(sBoxMinimum.x), (int32)floor(sBoxMinimum.y));
-			IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, (int32)ceil(sBoxMaximum.x), (int32)ceil(sBoxMaximum.y));
+			sBounds.Include((int32)floor(sBoxMinimum.x), (int32)floor(sBoxMinimum.y));
+			sBounds.Include((int32)ceil(sBoxMaximum.x), (int32)ceil(sBoxMaximum.y));
 		}
 		for (j = 0; j < pcComponent->NumPortViews(); j++)
 		{
 			sPosition = pcComponent->GetPortView(j)->GetGridPosition();
-			IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, sPosition.x, sPosition.y);
+			sBounds.Include(sPosition.x, sPosition.y);
 		}
 	}
 	for (i = 0; i < mpcCircuit->NumTraces(); i++)
 	{
 		pcTrace = mpcCircuit->GetTrace(i);
-		IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, pcTrace->GetStart().x, pcTrace->GetStart().y);
-		IncludeGridPoint(&sMinimum, &sMaximum, &bHasBounds, pcTrace->GetEnd().x, pcTrace->GetEnd().y);
+		sBounds.Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
+		sBounds.Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
 	}
 
-	msGridMinimum.Init(sMinimum.x - TRACE_AUTO_CONNECT_MARGIN, sMinimum.y - TRACE_AUTO_CONNECT_MARGIN);
-	miGridWidth = (sMaximum.x - sMinimum.x) + 1 + 2 * TRACE_AUTO_CONNECT_MARGIN;
-	miGridHeight = (sMaximum.y - sMinimum.y) + 1 + 2 * TRACE_AUTO_CONNECT_MARGIN;
+	msGridMinimum.Init(sBounds.sMinimum.x - TRACE_AUTO_CONNECT_MARGIN, sBounds.sMinimum.y - TRACE_AUTO_CONNECT_MARGIN);
+	miGridWidth = (sBounds.sMaximum.x - sBounds.sMinimum.x) + 1 + 2 * TRACE_AUTO_CONNECT_MARGIN;
+	miGridHeight = (sBounds.sMaximum.y - sBounds.sMinimum.y) + 1 + 2 * TRACE_AUTO_CONNECT_MARGIN;
 	uiCells = (size)miGridWidth * (size)miGridHeight;
 
 	maiOwners.Kill();
@@ -523,38 +519,6 @@ void CTraceAutoConnector::CreateGrid(void)
 	maiVertical.GrowToAtLeastNumElements(uiCells, true, 0xff);
 	maiNodes.GrowToAtLeastNumElements(uiCells, true, 0xff);
 	maiNear.GrowToAtLeastNumElements(uiCells, true, 0);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::IncludeGridPoint(SInt32Vec2* psMinimum, SInt32Vec2* psMaximum, bool* pbHasBounds, int32 x, int32 y)
-{
-	if (!*pbHasBounds)
-	{
-		psMinimum->Init(x, y);
-		psMaximum->Init(x, y);
-		*pbHasBounds = true;
-		return;
-	}
-	if (x < psMinimum->x)
-	{
-		psMinimum->x = x;
-	}
-	if (y < psMinimum->y)
-	{
-		psMinimum->y = y;
-	}
-	if (x > psMaximum->x)
-	{
-		psMaximum->x = x;
-	}
-	if (y > psMaximum->y)
-	{
-		psMaximum->y = y;
-	}
 }
 
 

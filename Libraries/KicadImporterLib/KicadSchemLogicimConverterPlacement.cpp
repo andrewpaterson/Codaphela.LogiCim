@@ -793,21 +793,25 @@ bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Vec2* psMinimu
 	SKicadSchemLogicimItem*		psOther;
 	SFloat64Vec2				sMinimum;
 	SFloat64Vec2				sMaximum;
+	SFloat64Bounds				sBounds;
 
 	psItem = masItems.Get(uiItem);
 	if (!GetItemImportBox(psItem, psMinimum, psMaximum))
 	{
 		return false;
 	}
+	sBounds.Init();
+	sBounds.Include(*psMinimum, *psMaximum);
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
 		psOther = masItems.Get(i);
 		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && GetItemImportBox(psOther, &sMinimum, &sMaximum))
 		{
-			IncludeBoundsPoint(psMinimum, psMaximum, sMinimum.x, sMinimum.y);
-			IncludeBoundsPoint(psMinimum, psMaximum, sMaximum.x, sMaximum.y);
+			sBounds.Include(sMinimum, sMaximum);
 		}
 	}
+	*psMinimum = sBounds.sMinimum;
+	*psMaximum = sBounds.sMaximum;
 	return true;
 }
 

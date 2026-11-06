@@ -27,31 +27,6 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void IncludeBoundsPoint(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, float64 x, float64 y)
-{
-	if (x < psMinimum->x)
-	{
-		psMinimum->x = x;
-	}
-	if (y < psMinimum->y)
-	{
-		psMinimum->y = y;
-	}
-	if (x > psMaximum->x)
-	{
-		psMaximum->x = x;
-	}
-	if (y > psMaximum->y)
-	{
-		psMaximum->y = y;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
 void CComponentShapes::Init(void)
 {
 	masShapes.Init();
@@ -559,7 +534,7 @@ void CComponentShapes::Paint(CCircuitPainter* pcPainter, SComponentShape* psShap
 //
 //
 //////////////////////////////////////////////////////////////////////////
-static void IncludeArcPoint(SComponentShape* psShape, float64 fDegrees, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool* pbHasBounds)
+static void IncludeArcPoint(SComponentShape* psShape, float64 fDegrees, SFloat64Bounds* psBounds)
 {
 	float64		fAngle;
 	float64		x;
@@ -568,13 +543,7 @@ static void IncludeArcPoint(SComponentShape* psShape, float64 fDegrees, SFloat64
 	fAngle = fDegrees * N_PI_64 / 180.0;
 	x = psShape->sCentre.x + psShape->fRadiusX * cos(fAngle);
 	y = psShape->sCentre.y - psShape->fRadiusY * sin(fAngle);
-	if (!*pbHasBounds)
-	{
-		psMinimum->Init(x, y);
-		psMaximum->Init(x, y);
-		*pbHasBounds = true;
-	}
-	IncludeBoundsPoint(psMinimum, psMaximum, x, y);
+	psBounds->Include(x, y);
 }
 
 
@@ -583,11 +552,10 @@ static void IncludeArcPoint(SComponentShape* psShape, float64 fDegrees, SFloat64
 // Grows the box to hold every shape, in the shapes' unturned grid space.
 // Line widths aren't included, nor is text (so a component's size
 // doesn't change with the font).  Arcs include only the part of the
-// ellipse they sweep (and the centre when filled).  Returns whether the
-// box holds anything.
+// ellipse they sweep (and the centre when filled).
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentShapes::IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds)
+void CComponentShapes::IncludeBounds(SFloat64Bounds* psBounds)
 {
 	size				i;
 	size				j;
@@ -609,13 +577,7 @@ bool CComponentShapes::IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMa
 			for (j = 0; j < psShape->uiNumPoints; j++)
 			{
 				psPoint = masPoints.Get(psShape->uiFirstPoint + j);
-				if (!bHasBounds)
-				{
-					psMinimum->Init(psPoint->x, psPoint->y);
-					psMaximum->Init(psPoint->x, psPoint->y);
-					bHasBounds = true;
-				}
-				IncludeBoundsPoint(psMinimum, psMaximum, psPoint->x, psPoint->y);
+				psBounds->Include(psPoint->x, psPoint->y);
 			}
 		}
 		else
@@ -636,18 +598,17 @@ bool CComponentShapes::IncludeBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMa
 				fStart = psShape->fStartAngle + psShape->fArcAngle;
 				fEnd = psShape->fStartAngle;
 			}
-			IncludeArcPoint(psShape, fStart, psMinimum, psMaximum, &bHasBounds);
-			IncludeArcPoint(psShape, fEnd, psMinimum, psMaximum, &bHasBounds);
+			IncludeArcPoint(psShape, fStart, psBounds);
+			IncludeArcPoint(psShape, fEnd, psBounds);
 			for (fAngle = ceil(fStart / 90.0) * 90.0; fAngle < fEnd; fAngle += 90.0)
 			{
-				IncludeArcPoint(psShape, fAngle, psMinimum, psMaximum, &bHasBounds);
+				IncludeArcPoint(psShape, fAngle, psBounds);
 			}
 			if ((psShape->eType == CS_Arc) && psShape->bFill)
 			{
-				IncludeBoundsPoint(psMinimum, psMaximum, psShape->sCentre.x, psShape->sCentre.y);
+				psBounds->Include(psShape->sCentre.x, psShape->sCentre.y);
 			}
 		}
 	}
-	return bHasBounds;
 }
 

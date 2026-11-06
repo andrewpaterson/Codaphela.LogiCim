@@ -42,7 +42,7 @@ public:
 protected:
 			void					InitBuffer(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iBufferCount, int iBufferWidth, bool bNegated);
 			void					CreateShapes(void);
-	virtual	bool					IncludeExtraBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, bool bHasBounds);
+	virtual	void					IncludeExtraBounds(SFloat64Bounds* psBounds);
 };
 
 
