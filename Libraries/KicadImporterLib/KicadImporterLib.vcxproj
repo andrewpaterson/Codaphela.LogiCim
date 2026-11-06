@@ -37,6 +37,8 @@
     <ClCompile Include="KicadSchemBusEntry.cpp" />
     <ClCompile Include="KicadSchemLabel.cpp" />
     <ClCompile Include="KicadSchemSheet.cpp" />
+    <ClCompile Include="KicadPathVariables.cpp" />
+    <ClCompile Include="KicadSchemBoards.cpp" />
     <ClCompile Include="KicadSchemSheetPin.cpp" />
     <ClCompile Include="KicadSchemFile.cpp" />
     <ClCompile Include="KicadSchemImporter.cpp" />
@@ -67,6 +69,8 @@
     <ClInclude Include="KicadSchemBusEntry.h" />
     <ClInclude Include="KicadSchemLabel.h" />
     <ClInclude Include="KicadSchemSheet.h" />
+    <ClInclude Include="KicadPathVariables.h" />
+    <ClInclude Include="KicadSchemBoards.h" />
     <ClInclude Include="KicadSchemSheetPin.h" />
     <ClInclude Include="KicadSchemFile.h" />
     <ClInclude Include="KicadSchemImporter.h" />

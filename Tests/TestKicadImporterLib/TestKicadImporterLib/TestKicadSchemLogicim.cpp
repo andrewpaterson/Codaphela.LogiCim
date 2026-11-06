@@ -8,7 +8,9 @@
 #include "LogicimLib/CircuitFile.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "LogicimLib/TunnelView.h"
+#include "LogicimLib/SubcircuitInstanceView.h"
 #include "KicadImporterLib/KicadSchemLogicimConverter.h"
+#include "KicadImporterLib/KicadSchemBoards.h"
 #include "TestLib/Assert.h"
 
 
@@ -648,6 +650,202 @@ void TestKicadSchemLogicimConvert(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The board's circuit pin for its connector's pin, and that it's the
+// instance's pin szPinName.
+//
+//////////////////////////////////////////////////////////////////////////
+void AssertKicadSchemBoardPin(CKicadSchemBoard* pcBoard, size uiSymbolPins, const char* szConnector, const char* szNumber, CSubcircuitInstanceView* pcInstance, const char* szPinName)
+{
+	CKicadSchemBoardConnector*	pcConnector;
+	CPinView*					pcPin;
+
+	pcConnector = pcBoard->FindConnector(uiSymbolPins);
+	AssertNotNull(pcConnector);
+	AssertString(szConnector, pcConnector->GetReference());
+	pcPin = pcConnector->GetPin(szNumber);
+	AssertNotNull(pcPin);
+	AssertString(szPinName, pcPin->GetName());
+	AssertNotNull(pcInstance->GetPin(pcPin));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The Audio Board, with the boards drawn on it made from their own
+// schematics (by their symbols' Schematic properties) and joined by pin
+// number, each made once.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestKicadSchemLogicimBoards(void)
+{
+	Ptr<CCircuitFonts>			pFonts;
+	CKicadPathVariables			cVariables;
+	CCircuitViews				cCircuits;
+	CCircuitViews				cLoaded;
+	CKicadSchemBoardImporter	cImporter;
+	CCircuitView*				pcTop;
+	CKicadSchemBoard*			pcBoard;
+	CComponentView*				pcComponent;
+	CSubcircuitInstanceView*	pcInstance;
+	size						i;
+	size						uiInstances;
+	CFileUtil					cFileUtil;
+	CChars						szProblems;
+	size						uiUnconnected;
+
+	ObjectsInit();
+	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
+	ORoot()->Add(pFonts);
+
+	cVariables.Init();
+	cVariables.Set("_658_COMPUTER_", "Input");
+	cCircuits.Init();
+	cImporter.Init(&cCircuits, &pFonts, &cVariables);
+	pcTop = cImporter.Import("${_658_COMPUTER_}/Kicad/Computer/Audio/Audio Board/Audio Board.kicad_sch");
+	AssertNotNull(pcTop);
+	AssertString("Audio Board", pcTop->GetTypeName());
+
+	//The Audio Board and the 12 boards on it, each once though Selector 12bit, Memory 32KB and Comparator 16bit are drawn twice.
+	AssertSize(13, cImporter.NumBoards());
+	szProblems.Init();
+	for (i = 0; i < cImporter.NumBoards(); i++)
+	{
+		pcBoard = cImporter.GetBoard(i);
+		AssertNotNull(pcBoard->GetCircuit());
+		if (pcBoard->GetCircuit() == pcTop)
+		{
+			//IC2's A13 pin is boxed in: its tunnel is on it, its placeholder's pins are a grid unit apart, and the A13 tap
+			//of the address bus's splitter is wired to it too.
+			uiUnconnected = 1;
+		}
+		else
+		{
+			uiUnconnected = 0;
+		}
+		if ((pcBoard->NumOverlaps() != 0) || (pcBoard->NumUnconnected() != uiUnconnected))
+		{
+			szProblems.Append(pcBoard->GetCircuit()->GetTypeName());
+			szProblems.Append(": ");
+			szProblems.Append(pcBoard->NumOverlaps());
+			szProblems.Append(" overlaps, ");
+			szProblems.Append(pcBoard->NumUnconnected());
+			szProblems.Append(" unconnected; ");
+		}
+	}
+	AssertString("", szProblems.Text());
+	szProblems.Kill();
+	pcBoard = cImporter.GetBoardForCircuit(pcTop);
+	AssertSize(15, pcBoard->NumBoards());
+
+	uiInstances = 0;
+	for (i = 0; i < pcTop->NumComponents(); i++)
+	{
+		pcComponent = pcTop->GetComponent(i);
+		if (StringCompare(pcComponent->GetXMLName(), "Subcircuit") == 0)
+		{
+			pcInstance = (CSubcircuitInstanceView*)pcComponent;
+			if (cImporter.GetBoardForCircuit(pcInstance->GetInstanceCircuitView()) != NULL)
+			{
+				uiInstances++;
+			}
+		}
+	}
+	AssertSize(15, uiInstances);
+
+	//Joined by number: the Audio Board's symbol calls pin 7 Clk_Sel_{S1}, the Audio Clock's net is "Clock Select _{S1}".
+	pcInstance = (CSubcircuitInstanceView*)FindKicadSchemLogicimComponent(pcTop, "B13");
+	AssertNotNull(pcInstance);
+	AssertString("Audio Clock", pcInstance->GetInstanceCircuitView()->GetTypeName());
+	pcBoard = cImporter.GetBoardForCircuit(pcInstance->GetInstanceCircuitView());
+	AssertKicadSchemBoardPin(pcBoard, 32, "J2", "7", pcInstance, "Clock Select _{S1}");
+	AssertKicadSchemBoardPin(pcBoard, 32, "J2", "6", pcInstance, "~{Reset}");
+	AssertNull(pcBoard->FindConnector(32)->GetPin("1"));  //5V.
+	AssertNull(pcBoard->FindConnector(32)->GetPin("5"));  //GND.
+
+	//The Audio DAC's symbol is its 32 pin edge connector, J1, not its audio jack, J2.
+	pcInstance = (CSubcircuitInstanceView*)FindKicadSchemLogicimComponent(pcTop, "B9");
+	AssertNotNull(pcInstance);
+	pcBoard = cImporter.GetBoardForCircuit(pcInstance->GetInstanceCircuitView());
+	AssertKicadSchemBoardPin(pcBoard, 32, "J1", "4", pcInstance, "~{Enable}");
+
+	//Both Selector 12bits are instances of one circuit.
+	AssertTrue(((CSubcircuitInstanceView*)FindKicadSchemLogicimComponent(pcTop, "B3"))->GetInstanceCircuitView() == ((CSubcircuitInstanceView*)FindKicadSchemLogicimComponent(pcTop, "B5"))->GetInstanceCircuitView());
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitsFile(&cCircuits, pcTop, NULL, "Output" _FS_ "Audio Board.xml"));
+	cLoaded.Init();
+	AssertTrue(LoadCircuitsFile(&cLoaded, "Audio Board", NULL, NULL, "Output" _FS_ "Audio Board.xml"));
+	AssertSize(cCircuits.NumCircuits(), cLoaded.NumCircuits());
+	AssertSize(pcTop->NumComponents(), cLoaded.Get("Audio Board")->NumComponents());
+	AssertSize(pcTop->NumTraces(), cLoaded.Get("Audio Board")->NumTraces());
+	cLoaded.Kill();
+
+	//A board that isn't there is a placeholder.
+	AssertNull(cImporter.Import("${_658_COMPUTER_}/Kicad/Computer/Nothing/Nothing.kicad_sch"));
+	AssertNull(cImporter.Import("${_NOT_SET_}/Nothing.kicad_sch"));
+
+	cImporter.Kill();
+	cCircuits.Kill();
+	cVariables.Kill();
+
+	ORoot()->Remove(pFonts);
+	pFonts = NULL;
+	ORoot()->RemoveAll();
+	ObjectsFlush();
+	ObjectsKill(false);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// KiCad's path variables, from kicad_common.json's text.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestKicadPathVariables(void)
+{
+	CKicadPathVariables	cVariables;
+	CChars				szPath;
+	CChars				szRoot;
+	CChars				szExpected;
+	CFileUtil			cFileUtil;
+
+	cVariables.Init();
+	AssertTrue(cVariables.ReadKicadCommon("{ \"api\": { \"enable_server\": false }, \"environment\": { \"show_warning_dialog\": true, \"vars\": { \"KICAD_TEST_A\": \"D:\\\\Boards\", \"KICAD_TEST_B\": \"\\u0041/B\" } }, \"x\": null }"));
+	AssertString("D:\\Boards", cVariables.Get("KICAD_TEST_A"));
+	AssertString("A/B", cVariables.Get("KICAD_TEST_B"));
+	AssertTrue(cVariables.Get("KICAD_TEST_C") == NULL);
+	cVariables.Set("KICAD_TEST_A", "Here");
+	AssertString("Here", cVariables.Get("KICAD_TEST_A"));
+	AssertTrue(cVariables.ReadKicadCommon("{ \"environment\": { \"vars\": null } }"));
+	AssertFalse(cVariables.ReadKicadCommon("{ \"environment\": { \"vars\": [ 1 ] } }"));
+	AssertFalse(cVariables.ReadKicadCommon("{ }"));
+
+	//Put in, collapsed, and relative to the schematic that names it.
+	szRoot.Init();
+	cFileUtil.CurrentDirectory(&szRoot);
+	cVariables.Set("KICAD_TEST_ROOT", szRoot.Text());
+	AssertTrue(cVariables.Resolve("${KICAD_TEST_ROOT}/A/../B/C.kicad_sch", NULL, &szPath));
+	szExpected.Init(szRoot);
+	szExpected.Append(_FS_ "B" _FS_ "C.kicad_sch");
+	AssertString(szExpected.Text(), szPath.Text());
+	szExpected.Kill();
+	szPath.Kill();
+	szExpected.Init(szRoot);
+	szExpected.Append(_FS_ "B" _FS_ "C.kicad_sch");
+	AssertTrue(cVariables.Resolve("../D/E.kicad_sch", szExpected.Text(), &szPath));
+	szExpected.Set(szRoot);
+	szExpected.Append(_FS_ "D" _FS_ "E.kicad_sch");
+	AssertString(szExpected.Text(), szPath.Text());
+	szExpected.Kill();
+	szPath.Kill();
+	AssertFalse(cVariables.Resolve("${KICAD_TEST_UNSET}/A.kicad_sch", NULL, &szPath));
+	szRoot.Kill();
+	cVariables.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestKicadSchemLogicim(void)
@@ -660,6 +858,8 @@ void TestKicadSchemLogicim(void)
 	TestKicadSchemLogicimNames();
 	TestKicadSchemSubnetGraph();
 	TestKicadSchemLogicimConvert();
+	TestKicadPathVariables();
+	TestKicadSchemLogicimBoards();
 
 	DataMemoryKill();
 	DataIOKill();

@@ -84,6 +84,12 @@
     <ClCompile Include="KicadSchemSheet.cpp">
       <Filter>Source\Sheet</Filter>
     </ClCompile>
+    <ClCompile Include="KicadPathVariables.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
+    <ClCompile Include="KicadSchemBoards.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
     <ClCompile Include="KicadSchemSheetPin.cpp">
       <Filter>Source\Sheet</Filter>
     </ClCompile>
@@ -169,6 +175,12 @@
     </ClInclude>
     <ClInclude Include="KicadSchemSheet.h">
       <Filter>Source\Sheet</Filter>
+    </ClInclude>
+    <ClInclude Include="KicadPathVariables.h">
+      <Filter>Source\Logicim</Filter>
+    </ClInclude>
+    <ClInclude Include="KicadSchemBoards.h">
+      <Filter>Source\Logicim</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemSheetPin.h">
       <Filter>Source\Sheet</Filter>

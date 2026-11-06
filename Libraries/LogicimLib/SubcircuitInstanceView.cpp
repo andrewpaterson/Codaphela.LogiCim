@@ -1032,6 +1032,29 @@ SSubcircuitPinView* CSubcircuitInstanceView::GetPin(const char* szPinName)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The instance's pin for the subcircuit's pin view, NULL if it isn't one
+// of its pins.
+//
+//////////////////////////////////////////////////////////////////////////
+SSubcircuitPinView* CSubcircuitInstanceView::GetPin(CPinView* pcPin)
+{
+	size				i;
+	SSubcircuitPinView*	psPin;
+
+	for (i = 0; i < masPins.NumElements(); i++)
+	{
+		psPin = masPins.Get(i);
+		if (psPin->pcPin == pcPin)
+		{
+			return psPin;
+		}
+	}
+	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The subcircuit it's an instance of, its name and its comment, as
 // Logicim's SubcircuitInstanceProperties.  Its size comes from its
 // subcircuit's pins.

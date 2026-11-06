@@ -104,6 +104,7 @@ public:
 			size					NumPins(void);
 			SSubcircuitPinView*		GetPin(size uiIndex);
 			SSubcircuitPinView*		GetPin(const char* szPinName);
+			SSubcircuitPinView*		GetPin(CPinView* pcPin);
 
 	static	void					MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, SSubcircuitInstanceLayout* psLayout);
 

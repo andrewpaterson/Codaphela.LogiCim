@@ -37,6 +37,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/TraceAutoConnector.h"
 #include "LogicimLib/ComponentShapes.h"
 #include "KicadSchemLogicimConverter.h"
+#include "KicadSchemBoards.h"
 
 
 //The spreads the components are placed at, from KiCad's places, widest first.
@@ -76,6 +77,9 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	masAlignments.Init();
 	masRegulated.Init();
 	mpcAddingSymbol = NULL;
+	mpcBoard = NULL;
+	mpcBoardSource = NULL;
+	muiBoards = 0;
 	muiRegulators = 0;
 	mfSpread = 1.0;
 	muiUnconnected = 0;
@@ -106,11 +110,28 @@ void CKicadSchemLogicimConverter::Kill(void)
 	masConnections.Kill();
 	masTerminals.Kill();
 	masItems.Kill();
+	mpcBoardSource = NULL;
+	mpcBoard = NULL;
 	mpcCircuit = NULL;
 	mpcFonts = NULL;
 	mpcCircuits = NULL;
 	mpcNetlist = NULL;
 	mpcFile = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// pcBoard records the pins of the sheet's connectors, so the sheet can be
+// drawn as a symbol on another board.  A symbol with a Schematic property
+// (another board drawn on this one) is an instance of the board
+// pcBoardSource makes from it.  Either may be NULL.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::SetBoards(CKicadSchemBoard* pcBoard, CKicadSchemBoardSource* pcBoardSource)
+{
+	mpcBoard = pcBoard;
+	mpcBoardSource = pcBoardSource;
 }
 
 
@@ -221,7 +242,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 		muiSkipped++;
 		return true;
 	}
-	if (AddRegulator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol))
+	if (AddRegulator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
 	{
 		return true;
 	}
@@ -1628,10 +1649,26 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 	EPinAlignment			eAlignment;
 	size					uiItem;
 	char*					szNumber;
+	size					uiNumPins;
+	CKicadSchemBoardConnector*	pcConnector;
 
 	if (!IsKicadSchemConnector(pcSymbol))
 	{
 		return false;
+	}
+
+	pcConnector = NULL;
+	if (mpcBoard != NULL)
+	{
+		uiNumPins = 0;
+		for (i = 0; i < pcLibSymbol->NumPins(); i++)
+		{
+			if (pcLibSymbol->GetPin(i)->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+			{
+				uiNumPins++;
+			}
+		}
+		pcConnector = mpcBoard->AddConnector(pcSymbol->GetReference(), uiNumPins);
 	}
 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
@@ -1689,9 +1726,18 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 			//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
 			uiItem = AddItem(pcPinView, &sOuter, NULL);
 			muiBoardPins++;
+			if (pcConnector != NULL)
+			{
+				pcConnector->AddPin(szNumber, pcPinView);
+			}
 		}
 		else
 		{
+			if (pcConnector != NULL)
+			{
+				pcConnector->AddPin(szNumber, pcPinView);
+			}
+
 			//Another part of the net (joined by its labels) is already joined through its tunnels.
 			if (!IsKicadSchemTerminalSubnet(&masTerminals, pcPinView->GetPortView((size)0), pcSubnet))
 			{
@@ -1761,6 +1807,184 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Where the library symbol's pin i of papcPins (its shown pins) goes on an
+// instance's sides: the side it's on, returned in peAlignment, and the
+// returned weight, its order along that side: down the left and right
+// sides (library Y is up) and right to left along the top and bottom.
+//
+//////////////////////////////////////////////////////////////////////////
+static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, size i, EPinAlignment* peAlignment)
+{
+	size				j;
+	CKicadSchemLibPin*	pcPin;
+	CKicadSchemLibPin*	pcOther;
+	int					iAngle;
+	int					iOtherAngle;
+	int32				iWeight;
+	bool				bBefore;
+
+	//A pin points into the body, so a pin pointing right (0) is on the left.
+	pcPin = papcPins->GetPtr(i);
+	iAngle = ((int)floor(pcPin->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
+	switch (iAngle)
+	{
+	case 1:		*peAlignment = PA_Bottom;	break;
+	case 2:		*peAlignment = PA_Right;	break;
+	case 3:		*peAlignment = PA_Top;		break;
+	default:	*peAlignment = PA_Left;		break;
+	}
+
+	iWeight = 0;
+	for (j = 0; j < papcPins->NumElements(); j++)
+	{
+		pcOther = papcPins->GetPtr(j);
+		iOtherAngle = ((int)floor(pcOther->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
+		if ((j == i) || (iOtherAngle != iAngle))
+		{
+			continue;
+		}
+		if ((iAngle == 0) || (iAngle == 2))
+		{
+			bBefore = (pcOther->GetPosition()->fY > pcPin->GetPosition()->fY) || ((pcOther->GetPosition()->fY == pcPin->GetPosition()->fY) && (j < i));
+		}
+		else
+		{
+			bBefore = (pcOther->GetPosition()->fX > pcPin->GetPosition()->fX) || ((pcOther->GetPosition()->fX == pcPin->GetPosition()->fX) && (j < i));
+		}
+		if (bBefore)
+		{
+			iWeight++;
+		}
+	}
+	return iWeight;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A board drawn as a symbol (one with a Schematic property, see
+// KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY): an instance of the board's
+// circuit, made from its own schematic by the board source.  The
+// symbol's pins are joined to the circuit's pins of the board's connector
+// with the same numbers; a pin on a supply or on nothing on the board has
+// no circuit pin and isn't joined.  False, to make it a placeholder, if
+// there's no board source or the board can't be made.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+{
+	char*									szSchematic;
+	CKicadSchemBoard*						pcBoard;
+	CKicadSchemBoardConnector*				pcConnector;
+	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
+	CArrayChars								aszNames;
+	CArrayTemplatePtr<CPortView>			apcJoined;
+	CSubcircuitInstanceView*				pcInstance;
+	SSubcircuitPinView*						psPin;
+	CPinView*								pcPinView;
+	size									uiItem;
+	size									i;
+	char*									szValue;
+
+	if (mpcBoardSource == NULL)
+	{
+		return false;
+	}
+	szSchematic = pcSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
+	if (StrEmpty(szSchematic))
+	{
+		szSchematic = pcLibSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
+	}
+	if (StrEmpty(szSchematic))
+	{
+		return false;
+	}
+
+	pcBoard = mpcBoardSource->GetBoard(szSchematic, mpcFile->GetFileName());
+	if (pcBoard == NULL)
+	{
+		gcLogger.Error2(__METHOD__, " Board [", pcSymbol->GetReference(), "]'s schematic [", szSchematic, "] couldn't be made, it's a placeholder.", NULL);
+		return false;
+	}
+
+	apcPins.Init();
+	aszNames.Init();
+	GetPlaceholderPins(pcSymbol, pcLibSymbol, &apcPins, &aszNames);
+	pcConnector = pcBoard->FindConnector(apcPins.NumElements());
+	if (pcConnector == NULL)
+	{
+		gcLogger.Error2(__METHOD__, " Board [", pcSymbol->GetReference(), "]'s schematic [", szSchematic, "] has no connector, it's a placeholder.", NULL);
+		aszNames.Kill();
+		apcPins.Kill();
+		return false;
+	}
+	if (!pcBoard->IsLaidOut())
+	{
+		LayOutBoardPins(&apcPins, pcConnector);
+		pcBoard->SetLaidOut();
+	}
+
+	szValue = pcSymbol->GetValue();
+	pcInstance = NewMalloc<CSubcircuitInstanceView>();
+	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts);
+	uiItem = AddItem(pcInstance, pcSymbol->GetPosition(), NULL);
+
+	//Two of the symbol's pins on one circuit pin (one net on the board) are joined to it once.
+	apcJoined.Init();
+	for (i = 0; i < apcPins.NumElements(); i++)
+	{
+		pcPinView = pcConnector->GetPin(apcPins.GetPtr(i)->GetNumber());
+		psPin = (pcPinView != NULL) ? pcInstance->GetPin(pcPinView) : NULL;
+		if ((psPin != NULL) && (apcJoined.Find(psPin->pcPortView) == ARRAY_ELEMENT_NOT_FOUND))
+		{
+			apcJoined.Add(psPin->pcPortView);
+			AddPinTerminal(pcSymbol, apcPins.GetPtr(i), psPin->pcPortView, uiItem);
+		}
+	}
+	apcJoined.Kill();
+	aszNames.Kill();
+	apcPins.Kill();
+	muiBoards++;
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Shows the board's circuit pins on an instance as the symbol shows its
+// pins: on the same sides, in the same order, inverted and clocked as
+// they are.  A circuit pin that isn't one of the symbol's (a pin of
+// another connector) stays as its own connector placed it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::LayOutBoardPins(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector)
+{
+	size				i;
+	CKicadSchemLibPin*	pcPin;
+	CPinView*			pcPinView;
+	EPinAlignment		eAlignment;
+	int32				iWeight;
+	CArrayTemplatePtr<CPinView>	apcLaidOut;
+
+	apcLaidOut.Init();
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		pcPin = papcPins->GetPtr(i);
+		pcPinView = pcConnector->GetPin(pcPin->GetNumber());
+		if ((pcPinView == NULL) || (apcLaidOut.Find(pcPinView) != ARRAY_ELEMENT_NOT_FOUND))
+		{
+			continue;
+		}
+		apcLaidOut.Add(pcPinView);
+		iWeight = GetKicadSchemLibPinPlace(papcPins, i, &eAlignment);
+		pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, iWeight, strstr(pcPin->GetGraphicStyle(), "inverted") != NULL, strstr(pcPin->GetGraphicStyle(), "clock") != NULL);
+	}
+	apcLaidOut.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The placeholder for the library symbol's unit, made the first time.
 // Its pins are on the sides the library symbol's are, in the same order
 // along them.  It's named as the library symbol, without its library, and
@@ -1776,17 +2000,12 @@ CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymb
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
 	CArrayChars								aszNames;
 	size									i;
-	size									j;
 	CKicadSchemLibPin*						pcPin;
-	CKicadSchemLibPin*						pcOther;
-	int										iAngle;
-	int										iOtherAngle;
 	EPinAlignment							eAlignment;
 	int32									iWeight;
 	CPinView*								pcPinView;
 	SInt32Vec2								sBoxMinimum;
 	SInt32Vec2								sBoxMaximum;
-	bool									bBefore;
 
 	szLibName = pcLibSymbol->GetName();
 	szColon = strrchr(szLibName, ':');
@@ -1817,41 +2036,8 @@ CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymb
 	sBoxMaximum.Init(0, 1);
 	for (i = 0; i < apcPins.NumElements(); i++)
 	{
-		//A pin points into the body, so a pin pointing right (0) is on the left.
 		pcPin = apcPins.GetPtr(i);
-		iAngle = ((int)floor(pcPin->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
-		switch (iAngle)
-		{
-		case 1:		eAlignment = PA_Bottom;	break;
-		case 2:		eAlignment = PA_Right;	break;
-		case 3:		eAlignment = PA_Top;	break;
-		default:	eAlignment = PA_Left;	break;
-		}
-
-		//Down the left and right sides (library Y is up) and right to left along the top and bottom.
-		iWeight = 0;
-		for (j = 0; j < apcPins.NumElements(); j++)
-		{
-			pcOther = apcPins.GetPtr(j);
-			iOtherAngle = ((int)floor(pcOther->GetAngle() / 90.0 + 0.5) % 4 + 4) % 4;
-			if ((j == i) || (iOtherAngle != iAngle))
-			{
-				continue;
-			}
-			if ((iAngle == 0) || (iAngle == 2))
-			{
-				bBefore = (pcOther->GetPosition()->fY > pcPin->GetPosition()->fY) || ((pcOther->GetPosition()->fY == pcPin->GetPosition()->fY) && (j < i));
-			}
-			else
-			{
-				bBefore = (pcOther->GetPosition()->fX > pcPin->GetPosition()->fX) || ((pcOther->GetPosition()->fX == pcPin->GetPosition()->fX) && (j < i));
-			}
-			if (bBefore)
-			{
-				iWeight++;
-			}
-		}
-
+		iWeight = GetKicadSchemLibPinPlace(&apcPins, i, &eAlignment);
 		pcPinView = NewMalloc<CPinView>();
 		pcPinView->Init(0, (int32)(3 * i), ROT_East, aszNames.GetText(i), "LVC", false, 1, RADIX_Hexadecimal, sBoxMinimum, sBoxMaximum);
 		pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, iWeight, strstr(pcPin->GetGraphicStyle(), "inverted") != NULL, strstr(pcPin->GetGraphicStyle(), "clock") != NULL);
@@ -3552,6 +3738,7 @@ SKicadSchemLogicimTerminal* CKicadSchemLogicimConverter::GetTerminal(size uiInde
 size CKicadSchemLogicimConverter::NumItems(void) { return masItems.NumElements(); }
 size CKicadSchemLogicimConverter::NumGates(void) { return muiGates; }
 size CKicadSchemLogicimConverter::NumPlaceholders(void) { return muiPlaceholders; }
+size CKicadSchemLogicimConverter::NumBoards(void) { return muiBoards; }
 size CKicadSchemLogicimConverter::NumPowers(void) { return muiPowers; }
 size CKicadSchemLogicimConverter::NumRegulators(void) { return muiRegulators; }
 size CKicadSchemLogicimConverter::NumTunnels(void) { return muiTunnels; }
