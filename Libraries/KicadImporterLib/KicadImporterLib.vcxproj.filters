@@ -39,6 +39,24 @@
     <ClCompile Include="KicadSchemLogicimConverter.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterPlacement.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterConnections.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterBuses.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterSubcircuits.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterLogic.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterSupplies.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KicadSchemBoards.h">
@@ -48,6 +66,9 @@
       <Filter>Source\Logicim</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemLogicimConverter.h">
+      <Filter>Source\Logicim</Filter>
+    </ClInclude>
+    <ClInclude Include="KicadSchemLogicimConverterInternal.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>
   </ItemGroup>
