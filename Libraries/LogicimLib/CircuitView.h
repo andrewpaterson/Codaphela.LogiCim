@@ -75,6 +75,8 @@ public:
 	CComponentView*		GetComponent(size uiIndex);
 	size				NumTraces(void);
 	CTraceView*			GetTrace(size uiIndex);
+	size				FindComponentIndex(CComponentView* pcComponent);
+	size				FindTraceIndex(CTraceView* pcTrace);
 	void				CollectPortViews(CArrayPortViewPtr* papcPortViews);
 
 	bool				CreateSimulation(CViewPath* pcViewPath, CCircuitSimulation* pcSimulation, CFamilyVoltageConfigurationStore* pcFamilies, bool bStart = true);

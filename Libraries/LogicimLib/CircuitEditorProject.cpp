@@ -46,27 +46,6 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The component's index in the circuit, ARRAY_ELEMENT_NOT_FOUND if it
-// isn't in it.
-//
-//////////////////////////////////////////////////////////////////////////
-size FindCircuitComponentIndex(CCircuitView* pcCircuit, CComponentView* pcComponent)
-{
-	size	i;
-
-	for (i = 0; i < pcCircuit->NumComponents(); i++)
-	{
-		if (pcCircuit->GetComponent(i) == pcComponent)
-		{
-			return i;
-		}
-	}
-	return ARRAY_ELEMENT_NOT_FOUND;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // A project is saved as a circuits file, see Save(const char*).
 //
 //////////////////////////////////////////////////////////////////////////
@@ -147,13 +126,13 @@ void CCircuitEditor::SaveXML(CXMLWriter* pcWriter)
 		for (i = 0; i < mcSelection.NumComponents(); i++)
 		{
 			pcWriter->Begin("Selected");
-			pcWriter->Attribute("component", (int64)FindComponentIndex(mcSelection.GetComponent(i)));
+			pcWriter->Attribute("component", (int64)mpcCircuit->FindComponentIndex(mcSelection.GetComponent(i)));
 			pcWriter->End();
 		}
 		for (i = 0; i < mcSelection.NumTraces(); i++)
 		{
 			pcWriter->Begin("Selected");
-			pcWriter->Attribute("trace", (int64)FindTraceIndex(mcSelection.GetTrace(i)));
+			pcWriter->Attribute("trace", (int64)mpcCircuit->FindTraceIndex(mcSelection.GetTrace(i)));
 			pcWriter->End();
 		}
 	}
@@ -477,46 +456,6 @@ bool CCircuitEditor::LoadUndo(size uiIndex)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The component's index in the circuit being edited.
-//
-//////////////////////////////////////////////////////////////////////////
-size CCircuitEditor::FindComponentIndex(CComponentView* pcComponent)
-{
-	size	i;
-
-	for (i = 0; i < mpcCircuit->NumComponents(); i++)
-	{
-		if (mpcCircuit->GetComponent(i) == pcComponent)
-		{
-			return i;
-		}
-	}
-	return ARRAY_ELEMENT_NOT_FOUND;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The wire's index in the circuit being edited.
-//
-//////////////////////////////////////////////////////////////////////////
-size CCircuitEditor::FindTraceIndex(CTraceView* pcTrace)
-{
-	size	i;
-
-	for (i = 0; i < mpcCircuit->NumTraces(); i++)
-	{
-		if (mpcCircuit->GetTrace(i) == pcTrace)
-		{
-			return i;
-		}
-	}
-	return ARRAY_ELEMENT_NOT_FOUND;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // The path into the instance entered, as each instance's index in the
 // circuit before it ("12/3").
 //
@@ -540,7 +479,7 @@ void CCircuitEditor::GetInstancePathText(CChars* psz)
 		{
 			psz->Append('/');
 		}
-		psz->Append((int64)FindCircuitComponentIndex(pcCircuit, pcInstance));
+		psz->Append((int64)pcCircuit->FindComponentIndex(pcInstance));
 		pcCircuit = mpcViewPath->Get(i)->GetInstanceCircuitView();
 	}
 }

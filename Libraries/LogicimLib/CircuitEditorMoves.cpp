@@ -631,7 +631,7 @@ void CCircuitEditor::LiftLeads(void)
 		for (j = 0; j < masLeads.Get(i)->apcTraces.NumElements(); j++)
 		{
 			pcTrace = masLeads.Get(i)->apcTraces.GetPtr(j);
-			uiIndex = FindTraceIndex(pcTrace);
+			uiIndex = mpcCircuit->FindTraceIndex(pcTrace);
 			if ((uiIndex != ARRAY_ELEMENT_NOT_FOUND) && (mapcLiftedLeads.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
 			{
 				for (k = 0; (k < maiLiftedLeadIndices.NumElements()) && (maiLiftedLeadIndices.GetValue(k) < (int)uiIndex); k++)

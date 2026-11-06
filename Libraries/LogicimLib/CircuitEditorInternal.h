@@ -45,8 +45,4 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "CircuitEditor.h"
 
 
-//The helpers the files of CircuitEditor share.
-size FindCircuitComponentIndex(CCircuitView* pcCircuit, CComponentView* pcComponent);
-
-
 #endif // __CIRCUIT_EDITOR_INTERNAL_H__

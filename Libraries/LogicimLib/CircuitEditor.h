@@ -286,8 +286,6 @@ protected:
 	bool				Rewire(CArrayComponentViewPtr* papcDetachedComponents = NULL, CArrayTraceViewPtr* papcDetachedTraces = NULL);
 	void				KillProject(bool bFreeing = false);
 	bool				LoadUndo(size uiIndex);
-	size				FindComponentIndex(CComponentView* pcComponent);
-	size				FindTraceIndex(CTraceView* pcTrace);
 	void				KillSimulation(bool bFreeing = false);
 	void				GetInstancePathText(CChars* psz);
 	CCircuitView*		FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath);

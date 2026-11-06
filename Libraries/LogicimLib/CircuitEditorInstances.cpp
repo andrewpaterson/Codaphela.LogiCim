@@ -144,7 +144,7 @@ bool CCircuitEditor::LeaveInstance(void)
 	pcPrevious = mpcViewPath->GetPrevious();
 	mpcViewPath = ((pcPrevious == NULL) || pcPrevious->IsTop()) ? NULL : pcPrevious;
 	mpcCircuit = (pcPrevious != NULL) ? pcPrevious->GetCircuitView() : GetTopCircuit();
-	if ((pcInstance != NULL) && (FindCircuitComponentIndex(mpcCircuit, pcInstance) != ARRAY_ELEMENT_NOT_FOUND))
+	if ((pcInstance != NULL) && (mpcCircuit->FindComponentIndex(pcInstance) != ARRAY_ELEMENT_NOT_FOUND))
 	{
 		mcSelection.Add(pcInstance);
 	}
