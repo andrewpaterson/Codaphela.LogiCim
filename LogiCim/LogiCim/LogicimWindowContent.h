@@ -116,7 +116,8 @@ protected:
 	Ptr<CMenuContainer>		mpEditMenu;  //Its undo and redo are greyed when there's nothing to undo or redo.
 	Ptr<CListContainer>		mpSubcircuits;
 	Ptr<CListContainer>		mpSimulations;
-	CArray<CLabel>			maSubcircuitLabels;  //The text of each row.
+	CArray<CLabel>			maSubcircuitLabels;  //The text of each row, the project's circuits in order.
+	bool					mbListingSubcircuits;  //While the list is being remade, so its selection isn't an edit.
 	CArray<CLabel>			maSimulationLabels;
 	Ptr<CCircuitCanvas>		mpCircuit;
 	Ptr<CLabel>				mpSubcircuitInfo;
@@ -166,6 +167,8 @@ public:
 	void			Tick(int64 iUpdateTimeInMilliseconds);
 	bool			ImportKicadSchematic(const char* szFilename);
 	void			SetStartupImport(const char* szFilename);
+	void			SubcircuitSelected(void);
+	void			ListSubcircuits(void);
 
 protected:
 	Ptr<CFont>				GenerateFont(const char* szFontFilename, const char* szName, float32 fPixelSize, EColourOrder eOrder);

@@ -152,6 +152,7 @@ void CLogicimWindowContent::Init(void)
 	mszProjectFilename.Init("Project.xml");
 	mszKicadFilename.Init("Schematic.kicad_sch");
 	mszStartupImport.Init();
+	mbListingSubcircuits = false;
 	mszChooserSelected.Init();
 	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
 
@@ -201,6 +202,7 @@ void CLogicimWindowContent::Class(void)
 	U_String(mszProjectFilename);
 	U_String(mszKicadFilename);
 	U_String(mszStartupImport);
+	U_Bool(mbListingSubcircuits);
 	U_String(mszChooserSelected);
 	U_Int32(miSimulationCount);
 	U_Bool(mbRunning);
@@ -279,9 +281,8 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	pGrid->AddComponent(CreateLine(-1, 1, JEWEL_EDITOR), 0, 4, 1, 1, 1, 0);
 	pGrid->AddComponent(CreateStatusBar(), 0, 5, 1, 1, 1, 0);
 
-	//Like Logicim the project starts with a top level subcircuit and a simulation of it.
-	AddListItem(mpSubcircuits, &maSubcircuitLabels, "Top");
-	mpSubcircuits->Select(0);
+	//Like Logicim the project starts with a top level subcircuit and a simulation of it.  The subcircuits are listed
+	//by UpdateInfo.
 	AddListItem(mpSimulations, &maSimulationLabels, "Top Top 1");
 	miSimulationCount = 1;
 	mpSimulations->Select(0);
@@ -710,6 +711,8 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	pEditor->SetAlignment(CSH_Stretch, CSV_Stretch);
 
 	mpSubcircuits = CreateList();
+	mpSubcircuits->GetSelectionEvent()->Remove(this);
+	mpSubcircuits->GetSelectionEvent()->Add(this, &CLogicimWindowContent::SubcircuitSelected);
 	pSubcircuits = CreateToolWindow("Subcircuits", mpSubcircuits);
 	pSubcircuits->SetDesiredSize(200, -1);
 
@@ -802,6 +805,8 @@ Ptr<CComponent> CLogicimWindowContent::CreateStatusBar(void)
 void CLogicimWindowContent::UpdateInfo(void)
 {
 	CChars	sz;
+
+	ListSubcircuits();
 
 	sz.Init("Subcircuit: ");
 	sz.Append(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
@@ -1425,9 +1430,16 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 		szName = pName->GetText();
 		if (szName[0] != '\0')
 		{
-			AddListItem(mpSubcircuits, &maSubcircuitLabels, szName);
-			mpSubcircuits->Select(mpSubcircuits->NumRows() - 1);
+			if (mpLogicimCircuit->GetEditor()->GetCircuits()->Get(szName) != NULL)
+			{
+				gcLogger.Error2(__METHOD__, " There is already a subcircuit [", szName, "].", NULL);
+			}
+			else if (mpLogicimCircuit->GetEditor()->AddCircuit(szName) != NULL)
+			{
+				mpLogicimCircuit->GetEditor()->Simulate(szName);
+			}
 			UpdateInfo();
+			UpdateEditMenu();
 		}
 	}
 
@@ -1607,6 +1619,90 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 		ImportKicadSchematic(szFilename);
 	}
 	mpFileChooser = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The project's circuits, in order, the one being edited selected.  The
+// rows are only made again when the circuits have changed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ListSubcircuits(void)
+{
+	CCircuitViews*	pcCircuits;
+	CCircuitView*	pcEdited;
+	size			i;
+	bool			bSame;
+	int32			iSelected;
+
+	if (mpSubcircuits.IsNull() || (mpLogicimCircuit.IsNull()))
+	{
+		return;
+	}
+	pcCircuits = mpLogicimCircuit->GetEditor()->GetCircuits();
+	pcEdited = mpLogicimCircuit->GetEditor()->GetCircuit();
+	if (pcCircuits == NULL)
+	{
+		return;
+	}
+
+	bSame = (maSubcircuitLabels.Size() == pcCircuits->NumCircuits());
+	for (i = 0; bSame && (i < pcCircuits->NumCircuits()); i++)
+	{
+		bSame = StringCompare(maSubcircuitLabels.Get(i)->GetText(), pcCircuits->Get(i)->GetTypeName()) == 0;
+	}
+
+	mbListingSubcircuits = true;
+	if (!bSame)
+	{
+		mpSubcircuits->RemoveAllComponents();
+		maSubcircuitLabels.RemoveAll();
+		for (i = 0; i < pcCircuits->NumCircuits(); i++)
+		{
+			AddListItem(mpSubcircuits, &maSubcircuitLabels, pcCircuits->Get(i)->GetTypeName());
+		}
+	}
+	iSelected = -1;
+	for (i = 0; i < pcCircuits->NumCircuits(); i++)
+	{
+		if (pcCircuits->Get(i) == pcEdited)
+		{
+			iSelected = (int32)i;
+		}
+	}
+	if (mpSubcircuits->GetSelected() != iSelected)
+	{
+		mpSubcircuits->Select(iSelected);
+	}
+	mbListingSubcircuits = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The subcircuit chosen in the list is edited, with a simulation of its
+// own (see CCircuitEditor::Simulate), and zoomed to fit.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::SubcircuitSelected(void)
+{
+	CCircuitEditor*		pcEditor;
+	char*				szName;
+
+	if (mbListingSubcircuits)
+	{
+		return;
+	}
+	pcEditor = mpLogicimCircuit->GetEditor();
+	szName = GetListItemText(mpSubcircuits, &maSubcircuitLabels);
+	if (!StrEmpty(szName) && ((pcEditor->GetCircuit() == NULL) || (StringCompare(pcEditor->GetCircuit()->GetTypeName(), szName) != 0)))
+	{
+		pcEditor->Simulate(szName);
+		ZoomToFit(false);
+	}
+	UpdateInfo();
+	UpdateEditMenu();
 }
 
 
