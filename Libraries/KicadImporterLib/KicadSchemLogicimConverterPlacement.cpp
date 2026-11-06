@@ -160,53 +160,33 @@ void CKicadSchemLogicimConverter::ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pas
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The dense windows (with more knots than KICAD_SCHEM_LOGICIM_DENSE_KNOTS),
-// densest first and none overlapping another: the centres of the first
-// KICAD_SCHEM_LOGICIM_DENSE_AREAS, and the knots over the limit in all of
-// them (up to KICAD_SCHEM_LOGICIM_DENSE_SCAN).  A knot is
-// where a wire turns or ends (but not on a port) or where two wires cross.
+// The circuit's knots: where a wire turns or ends (but not on a port) or
+// where two wires cross.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres)
+static void CollectKicadSchemKnots(CCircuitView* pcCircuit, CArrayTemplate<SInt32Vec2>* pasKnots)
 {
-	CArrayTemplate<SInt32Vec2>	asKnots;
-	CArrayPortViewPtr			apcPorts;
-	CArrayInt					aiSums;
-	CArrayInt					aiUsed;
-	size						i;
-	size						j;
-	CTraceView*					pcTrace;
-	CTraceView*					pcOther;
-	SInt32Vec2					sPoint;
-	SInt32Vec2					sMinimum;
-	SInt32Vec2					sMaximum;
-	int32						iWidth;
-	int32						iHeight;
-	int32						x;
-	int32						y;
-	int32						iWindow;
-	int32						iCount;
-	int32						iBest;
-	int32						iBestX;
-	int32						iBestY;
-	size						uiDensest;
-	size						uiArea;
-	bool						bPort;
-	SFloat64Vec2				sCentre;
+	CArrayPortViewPtr	apcPorts;
+	size				i;
+	size				j;
+	size				k;
+	CTraceView*			pcTrace;
+	CTraceView*			pcOther;
+	SInt32Vec2			sPoint;
+	bool				bPort;
 
 	apcPorts.Init();
-	mpcCircuit->CollectPortViews(&apcPorts);
-	asKnots.Init();
-	for (i = 0; i < mpcCircuit->NumTraces(); i++)
+	pcCircuit->CollectPortViews(&apcPorts);
+	for (i = 0; i < pcCircuit->NumTraces(); i++)
 	{
-		pcTrace = mpcCircuit->GetTrace(i);
+		pcTrace = pcCircuit->GetTrace(i);
 		for (j = 0; j < 2; j++)
 		{
 			sPoint = (j == 0) ? pcTrace->GetStart() : pcTrace->GetEnd();
 			bPort = false;
-			for (x = 0; x < (int32)apcPorts.NumElements(); x++)
+			for (k = 0; k < apcPorts.NumElements(); k++)
 			{
-				if (apcPorts.GetPtr(x)->GetGridPosition() == sPoint)
+				if (apcPorts.GetPtr(k)->GetGridPosition() == sPoint)
 				{
 					bPort = true;
 					break;
@@ -214,12 +194,12 @@ size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* p
 			}
 			if (!bPort)
 			{
-				asKnots.Add(&sPoint);
+				pasKnots->Add(&sPoint);
 			}
 		}
-		for (j = i + 1; j < mpcCircuit->NumTraces(); j++)
+		for (j = i + 1; j < pcCircuit->NumTraces(); j++)
 		{
-			pcOther = mpcCircuit->GetTrace(j);
+			pcOther = pcCircuit->GetTrace(j);
 			if ((pcTrace->GetStart().y == pcTrace->GetEnd().y) && (pcOther->GetStart().x == pcOther->GetEnd().x))
 			{
 				sPoint.Init(pcOther->GetStart().x, pcTrace->GetStart().y);
@@ -234,86 +214,214 @@ size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* p
 			}
 			if (pcTrace->Contains(sPoint) && pcOther->Contains(sPoint) && !pcTrace->IsEnd(sPoint) && !pcOther->IsEnd(sPoint))
 			{
-				asKnots.Add(&sPoint);
+				pasKnots->Add(&sPoint);
 			}
 		}
 	}
 	apcPorts.Kill();
+}
+
+
+//Knots counted into cells and summed, so any window's count is four sums.  Cell (x, y) is grid point
+//(sMinimum.x - 1 + x, sMinimum.y - 1 + y); row and column 0 are a border of zeros.  The cells reach a window past the
+//knots, so there's a window ending on every knot.
+struct SKicadSchemKnotSums
+{
+	CArrayInt	aiSums;
+	SInt32Vec2	sMinimum;
+	int32		iWidth;
+	int32		iHeight;
+
+	void	Init(CArrayTemplate<SInt32Vec2>* pasKnots, int32 iWindow);
+	void	Kill(void);
+	size	Index(int32 x, int32 y);
+	int32	Get(int32 x, int32 y);
+	int32	CountWindow(int32 x, int32 y, int32 iWindow);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// There must be at least one knot.
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemKnotSums::Init(CArrayTemplate<SInt32Vec2>* pasKnots, int32 iWindow)
+{
+	SInt32Bounds	sBounds;
+	SInt32Vec2*		psKnot;
+	size			i;
+	int32			x;
+	int32			y;
+
+	sBounds.Init();
+	for (i = 0; i < pasKnots->NumElements(); i++)
+	{
+		psKnot = pasKnots->Get(i);
+		sBounds.Include(psKnot->x, psKnot->y);
+	}
+	sMinimum = sBounds.sMinimum;
+	iWidth = sBounds.sMaximum.x - sMinimum.x + 1 + iWindow;
+	iHeight = sBounds.sMaximum.y - sMinimum.y + 1 + iWindow;
+
+	aiSums.Init();
+	aiSums.GrowToAtLeastNumElements((size)(iWidth + 1) * (size)(iHeight + 1), true, 0);
+	for (i = 0; i < pasKnots->NumElements(); i++)
+	{
+		psKnot = pasKnots->Get(i);
+		x = psKnot->x - sMinimum.x + 1;
+		y = psKnot->y - sMinimum.y + 1;
+		aiSums.SetValue(Index(x, y), Get(x, y) + 1);
+	}
+	for (y = 1; y <= iHeight; y++)
+	{
+		for (x = 1; x <= iWidth; x++)
+		{
+			aiSums.SetValue(Index(x, y), Get(x, y) + Get(x - 1, y) + Get(x, y - 1) - Get(x - 1, y - 1));
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemKnotSums::Kill(void)
+{
+	aiSums.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+size SKicadSchemKnotSums::Index(int32 x, int32 y)
+{
+	return (size)(x + y * (iWidth + 1));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int32 SKicadSchemKnotSums::Get(int32 x, int32 y)
+{
+	return aiSums.GetValue(Index(x, y));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The knots in the window of iWindow cells ending at cell (x, y).
+//
+//////////////////////////////////////////////////////////////////////////
+int32 SKicadSchemKnotSums::CountWindow(int32 x, int32 y, int32 iWindow)
+{
+	return Get(x, y) - Get(x - iWindow, y) - Get(x, y - iWindow) + Get(x - iWindow, y - iWindow);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The count of the densest window ending on a cell not used yet, and the
+// cell (-1 if every cell is used).
+//
+//////////////////////////////////////////////////////////////////////////
+static int32 FindKicadSchemDensestWindow(SKicadSchemKnotSums* psSums, CArrayInt* paiUsed, int32 iWindow, int32* piBestX, int32* piBestY)
+{
+	int32	x;
+	int32	y;
+	int32	iCount;
+	int32	iBest;
+
+	iBest = -1;
+	*piBestX = 0;
+	*piBestY = 0;
+	for (y = iWindow; y <= psSums->iHeight; y++)
+	{
+		for (x = iWindow; x <= psSums->iWidth; x++)
+		{
+			if (paiUsed->GetValue(psSums->Index(x, y)) != 0)
+			{
+				continue;
+			}
+			iCount = psSums->CountWindow(x, y, iWindow);
+			if (iCount > iBest)
+			{
+				iBest = iCount;
+				*piBestX = x;
+				*piBestY = y;
+			}
+		}
+	}
+	return iBest;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Uses every cell a window ending there would overlap the window ending
+// at (iBestX, iBestY) on.
+//
+//////////////////////////////////////////////////////////////////////////
+static void UseKicadSchemWindow(SKicadSchemKnotSums* psSums, CArrayInt* paiUsed, int32 iWindow, int32 iBestX, int32 iBestY)
+{
+	int32	x;
+	int32	y;
+
+	for (y = iBestY - iWindow + 1; y < iBestY + iWindow; y++)
+	{
+		for (x = iBestX - iWindow + 1; x < iBestX + iWindow; x++)
+		{
+			if ((x >= 0) && (x <= psSums->iWidth) && (y >= 0) && (y <= psSums->iHeight))
+			{
+				paiUsed->SetValue(psSums->Index(x, y), 1);
+			}
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The dense windows (with more knots than KICAD_SCHEM_LOGICIM_DENSE_KNOTS),
+// densest first and none overlapping another: the centres of the first
+// KICAD_SCHEM_LOGICIM_DENSE_AREAS, and the knots over the limit in all of
+// them (up to KICAD_SCHEM_LOGICIM_DENSE_SCAN).  A knot is
+// where a wire turns or ends (but not on a port) or where two wires cross.
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres)
+{
+	CArrayTemplate<SInt32Vec2>	asKnots;
+	SKicadSchemKnotSums			sSums;
+	CArrayInt					aiUsed;
+	size						i;
+	int32						iWindow;
+	int32						iBest;
+	int32						iBestX;
+	int32						iBestY;
+	size						uiDensest;
+	SFloat64Vec2				sCentre;
+
+	asKnots.Init();
+	CollectKicadSchemKnots(mpcCircuit, &asKnots);
 	if (asKnots.NumElements() == 0)
 	{
 		asKnots.Kill();
 		return 0;
 	}
 
-	//Knots counted into cells, summed so any window's count is four sums.
-	sMinimum = *asKnots.Get(0);
-	sMaximum = sMinimum;
-	for (i = 1; i < asKnots.NumElements(); i++)
-	{
-		sPoint = *asKnots.Get(i);
-		if (sPoint.x < sMinimum.x)
-		{
-			sMinimum.x = sPoint.x;
-		}
-		if (sPoint.y < sMinimum.y)
-		{
-			sMinimum.y = sPoint.y;
-		}
-		if (sPoint.x > sMaximum.x)
-		{
-			sMaximum.x = sPoint.x;
-		}
-		if (sPoint.y > sMaximum.y)
-		{
-			sMaximum.y = sPoint.y;
-		}
-	}
 	iWindow = KICAD_SCHEM_LOGICIM_DENSE_WINDOW;
-	iWidth = sMaximum.x - sMinimum.x + 1 + iWindow;
-	iHeight = sMaximum.y - sMinimum.y + 1 + iWindow;
-	uiArea = (size)(iWidth + 1) * (size)(iHeight + 1);
-	aiSums.Init();
-	aiSums.GrowToAtLeastNumElements(uiArea, true, 0);
-	for (i = 0; i < asKnots.NumElements(); i++)
-	{
-		sPoint = *asKnots.Get(i);
-		x = sPoint.x - sMinimum.x + 1;
-		y = sPoint.y - sMinimum.y + 1;
-		aiSums.SetValue(x + y * (iWidth + 1), aiSums.GetValue(x + y * (iWidth + 1)) + 1);
-	}
-	for (y = 1; y <= iHeight; y++)
-	{
-		for (x = 1; x <= iWidth; x++)
-		{
-			aiSums.SetValue(x + y * (iWidth + 1), aiSums.GetValue(x + y * (iWidth + 1)) + aiSums.GetValue(x - 1 + y * (iWidth + 1)) + aiSums.GetValue(x + (y - 1) * (iWidth + 1)) - aiSums.GetValue(x - 1 + (y - 1) * (iWidth + 1)));
-		}
-	}
-
+	sSums.Init(&asKnots, iWindow);
 	aiUsed.Init();
-	aiUsed.GrowToAtLeastNumElements(uiArea, true, 0);
+	aiUsed.GrowToAtLeastNumElements((size)(sSums.iWidth + 1) * (size)(sSums.iHeight + 1), true, 0);
 	uiDensest = 0;
 	for (i = 0; i < KICAD_SCHEM_LOGICIM_DENSE_SCAN; i++)
 	{
-		iBest = -1;
-		iBestX = 0;
-		iBestY = 0;
-		for (y = iWindow; y <= iHeight; y++)
-		{
-			for (x = iWindow; x <= iWidth; x++)
-			{
-				if (aiUsed.GetValue(x + y * (iWidth + 1)) != 0)
-				{
-					continue;
-				}
-				iCount = aiSums.GetValue(x + y * (iWidth + 1)) - aiSums.GetValue(x - iWindow + y * (iWidth + 1)) - aiSums.GetValue(x + (y - iWindow) * (iWidth + 1)) + aiSums.GetValue(x - iWindow + (y - iWindow) * (iWidth + 1));
-				if (iCount > iBest)
-				{
-					iBest = iCount;
-					iBestX = x;
-					iBestY = y;
-				}
-			}
-		}
+		iBest = FindKicadSchemDensestWindow(&sSums, &aiUsed, iWindow, &iBestX, &iBestY);
 		if (iBest <= KICAD_SCHEM_LOGICIM_DENSE_KNOTS)
 		{
 			break;
@@ -323,22 +431,13 @@ size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* p
 		//The window covers the cells from iBest - iWindow + 1 to iBest, less one for the sums' border.
 		if (i < KICAD_SCHEM_LOGICIM_DENSE_AREAS)
 		{
-			sCentre.Init(sMinimum.x - 1 + iBestX - (iWindow - 1) / 2.0, sMinimum.y - 1 + iBestY - (iWindow - 1) / 2.0);
+			sCentre.Init(sSums.sMinimum.x - 1 + iBestX - (iWindow - 1) / 2.0, sSums.sMinimum.y - 1 + iBestY - (iWindow - 1) / 2.0);
 			pasCentres->Add(&sCentre);
 		}
-		for (y = iBestY - iWindow + 1; y < iBestY + iWindow; y++)
-		{
-			for (x = iBestX - iWindow + 1; x < iBestX + iWindow; x++)
-			{
-				if ((x >= 0) && (x <= iWidth) && (y >= 0) && (y <= iHeight))
-				{
-					aiUsed.SetValue(x + y * (iWidth + 1), 1);
-				}
-			}
-		}
+		UseKicadSchemWindow(&sSums, &aiUsed, iWindow, iBestX, iBestY);
 	}
 	aiUsed.Kill();
-	aiSums.Kill();
+	sSums.Kill();
 	asKnots.Kill();
 	return uiDensest;
 }

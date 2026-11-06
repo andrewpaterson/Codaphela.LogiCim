@@ -33,6 +33,7 @@ class CKicadSchemBoard;
 class CKicadSchemBoardConnector;
 class CKicadSchemBoardSource;
 class CPinView;
+class CSplitterView;
 
 
 //KiCad's 2.54mm (100 mil) pin spacing, its grid.
@@ -169,6 +170,34 @@ struct SKicadSchemLogicimSplitter
 	int32				iGap;  //KICAD_SCHEM_LOGICIM_SPLITTER_GAP, or more if a member has a tunnel too.
 	size				uiFirstPair;
 	size				uiNumPairs;
+};
+
+
+//A logic part's pins (not its power pins), each split into its gate number (an index into aszIndices) and letters,
+//with whether it's negated and where KiCad has it.
+struct SKicadSchemLogicPins
+{
+	CArrayChars							aszIndices;
+	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
+	CArrayInt							aiGroups;
+	CArrayChars							aszLetters;
+	CArrayInt							aiNegated;
+	CArrayKicadSchemPoint				asPositions;
+
+	void	Init(void);
+	void	Kill(void);
+};
+
+
+//How a gate's pins lie: its inputs (indices into the pins) in letter order, its output, and the centres of all its
+//pins, of its inputs and of its outputs.
+struct SKicadSchemLogicLayout
+{
+	CArrayInt			aiInputs;
+	int					iOutput;
+	SKicadSchemPoint	sCentre;
+	SKicadSchemPoint	sInputs;
+	SKicadSchemPoint	sOutputs;
 };
 
 
@@ -309,7 +338,11 @@ protected:
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	bool							AddLogicParts(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, const char* szFamily, const char* szPartType);
 	bool							AddLogic74Block(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, const char* szFamily, const char* szPartType);
-	bool							AddLogic74Part(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, CArrayChars* paszIndices, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayInt* paiGroups, CArrayChars* paszLetters, CArrayKicadSchemPoint* pasPositions, const char* szFamily, const char* szPartType);
+	void							CollectLogicPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, SKicadSchemLogicPins* psPins);
+	void							AddLogicPart(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, SKicadSchemLogicPins* psPins, size uiGroup, const char* szFamily);
+	bool							AddLogic74Part(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, SKicadSchemLogicPins* psPins, const char* szFamily, const char* szPartType);
+	void							AddLogic74Unit(CKicadSchemSymbol* pcSymbol, int iUnit, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation, const char* szFamily, const char* szPartType);
+	void							AddLogic74Package(CKicadSchemSymbol* pcSymbol, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation, const char* szFamily, const char* szPartType);
 	bool							AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							LayOutBoardPins(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector);
 	bool							AddPlaceholder(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
@@ -324,7 +357,11 @@ protected:
 	void							RemoveUnconnectedItems(void);
 	void							AddBuses(void);
 	void							AddBus(CKicadSchemBus* pcBus, size uiBus);
+	void							AddBusTunnels(CKicadSchemBus* pcBus);
+	void							AddPinSplitters(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
+	void							AddRunSplitters(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
 	void							AddBusSplitter(CKicadSchemBus* pcBus, CArrayInt* paiTaps, bool bVertical, int iSide);
+	void							AddBusSplitterTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CSplitterView* pcSplitter, size uiItem, CArrayInt* paiOrder, CArrayInt* paiFans, CArrayTemplatePtr<CPortView>* papcPins, int iPinFacing);
 	void							AddConnections(void);
 	void							FindAlignments(void);
 	void							AlignItems(void);
