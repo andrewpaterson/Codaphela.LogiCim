@@ -67,6 +67,11 @@
     <ClCompile Include="MoveComponentsEdit.cpp" />
     <ClCompile Include="SelectionEdit.cpp" />
     <ClCompile Include="CircuitEditor.cpp" />
+    <ClCompile Include="CircuitEditorWiring.cpp" />
+    <ClCompile Include="CircuitEditorMoves.cpp" />
+    <ClCompile Include="CircuitEditorChanges.cpp" />
+    <ClCompile Include="CircuitEditorInstances.cpp" />
+    <ClCompile Include="CircuitEditorProject.cpp" />
     <ClCompile Include="ComponentPlacement.cpp" />
     <ClCompile Include="TraceLines.cpp" />
     <ClCompile Include="WirePullEdit.cpp" />
@@ -122,6 +127,7 @@
     <ClInclude Include="MoveComponentsEdit.h" />
     <ClInclude Include="SelectionEdit.h" />
     <ClInclude Include="CircuitEditor.h" />
+    <ClInclude Include="CircuitEditorInternal.h" />
     <ClInclude Include="ComponentPlacement.h" />
     <ClInclude Include="TraceLines.h" />
     <ClInclude Include="WirePullEdit.h" />

@@ -171,6 +171,21 @@
     <ClCompile Include="CircuitEditor.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="CircuitEditorWiring.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitEditorMoves.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitEditorChanges.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitEditorInstances.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitEditorProject.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="ComponentPlacement.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
@@ -330,6 +345,9 @@
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="CircuitEditor.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="CircuitEditorInternal.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="ComponentPlacement.h">
