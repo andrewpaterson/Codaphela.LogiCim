@@ -36,7 +36,9 @@ class CCircuitEditor;
 //component on its own detaches it from its wires, and with control held keeps them connected.  Keys: r turns left (anticlockwise) and R right; x flips left to right
 //and y top to bottom (see CCircuitEditor::FlipHorizontally); m moves the selection, or the component under the pointer,
 //until the next click (see CCircuitEditor::StartMove); Delete deletes; Escape stops the edit and clears the selection;
-//e, or a double click, edits the properties of the component under the pointer or selected; and letters
+//e (or E) edits the properties of the component under the pointer or selected, and a double click those of the
+//component it's on, or enters it if it's a subcircuit instance; the right button selects the component it's on and
+//opens its menu (see CLogicimWindowContent::PrepareCanvasMenu); and letters
 //place components, as Logicim's KeyInputsFactory (g a ground, v a supply, p a pin, c a constant; with shift: A an AND
 //gate, O an OR, X an XOR, N an inverter, C a clock, P a probe, S a splitter, T a tunnel, L a label and F a flip flop).
 //Logicim's control and alt placements aren't printable keys and aren't here.
@@ -66,6 +68,7 @@ public:
 	void						CommandAction(SComponentInputEvent* psEvent);
 	void						PrintableAction(SComponentInputEvent* psEvent);
 	void						WheelAction(SComponentInputEvent* psEvent);
+	void						ContextMenuAction(SComponentInputEvent* psEvent);
 	bool						Wheel(int iRight, int iDown);
 	void						ActivateComponent(int x, int y);
 	void						ExecuteComponent(int x, int y);

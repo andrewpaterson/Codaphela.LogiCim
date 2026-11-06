@@ -60,6 +60,9 @@ void CCircuitCanvas::Init(Ptr<CWindow> pWindow, Ptr<CCircuitCanvasDraw> pDraw, C
 	AddInputActions(gaeCircuitCanvasCommands, this, &CCircuitCanvas::CommandAction);
 	AddInputAction(IAF_Printable, NULL, this, &CCircuitCanvas::PrintableAction);
 	AddInputAction(IAF_Wheel, NULL, this, &CCircuitCanvas::WheelAction);
+
+	//Before the context menu's own action (see CLogicimWindowContent::CreateCanvasMenu), so its items are ready when it opens.
+	AddInputAction(CIC_ContextMenu, this, &CCircuitCanvas::ContextMenuAction);
 	PostInit();
 }
 
@@ -112,6 +115,18 @@ void CCircuitCanvas::WheelAction(SComponentInputEvent* psEvent)
 	{
 		psEvent->bPass = true;
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The right button: the window content selects what it's on and fills
+// the canvas's menu, which then opens if it has any items.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitCanvas::ContextMenuAction(SComponentInputEvent* psEvent)
+{
+	mpcContent->PrepareCanvasMenu(ToGrid(psEvent->x, psEvent->y));
 }
 
 
@@ -188,13 +203,15 @@ void CCircuitCanvas::ActivateComponent(int x, int y)
 //////////////////////////////////////////////////////////////////////////
 //
 // Button one released.  Released twice in half a second within a few
-// pixels it's a double click, which edits the properties of the
+// pixels it's a double click, which enters the subcircuit instance it's
+// on (as KiCad enters a sheet) or else edits the properties of the
 // component it's on, as Logicim's componentViewDoubleClicked.
 //
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvas::ExecuteComponent(int x, int y)
 {
-	int64	iNow;
+	int64				iNow;
+	CComponentView*		pcComponent;
 
 	UpdateModifiers();
 	mpcEditor->ButtonReleased(ToGrid(x, y));
@@ -203,7 +220,15 @@ void CCircuitCanvas::ExecuteComponent(int x, int y)
 	if ((miLastRelease != 0) && (iNow - miLastRelease <= CIRCUIT_CANVAS_DOUBLE_CLICK_MILLISECONDS) && (abs(x - msLastRelease.x) <= CIRCUIT_CANVAS_DOUBLE_CLICK_PIXELS) && (abs(y - msLastRelease.y) <= CIRCUIT_CANVAS_DOUBLE_CLICK_PIXELS))
 	{
 		miLastRelease = 0;
-		mpcContent->EditProperties();
+		pcComponent = mpcEditor->GetComponentAt(ToGrid(x, y));
+		if ((pcComponent != NULL) && (pcComponent->GetCircuitInstanceView() != NULL))
+		{
+			mpcContent->EnterSubcircuit(pcComponent);
+		}
+		else
+		{
+			mpcContent->EditProperties();
+		}
 	}
 	else
 	{
@@ -313,6 +338,7 @@ void CCircuitCanvas::Printable(char c, bool bInsert)
 		mpcEditor->FlipVertically();
 		return;
 	case 'e':
+	case 'E':
 		mpcContent->EditProperties();
 		return;
 	case 'm':

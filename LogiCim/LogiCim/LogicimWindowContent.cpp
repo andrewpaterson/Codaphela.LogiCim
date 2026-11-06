@@ -181,6 +181,10 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMenuBar);
 	M_Pointer(mpEditMenu);
 	M_Pointer(mpSubcircuits);
+	M_Pointer(mpCanvasMenu);
+	M_Pointer(mpEnterItem);
+	M_Pointer(mpPropertiesItem);
+	M_Pointer(mpLeaveItem);
 	M_Pointer(mpSimulations);
 	M_Embedded(maSubcircuitLabels);
 	M_Embedded(maSimulationLabels);
@@ -303,6 +307,10 @@ void CLogicimWindowContent::Free(void)
 	//here.  The widgets, the theme, the fonts and the circuit are freed with the content's pointers.
 	RemoveFromButtons();
 	RemoveFromList(mpSubcircuits);
+	if (mpCanvasMenu.IsNotNull())
+	{
+		mpCanvasMenu->GetItemClickEvent()->Remove(this);
+	}
 	RemoveFromList(mpSimulations);
 	if (mpMenuBar.IsNotNull())
 	{
@@ -718,6 +726,9 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 
 	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mpLogicimCircuit), this, mpLogicimCircuit->GetEditor());
 	mpCircuit->SetAlignment(CSH_Stretch, CSV_Stretch);
+	mpCanvasMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
+	mpCanvasMenu->GetItemClickEvent()->Add(this, &CLogicimWindowContent::CanvasMenuItemClicked);
+	mpCircuit->SetContextMenu(mpCanvasMenu);
 	mpSimulations = CreateList();
 	pSimulations = CreateToolWindow("Simulations", mpSimulations);
 	pSimulations->SetDesiredSize(-1, 150);
@@ -819,7 +830,10 @@ void CLogicimWindowContent::UpdateInfo(void)
 	sz.Kill();
 
 	sz.Init("View Path: ");
-	sz.Append(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
+	if (mpLogicimCircuit->GetEditor()->GetViewPath() != NULL)
+	{
+		mpLogicimCircuit->GetEditor()->GetViewPath()->AppendDescription(&sz);
+	}
 	if (mbRunning)
 	{
 		sz.Append(" (running)");
@@ -1698,11 +1712,114 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 	szName = GetListItemText(mpSubcircuits, &maSubcircuitLabels);
 	if (!StrEmpty(szName) && ((pcEditor->GetCircuit() == NULL) || (StringCompare(pcEditor->GetCircuit()->GetTypeName(), szName) != 0)))
 	{
-		pcEditor->Simulate(szName);
+		if (pcEditor->IsInInstance() && (StringCompare(pcEditor->GetTopCircuit()->GetTypeName(), szName) == 0))
+		{
+			//Back out to the circuit simulated, keeping its simulation.
+			pcEditor->LeaveInstances();
+		}
+		else
+		{
+			pcEditor->Simulate(szName);
+		}
 		ZoomToFit(false);
 	}
 	UpdateInfo();
 	UpdateEditMenu();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Edits the subcircuit inside the instance as it's simulated there (see
+// CCircuitEditor::EnterInstance), zoomed to fit.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::EnterSubcircuit(CComponentView* pcInstance)
+{
+	if (mpLogicimCircuit->GetEditor()->EnterInstance(pcInstance))
+	{
+		ZoomToFit(false);
+	}
+	UpdateInfo();
+	UpdateEditMenu();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Back to the circuit the instance entered is in, zoomed to fit.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::LeaveSubcircuit(void)
+{
+	if (mpLogicimCircuit->GetEditor()->LeaveInstance())
+	{
+		ZoomToFit(false);
+	}
+	UpdateInfo();
+	UpdateEditMenu();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Before the canvas's menu opens at a grid point: on a subcircuit
+// instance it's selected and the menu enters it or edits its properties;
+// elsewhere inside an instance it leaves it; otherwise the menu has no
+// items and doesn't open.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::PrepareCanvasMenu(SFloat64Vec2 sGrid)
+{
+	CCircuitEditor*		pcEditor;
+	CComponentView*		pcComponent;
+
+	pcEditor = mpLogicimCircuit->GetEditor();
+	mpCanvasMenu->RemoveAllItems();
+	mpEnterItem = NULL;
+	mpPropertiesItem = NULL;
+	mpLeaveItem = NULL;
+	if (pcEditor->IsEditing())
+	{
+		return;
+	}
+
+	pcComponent = pcEditor->GetComponentAt(sGrid);
+	if ((pcComponent != NULL) && (pcComponent->GetCircuitInstanceView() != NULL))
+	{
+		pcEditor->SelectOnly(pcComponent);
+		mpEnterItem = mpCanvasMenu->AddItem("Enter Sub-circuit");
+		mpPropertiesItem = mpCanvasMenu->AddItem("Properties");
+	}
+	else if (pcEditor->IsInInstance())
+	{
+		mpLeaveItem = mpCanvasMenu->AddItem("Leave Sub-circuit");
+	}
+	UpdateEditMenu();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::CanvasMenuItemClicked(CMenuItem* pcItem)
+{
+	CCircuitEditor*		pcEditor;
+
+	pcEditor = mpLogicimCircuit->GetEditor();
+	if (pcItem == &mpEnterItem)
+	{
+		EnterSubcircuit(pcEditor->GetSelection()->GetSingleComponent());
+	}
+	else if (pcItem == &mpPropertiesItem)
+	{
+		EditProperties();
+	}
+	else if (pcItem == &mpLeaveItem)
+	{
+		LeaveSubcircuit();
+	}
 }
 
 

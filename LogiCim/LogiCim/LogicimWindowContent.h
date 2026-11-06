@@ -113,6 +113,10 @@ protected:
 	Ptr<CImageCel>			mpFileIcon;  //Beside a file in the file chooser, Load Project's beside a folder.
 
 	Ptr<CMenuBar>			mpMenuBar;
+	Ptr<CMenuContainer>		mpCanvasMenu;  //The circuit canvas's right button menu, filled as it opens.
+	Ptr<CMenuItem>			mpEnterItem;
+	Ptr<CMenuItem>			mpPropertiesItem;
+	Ptr<CMenuItem>			mpLeaveItem;
 	Ptr<CMenuContainer>		mpEditMenu;  //Its undo and redo are greyed when there's nothing to undo or redo.
 	Ptr<CListContainer>		mpSubcircuits;
 	Ptr<CListContainer>		mpSimulations;
@@ -168,6 +172,10 @@ public:
 	bool			ImportKicadSchematic(const char* szFilename);
 	void			SetStartupImport(const char* szFilename);
 	void			SubcircuitSelected(void);
+	void			EnterSubcircuit(CComponentView* pcInstance);
+	void			LeaveSubcircuit(void);
+	void			PrepareCanvasMenu(SFloat64Vec2 sGrid);
+	void			CanvasMenuItemClicked(CMenuItem* pcItem);
 	void			ListSubcircuits(void);
 
 protected:
