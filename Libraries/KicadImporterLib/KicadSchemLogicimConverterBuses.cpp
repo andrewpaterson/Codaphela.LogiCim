@@ -676,6 +676,7 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	size							uiItem;
 	SKicadSchemBusTap*				psTap;
 	SKicadSchemPoint				sCentre;
+	SKicadSchemPointMean			sMean;
 
 	uiTaps = paiTaps->NumElements();
 	iBitWidth = (int32)pcBus->NumMembers();
@@ -702,16 +703,14 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	{
 		aiSplitIndices[i] = iRestFan;
 	}
-	sCentre.Init();
+	sMean.Init();
 	for (i = 0; i < uiTaps; i++)
 	{
 		psTap = pcBus->GetTap(paiTaps->GetValue(aiOrder.GetValue(i)));
 		aiSplitIndices[pcBus->GetMemberIndex(psTap->pcMember->GetNet()->GetName())] = aiFans.GetValue(i);
-		sCentre.fX += psTap->sBusPoint.fX;
-		sCentre.fY += psTap->sBusPoint.fY;
+		sMean.Add(&psTap->sBusPoint);
 	}
-	sCentre.fX /= (float64)uiTaps;
-	sCentre.fY /= (float64)uiTaps;
+	sMean.Get(&sCentre);
 
 	pcSplitter = NewMalloc<CSplitterView>();
 	pcSplitter->Init(0, 0, eRotation, "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0, aiSplitIndices);

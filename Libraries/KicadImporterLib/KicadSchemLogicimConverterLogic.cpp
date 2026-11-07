@@ -251,19 +251,18 @@ static bool IsKicadSchemLogicOutput(SKicadSchemLogicPins* psPins, size uiPin, EK
 //////////////////////////////////////////////////////////////////////////
 static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, EKicadSchemLogicFunction eFunction, SKicadSchemLogicLayout* psLayout)
 {
-	size				i;
-	size				j;
-	size				uiPins;
-	size				uiOutputs;
-	SKicadSchemPoint*	psPosition;
+	size					i;
+	size					j;
+	SKicadSchemPoint*		psPosition;
+	SKicadSchemPointMean	sCentre;
+	SKicadSchemPointMean	sInputs;
+	SKicadSchemPointMean	sOutputs;
 
 	psLayout->aiInputs.Init();
 	psLayout->iOutput = -1;
-	psLayout->sCentre.Init();
-	psLayout->sInputs.Init();
-	psLayout->sOutputs.Init();
-	uiPins = 0;
-	uiOutputs = 0;
+	sCentre.Init();
+	sInputs.Init();
+	sOutputs.Init();
 	for (i = 0; i < psPins->apcPins.NumElements(); i++)
 	{
 		if ((iGroup != -1) && (psPins->aiGroups.GetValue(i) != iGroup))
@@ -271,14 +270,10 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, E
 			continue;
 		}
 		psPosition = psPins->asPositions.Get(i);
-		psLayout->sCentre.fX += psPosition->fX;
-		psLayout->sCentre.fY += psPosition->fY;
-		uiPins++;
+		sCentre.Add(psPosition);
 		if (IsKicadSchemLogicOutput(psPins, i, eFunction))
 		{
-			psLayout->sOutputs.fX += psPosition->fX;
-			psLayout->sOutputs.fY += psPosition->fY;
-			uiOutputs++;
+			sOutputs.Add(psPosition);
 			if ((eFunction != KSLF_DFlipFlop) || (StringCompare(GetKicadSchemFlipFlopPortName(psPins->aszLetters.Get(i), psPins->aiNegated.GetValue(i) != 0), "Q") == 0))
 			{
 				psLayout->iOutput = (int)i;
@@ -294,19 +289,12 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, E
 				}
 			}
 			psLayout->aiInputs.InsertAt((int)i, j);
-			psLayout->sInputs.fX += psPosition->fX;
-			psLayout->sInputs.fY += psPosition->fY;
+			sInputs.Add(psPosition);
 		}
 	}
-	psLayout->sCentre.fX /= (float64)uiPins;
-	psLayout->sCentre.fY /= (float64)uiPins;
-	psLayout->sInputs.fX /= (float64)psLayout->aiInputs.NumElements();
-	psLayout->sInputs.fY /= (float64)psLayout->aiInputs.NumElements();
-	if (uiOutputs > 0)
-	{
-		psLayout->sOutputs.fX /= (float64)uiOutputs;
-		psLayout->sOutputs.fY /= (float64)uiOutputs;
-	}
+	sCentre.Get(&psLayout->sCentre);
+	sInputs.Get(&psLayout->sInputs);
+	sOutputs.Get(&psLayout->sOutputs);
 }
 
 
@@ -991,6 +979,44 @@ static CComponentView* NewKicadSchemLogic74View(CKicadSchemSymbol* pcSymbol, ERo
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The way to turn a 74 part so the pins KiCad has at pasPositions on the
+// left of it are on its left: papcPorts are the pins' ports on the part
+// unturned.  East if its pins aren't on both sides.
+//
+//////////////////////////////////////////////////////////////////////////
+static ERotation GetKicadSchemLogic74Rotation(CArrayKicadSchemPoint* pasPositions, CArrayPortViewPtr* papcPorts)
+{
+	SKicadSchemPointMean	sLeftMean;
+	SKicadSchemPointMean	sRightMean;
+	SKicadSchemPoint		sLeft;
+	SKicadSchemPoint		sRight;
+	size					i;
+
+	sLeftMean.Init();
+	sRightMean.Init();
+	for (i = 0; i < papcPorts->NumElements(); i++)
+	{
+		if (papcPorts->GetPtr(i)->GetGridPosition().x < 0)
+		{
+			sLeftMean.Add(pasPositions->Get(i));
+		}
+		else
+		{
+			sRightMean.Add(pasPositions->Get(i));
+		}
+	}
+	if ((sLeftMean.uiCount == 0) || (sRightMean.uiCount == 0))
+	{
+		return ROT_East;
+	}
+	sLeftMean.Get(&sLeft);
+	sRightMean.Get(&sRight);
+	return GetKicadSchemFacing(&sLeft, &sRight);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A real 74 series part that isn't gates (see SLogic74Part): a package of
 // the whole part, or a unit of a part KiCad draws as units (a 74LVC74's
 // flip flop).  Each KiCad pin is on the port its name labels (see
@@ -1005,13 +1031,8 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
 	CArrayPortViewPtr						apcPorts;
 	CArrayKicadSchemPoint					asPositions;
-	CKicadSchemLibPin*						pcPin;
-	SKicadSchemPoint						sPosition;
+	SKicadSchemPointMean					sMean;
 	SKicadSchemPoint						sCentre;
-	SKicadSchemPoint						sLeft;
-	SKicadSchemPoint						sRight;
-	int										iLeft;
-	int										iRight;
 	bool									bUnit;
 	int										iUnit;
 	size									i;
@@ -1029,6 +1050,59 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 
 	apcPins.Init();
 	asPositions.Init();
+	apcPorts.Init();
+	CollectLogic74Pins(pcSymbol, pcLibSymbol, &apcPins, &asPositions);
+	bMapped = false;
+	eRotation = ROT_East;
+	if (apcPins.NumElements() > 0)
+	{
+		//Which side of the part's middle each pin's port is on, unturned, gives the way KiCad turned it.
+		pcView = NewKicadSchemLogic74View(pcSymbol, ROT_East, szFamily, szPartType, bUnit, iUnit);
+		bMapped = MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
+		if (bMapped)
+		{
+			eRotation = GetKicadSchemLogic74Rotation(&asPositions, &apcPorts);
+		}
+		SafeKill(pcView);
+	}
+
+	if (bMapped)
+	{
+		pcView = NewKicadSchemLogic74View(pcSymbol, eRotation, szFamily, szPartType, bUnit, iUnit);
+		MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
+		sMean.Init();
+		for (i = 0; i < asPositions.NumElements(); i++)
+		{
+			sMean.Add(asPositions.Get(i));
+		}
+		sMean.Get(&sCentre);
+		uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL);
+		for (i = 0; i < apcPins.NumElements(); i++)
+		{
+			AddPinTerminal(pcSymbol, apcPins.GetPtr(i), apcPorts.GetPtr(i), uiItem);
+		}
+		muiBlocks++;
+	}
+
+	apcPorts.Kill();
+	asPositions.Kill();
+	apcPins.Kill();
+	return bMapped;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The unit's logic pins (not its power or unconnected pins) and where
+// KiCad has them on the sheet.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::CollectLogic74Pins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayKicadSchemPoint* pasPositions)
+{
+	size				i;
+	CKicadSchemLibPin*	pcPin;
+	SKicadSchemPoint	sPosition;
+
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
@@ -1036,75 +1110,8 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 		{
 			continue;
 		}
-		apcPins.Add(pcPin);
+		papcPins->Add(pcPin);
 		mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
-		asPositions.Add(&sPosition);
+		pasPositions->Add(&sPosition);
 	}
-	if (apcPins.NumElements() == 0)
-	{
-		asPositions.Kill();
-		apcPins.Kill();
-		return false;
-	}
-
-	//Which side of the part's middle each pin's port is on, unturned, gives the way KiCad turned it.
-	apcPorts.Init();
-	pcView = NewKicadSchemLogic74View(pcSymbol, ROT_East, szFamily, szPartType, bUnit, iUnit);
-	bMapped = MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
-	sCentre.Init();
-	sLeft.Init();
-	sRight.Init();
-	iLeft = 0;
-	iRight = 0;
-	for (i = 0; bMapped && (i < apcPins.NumElements()); i++)
-	{
-		sCentre.fX += asPositions.Get(i)->fX;
-		sCentre.fY += asPositions.Get(i)->fY;
-		if (apcPorts.GetPtr(i)->GetGridPosition().x < 0)
-		{
-			sLeft.fX += asPositions.Get(i)->fX;
-			sLeft.fY += asPositions.Get(i)->fY;
-			iLeft++;
-		}
-		else
-		{
-			sRight.fX += asPositions.Get(i)->fX;
-			sRight.fY += asPositions.Get(i)->fY;
-			iRight++;
-		}
-	}
-	SafeKill(pcView);
-	if (!bMapped)
-	{
-		apcPorts.Kill();
-		asPositions.Kill();
-		apcPins.Kill();
-		return false;
-	}
-
-	sCentre.fX /= (float64)apcPins.NumElements();
-	sCentre.fY /= (float64)apcPins.NumElements();
-	eRotation = ROT_East;
-	if ((iLeft > 0) && (iRight > 0))
-	{
-		sLeft.fX /= (float64)iLeft;
-		sLeft.fY /= (float64)iLeft;
-		sRight.fX /= (float64)iRight;
-		sRight.fY /= (float64)iRight;
-		eRotation = GetKicadSchemFacing(&sLeft, &sRight);
-	}
-
-	pcView = NewKicadSchemLogic74View(pcSymbol, eRotation, szFamily, szPartType, bUnit, iUnit);
-	MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
-	uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL);
-	for (i = 0; i < apcPins.NumElements(); i++)
-	{
-		AddPinTerminal(pcSymbol, apcPins.GetPtr(i), apcPorts.GetPtr(i), uiItem);
-	}
-	muiBlocks++;
-
-	apcPorts.Kill();
-	asPositions.Kill();
-	apcPins.Kill();
-	return true;
 }
