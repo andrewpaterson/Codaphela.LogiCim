@@ -631,27 +631,6 @@ void CKicadSchemLogicimConverter::Place(float64 fSpread)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether the port is a component's pin a splitter beside it is wired
-// straight to.
-//
-//////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::IsSplitterPin(CPortView* pcPortView)
-{
-	size	i;
-
-	for (i = 0; i < masSplitterPairs.NumElements(); i++)
-	{
-		if (masSplitterPairs.Get(i)->pcPin == pcPortView)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Each splitter beside the component its ends go to: its ends
 // KICAD_SCHEM_LOGICIM_SPLITTER_GAP grid units out from the outermost of
 // their pins (KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP if a member has a
@@ -679,9 +658,9 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 	int32							iStep;
 	int32							iOffset;
 
-	for (i = 0; i < masSplitters.NumElements(); i++)
+	for (i = 0; i < mcBuses.NumSplitters(); i++)
 	{
-		psSplitter = masSplitters.Get(i);
+		psSplitter = mcBuses.GetSplitter(i);
 		if (psSplitter->uiNumPairs == 0)
 		{
 			continue;
@@ -694,7 +673,7 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 		fAlong = 0;
 		for (j = 0; j < psSplitter->uiNumPairs; j++)
 		{
-			psPair = masSplitterPairs.Get(psSplitter->uiFirstPair + j);
+			psPair = mcBuses.GetSplitterPair(psSplitter->uiFirstPair + j);
 			sPin = psPair->pcPin->GetGridPosition();
 			sEnd = psPair->pcEnd->GetGridPosition();
 			iAcross = bAcrossX ? sPin.x : sPin.y;
@@ -711,7 +690,7 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 		iStep = 0;
 		for (j = 0; j < psSplitter->uiNumPairs; j++)
 		{
-			psPair = masSplitterPairs.Get(psSplitter->uiFirstPair + j);
+			psPair = mcBuses.GetSplitterPair(psSplitter->uiFirstPair + j);
 			sPin = psPair->pcPin->GetGridPosition();
 			sEnd = psPair->pcEnd->GetGridPosition();
 			iOffset = bAcrossX ? (sPin.y - sEnd.y - iAlong) : (sPin.x - sEnd.x - iAlong);
@@ -805,7 +784,7 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 			}
 		}
 		//A pin wired to a splitter beside it keeps its way out for that wire; its tunnel stands on its own, wired too.
-		if ((pcTarget == NULL) || IsSplitterPin(pcTarget))
+		if ((pcTarget == NULL) || mcBuses.IsSplitterPin(pcTarget))
 		{
 			continue;
 		}

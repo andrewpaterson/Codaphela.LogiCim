@@ -63,12 +63,11 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mcModel.Init();
 	masAlignments.Init();
 	masRegulated.Init();
-	masSplitters.Init();
-	masSplitterPairs.Init();
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
 	mfSpread = 1.0;
 	msCounts.Init();
+	mcBuses.Init(pcNetlist, pcFonts, &mcModel, &msCounts);
 }
 
 
@@ -79,8 +78,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::Kill(void)
 {
-	masSplitterPairs.Kill();
-	masSplitters.Kill();
+	mcBuses.Kill();
 	masRegulated.Kill();
 	masAlignments.Kill();
 	mcModel.Kill();
@@ -138,8 +136,8 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 		}
 	}
 	ApplyRegulatedVoltages();
-	AddTunnels();
-	AddBuses();
+	mcBuses.AddTunnels();
+	mcBuses.AddBuses();
 	RemoveUnconnectedItems();
 	AttachItems();
 	MeasureImportBoxes();

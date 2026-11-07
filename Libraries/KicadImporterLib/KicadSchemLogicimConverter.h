@@ -28,6 +28,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicFunction.h"
 #include "KicadSchemLogicimModel.h"
 #include "KicadSchemLogicimCounts.h"
+#include "KicadSchemLogicimBuses.h"
 #include "KicadLib/KicadSchemSubnetGraph.h"
 
 
@@ -35,20 +36,12 @@ class CKicadSchemBoard;
 class CKicadSchemBoardConnector;
 class CKicadSchemBoardSource;
 class CPinView;
-class CSplitterView;
 class CTraceAutoConnector;
 
 
 //The grid units between the pins of the parts made for KiCad's symbols (subcircuit instances, 74 series parts and
 //gates): a KiCad grid unit, so a tunnel fits on each pin and a splitter's ends line up with them.
 #define KICAD_SCHEM_LOGICIM_PIN_SPACING		2
-
-//The grid units between a bus splitter's ends (as the pins they go to) and between its ends and those pins.
-#define KICAD_SCHEM_LOGICIM_SPLITTER_SPACING	2
-#define KICAD_SCHEM_LOGICIM_SPLITTER_GAP		3
-
-//The gap kept instead when a member wired to the splitter also has a tunnel, which needs room to be wired onto it.
-#define KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP	8
 
 //How far the components are spread out from where KiCad has them (scaled), at most and at least, and how many times the
 //spread between is halved looking for the least that wires as well as the most.
@@ -91,27 +84,6 @@ struct SKicadSchemLogicimAlignment
 };
 
 
-//A bus splitter kept beside the component most of its ends are wired to: its ends face the way that component's pins
-//face (iFacing, a TRACE_DIRECTION, is the pins'), each end lined up with its pin.  Its pairs are uiNumPairs from
-//uiFirstPair in the converter's masSplitterPairs.
-struct SKicadSchemLogicimSplitter
-{
-	CComponentView*		pcSplitter;
-	int					iFacing;
-	int32				iGap;  //KICAD_SCHEM_LOGICIM_SPLITTER_GAP, or more if a member has a tunnel too.
-	size				uiFirstPair;
-	size				uiNumPairs;
-};
-
-
-//A splitter's end (see SKicadSchemLogicimSplitter) and the component's pin it's wired straight to.
-struct SKicadSchemLogicimSplitterPair
-{
-	CPortView*	pcPin;
-	CPortView*	pcEnd;
-};
-
-
 //A logic part's pins (not its power pins), each split into its gate number (an index into aszIndices) and letters,
 //with whether it's negated and where KiCad has it.
 struct SKicadSchemLogicPins
@@ -149,8 +121,6 @@ struct SKicadSchemLogicimRegulated
 
 
 typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegulated;
-typedef CArrayTemplate<SKicadSchemLogicimSplitter>		CArrayKicadSchemLogicimSplitter;
-typedef CArrayTemplate<SKicadSchemLogicimSplitterPair>	CArrayKicadSchemLogicimSplitterPair;
 typedef CArrayTemplate<SKicadSchemLogicimAlignment>		CArrayKicadSchemLogicimAlignment;
 
 
@@ -206,8 +176,7 @@ protected:
 	CKicadSchemLogicimModel				mcModel;
 	CArrayKicadSchemLogicimAlignment	masAlignments;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
-	CArrayKicadSchemLogicimSplitter		masSplitters;
-	CArrayKicadSchemLogicimSplitterPair	masSplitterPairs;
+	CKicadSchemLogicimBuses				mcBuses;
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
 	float64								mfSpread;
@@ -250,20 +219,10 @@ protected:
 	bool							AddPlaceholder(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	CCircuitView*					GetPlaceholderCircuit(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							GetPlaceholderPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayChars* paszNames);
-	void							AddTunnels(void);
-	CKicadSchemBus*					GetMemberBus(CKicadSchemSubnet* pcSubnet);
-	bool							IsJoinedByBus(CKicadSchemNet* pcNet);
 	void							ApplyRegulatedVoltages(void);
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);
 	float32							GetNetRegulatedVoltage(CKicadSchemNet* pcNet);
 	void							RemoveUnconnectedItems(void);
-	void							AddBuses(void);
-	void							AddBus(CKicadSchemBus* pcBus, size uiBus);
-	void							AddBusTunnels(CKicadSchemBus* pcBus);
-	void							AddPinSplitters(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
-	void							AddRunSplitters(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
-	void							AddBusSplitter(CKicadSchemBus* pcBus, CArrayInt* paiTaps, bool bVertical, int iSide);
-	void							AddBusSplitterTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CSplitterView* pcSplitter, size uiItem, CArrayInt* paiOrder, CArrayInt* paiFans, CArrayTemplatePtr<CPortView>* papcPins, int iPinFacing);
 	void							AddConnections(void);
 	void							FindAlignments(void);
 	void							AlignItems(void);
@@ -275,15 +234,7 @@ protected:
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);
-	bool							IsSplitterPin(CPortView* pcPortView);
 	void							JoinSplitterPins(void);
-	int								GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins);
-	void							GetTapPinTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals);
-	CComponentView*					GetMostPinsOwner(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals, int iFacing);
-	CPortView*						GetTapPin(SKicadSchemBusTap* psTap);
-	bool							IsComponentPin(SKicadSchemLogicimTerminal* psTerminal);
-	CPortView*						GetComponentPin(CKicadSchemSubnet* pcSubnet, CComponentView* pcOwner, int iFacing);
-	bool							HasTunnel(CKicadSchemSubnet* pcSubnet);
 	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	void							MeasureImportBoxes(void);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
