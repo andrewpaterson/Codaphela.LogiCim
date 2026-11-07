@@ -81,6 +81,25 @@ struct STraceAutoConnection
 typedef CArrayTemplate<STraceAutoConnection>	CArrayTraceAutoConnection;
 
 
+//A port being connected and its net, in the order the ports were added.
+struct STraceAutoConnectPort
+{
+	CPortView*	pcPort;
+	size		uiNet;
+};
+
+
+typedef CArrayTemplate<STraceAutoConnectPort>	CArrayTraceAutoConnectPort;
+
+
+//A component's own box to keep clear (see CTraceAutoConnector::SetComponentBox).
+struct STraceAutoConnectBox
+{
+	SFloat64Vec2	sMinimum;
+	SFloat64Vec2	sMaximum;
+};
+
+
 //The pair of keys a caller names a run by (see CTraceAutoConnector::FindOrAddRun).
 struct STraceAutoConnectRunKey
 {
@@ -137,11 +156,9 @@ protected:
 	CArrayTraceAutoConnection		masConnections;
 	size							muiNumNets;
 	size							muiNumRuns;
-	CArrayPortViewPtr				mapcPorts;
-	CArrayInt						maiPortNets;
-	CArrayComponentViewPtr			mapcBoxComponents;  //Components with a box of their own to keep clear (see SetComponentBox).
-	CArrayTemplate<SFloat64Vec2>	masBoxMinimums;
-	CArrayTemplate<SFloat64Vec2>	masBoxMaximums;
+	CArrayTraceAutoConnectPort		masPorts;
+	CMapBlock						mcPortIndices;  //A port to its index in masPorts.
+	CMapBlock						mcBoxes;        //A component to its STraceAutoConnectBox (see SetComponentBox).
 	CMapBlock						mcNetKeys;      //A caller's key to its net (see FindOrAddNet).
 	CMapBlock						mcRunKeys;      //A caller's STraceAutoConnectRunKey to its run (see FindOrAddRun).
 

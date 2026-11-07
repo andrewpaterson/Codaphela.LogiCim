@@ -81,11 +81,9 @@ void CTraceAutoConnector::Init(CCircuitView* pcCircuit)
 	masConnections.Init();
 	muiNumNets = 0;
 	muiNumRuns = 0;
-	mapcPorts.Init();
-	maiPortNets.Init();
-	mapcBoxComponents.Init();
-	masBoxMinimums.Init();
-	masBoxMaximums.Init();
+	masPorts.Init();
+	mcPortIndices.Init();
+	mcBoxes.Init();
 	mcNetKeys.Init();
 	mcRunKeys.Init();
 
@@ -151,11 +149,9 @@ void CTraceAutoConnector::Kill(void)
 
 	mcRunKeys.Kill();
 	mcNetKeys.Kill();
-	masBoxMaximums.Kill();
-	masBoxMinimums.Kill();
-	mapcBoxComponents.Kill();
-	maiPortNets.Kill();
-	mapcPorts.Kill();
+	mcBoxes.Kill();
+	mcPortIndices.Kill();
+	masPorts.Kill();
 	masConnections.Kill();
 	mpcCircuit = NULL;
 }
@@ -294,20 +290,11 @@ size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum)
 {
-	size	uiIndex;
+	STraceAutoConnectBox	sBox;
 
-	uiIndex = mapcBoxComponents.Find(pcComponent);
-	if (uiIndex == ARRAY_ELEMENT_NOT_FOUND)
-	{
-		mapcBoxComponents.Add(pcComponent);
-		masBoxMinimums.Add(&sMinimum);
-		masBoxMaximums.Add(&sMaximum);
-	}
-	else
-	{
-		*masBoxMinimums.Get(uiIndex) = sMinimum;
-		*masBoxMaximums.Get(uiIndex) = sMaximum;
-	}
+	sBox.sMinimum = sMinimum;
+	sBox.sMaximum = sMaximum;
+	mcBoxes.Put(&pcComponent, sizeof(pcComponent), &sBox, sizeof(sBox));
 }
 
 
@@ -318,13 +305,13 @@ void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64V
 //////////////////////////////////////////////////////////////////////////
 bool CTraceAutoConnector::GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
 {
-	size	uiIndex;
+	STraceAutoConnectBox*	psBox;
 
-	uiIndex = mapcBoxComponents.Find(pcComponent);
-	if (uiIndex != ARRAY_ELEMENT_NOT_FOUND)
+	psBox = (STraceAutoConnectBox*)mcBoxes.Get(&pcComponent, sizeof(pcComponent));
+	if (psBox != NULL)
 	{
-		*psMinimum = *masBoxMinimums.Get(uiIndex);
-		*psMaximum = *masBoxMaximums.Get(uiIndex);
+		*psMinimum = psBox->sMinimum;
+		*psMaximum = psBox->sMaximum;
 		return true;
 	}
 	return pcComponent->GetBoundingBox(psMinimum, psMaximum);
@@ -333,17 +320,23 @@ bool CTraceAutoConnector::GetComponentBox(CComponentView* pcComponent, SFloat64V
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The port is connected on the net.  Fails if it's already on another.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CTraceAutoConnector::AddPort(CPortView* pcPortView, size uiNet)
 {
-	int		iNet;
+	int						iNet;
+	STraceAutoConnectPort*	psPort;
+	size					uiIndex;
 
 	iNet = GetPortNet(pcPortView);
 	if (iNet == -1)
 	{
-		mapcPorts.Add(pcPortView);
-		maiPortNets.Add((int)uiNet);
+		uiIndex = masPorts.NumElements();
+		psPort = masPorts.Add();
+		psPort->pcPort = pcPortView;
+		psPort->uiNet = uiNet;
+		mcPortIndices.Put(&pcPortView, sizeof(pcPortView), &uiIndex, sizeof(uiIndex));
 		return true;
 	}
 	if (iNet != (int)uiNet)
@@ -363,12 +356,12 @@ int CTraceAutoConnector::GetPortNet(CPortView* pcPortView)
 {
 	size	uiIndex;
 
-	uiIndex = mapcPorts.Find(pcPortView);
+	uiIndex = GetTraceAutoConnectIndex(&mcPortIndices, &pcPortView, sizeof(pcPortView));
 	if (uiIndex == ARRAY_ELEMENT_NOT_FOUND)
 	{
 		return -1;
 	}
-	return maiPortNets.GetValue(uiIndex);
+	return (int)masPorts.Get(uiIndex)->uiNet;
 }
 
 
@@ -845,10 +838,10 @@ void CTraceAutoConnector::MarkExistingTraces(void)
 		}
 	}
 
-	for (i = 0; i < mapcPorts.NumElements(); i++)
+	for (i = 0; i < masPorts.NumElements(); i++)
 	{
-		sPosition = mapcPorts.GetPtr(i)->GetGridPosition();
-		iNet = maiPortNets.GetValue(i);
+		sPosition = masPorts.Get(i)->pcPort->GetGridPosition();
+		iNet = (int)masPorts.Get(i)->uiNet;
 		for (j = 0; j < uiTraces; j++)
 		{
 			if (mpcCircuit->GetTrace(j)->Contains(sPosition))
@@ -1513,11 +1506,11 @@ void CTraceAutoConnector::RipNet(int iNet)
 			maiNodes.SetValue(iCell, -1);
 		}
 	}
-	for (i = 0; i < mapcPorts.NumElements(); i++)
+	for (i = 0; i < masPorts.NumElements(); i++)
 	{
-		if (maiPortNets.GetValue(i) == iNet)
+		if ((int)masPorts.Get(i)->uiNet == iNet)
 		{
-			maiNodes.SetValue(GetCell(mapcPorts.GetPtr(i)->GetGridPosition()), iNet);
+			maiNodes.SetValue(GetCell(masPorts.Get(i)->pcPort->GetGridPosition()), iNet);
 		}
 	}
 	for (i = 0; i < masConnections.NumElements(); i++)
