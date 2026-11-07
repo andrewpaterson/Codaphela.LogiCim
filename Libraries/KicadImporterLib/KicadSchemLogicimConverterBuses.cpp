@@ -471,49 +471,36 @@ static int GetKicadSchemMostFacing(CArrayTemplatePtr<SKicadSchemLogicimTerminal>
 //////////////////////////////////////////////////////////////////////////
 CComponentView* CKicadSchemLogicimConverter::GetMostPinsOwner(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals, int iFacing)
 {
-	CArrayTemplatePtr<CComponentView>	apcOwners;
-	CArrayInt							aiOwnerPins;
-	SKicadSchemLogicimTerminal*			psTerminal;
-	CComponentView*						pcView;
-	CComponentView*						pcMost;
-	size								i;
-	size								uiOwner;
-	int									iMost;
+	size				i;
+	size				j;
+	size				uiPins;
+	size				uiMost;
+	CComponentView*		pcView;
+	CComponentView*		pcMost;
 
-	apcOwners.Init();
-	aiOwnerPins.Init();
+	pcMost = NULL;
+	uiMost = 0;
 	for (i = 0; i < papsTerminals->NumElements(); i++)
 	{
-		psTerminal = papsTerminals->GetPtr(i);
-		if (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) != iFacing)
+		if (CTraceAutoConnector::GetPortFacing(papsTerminals->GetPtr(i)->pcPortView) != iFacing)
 		{
 			continue;
 		}
-		pcView = masItems.Get(psTerminal->uiItem)->pcView;
-		uiOwner = apcOwners.Find(pcView);
-		if (uiOwner == ARRAY_ELEMENT_NOT_FOUND)
+		pcView = masItems.Get(papsTerminals->GetPtr(i)->uiItem)->pcView;
+		uiPins = 0;
+		for (j = 0; j < papsTerminals->NumElements(); j++)
 		{
-			apcOwners.Add(pcView);
-			aiOwnerPins.Add(1);
+			if ((CTraceAutoConnector::GetPortFacing(papsTerminals->GetPtr(j)->pcPortView) == iFacing) && (masItems.Get(papsTerminals->GetPtr(j)->uiItem)->pcView == pcView))
+			{
+				uiPins++;
+			}
 		}
-		else
+		if (uiPins > uiMost)
 		{
-			aiOwnerPins.SetValue(uiOwner, aiOwnerPins.GetValue(uiOwner) + 1);
-		}
-	}
-
-	pcMost = NULL;
-	iMost = 0;
-	for (i = 0; i < apcOwners.NumElements(); i++)
-	{
-		if (aiOwnerPins.GetValue(i) > iMost)
-		{
-			iMost = aiOwnerPins.GetValue(i);
-			pcMost = apcOwners.GetPtr(i);
+			uiMost = uiPins;
+			pcMost = pcView;
 		}
 	}
-	aiOwnerPins.Kill();
-	apcOwners.Kill();
 	return pcMost;
 }
 
