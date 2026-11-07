@@ -22,6 +22,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #define __LOGICIM_COMPONENT_CHOOSER_H__
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArrayChars.h"
+#include "BaseLib/ArrayTemplate.h"
 #include "WindowLib/ListContainer.h"
 #include "WindowLib/ScrollPane.h"
 #include "WindowLib/Label.h"
@@ -31,6 +32,18 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 class CLogicimCircuit;
 class CComponentView;
+
+
+//A row of the chooser's tree: its library (NumComponentLibraries() for the subcircuits) and its component in the
+//library, -1 for the library's own row.
+struct SLogicimChooserRow
+{
+	int		iLibrary;
+	int		iEntry;
+};
+
+
+typedef CArrayTemplate<SLogicimChooserRow>	CArrayLogicimChooserRow;
 
 
 //Logicim's Select Component dialog, laid out as KiCad's symbol chooser: a filter along the top; a tree of the libraries
@@ -48,7 +61,7 @@ CONSTRUCTABLE(CLogicimComponentChooser);
 DESTRUCTABLE(CLogicimComponentChooser);
 protected:
 	Ptr<CDialog>			mpDialog;
-	CLogicimCircuit*			mpcCircuit;
+	CLogicimCircuit*		mpcCircuit;
 	Ptr<CTextField>			mpFilter;
 	Ptr<CListContainer>		mpList;
 	Ptr<CCircuitCanvasDraw>	mpPreviewDraw;
@@ -58,45 +71,45 @@ protected:
 	Ptr<CImageCel>			mpCollapsedChevron;
 	Ptr<CImageCel>			mpExpandedChevron;
 	CArrayInt				maiExpanded;  //1 for each library that's open, the subcircuits last.
-	CArrayInt				maiRowLibraries;  //Each row's library, NumComponentLibraries() for the subcircuits.
-	CArrayInt				maiRowEntries;  //Each row's component in its library, -1 for a library's own row.
+	CArrayLogicimChooserRow	masRows;
 	CArrayChars				maszSubcircuits;
 	CComponentView*			mpcPreview;
 	CChars					mszChosen;
 	bool					mbChosenSubcircuit;
 
 public:
-	void			Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected);
-	void			Class(void) override;
-	void			Free(void) override;
+	void				Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected);
+	void				Class(void) override;
+	void				Free(void) override;
 
-	bool			Save(CObjectWriter* pcFile) override;
-	bool			Load(CObjectReader* pcFile) override;
+	bool				Save(CObjectWriter* pcFile) override;
+	bool				Load(CObjectReader* pcFile) override;
 
-	bool			Show(void);
-	char*			GetChosen(bool* pbSubcircuit);
+	bool				Show(void);
+	char*				GetChosen(bool* pbSubcircuit);
 
-	void			FilterChanged(void);
-	void			SelectionChanged(void);
-	void			ItemActivated(void);
+	void				FilterChanged(void);
+	void				SelectionChanged(void);
+	void				ItemActivated(void);
 
 protected:
-	Ptr<CComponent>	CreateBody(void);
-	void			FindSubcircuits(void);
-	int				NumLibraries(void);
-	int				NumEntries(int iLibrary);
-	const char*		GetLibraryName(int iLibrary);
-	const char*		GetEntryName(int iLibrary, int iEntry);
-	const char*		GetEntryDescription(int iLibrary, int iEntry);
-	bool			EntryMatches(int iLibrary, int iEntry);
-	bool			FindEntry(const char* szName, int* piLibrary, int* piEntry);
-	void			ExpandMatching(void);
-	void			FillList(int iSelectLibrary, int iSelectEntry);
-	void			AddLibraryRow(int iLibrary);
-	void			AddComponentRow(int iLibrary, int iEntry);
-	const char*		GetRowName(int32 iRow);
-	void			ShowComponent(int32 iRow);
-	void			KillPreview(void);
+	Ptr<CComponent>		CreateBody(void);
+	void				FindSubcircuits(void);
+	int					NumLibraries(void);
+	int					NumEntries(int iLibrary);
+	const char*			GetLibraryName(int iLibrary);
+	const char*			GetEntryName(int iLibrary, int iEntry);
+	const char*			GetEntryDescription(int iLibrary, int iEntry);
+	bool				EntryMatches(int iLibrary, int iEntry);
+	bool				FindEntry(const char* szName, int* piLibrary, int* piEntry);
+	void				ExpandMatching(void);
+	void				FillList(int iSelectLibrary, int iSelectEntry);
+	void				AddLibraryRow(int iLibrary);
+	void				AddComponentRow(int iLibrary, int iEntry);
+	SLogicimChooserRow*	GetRow(int32 iRow);
+	const char*			GetRowName(int32 iRow);
+	void				ShowComponent(int32 iRow);
+	void				KillPreview(void);
 };
 
 

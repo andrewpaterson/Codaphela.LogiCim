@@ -67,8 +67,7 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	mpcPreview = NULL;
 	mszChosen.Init();
 	mbChosenSubcircuit = false;
-	maiRowLibraries.Init();
-	maiRowEntries.Init();
+	masRows.Init();
 	maszSubcircuits.Init();
 
 	mpDialog = OMalloc<CDialog>(pOwner, psLook, "Choose Component");
@@ -111,8 +110,7 @@ void CLogicimComponentChooser::Class(void)
 	M_Pointer(mpCollapsedChevron);
 	M_Pointer(mpExpandedChevron);
 	U_Unknown(CArrayInt, maiExpanded);
-	U_Unknown(CArrayInt, maiRowLibraries);
-	U_Unknown(CArrayInt, maiRowEntries);
+	U_Unknown(CArrayLogicimChooserRow, masRows);
 	U_Unknown(CArrayChars, maszSubcircuits);
 	U_Pointer(mpcPreview);
 	U_String(mszChosen);
@@ -162,8 +160,7 @@ void CLogicimComponentChooser::Free(void)
 	KillPreview();
 
 	maszSubcircuits.Kill();
-	maiRowEntries.Kill();
-	maiRowLibraries.Kill();
+	masRows.Kill();
 	maiExpanded.Kill();
 	mszChosen.Kill();
 	mpcCircuit = NULL;
@@ -435,8 +432,7 @@ void CLogicimComponentChooser::FillList(int iSelectLibrary, int iSelectEntry)
 	//The chooser doesn't hear the rows it takes away and puts back, only the row it selects after.
 	mpList->GetSelectionEvent()->Remove(this);
 	mpList->RemoveAllComponents();
-	maiRowLibraries.ReInit();
-	maiRowEntries.ReInit();
+	masRows.ReInit();
 
 	iSelect = -1;
 	for (i = 0; i < NumLibraries(); i++)
@@ -497,6 +493,7 @@ void CLogicimComponentChooser::AddLibraryRow(int iLibrary)
 	Ptr<CIconComponent>		pChevron;
 	Ptr<CLabel>				pLabel;
 	int32					iRow;
+	SLogicimChooserRow*		psRow;
 
 	pWindow = mpDialog->GetWindow();
 	iRow = mpList->AddRow(true);
@@ -509,8 +506,9 @@ void CLogicimComponentChooser::AddLibraryRow(int iLibrary)
 	mpList->AddToRow(iRow, pGap, 0);
 	mpList->AddToRow(iRow, pChevron, 1);
 	mpList->AddToRow(iRow, pLabel, 2, 2, 1);
-	maiRowLibraries.Add(iLibrary);
-	maiRowEntries.Add(-1);
+	psRow = masRows.Add();
+	psRow->iLibrary = iLibrary;
+	psRow->iEntry = -1;
 }
 
 
@@ -527,6 +525,7 @@ void CLogicimComponentChooser::AddComponentRow(int iLibrary, int iEntry)
 	Ptr<CLabel>				pName;
 	Ptr<CLabel>				pDescription;
 	int32					iRow;
+	SLogicimChooserRow*		psRow;
 
 	pWindow = mpDialog->GetWindow();
 	iRow = mpList->AddRow(true);
@@ -540,8 +539,9 @@ void CLogicimComponentChooser::AddComponentRow(int iLibrary, int iEntry)
 	mpList->AddToRow(iRow, pGap, 0, 2);
 	mpList->AddToRow(iRow, pName, 2);
 	mpList->AddToRow(iRow, pDescription, 3, 1, 1);
-	maiRowLibraries.Add(iLibrary);
-	maiRowEntries.Add(iEntry);
+	psRow = masRows.Add();
+	psRow->iLibrary = iLibrary;
+	psRow->iEntry = iEntry;
 }
 
 
@@ -553,24 +553,33 @@ void CLogicimComponentChooser::AddComponentRow(int iLibrary, int iEntry)
 //////////////////////////////////////////////////////////////////////////
 const char* CLogicimComponentChooser::GetRowName(int32 iRow)
 {
-	int		iLibrary;
-	int		iEntry;
+	SLogicimChooserRow*		psRow;
 
-	if ((iRow < 0) || (iRow >= (int32)maiRowEntries.NumElements()))
+	psRow = GetRow(iRow);
+	if ((psRow == NULL) || (psRow->iEntry == -1))
 	{
 		return NULL;
 	}
-	iLibrary = maiRowLibraries.GetValue(iRow);
-	iEntry = maiRowEntries.GetValue(iRow);
-	if (iEntry == -1)
+	if (psRow->iLibrary == (int)NumComponentLibraries())
+	{
+		return maszSubcircuits.GetText(psRow->iEntry);
+	}
+	return GetComponentLibrary(psRow->iLibrary)->asEntries[psRow->iEntry].szXMLName;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The list's row iRow, NULL if there's no such row (-1 for none).
+//
+//////////////////////////////////////////////////////////////////////////
+SLogicimChooserRow* CLogicimComponentChooser::GetRow(int32 iRow)
+{
+	if ((iRow < 0) || ((size)iRow >= masRows.NumElements()))
 	{
 		return NULL;
 	}
-	if (iLibrary == (int)NumComponentLibraries())
-	{
-		return maszSubcircuits.GetText(iEntry);
-	}
-	return GetComponentLibrary(iLibrary)->asEntries[iEntry].szXMLName;
+	return masRows.Get(iRow);
 }
 
 
@@ -588,18 +597,12 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 	SComponentLibrary*		psLibrary;
 	SComponentLibraryEntry*	psEntry;
 	CChars					sz;
+	SLogicimChooserRow*		psRow;
 
 	mpPreviewDraw->SetPreview(NULL);
 	KillPreview();
 
-	if ((iRow < 0) || (iRow >= (int32)maiRowEntries.NumElements()))
-	{
-		mpName->SetText(" ");
-		mpDescription->SetText(" ");
-		mpLibrary->SetText(" ");
-		return;
-	}
-	iLibrary = maiRowLibraries.GetValue(iRow);
+	psRow = GetRow(iRow);
 	szName = GetRowName(iRow);
 	if (szName == NULL)
 	{
@@ -611,6 +614,7 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 
 	pcEditor = mpcCircuit->GetEditor();
 	sz.Init();
+	iLibrary = psRow->iLibrary;
 	if (iLibrary == (int)NumComponentLibraries())
 	{
 		mpcPreview = NewPlacedSubcircuitInstanceView(pcEditor->GetCircuits()->Get(szName), 0, 0, ROT_East, mpcCircuit->GetFonts());
@@ -621,7 +625,7 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 	else
 	{
 		psLibrary = GetComponentLibrary(iLibrary);
-		psEntry = &psLibrary->asEntries[maiRowEntries.GetValue(iRow)];
+		psEntry = &psLibrary->asEntries[psRow->iEntry];
 		mpcPreview = NewPlacedComponentView(szName, 0, 0, ROT_East, pcEditor->GetCircuit(), mpcCircuit->GetFonts());
 		mpName->SetText(psEntry->szName);
 		mpDescription->SetText(psEntry->szDescription);
@@ -667,7 +671,7 @@ bool CLogicimComponentChooser::Show(void)
 		return false;
 	}
 	mszChosen.Set(szName);
-	mbChosenSubcircuit = maiRowLibraries.GetValue(iRow) == (int)NumComponentLibraries();
+	mbChosenSubcircuit = GetRow(iRow)->iLibrary == (int)NumComponentLibraries();
 	return true;
 }
 
@@ -694,17 +698,17 @@ char* CLogicimComponentChooser::GetChosen(bool* pbSubcircuit)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimComponentChooser::FilterChanged(void)
 {
-	int32	iRow;
-	int		iLibrary;
-	int		iEntry;
+	SLogicimChooserRow*		psRow;
+	int						iLibrary;
+	int						iEntry;
 
 	iLibrary = -1;
 	iEntry = -1;
-	iRow = mpList->GetSelected();
-	if ((iRow >= 0) && (iRow < (int32)maiRowEntries.NumElements()))
+	psRow = GetRow(mpList->GetSelected());
+	if (psRow != NULL)
 	{
-		iLibrary = maiRowLibraries.GetValue(iRow);
-		iEntry = maiRowEntries.GetValue(iRow);
+		iLibrary = psRow->iLibrary;
+		iEntry = psRow->iEntry;
 	}
 
 	ExpandMatching();
@@ -734,20 +738,20 @@ void CLogicimComponentChooser::SelectionChanged(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimComponentChooser::ItemActivated(void)
 {
-	int32	iRow;
-	int		iLibrary;
+	SLogicimChooserRow*		psRow;
+	int						iLibrary;
 
-	iRow = mpList->GetSelected();
-	if ((iRow < 0) || (iRow >= (int32)maiRowEntries.NumElements()))
+	psRow = GetRow(mpList->GetSelected());
+	if (psRow == NULL)
 	{
 		return;
 	}
-	if (maiRowEntries.GetValue(iRow) != -1)
+	if (psRow->iEntry != -1)
 	{
 		mpDialog->Close("OK");
 		return;
 	}
-	iLibrary = maiRowLibraries.GetValue(iRow);
+	iLibrary = psRow->iLibrary;
 	maiExpanded.SetValue(iLibrary, maiExpanded.GetValue(iLibrary) ? 0 : 1);
 	FillList(iLibrary, -1);
 }
