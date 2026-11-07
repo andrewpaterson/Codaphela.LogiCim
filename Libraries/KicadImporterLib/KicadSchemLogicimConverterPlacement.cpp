@@ -857,27 +857,6 @@ void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The item's import box where it is now.  Its bounding box if it hasn't
-// been measured.
-//
-//////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Bounds* psBox)
-{
-	SInt32Vec2	sPosition;
-
-	if (!psItem->bImportBox)
-	{
-		return psItem->pcView->GetBoundingBox(psBox);
-	}
-	sPosition = psItem->pcView->GetPosition();
-	*psBox = psItem->sImportBox;
-	psBox->Move(SFloat64Vec2(sPosition.x, sPosition.y));
-	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // The item's import box and the import boxes of the items attached to it.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -886,13 +865,13 @@ bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Bounds* psBox)
 	size				i;
 	SFloat64Bounds		sOther;
 
-	if (!GetItemImportBox(mcModel.GetItem(uiItem), psBox))
+	if (!mcModel.GetItemImportBox(uiItem, psBox))
 	{
 		return false;
 	}
 	for (i = mcModel.FirstAttached(uiItem); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextAttached(i))
 	{
-		if (GetItemImportBox(mcModel.GetItem(i), &sOther))
+		if (mcModel.GetItemImportBox(i, &sOther))
 		{
 			psBox->Include(&sOther);
 		}

@@ -352,6 +352,10 @@ size CKicadSchemLogicimModel::FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 size CKicadSchemLogicimModel::NextSubnetTerminal(size uiTerminal)
 {
 	return masTerminals.Get(uiTerminal)->uiNextOnSubnet;
@@ -385,6 +389,10 @@ size CKicadSchemLogicimModel::FindPortTerminal(CPortView* pcPortView)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 size CKicadSchemLogicimModel::FindItem(CComponentView* pcView)
 {
 	size*	puiItem;
@@ -394,11 +402,54 @@ size CKicadSchemLogicimModel::FindItem(CComponentView* pcView)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 size CKicadSchemLogicimModel::FindBoardPin(const char* szName)
 {
 	size*	puiItem;
 
 	puiItem = mcBoardPins.Get(szName);
 	return (puiItem != NULL) ? *puiItem : ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The terminals of the subnet, added to paiTerminals.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals)
+{
+	size	i;
+
+	for (i = FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = NextSubnetTerminal(i))
+	{
+		paiTerminals->Add((int)i);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item's import box where it is now.  Its bounding box if it hasn't
+// been measured.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimModel::GetItemImportBox(size uiItem, SFloat64Bounds* psBox)
+{
+	SKicadSchemLogicimItem*		psItem;
+	SInt32Vec2					sPosition;
+
+	psItem = masItems.Get(uiItem);
+	if (!psItem->bImportBox)
+	{
+		return psItem->pcView->GetBoundingBox(psBox);
+	}
+	sPosition = psItem->pcView->GetPosition();
+	*psBox = psItem->sImportBox;
+	psBox->Move(SFloat64Vec2(sPosition.x, sPosition.y));
+	return true;
 }
 

@@ -276,22 +276,6 @@ void CKicadSchemLogicimConverter::JoinSplitterPins(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The terminals of the subnet, added to paiTerminals.
-//
-//////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals)
-{
-	size	i;
-
-	for (i = mcModel.FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextSubnetTerminal(i))
-	{
-		paiTerminals->Add((int)i);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Of the terminals at paiNodes not yet in paiConnected, the one fewest
 // wire pieces from those that are, its path in paiBestPath.  -1 if none of
 // them reaches by wire.
@@ -421,7 +405,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	SKicadSchemLogicimConnection*	psConnection;
 
 	aiTerminals.Init();
-	GetSubnetTerminals(pcSubnet, &aiTerminals);
+	mcModel.GetSubnetTerminals(pcSubnet, &aiTerminals);
 	if (aiTerminals.NumElements() < 2)
 	{
 		aiTerminals.Kill();
@@ -485,7 +469,7 @@ void CKicadSchemLogicimConverter::SetRouteBoxes(CTraceAutoConnector* pcConnector
 	for (i = 0; i < mcModel.NumItems(); i++)
 	{
 		psItem = mcModel.GetItem(i);
-		if (psItem->bImportBox && GetItemImportBox(psItem, &sBox))
+		if (psItem->bImportBox && mcModel.GetItemImportBox(i, &sBox))
 		{
 			pcConnector->SetComponentBox(psItem->pcView, &sBox);
 		}

@@ -277,7 +277,6 @@ protected:
 	void							FindAlignments(void);
 	void							AlignItems(void);
 	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet);
-	void							GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals);
 	bool							IsConnectionBetween(size uiTerminal1, size uiTerminal2);
 	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
 	void							JoinSplitterEnd(size uiEnd, size uiPin);
@@ -297,7 +296,6 @@ protected:
 	bool							HasTunnel(CKicadSchemSubnet* pcSubnet);
 	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	void							MeasureImportBoxes(void);
-	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Bounds* psBox);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
 
 	void							Place(float64 fSpread);
