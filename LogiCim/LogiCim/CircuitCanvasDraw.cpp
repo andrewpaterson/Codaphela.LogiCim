@@ -96,8 +96,13 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 		return true;
 	}
 
+	//The painter draws the whole canvas, so a native canvas holding only part of it is drawn through an image of its own.
 	sSize = pCanvas->GetActualSize();
 	pImage = pCanvas->GetImageOrNull();
+	if (pImage.IsNotNull() && ((pCanvas->GetNativeOrigin().x != 0) || (pCanvas->GetNativeOrigin().y != 0) || (pCanvas->GetNativeSize().x != sSize.x) || (pCanvas->GetNativeSize().y != sSize.y)))
+	{
+		pImage = NULL;
+	}
 	if (pImage.IsNull())
 	{
 		if (mpDestImage.IsNull() || (mpDestImage->GetWidth() != (uint32)sSize.x) || (mpDestImage->GetHeight() != (uint32)sSize.y) ||
