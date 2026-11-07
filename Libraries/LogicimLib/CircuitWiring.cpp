@@ -42,10 +42,8 @@ void CCircuitWiring::Init(CCircuitSimulation* pcSimulation)
 	maiNetWidths.Init();
 	maiNetIndices.Init();
 	muiNumNets = 0;
-	maiNetFirstBits.Init();
-	maiNetBitWidths.Init();
+	masNets.Init();
 	maiBitParents.Init();
-	mapcNetTraces = NULL;
 	mpapcDetachedComponents = NULL;
 	mpapcDetachedTraces = NULL;
 }
@@ -60,18 +58,12 @@ void CCircuitWiring::Kill(void)
 {
 	size	i;
 
-	if (mapcNetTraces != NULL)
+	for (i = 0; i < masNets.NumElements(); i++)
 	{
-		for (i = 0; i < muiNumNets; i++)
-		{
-			mapcNetTraces[i].Kill();
-		}
-		free(mapcNetTraces);
-		mapcNetTraces = NULL;
+		masNets.Get(i)->apcTraces.Kill();
 	}
+	masNets.Kill();
 	maiBitParents.Kill();
-	maiNetBitWidths.Kill();
-	maiNetFirstBits.Kill();
 	maiNetIndices.Kill();
 	maiNetWidths.Kill();
 	maiParents.Kill();
@@ -477,7 +469,7 @@ bool CCircuitWiring::FindNets(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Numbers the bits of the nets, from maiNetFirstBits for each net, and
+// Numbers the bits of the nets, from each net's iFirstBit, and
 // joins those the components join (GetBitJoins) in maiBitParents; each
 // set of joined bits gets one trace.  A join to a port view that isn't on
 // a net joins nothing.
@@ -497,11 +489,14 @@ void CCircuitWiring::FindBits(void)
 	int						iToNet;
 	int						iBit;
 	SWiringLevel*			psLevel;
+	SWiringNet*				psNet;
 
 	for (i = 0; i < muiNumNets; i++)
 	{
-		maiNetFirstBits.Add(0);
-		maiNetBitWidths.Add(0);
+		psNet = masNets.Add();
+		psNet->iFirstBit = 0;
+		psNet->iBitWidth = 0;
+		psNet->apcTraces.Init();
 	}
 	for (i = 0; i < muiNumNodes; i++)
 	{
@@ -512,15 +507,16 @@ void CCircuitWiring::FindBits(void)
 			if (iNet != -1)
 			{
 				iWidth = maiNetWidths.GetValue(iRoot);
-				maiNetBitWidths.SetValue(iNet, (iWidth == 0) ? 1 : iWidth);
+				masNets.Get(iNet)->iBitWidth = (iWidth == 0) ? 1 : iWidth;
 			}
 		}
 	}
 	iBits = 0;
 	for (i = 0; i < muiNumNets; i++)
 	{
-		maiNetFirstBits.SetValue(i, iBits);
-		iBits += maiNetBitWidths.GetValue(i);
+		psNet = masNets.Get(i);
+		psNet->iFirstBit = iBits;
+		iBits += psNet->iBitWidth;
 	}
 
 	for (iBit = 0; iBit < iBits; iBit++)
@@ -541,9 +537,9 @@ void CCircuitWiring::FindBits(void)
 			iFromNet = GetPortViewNet(psLevel, psJoin->pcFrom);
 			iToNet = GetPortViewNet(psLevel, psJoin->pcTo);
 			if ((iFromNet != -1) && (iToNet != -1) &&
-				(psJoin->uiFromBit < (size)maiNetBitWidths.GetValue(iFromNet)) && (psJoin->uiToBit < (size)maiNetBitWidths.GetValue(iToNet)))
+				(psJoin->uiFromBit < (size)masNets.Get(iFromNet)->iBitWidth) && (psJoin->uiToBit < (size)masNets.Get(iToNet)->iBitWidth))
 			{
-				Join(&maiBitParents, maiNetFirstBits.GetValue(iFromNet) + (int)psJoin->uiFromBit, maiNetFirstBits.GetValue(iToNet) + (int)psJoin->uiToBit);
+				Join(&maiBitParents, masNets.Get(iFromNet)->iFirstBit + (int)psJoin->uiFromBit, masNets.Get(iToNet)->iFirstBit + (int)psJoin->uiToBit);
 			}
 		}
 		asJoins.Kill();
@@ -639,7 +635,7 @@ void CCircuitWiring::ReuseBitTraces(CArrayTraceViewTracePtr* papcBitTraces)
 			if (iNet != -1)
 			{
 				pcPortView = psLevel->apcPortViews.GetPtr(j);
-				for (k = 0; (k < pcPortView->NumPorts(psLevel->pcViewPath, mpcSimulation)) && (k < (size)maiNetBitWidths.GetValue(iNet)); k++)
+				for (k = 0; (k < pcPortView->NumPorts(psLevel->pcViewPath, mpcSimulation)) && (k < (size)masNets.Get(iNet)->iBitWidth); k++)
 				{
 					AddBitTraceVote(&asVotes, GetBitRoot(iNet, k), pcPortView->GetPort(psLevel->pcViewPath, mpcSimulation, k)->GetTrace());
 				}
@@ -651,7 +647,7 @@ void CCircuitWiring::ReuseBitTraces(CArrayTraceViewTracePtr* papcBitTraces)
 			papcOldTraces = psLevel->pcCircuit->GetTrace(j)->GetTraces(psLevel->pcViewPath, mpcSimulation);
 			if ((iNet != -1) && (papcOldTraces != NULL))
 			{
-				for (k = 0; (k < papcOldTraces->NumElements()) && (k < (size)maiNetBitWidths.GetValue(iNet)); k++)
+				for (k = 0; (k < papcOldTraces->NumElements()) && (k < (size)masNets.Get(iNet)->iBitWidth); k++)
 				{
 					AddBitTraceVote(&asVotes, GetBitRoot(iNet, k), papcOldTraces->GetPtr(k));
 				}
@@ -695,7 +691,7 @@ void CCircuitWiring::AddBitTraces(CArrayTraceViewTracePtr* papcBitTraces)
 	pcCircuit = mpcSimulation->GetCircuit();
 	for (i = 0; i < muiNumNets; i++)
 	{
-		for (k = 0; k < (size)maiNetBitWidths.GetValue(i); k++)
+		for (k = 0; k < (size)masNets.Get(i)->iBitWidth; k++)
 		{
 			iRoot = GetBitRoot((int)i, k);
 			if (papcBitTraces->GetPtr(iRoot) == NULL)
@@ -709,7 +705,7 @@ void CCircuitWiring::AddBitTraces(CArrayTraceViewTracePtr* papcBitTraces)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The traces of each net by bit, into mapcNetTraces, from those of the
+// The traces of each net by bit, into its apcTraces, from those of the
 // sets of joined bits.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -718,13 +714,11 @@ void CCircuitWiring::CreateNetTraces(CArrayTraceViewTracePtr* papcBitTraces)
 	size	i;
 	size	k;
 
-	mapcNetTraces = (CArrayTraceViewTracePtr*)malloc(sizeof(CArrayTraceViewTracePtr) * (muiNumNets + 1));
 	for (i = 0; i < muiNumNets; i++)
 	{
-		mapcNetTraces[i].Init();
-		for (k = 0; k < (size)maiNetBitWidths.GetValue(i); k++)
+		for (k = 0; k < (size)masNets.Get(i)->iBitWidth; k++)
 		{
-			mapcNetTraces[i].Add(papcBitTraces->GetPtr(GetBitRoot((int)i, k)));
+			masNets.Get(i)->apcTraces.Add(papcBitTraces->GetPtr(GetBitRoot((int)i, k)));
 		}
 	}
 }
@@ -749,7 +743,7 @@ void CCircuitWiring::SetLevelTraces(SWiringLevel* psLevel)
 		}
 		else
 		{
-			psLevel->pcCircuit->GetTrace(i)->SetTraces(psLevel->pcViewPath, mpcSimulation, &mapcNetTraces[iNet]);
+			psLevel->pcCircuit->GetTrace(i)->SetTraces(psLevel->pcViewPath, mpcSimulation, &masNets.Get(iNet)->apcTraces);
 		}
 	}
 }
@@ -782,7 +776,7 @@ void CCircuitWiring::DisconnectLevel(SWiringLevel* psLevel)
 		for (k = 0; k < pcPortView->NumPorts(pcViewPath, mpcSimulation); k++)
 		{
 			pcPort = pcPortView->GetPort(pcViewPath, mpcSimulation, k);
-			if ((pcPort->GetTrace() != NULL) && ((iNet == -1) || (pcPort->GetTrace() != mapcNetTraces[iNet].GetPtr(k))))
+			if ((pcPort->GetTrace() != NULL) && ((iNet == -1) || (pcPort->GetTrace() != masNets.Get(iNet)->apcTraces.GetPtr(k))))
 			{
 				pcPort->Disconnect(pcTimeline);
 			}
@@ -823,7 +817,7 @@ bool CCircuitWiring::ConnectLevel(SWiringLevel* psLevel, bool bStart)
 			for (k = 0; k < pcPortView->NumPorts(pcViewPath, mpcSimulation); k++)
 			{
 				pcPort = pcPortView->GetPort(pcViewPath, mpcSimulation, k);
-				pcTrace = mapcNetTraces[iNet].GetPtr(k);
+				pcTrace = masNets.Get(iNet)->apcTraces.GetPtr(k);
 				if (pcPort->GetTrace() == pcTrace)
 				{
 					continue;
@@ -877,7 +871,7 @@ bool CCircuitWiring::IsNetTrace(CTrace* pcTrace)
 
 	for (i = 0; i < muiNumNets; i++)
 	{
-		if (mapcNetTraces[i].Find(pcTrace) != ARRAY_ELEMENT_NOT_FOUND)
+		if (masNets.Get(i)->apcTraces.Find(pcTrace) != ARRAY_ELEMENT_NOT_FOUND)
 		{
 			return true;
 		}
@@ -893,7 +887,7 @@ bool CCircuitWiring::IsNetTrace(CTrace* pcTrace)
 //////////////////////////////////////////////////////////////////////////
 int CCircuitWiring::GetBitRoot(int iNet, size uiBit)
 {
-	return FindRoot(&maiBitParents, maiNetFirstBits.GetValue(iNet) + (int)uiBit);
+	return FindRoot(&maiBitParents, masNets.Get(iNet)->iFirstBit + (int)uiBit);
 }
 
 

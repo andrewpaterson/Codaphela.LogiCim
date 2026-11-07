@@ -43,7 +43,18 @@ struct SWiringLevel
 };
 
 
+//A net of the wiring: its bits, iBitWidth of them from iFirstBit of all the nets' bits (see FindBits), and the trace of
+//each bit once they're made (see CreateNetTraces).
+struct SWiringNet
+{
+	int32						iFirstBit;
+	int32						iBitWidth;
+	CArrayTraceViewTracePtr		apcTraces;
+};
+
+
 typedef CArrayTemplate<SWiringLevel>	CArrayWiringLevel;
+typedef CArrayTemplate<SWiringNet>		CArrayWiringNet;
 
 
 //Wires a circuit's views, and those of the subcircuits in it all the way down, in a circuit simulation, as Logicim's
@@ -70,10 +81,8 @@ protected:
 	CArrayInt					maiNetWidths;
 	CArrayInt					maiNetIndices;
 	size						muiNumNets;
-	CArrayInt					maiNetFirstBits;
-	CArrayInt					maiNetBitWidths;
+	CArrayWiringNet				masNets;
 	CArrayInt					maiBitParents;
-	CArrayTraceViewTracePtr*	mapcNetTraces;
 	CArrayComponentViewPtr*		mpapcDetachedComponents;
 	CArrayTraceViewPtr*			mpapcDetachedTraces;
 
