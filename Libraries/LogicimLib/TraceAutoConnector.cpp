@@ -979,101 +979,146 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The runs, shortest first and each in its stair's order, and then the
-// connections not in a run, shortest first.
+// Whether the connection is in one of the runs.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::SortConnections(CArrayInt* paiOrder)
+bool CTraceAutoConnector::IsInRun(STraceAutoConnection* psConnection)
+{
+	return (psConnection->iRun >= 0) && (psConnection->iRun < (int)muiNumRuns);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The runs that have connections, shortest first: a run is as long as its
+// shortest connection.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 {
 	CArrayInt				aiRunLengths;
-	CArrayInt				aiRuns;
-	CArrayInt				aiSingles;
+	STraceAutoConnection*	psConnection;
 	size					i;
 	size					j;
-	size					k;
-	STraceAutoConnection*	psConnection;
-	int						iRun;
-	SInt32Vec2				sFrom;
-	SInt32Vec2				sOtherFrom;
-	size					uiFirst;
+	int						iLength;
 
 	aiRunLengths.Init();
 	for (i = 0; i < muiNumRuns; i++)
 	{
 		aiRunLengths.Add(-1);
 	}
-	aiSingles.Init();
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
-		if ((psConnection->iRun >= 0) && (psConnection->iRun < (int)muiNumRuns))
+		if (IsInRun(psConnection))
 		{
-			if ((aiRunLengths.GetValue(psConnection->iRun) == -1) || (psConnection->iLength < aiRunLengths.GetValue(psConnection->iRun)))
+			iLength = aiRunLengths.GetValue(psConnection->iRun);
+			if ((iLength == -1) || (psConnection->iLength < iLength))
 			{
 				aiRunLengths.SetValue(psConnection->iRun, psConnection->iLength);
 			}
 		}
-		else
-		{
-			for (j = 0; j < aiSingles.NumElements(); j++)
-			{
-				if (psConnection->iLength < masConnections.Get(aiSingles.GetValue(j))->iLength)
-				{
-					break;
-				}
-			}
-			aiSingles.InsertAt((int)i, j);
-		}
 	}
 
-	aiRuns.Init();
 	for (i = 0; i < muiNumRuns; i++)
 	{
 		if (aiRunLengths.GetValue(i) == -1)
 		{
 			continue;
 		}
-		for (j = 0; j < aiRuns.NumElements(); j++)
+		for (j = 0; (j < paiRuns->NumElements()) && (aiRunLengths.GetValue(i) >= aiRunLengths.GetValue(paiRuns->GetValue(j))); j++)
 		{
-			if (aiRunLengths.GetValue(i) < aiRunLengths.GetValue(aiRuns.GetValue(j)))
+		}
+		paiRuns->InsertAt((int)i, j);
+	}
+	aiRunLengths.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The run's connections added to paiOrder in its stair's order: across
+// the way they leave, as their bends are stepped.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::AddRunInStairOrder(int iRun, CArrayInt* paiOrder)
+{
+	STraceAutoConnection*	psConnection;
+	SInt32Vec2				sFrom;
+	SInt32Vec2				sOtherFrom;
+	size					uiFirst;
+	size					i;
+	size					j;
+
+	uiFirst = paiOrder->NumElements();
+	for (i = 0; i < masConnections.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(i);
+		if (psConnection->iRun != iRun)
+		{
+			continue;
+		}
+		sFrom = psConnection->pcFrom->GetGridPosition();
+		for (j = uiFirst; j < paiOrder->NumElements(); j++)
+		{
+			sOtherFrom = masConnections.Get(paiOrder->GetValue(j))->pcFrom->GetGridPosition();
+			if ((psConnection->bHorizontal && (sFrom.y < sOtherFrom.y)) || (!psConnection->bHorizontal && (sFrom.x < sOtherFrom.x)))
 			{
 				break;
 			}
 		}
-		aiRuns.InsertAt((int)i, j);
+		paiOrder->InsertAt((int)i, j);
 	}
+}
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The connections not in a run added to paiOrder, shortest first.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::AddSinglesByLength(CArrayInt* paiOrder)
+{
+	STraceAutoConnection*	psConnection;
+	size					uiFirst;
+	size					i;
+	size					j;
+
+	uiFirst = paiOrder->NumElements();
+	for (i = 0; i < masConnections.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(i);
+		if (IsInRun(psConnection))
+		{
+			continue;
+		}
+		for (j = uiFirst; (j < paiOrder->NumElements()) && (psConnection->iLength >= masConnections.Get(paiOrder->GetValue(j))->iLength); j++)
+		{
+		}
+		paiOrder->InsertAt((int)i, j);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The runs, shortest first and each in its stair's order, and then the
+// connections not in a run, shortest first.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::SortConnections(CArrayInt* paiOrder)
+{
+	CArrayInt	aiRuns;
+	size		i;
+
+	aiRuns.Init();
+	GetRunsByLength(&aiRuns);
 	for (i = 0; i < aiRuns.NumElements(); i++)
 	{
-		iRun = aiRuns.GetValue(i);
-		uiFirst = paiOrder->NumElements();
-		for (j = 0; j < masConnections.NumElements(); j++)
-		{
-			psConnection = masConnections.Get(j);
-			if (psConnection->iRun == iRun)
-			{
-				//Across the way they leave, as their bends are stepped.
-				sFrom = psConnection->pcFrom->GetGridPosition();
-				for (k = uiFirst; k < paiOrder->NumElements(); k++)
-				{
-					sOtherFrom = masConnections.Get(paiOrder->GetValue(k))->pcFrom->GetGridPosition();
-					if ((psConnection->bHorizontal && (sFrom.y < sOtherFrom.y)) || (!psConnection->bHorizontal && (sFrom.x < sOtherFrom.x)))
-					{
-						break;
-					}
-				}
-				paiOrder->InsertAt((int)j, k);
-			}
-		}
+		AddRunInStairOrder(aiRuns.GetValue(i), paiOrder);
 	}
-	for (i = 0; i < aiSingles.NumElements(); i++)
-	{
-		paiOrder->Add(aiSingles.GetValue(i));
-	}
-
 	aiRuns.Kill();
-	aiSingles.Kill();
-	aiRunLengths.Kill();
+	AddSinglesByLength(paiOrder);
 }
 
 

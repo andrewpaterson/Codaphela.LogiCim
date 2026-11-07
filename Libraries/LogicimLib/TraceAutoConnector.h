@@ -203,6 +203,10 @@ protected:
 	void			CalculateBends(void);
 	void			CalculateRunBends(int iRun);
 	void			SortConnections(CArrayInt* paiOrder);
+	void			GetRunsByLength(CArrayInt* paiRuns);
+	void			AddRunInStairOrder(int iRun, CArrayInt* paiOrder);
+	void			AddSinglesByLength(CArrayInt* paiOrder);
+	bool			IsInRun(STraceAutoConnection* psConnection);
 	bool			Route(STraceAutoConnection* psConnection, bool bRipping, CArrayInt* paiConflicts);
 	void			ExpandRoute(STraceAutoConnectSearch* psSearch, STraceAutoConnectHeapNode* psNode);
 	void			AddRoute(int iGoalState, int iNet);
