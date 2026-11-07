@@ -798,10 +798,10 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 			{
 				continue;
 			}
-			for (k = 0; k < mcModel.NumTerminals(); k++)
+			for (k = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); k != ARRAY_ELEMENT_NOT_FOUND; k = mcModel.NextSubnetTerminal(k))
 			{
 				psOther = mcModel.GetTerminal(k);
-				if ((psOther->pcSubnet == psTerminal->pcSubnet) && (mcModel.GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
+				if ((mcModel.GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
 				{
 					pcTarget = psOther->pcPortView;
 					break;

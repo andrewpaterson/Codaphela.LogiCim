@@ -372,10 +372,10 @@ CPortView* CKicadSchemLogicimConverter::GetComponentPin(CKicadSchemSubnet* pcSub
 	size							i;
 	SKicadSchemLogicimTerminal*		psTerminal;
 
-	for (i = 0; i < mcModel.NumTerminals(); i++)
+	for (i = mcModel.FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextSubnetTerminal(i))
 	{
 		psTerminal = mcModel.GetTerminal(i);
-		if ((psTerminal->pcSubnet == pcSubnet) && IsComponentPin(psTerminal) &&
+		if (IsComponentPin(psTerminal) &&
 			((pcOwner == NULL) || (psTerminal->pcPortView->GetOwner() == pcOwner)) &&
 			((iFacing == -1) || (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing)))
 		{
@@ -396,10 +396,10 @@ bool CKicadSchemLogicimConverter::HasTunnel(CKicadSchemSubnet* pcSubnet)
 	size							i;
 	SKicadSchemLogicimTerminal*		psTerminal;
 
-	for (i = 0; i < mcModel.NumTerminals(); i++)
+	for (i = mcModel.FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextSubnetTerminal(i))
 	{
 		psTerminal = mcModel.GetTerminal(i);
-		if ((psTerminal->pcSubnet == pcSubnet) && (mcModel.GetItem(psTerminal->uiItem)->eKind == KSLIK_Tunnel))
+		if (mcModel.GetItem(psTerminal->uiItem)->eKind == KSLIK_Tunnel)
 		{
 			return true;
 		}
@@ -424,10 +424,10 @@ void CKicadSchemLogicimConverter::GetTapPinTerminals(CKicadSchemBus* pcBus, CArr
 	for (i = 0; i < paiTaps->NumElements(); i++)
 	{
 		psTap = pcBus->GetTap(paiTaps->GetValue(i));
-		for (j = 0; j < mcModel.NumTerminals(); j++)
+		for (j = mcModel.FirstSubnetTerminal(psTap->pcMember); j != ARRAY_ELEMENT_NOT_FOUND; j = mcModel.NextSubnetTerminal(j))
 		{
 			psTerminal = mcModel.GetTerminal(j);
-			if ((psTerminal->pcSubnet == psTap->pcMember) && IsComponentPin(psTerminal))
+			if (IsComponentPin(psTerminal))
 			{
 				papsTerminals->Add(psTerminal);
 			}

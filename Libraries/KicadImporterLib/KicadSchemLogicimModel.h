@@ -21,6 +21,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #ifndef __KICAD_SCHEM_LOGICIM_MODEL_H__
 #define __KICAD_SCHEM_LOGICIM_MODEL_H__
 #include "BaseLib/ArrayTemplate.h"
+#include "BaseLib/MapBlock.h"
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/Bounds.h"
 #include "KicadLib/KicadSchemNetlist.h"
@@ -77,6 +78,7 @@ struct SKicadSchemLogicimTerminal
 	CPortView*			pcPortView;
 	size				uiItem;
 	bool				bBus;
+	size				uiNextOnSubnet;  //The model's: the next of the subnet's terminals, ARRAY_ELEMENT_NOT_FOUND after the last.
 };
 
 
@@ -97,6 +99,14 @@ typedef CArrayTemplate<SKicadSchemLogicimTerminal>		CArrayKicadSchemLogicimTermi
 typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConnection;
 
 
+//The first and last of a subnet's terminals (see CKicadSchemLogicimModel::FirstSubnetTerminal).
+struct SKicadSchemLogicimSubnetTerminals
+{
+	size	uiFirst;
+	size	uiLast;
+};
+
+
 //What the converter has made so far: the items (the Logicim components), their terminals (the ports standing for
 //KiCad's pins, labels and supplies on each subnet) and the connections to be wired between terminals.
 class CKicadSchemLogicimModel
@@ -105,6 +115,10 @@ protected:
 	CArrayKicadSchemLogicimItem			masItems;
 	CArrayKicadSchemLogicimTerminal		masTerminals;
 	CArrayKicadSchemLogicimConnection	masConnections;
+	CMapBlock							mcSubnetTerminals;  //A subnet to its SKicadSchemLogicimSubnetTerminals.
+
+	void							LinkTerminal(size uiTerminal);
+	void							IndexTerminals(void);
 
 public:
 	void							Init(void);
@@ -121,6 +135,9 @@ public:
 	SKicadSchemLogicimTerminal*		GetTerminal(size uiIndex);
 	size							NumConnections(void);
 	SKicadSchemLogicimConnection*	GetConnection(size uiIndex);
+
+	size							FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet);
+	size							NextSubnetTerminal(size uiTerminal);
 };
 
 

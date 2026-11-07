@@ -30,6 +30,7 @@ void CKicadSchemLogicimModel::Init(void)
 	masItems.Init();
 	masTerminals.Init();
 	masConnections.Init();
+	mcSubnetTerminals.Init();
 }
 
 
@@ -40,6 +41,7 @@ void CKicadSchemLogicimModel::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::Kill(void)
 {
+	mcSubnetTerminals.Kill();
 	masConnections.Kill();
 	masTerminals.Kill();
 	masItems.Kill();
@@ -100,6 +102,51 @@ void CKicadSchemLogicimModel::AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64V
 	psTerminal->pcPortView = pcPortView;
 	psTerminal->uiItem = uiItem;
 	psTerminal->bBus = bBus;
+	LinkTerminal(masTerminals.NumElements() - 1);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The terminal goes on the end of its subnet's terminals.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
+{
+	SKicadSchemLogicimTerminal*				psTerminal;
+	SKicadSchemLogicimSubnetTerminals*		psSubnet;
+	SKicadSchemLogicimSubnetTerminals		sSubnet;
+
+	psTerminal = masTerminals.Get(uiTerminal);
+	psTerminal->uiNextOnSubnet = ARRAY_ELEMENT_NOT_FOUND;
+	psSubnet = (SKicadSchemLogicimSubnetTerminals*)mcSubnetTerminals.Get(&psTerminal->pcSubnet, sizeof(psTerminal->pcSubnet));
+	if (psSubnet == NULL)
+	{
+		sSubnet.uiFirst = uiTerminal;
+		sSubnet.uiLast = uiTerminal;
+		mcSubnetTerminals.Put(&psTerminal->pcSubnet, sizeof(psTerminal->pcSubnet), &sSubnet, sizeof(sSubnet));
+		return;
+	}
+	masTerminals.Get(psSubnet->uiLast)->uiNextOnSubnet = uiTerminal;
+	psSubnet->uiLast = uiTerminal;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each subnet's terminals linked again, in order, after they've moved.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::IndexTerminals(void)
+{
+	size	i;
+
+	mcSubnetTerminals.Kill();
+	mcSubnetTerminals.Init();
+	for (i = 0; i < masTerminals.NumElements(); i++)
+	{
+		LinkTerminal(i);
+	}
 }
 
 
@@ -162,6 +209,7 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	}
 	masTerminals.SetUsedElements(uiKept);
 	aiNewIndices.Kill();
+	IndexTerminals();
 }
 
 
@@ -175,4 +223,26 @@ size CKicadSchemLogicimModel::NumTerminals(void) { return masTerminals.NumElemen
 SKicadSchemLogicimTerminal* CKicadSchemLogicimModel::GetTerminal(size uiIndex) { return masTerminals.SafeGet(uiIndex); }
 size CKicadSchemLogicimModel::NumConnections(void) { return masConnections.NumElements(); }
 SKicadSchemLogicimConnection* CKicadSchemLogicimModel::GetConnection(size uiIndex) { return masConnections.SafeGet(uiIndex); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The first of the subnet's terminals, in the order they were added, and
+// the next after uiTerminal; ARRAY_ELEMENT_NOT_FOUND when there are no
+// more.
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimModel::FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet)
+{
+	SKicadSchemLogicimSubnetTerminals*	psSubnet;
+
+	psSubnet = (SKicadSchemLogicimSubnetTerminals*)mcSubnetTerminals.Get(&pcSubnet, sizeof(pcSubnet));
+	return (psSubnet != NULL) ? psSubnet->uiFirst : ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+size CKicadSchemLogicimModel::NextSubnetTerminal(size uiTerminal)
+{
+	return masTerminals.Get(uiTerminal)->uiNextOnSubnet;
+}
 

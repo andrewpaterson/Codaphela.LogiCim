@@ -75,12 +75,13 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 			continue;
 		}
 		bDrawn = false;
-		for (j = 0; (j < mcModel.NumTerminals()) && !bDrawn; j++)
+		for (j = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); j != ARRAY_ELEMENT_NOT_FOUND; j = mcModel.NextSubnetTerminal(j))
 		{
 			psOther = mcModel.GetTerminal(j);
-			if ((psOther->pcSubnet == psTerminal->pcSubnet) && (psOther->bBus || (mcModel.GetItem(psOther->uiItem)->pcPort == NULL)))
+			if (psOther->bBus || (mcModel.GetItem(psOther->uiItem)->pcPort == NULL))
 			{
 				bDrawn = true;
+				break;
 			}
 		}
 		if (!bDrawn)
@@ -302,12 +303,9 @@ void CKicadSchemLogicimConverter::GetSubnetTerminals(CKicadSchemSubnet* pcSubnet
 {
 	size	i;
 
-	for (i = 0; i < mcModel.NumTerminals(); i++)
+	for (i = mcModel.FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextSubnetTerminal(i))
 	{
-		if (mcModel.GetTerminal(i)->pcSubnet == pcSubnet)
-		{
-			paiTerminals->Add((int)i);
-		}
+		paiTerminals->Add((int)i);
 	}
 }
 
