@@ -104,6 +104,9 @@ public:
 protected:
 	void				DestroySimulation(CViewPath* pcViewPath, CCircuitSimulation* pcSimulation);
 	void				AddTouchingTraces(STraceLine* psLine, CArrayTraceViewPtr* papcTraces);
+	void				CollectReplacedTraces(CArrayTraceLine* pasLines, CArrayTraceViewPtr* papcSeeds, CArrayTraceViewPtr* papcReplaced);
+	void				KillTracesToLines(CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasLines);
+	void				CollectPortsOnLines(CArrayTraceLine* pasLines, CArrayInt32Vec2* pasPorts);
 };
 
 

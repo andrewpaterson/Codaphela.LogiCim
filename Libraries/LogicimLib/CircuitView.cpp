@@ -218,6 +218,95 @@ void CCircuitView::InsertTrace(CTraceView* pcTrace, size uiIndex)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The wires ReplaceWires replaces: the seed wires still in the circuit
+// (papcSeeds may be NULL) and every wire joined to them or to the lines.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::CollectReplacedTraces(CArrayTraceLine* pasLines, CArrayTraceViewPtr* papcSeeds, CArrayTraceViewPtr* papcReplaced)
+{
+	size			i;
+	CTraceView*		pcTrace;
+	STraceLine		sLine;
+
+	if (papcSeeds != NULL)
+	{
+		for (i = 0; i < papcSeeds->NumElements(); i++)
+		{
+			pcTrace = papcSeeds->GetPtr(i);
+			if ((mapcTraces.Find(pcTrace) != ARRAY_ELEMENT_NOT_FOUND) && (papcReplaced->Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
+			{
+				papcReplaced->Add(pcTrace);
+			}
+		}
+	}
+	for (i = 0; i < pasLines->NumElements(); i++)
+	{
+		AddTouchingTraces(pasLines->Get(i), papcReplaced);
+	}
+
+	//The array grows as it's walked, so this reaches the whole of each net.
+	for (i = 0; i < papcReplaced->NumElements(); i++)
+	{
+		pcTrace = papcReplaced->GetPtr(i);
+		sLine.Init(pcTrace->GetStart(), pcTrace->GetEnd());
+		AddTouchingTraces(&sLine, papcReplaced);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Takes the wires out of the circuit and frees them, adding each one's
+// line to pasLines.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::KillTracesToLines(CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasLines)
+{
+	size			i;
+	CTraceView*		pcTrace;
+
+	for (i = 0; i < papcTraces->NumElements(); i++)
+	{
+		pcTrace = papcTraces->GetPtr(i);
+		pasLines->Add()->Init(pcTrace->GetStart(), pcTrace->GetEnd());
+		RemoveTrace(pcTrace);
+		SafeKill(pcTrace);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where a port is on one of the lines, added to pasPorts.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::CollectPortsOnLines(CArrayTraceLine* pasLines, CArrayInt32Vec2* pasPorts)
+{
+	CArrayPortViewPtr	apcPortViews;
+	SInt32Vec2			sPort;
+	size				i;
+	size				j;
+
+	apcPortViews.Init();
+	CollectPortViews(&apcPortViews);
+	for (i = 0; i < apcPortViews.NumElements(); i++)
+	{
+		sPort = apcPortViews.GetPtr(i)->GetGridPosition();
+		for (j = 0; j < pasLines->NumElements(); j++)
+		{
+			if (pasLines->Get(j)->Contains(sPort))
+			{
+				pasPorts->Add(&sPort);
+				break;
+			}
+		}
+	}
+	apcPortViews.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Adds wires along the lines, as Logicim's createTraceViews.  The lines,
 // and the wires of every net they or the seed wires (which may be NULL)
 // touch, are merged and split again (see MergeTraceLines), and those wires
@@ -231,52 +320,21 @@ void CCircuitView::ReplaceWires(CArrayTraceLine* pasLines, CArrayTraceViewPtr* p
 	CArrayTraceLine		asLines;
 	CArrayInt32Vec2		asEnds;
 	CArrayInt32Vec2		asPorts;
-	CArrayPortViewPtr	apcPortViews;
-	STraceLine			sLine;
 	STraceLine*			psLine;
 	CTraceView*			pcTrace;
-	SInt32Vec2			sPort;
 	size				i;
-	size				j;
 
 	apcReplaced.Init();
-	if (papcSeeds != NULL)
-	{
-		for (i = 0; i < papcSeeds->NumElements(); i++)
-		{
-			pcTrace = papcSeeds->GetPtr(i);
-			if ((mapcTraces.Find(pcTrace) != ARRAY_ELEMENT_NOT_FOUND) && (apcReplaced.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
-			{
-				apcReplaced.Add(pcTrace);
-			}
-		}
-	}
-	for (i = 0; i < pasLines->NumElements(); i++)
-	{
-		AddTouchingTraces(pasLines->Get(i), &apcReplaced);
-	}
-	for (i = 0; i < apcReplaced.NumElements(); i++)
-	{
-		pcTrace = apcReplaced.GetPtr(i);
-		sLine.Init(pcTrace->GetStart(), pcTrace->GetEnd());
-		AddTouchingTraces(&sLine, &apcReplaced);
-	}
-
+	CollectReplacedTraces(pasLines, papcSeeds, &apcReplaced);
 	asLines.Init();
 	for (i = 0; i < pasLines->NumElements(); i++)
 	{
 		asLines.Add(pasLines->Get(i));
 	}
-	for (i = 0; i < apcReplaced.NumElements(); i++)
-	{
-		pcTrace = apcReplaced.GetPtr(i);
-		psLine = asLines.Add();
-		psLine->Init(pcTrace->GetStart(), pcTrace->GetEnd());
-		RemoveTrace(pcTrace);
-		SafeKill(pcTrace);
-	}
+	KillTracesToLines(&apcReplaced, &asLines);
 	apcReplaced.Kill();
 
+	//The merged lines are split again where the lines ended and at ports (see SplitTraceLines).
 	asEnds.Init();
 	for (i = 0; i < asLines.NumElements(); i++)
 	{
@@ -284,23 +342,8 @@ void CCircuitView::ReplaceWires(CArrayTraceLine* pasLines, CArrayTraceViewPtr* p
 		asEnds.Add(&asLines.Get(i)->sEnd);
 	}
 	MergeTraceLines(&asLines);
-
 	asPorts.Init();
-	apcPortViews.Init();
-	CollectPortViews(&apcPortViews);
-	for (i = 0; i < apcPortViews.NumElements(); i++)
-	{
-		sPort = apcPortViews.GetPtr(i)->GetGridPosition();
-		for (j = 0; j < asLines.NumElements(); j++)
-		{
-			if (asLines.Get(j)->Contains(sPort))
-			{
-				asPorts.Add(&sPort);
-				break;
-			}
-		}
-	}
-	apcPortViews.Kill();
+	CollectPortsOnLines(&asLines, &asPorts);
 	SplitTraceLines(&asLines, &asEnds, &asPorts);
 	asPorts.Kill();
 	asEnds.Kill();
