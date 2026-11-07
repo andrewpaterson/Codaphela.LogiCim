@@ -369,6 +369,7 @@ protected:
 	void							FindAlignments(void);
 	void							AlignItems(void);
 	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet, size uiSubnet);
+	void							GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals);
 	bool							IsConnectionBetween(size uiTerminal1, size uiTerminal2);
 	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
 	void							JoinSplitterEnd(size uiEnd, size uiPin);
