@@ -68,13 +68,13 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 		}
 	}
 	szName = (pcPin != NULL) ? CKicadSchemNetlist::GetGlobalPowerName(pcSymbol, pcLibSymbol, pcPin) : NULL;
-	if ((pcPin == NULL) || StrEmpty(szName) || (StringCompare(szName, "PWR_FLAG") == 0) || (strstr(pcLibSymbol->GetName(), "PWR_FLAG") != NULL))
+	if ((pcPin == NULL) || StrEmpty(szName) || IsKicadSchemPowerFlag(szName, pcLibSymbol))
 	{
 		msCounts.uiSkipped++;
 		return true;
 	}
 
-	if (IsGroundName(szName))
+	if (IsKicadSchemGroundName(szName))
 	{
 		pcGround = NewMalloc<CGroundView>();
 		pcGround->Init(0, 0, GetKicadSchemRotation(ROT_North, pcSymbol->GetAngle()), szName);
@@ -83,7 +83,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	else
 	{
 		pcPositive = NewMalloc<CPositivePowerView>();
-		pcPositive->Init(0, 0, GetKicadSchemRotation(ROT_South, pcSymbol->GetAngle()), szName, GetSupplyVoltage(szName));
+		pcPositive->Init(0, 0, GetKicadSchemRotation(ROT_South, pcSymbol->GetAngle()), szName, GetKicadSchemSupplyVoltage(szName));
 		pcView = pcPositive;
 	}
 
@@ -92,59 +92,6 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	AddPinTerminal(pcSymbol, pcPin, pcView->GetPortView((size)0), uiItem);
 	msCounts.uiPowers++;
 	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Whether the pin's name, ignoring case, ends with szEnd and is either
-// szEnd alone, starts with a V ("VOUT"), or has a voltage ("3.3VOut").
-//
-//////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemRegulatorPinName(const char* szName, const char* szEnd)
-{
-	size	uiLength;
-	size	uiEnd;
-	size	i;
-
-	uiLength = StrLen(szName);
-	uiEnd = StrLen(szEnd);
-	if ((uiLength < uiEnd) || (StringInsensitiveCompare(&szName[uiLength - uiEnd], szEnd) != 0))
-	{
-		return false;
-	}
-	if ((uiLength == uiEnd) || (szName[0] == 'V') || (szName[0] == 'v'))
-	{
-		return true;
-	}
-	for (i = 0; i < uiLength - uiEnd; i++)
-	{
-		if ((szName[i] >= '0') && (szName[i] <= '9'))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Whether the text has a digit, so it can say a voltage.
-//
-//////////////////////////////////////////////////////////////////////////
-static bool HasKicadSchemVoltage(const char* szText)
-{
-	size	i;
-
-	for (i = 0; (szText != NULL) && (szText[i] != '\0'); i++)
-	{
-		if ((szText[i] >= '0') && (szText[i] <= '9'))
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 
@@ -190,7 +137,7 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 		{
 			pcInput = pcPin;
 		}
-		else if (IsGroundName(pcPin->GetName()))
+		else if (IsKicadSchemGroundName(pcPin->GetName()))
 		{
 			bGround = true;
 		}
@@ -214,7 +161,7 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 	{
 		return false;
 	}
-	fVoltage = GetSupplyVoltage(szVoltage);
+	fVoltage = GetKicadSchemSupplyVoltage(szVoltage);
 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
@@ -280,7 +227,7 @@ float32 CKicadSchemLogicimConverter::GetRegulatedVoltage(CKicadSchemSymbol* pcSy
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcSymbol->IsUnitPin(pcPin) || IsGroundName(pcPin->GetName()))
+		if (!pcSymbol->IsUnitPin(pcPin) || IsKicadSchemGroundName(pcPin->GetName()))
 		{
 			continue;
 		}

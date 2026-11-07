@@ -41,11 +41,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimConverterInternal.h"
 
 
-//Reference prefixes and library names of the symbols that are left out.
-static const char* gaszKicadSchemSkippedReferences[] = { "R", "RN", "C", "CN", "L", "FB", "D", "LED", "H", "MH", "TP", "NT", "FID" };
-static const char* gaszKicadSchemSkippedLibraryNames[] = { "MountingHole", "NetTie", "TestPoint", "PWR_FLAG", "Fiducial" };
-
-
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -216,7 +211,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 	{
 		return AddPower(pcSymbol, pcLibSymbol);
 	}
-	if (IsSkippedSymbol(pcSymbol))
+	if (IsKicadSchemSkippedSymbol(pcSymbol))
 	{
 		msCounts.uiSkipped++;
 		return true;
@@ -362,111 +357,6 @@ void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CK
 
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
 	mcModel.AddTerminal(mpcNetlist->GetPinSubnet(pcSymbol, pcPin), &sPosition, pcPortView, uiItem);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Passive parts and mechanical symbols, by their reference's letters or
-// their library symbol.
-//
-//////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::IsSkippedSymbol(CKicadSchemSymbol* pcSymbol)
-{
-	CChars	szPrefix;
-	char*	szReference;
-	size	i;
-	bool	bSkipped;
-
-	for (i = 0; i < sizeof(gaszKicadSchemSkippedLibraryNames) / sizeof(const char*); i++)
-	{
-		if ((strstr(pcSymbol->GetLibId(), gaszKicadSchemSkippedLibraryNames[i]) != NULL) || (strstr(pcSymbol->GetLibSymbolName(), gaszKicadSchemSkippedLibraryNames[i]) != NULL))
-		{
-			return true;
-		}
-	}
-
-	szReference = pcSymbol->GetReference();
-	if (szReference == NULL)
-	{
-		return false;
-	}
-	for (i = 0; ((szReference[i] >= 'A') && (szReference[i] <= 'Z')) || ((szReference[i] >= 'a') && (szReference[i] <= 'z')); i++)
-	{
-	}
-	szPrefix.Init(szReference, 0, i);
-	szPrefix.UpperCase();
-	bSkipped = false;
-	for (i = 0; i < sizeof(gaszKicadSchemSkippedReferences) / sizeof(const char*); i++)
-	{
-		if (szPrefix.Equals(gaszKicadSchemSkippedReferences[i]))
-		{
-			bSkipped = true;
-			break;
-		}
-	}
-	szPrefix.Kill();
-	return bSkipped;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::IsGroundName(const char* szName)
-{
-	CChars	szUpper;
-	bool	bGround;
-
-	szUpper.Init(szName);
-	szUpper.UpperCase();
-	bGround = szUpper.StartsWith("GND") || szUpper.StartsWith("VSS") || szUpper.StartsWith("AGND") || szUpper.StartsWith("DGND") || szUpper.StartsWith("EARTH") || szUpper.Equals("0V");
-	szUpper.Kill();
-	return bGround;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The voltage in a supply's name: "+5V" is 5, "3.3V" and "+3V3" are 3.3
-// and "12VOut" is 12.  A name without one (VCC) is 5.
-//
-//////////////////////////////////////////////////////////////////////////
-float32 CKicadSchemLogicimConverter::GetSupplyVoltage(const char* szName)
-{
-	size		i;
-	float64		fVoltage;
-	float64		fScale;
-
-	for (i = 0; (szName[i] != '\0') && ((szName[i] < '0') || (szName[i] > '9')); i++)
-	{
-	}
-	if (szName[i] == '\0')
-	{
-		return 5.0f;
-	}
-
-	fVoltage = 0;
-	for (; (szName[i] >= '0') && (szName[i] <= '9'); i++)
-	{
-		fVoltage = fVoltage * 10 + (szName[i] - '0');
-	}
-	if ((szName[i] == '.') || (((szName[i] == 'V') || (szName[i] == 'v')) && (szName[i + 1] >= '0') && (szName[i + 1] <= '9')))
-	{
-		i++;
-		fScale = 0.1;
-		for (; (szName[i] >= '0') && (szName[i] <= '9'); i++)
-		{
-			fVoltage += fScale * (szName[i] - '0');
-			fScale /= 10;
-		}
-	}
-	if (fVoltage <= 0)
-	{
-		return 5.0f;
-	}
-	return (float32)fVoltage;
 }
 
 

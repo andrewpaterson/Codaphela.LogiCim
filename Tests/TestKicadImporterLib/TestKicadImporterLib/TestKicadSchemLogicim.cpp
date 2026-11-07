@@ -12,6 +12,7 @@
 #include "KicadLib/KicadSchemSubnetGraph.h"
 #include "KicadImporterLib/KicadSchemLogicimConverter.h"
 #include "KicadImporterLib/KicadSchemBoards.h"
+#include "KicadImporterLib/KicadSchemSupplyNames.h"
 #include "TestLib/Assert.h"
 #include "TestLib/AssertFile.h"
 
@@ -80,17 +81,17 @@ void TestKicadSchemLogicFunction(void)
 //////////////////////////////////////////////////////////////////////////
 void TestKicadSchemLogicimNames(void)
 {
-	AssertTrue(CKicadSchemLogicimConverter::IsGroundName("GND"));
-	AssertTrue(CKicadSchemLogicimConverter::IsGroundName("gnda"));
-	AssertTrue(CKicadSchemLogicimConverter::IsGroundName("VSS"));
-	AssertFalse(CKicadSchemLogicimConverter::IsGroundName("VCC"));
-	AssertFalse(CKicadSchemLogicimConverter::IsGroundName("+5V"));
+	AssertTrue(IsKicadSchemGroundName("GND"));
+	AssertTrue(IsKicadSchemGroundName("gnda"));
+	AssertTrue(IsKicadSchemGroundName("VSS"));
+	AssertFalse(IsKicadSchemGroundName("VCC"));
+	AssertFalse(IsKicadSchemGroundName("+5V"));
 
-	AssertFloat(5.0f, CKicadSchemLogicimConverter::GetSupplyVoltage("+5V"), 4);
-	AssertFloat(3.3f, CKicadSchemLogicimConverter::GetSupplyVoltage("+3V3"), 4);
-	AssertFloat(3.3f, CKicadSchemLogicimConverter::GetSupplyVoltage("3.3V"), 4);
-	AssertFloat(12.0f, CKicadSchemLogicimConverter::GetSupplyVoltage("12VOut"), 4);
-	AssertFloat(5.0f, CKicadSchemLogicimConverter::GetSupplyVoltage("VCC"), 4);
+	AssertFloat(5.0f, GetKicadSchemSupplyVoltage("+5V"), 4);
+	AssertFloat(3.3f, GetKicadSchemSupplyVoltage("+3V3"), 4);
+	AssertFloat(3.3f, GetKicadSchemSupplyVoltage("3.3V"), 4);
+	AssertFloat(12.0f, GetKicadSchemSupplyVoltage("12VOut"), 4);
+	AssertFloat(5.0f, GetKicadSchemSupplyVoltage("VCC"), 4);
 
 	AssertInt(ROT_East, GetKicadSchemRotation(ROT_East, 0));
 	AssertInt(ROT_North, GetKicadSchemRotation(ROT_East, 90));

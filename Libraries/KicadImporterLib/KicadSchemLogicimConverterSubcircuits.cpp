@@ -58,41 +58,6 @@ static bool IsKicadSchemConnector(CKicadSchemSymbol* pcSymbol)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether the net is a supply's: a ground ("GND"), a supply pin's name
-// ("VCC") or a voltage ("+3V3", "3.3V", "5V").
-//
-//////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemPowerNetName(const char* szName)
-{
-	size	i;
-	bool	bVolts;
-
-	if (CKicadSchemLogicimConverter::IsGroundName(szName) || IsKicadSchemPowerPinName(szName) || (szName[0] == '+') || (szName[0] == '-'))
-	{
-		return true;
-	}
-	if ((szName[0] < '0') || (szName[0] > '9'))
-	{
-		return false;
-	}
-	bVolts = false;
-	for (i = 0; szName[i] != '\0'; i++)
-	{
-		if ((szName[i] == 'V') || (szName[i] == 'v'))
-		{
-			bVolts = true;
-		}
-		else if (((szName[i] < '0') || (szName[i] > '9')) && (szName[i] != '.'))
-		{
-			return false;
-		}
-	}
-	return bVolts;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // The circuit pin's name for the connector's pin on the net: the net's
 // ("D0") or, on a net that's only the pin's, the connector's pin's
 // ("J1-5").  False, and szName empty, on a supply's net.

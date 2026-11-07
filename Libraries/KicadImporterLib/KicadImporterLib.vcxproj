@@ -30,6 +30,7 @@
     <ClCompile Include="KicadSchemLogicimConverterLogic.cpp" />
     <ClCompile Include="KicadSchemLogicimConverterSupplies.cpp" />
     <ClCompile Include="KicadSchemLogicimCounts.cpp" />
+    <ClCompile Include="KicadSchemSupplyNames.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KicadSchemBoards.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="KicadSchemLogicimBuses.h" />
     <ClInclude Include="KicadSchemLogicimWiring.h" />
     <ClInclude Include="KicadSchemLogicimPlacer.h" />
+    <ClInclude Include="KicadSchemSupplyNames.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B4FBD661-3262-4471-814B-429C08722CF2}</ProjectGuid>

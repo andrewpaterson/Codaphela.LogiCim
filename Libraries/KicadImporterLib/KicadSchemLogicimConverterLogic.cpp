@@ -41,10 +41,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimConverterInternal.h"
 
 
-//Pin names on logic parts that are their power.
-static const char* gaszKicadSchemPowerPinNames[] = { "GND", "VCC", "VDD", "VSS", "VEE", "3V", "5V", "3V3", "V+", "V-", "NC", "N.C." };
-
-
 //////////////////////////////////////////////////////////////////////////
 //
 // The parts of a pin's name: the gate number it starts with and the
@@ -84,25 +80,6 @@ static void SplitKicadSchemLogicPinName(const char* szName, CChars* pszIndex, CC
 	pszLetters->Init(szName2.Text(), i);
 	pszLetters->UpperCase();
 	szName2.Kill();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-bool IsKicadSchemPowerPinName(const char* szName)
-{
-	size	i;
-
-	for (i = 0; i < sizeof(gaszKicadSchemPowerPinNames) / sizeof(const char*); i++)
-	{
-		if (StringInsensitiveCompare(szName, gaszKicadSchemPowerPinNames[i]) == 0)
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 

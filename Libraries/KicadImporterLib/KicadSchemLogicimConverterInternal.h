@@ -40,10 +40,10 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/ComponentShapes.h"
 #include "KicadSchemLogicimConverter.h"
 #include "KicadSchemBoards.h"
+#include "KicadSchemSupplyNames.h"
 
 
 //The helpers the files of KicadSchemLogicimConverter share.
-bool IsKicadSchemPowerPinName(const char* szName);
 ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo);
 
 
