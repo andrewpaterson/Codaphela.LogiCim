@@ -409,6 +409,7 @@ protected:
 	void							Explode(void);
 	void							ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 	void							SeparateItems(void);
+	void							GetSeparateOrder(CArrayInt* paiOrder);
 	size							Route(void);
 	void							CountRuns(CArrayKicadSchemLogicimRun* pasRuns);
 	void							SetRouteBoxes(CTraceAutoConnector* pcConnector);

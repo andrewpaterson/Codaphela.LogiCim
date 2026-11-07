@@ -896,21 +896,20 @@ bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Vec2* psMinimu
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether the box, spaced, overlaps any of the boxes placed so far.
+// Whether the box, moved and spaced, overlaps any of the boxes placed so
+// far.
 //
 //////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemLogicimBoxFree(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum, int32 iMoveX, int32 iMoveY, CArrayTemplate<SFloat64Vec2>* pasMinimums, CArrayTemplate<SFloat64Vec2>* pasMaximums, size uiPlaced)
+static bool IsKicadSchemLogicimBoxFree(SFloat64Bounds* psBox, int32 iMoveX, int32 iMoveY, CArrayTemplate<SFloat64Bounds>* pasPlaced)
 {
-	size			i;
-	SFloat64Vec2*	psOtherMinimum;
-	SFloat64Vec2*	psOtherMaximum;
+	size				i;
+	SFloat64Bounds*		psOther;
 
-	for (i = 0; i < uiPlaced; i++)
+	for (i = 0; i < pasPlaced->NumElements(); i++)
 	{
-		psOtherMinimum = pasMinimums->Get(i);
-		psOtherMaximum = pasMaximums->Get(i);
-		if ((psMinimum->x + iMoveX < psOtherMaximum->x + KICAD_SCHEM_LOGICIM_SPACING) && (psOtherMinimum->x < psMaximum->x + iMoveX + KICAD_SCHEM_LOGICIM_SPACING) &&
-			(psMinimum->y + iMoveY < psOtherMaximum->y + KICAD_SCHEM_LOGICIM_SPACING) && (psOtherMinimum->y < psMaximum->y + iMoveY + KICAD_SCHEM_LOGICIM_SPACING))
+		psOther = pasPlaced->Get(i);
+		if ((psBox->sMinimum.x + iMoveX < psOther->sMaximum.x + KICAD_SCHEM_LOGICIM_SPACING) && (psOther->sMinimum.x < psBox->sMaximum.x + iMoveX + KICAD_SCHEM_LOGICIM_SPACING) &&
+			(psBox->sMinimum.y + iMoveY < psOther->sMaximum.y + KICAD_SCHEM_LOGICIM_SPACING) && (psOther->sMinimum.y < psBox->sMaximum.y + iMoveY + KICAD_SCHEM_LOGICIM_SPACING))
 		{
 			return false;
 		}
@@ -941,118 +940,170 @@ static int32 GetKicadSchemLogicimMoveCost(EKicadSchemLogicimAlign eAlign, int32 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Places the items one at a time (parts and splitters, then the tunnels
-// and supplies standing on their own), each where it is if that's clear of the
-// ones already placed, otherwise at the nearest place that is (searching
-// out in rings).  An item lined up with another counts moving off its line
-// KICAD_SCHEM_LOGICIM_ALIGN_WEIGHT times as far.  An item's box takes in the items attached to it.  Items
-// that couldn't be placed clear are counted as overlaps.
+// The best clear move of a box found so far, and how far it is (-1 until
+// one is found).
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::SeparateItems(void)
+struct SKicadSchemLogicimBestMove
 {
-	CArrayTemplate<SFloat64Vec2>	asMinimums;
-	CArrayTemplate<SFloat64Vec2>	asMaximums;
-	size							i;
-	size							uiPlaced;
-	SKicadSchemLogicimItem*			psItem;
-	SFloat64Vec2					sMinimum;
-	SFloat64Vec2					sMaximum;
-	int32							iRadius;
-	int32							iStep;
-	int32							iMoveX;
-	int32							iMoveY;
-	int32							iBestX;
-	int32							iBestY;
-	int32							iBestDistance;
-	int32							iDistance;
-	bool							bFound;
-	SInt32Vec2						sPosition;
-	CArrayInt						aiOrder;
-	size							uiPass;
-	size							uiOrder;
+	SFloat64Bounds*						psBox;
+	EKicadSchemLogicimAlign				eAlign;
+	CArrayTemplate<SFloat64Bounds>*		pasPlaced;
+	int32								iDistance;
+	SInt32Vec2							sMove;
 
-	PlaceAttachedItems();
-	asMinimums.Init();
-	asMaximums.Init();
-	uiPlaced = 0;
-	muiOverlaps = 0;
+	void	Init(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced);
+	void	Try(int32 iMoveX, int32 iMoveY);
+	bool	IsNearer(int32 iDistance);
+};
 
-	//The parts and splitters first, then the tunnels and supplies standing on their own, which are small and move aside.
-	aiOrder.Init();
+
+void SKicadSchemLogicimBestMove::Init(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced)
+{
+	this->psBox = psBox;
+	this->eAlign = eAlign;
+	this->pasPlaced = pasPlaced;
+	iDistance = -1;
+	sMove.x = 0;
+	sMove.y = 0;
+}
+
+
+bool SKicadSchemLogicimBestMove::IsNearer(int32 iDistance)
+{
+	return (this->iDistance == -1) || (iDistance < this->iDistance);
+}
+
+
+void SKicadSchemLogicimBestMove::Try(int32 iMoveX, int32 iMoveY)
+{
+	int32	iMoveDistance;
+
+	iMoveDistance = GetKicadSchemLogicimMoveCost(eAlign, iMoveX, iMoveY);
+	if (IsNearer(iMoveDistance) && IsKicadSchemLogicimBoxFree(psBox, iMoveX, iMoveY, pasPlaced))
+	{
+		iDistance = iMoveDistance;
+		sMove.x = iMoveX;
+		sMove.y = iMoveY;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The nearest move (see GetKicadSchemLogicimMoveCost) that puts the box
+// clear of those placed, searching out in rings.  False if there's none
+// within KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced, SInt32Vec2* psMove)
+{
+	SKicadSchemLogicimBestMove	sBest;
+	int32						iRadius;
+	int32						iStep;
+
+	psMove->x = 0;
+	psMove->y = 0;
+	if (IsKicadSchemLogicimBoxFree(psBox, 0, 0, pasPlaced))
+	{
+		return true;
+	}
+
+	//Rings out, while a ring could still have a nearer place than the best found (its moves cost at least its radius).
+	sBest.Init(psBox, eAlign, pasPlaced);
+	for (iRadius = 1; (iRadius <= KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS) && sBest.IsNearer(iRadius); iRadius++)
+	{
+		for (iStep = -iRadius; iStep <= iRadius; iStep++)
+		{
+			sBest.Try(iStep, -iRadius);
+			sBest.Try(iStep, iRadius);
+			sBest.Try(-iRadius, iStep);
+			sBest.Try(iRadius, iStep);
+		}
+	}
+	if (sBest.iDistance == -1)
+	{
+		return false;
+	}
+	*psMove = sBest.sMove;
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The order SeparateItems places the items in: the parts and splitters
+// first, then the tunnels and supplies standing on their own, which are
+// small and move aside.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::GetSeparateOrder(CArrayInt* paiOrder)
+{
+	size	i;
+	size	uiPass;
+
 	for (uiPass = 0; uiPass < 2; uiPass++)
 	{
 		for (i = 0; i < masItems.NumElements(); i++)
 		{
 			if ((masItems.Get(i)->pcPort == NULL) == (uiPass == 0))
 			{
-				aiOrder.Add((int)i);
+				paiOrder->Add((int)i);
 			}
 		}
 	}
+}
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Places the items one at a time (see GetSeparateOrder), each where it is
+// if that's clear of the ones already placed, otherwise at the nearest
+// place that is (see FindKicadSchemLogicimFreeMove).  An item's box takes
+// in the items attached to it.  Items that couldn't be placed clear are
+// counted as overlaps.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::SeparateItems(void)
+{
+	CArrayTemplate<SFloat64Bounds>	asPlaced;
+	CArrayInt						aiOrder;
+	size							i;
+	size							uiOrder;
+	SKicadSchemLogicimItem*			psItem;
+	SFloat64Bounds					sBox;
+	SInt32Vec2						sMove;
+	SInt32Vec2						sPosition;
+
+	PlaceAttachedItems();
+	asPlaced.Init();
+	muiOverlaps = 0;
+
+	aiOrder.Init();
+	GetSeparateOrder(&aiOrder);
 	for (uiOrder = 0; uiOrder < aiOrder.NumElements(); uiOrder++)
 	{
 		i = (size)aiOrder.GetValue(uiOrder);
 		psItem = masItems.Get(i);
-		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sMinimum, &sMaximum))
+		sBox.Init();
+		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox.sMinimum, &sBox.sMaximum))
 		{
 			continue;
 		}
 
-		iBestX = 0;
-		iBestY = 0;
-		iBestDistance = -1;
-		bFound = IsKicadSchemLogicimBoxFree(&sMinimum, &sMaximum, 0, 0, &asMinimums, &asMaximums, uiPlaced);
-		//Rings out, while a ring could still have a nearer place than the best found (its moves cost at least its radius).
-		for (iRadius = 1; !bFound && (iRadius <= KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS) && ((iBestDistance == -1) || (iRadius < iBestDistance)); iRadius++)
-		{
-			for (iStep = -iRadius; iStep <= iRadius; iStep++)
-			{
-				for (iMoveY = -iRadius; iMoveY <= iRadius; iMoveY += 2 * iRadius)
-				{
-					iMoveX = iStep;
-					iDistance = GetKicadSchemLogicimMoveCost(psItem->eAlign, iMoveX, iMoveY);
-					if (((iBestDistance == -1) || (iDistance < iBestDistance)) && IsKicadSchemLogicimBoxFree(&sMinimum, &sMaximum, iMoveX, iMoveY, &asMinimums, &asMaximums, uiPlaced))
-					{
-						iBestDistance = iDistance;
-						iBestX = iMoveX;
-						iBestY = iMoveY;
-					}
-				}
-				for (iMoveX = -iRadius; iMoveX <= iRadius; iMoveX += 2 * iRadius)
-				{
-					iMoveY = iStep;
-					iDistance = GetKicadSchemLogicimMoveCost(psItem->eAlign, iMoveX, iMoveY);
-					if (((iBestDistance == -1) || (iDistance < iBestDistance)) && IsKicadSchemLogicimBoxFree(&sMinimum, &sMaximum, iMoveX, iMoveY, &asMinimums, &asMaximums, uiPlaced))
-					{
-						iBestDistance = iDistance;
-						iBestX = iMoveX;
-						iBestY = iMoveY;
-					}
-				}
-			}
-		}
-		bFound = bFound || (iBestDistance != -1);
-		if (!bFound)
+		if (!FindKicadSchemLogicimFreeMove(&sBox, psItem->eAlign, &asPlaced, &sMove))
 		{
 			muiOverlaps++;
-			iBestX = 0;
-			iBestY = 0;
 		}
-
 		sPosition = psItem->pcView->GetPosition();
-		psItem->pcView->SetPosition(sPosition.x + iBestX, sPosition.y + iBestY);
-		sMinimum.x += iBestX;
-		sMaximum.x += iBestX;
-		sMinimum.y += iBestY;
-		sMaximum.y += iBestY;
-		asMinimums.Add(&sMinimum);
-		asMaximums.Add(&sMaximum);
-		uiPlaced++;
+		psItem->pcView->SetPosition(sPosition.x + sMove.x, sPosition.y + sMove.y);
+		sBox.sMinimum.x += sMove.x;
+		sBox.sMaximum.x += sMove.x;
+		sBox.sMinimum.y += sMove.y;
+		sBox.sMaximum.y += sMove.y;
+		asPlaced.Add(&sBox);
 	}
 	aiOrder.Kill();
 	PlaceAttachedItems();
-	asMaximums.Kill();
-	asMinimums.Kill();
+	asPlaced.Kill();
 }
