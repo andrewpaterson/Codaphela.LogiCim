@@ -38,7 +38,7 @@ struct STraceAutoStairOrder
 {
 	CArrayTraceAutoConnection*	pasConnections;
 
-	bool	IsBefore(int iConnection, int iOther);
+	bool	IsBefore(size uiConnection, size uiOther);
 };
 
 
@@ -47,7 +47,7 @@ struct STraceAutoLengthOrder
 {
 	CArrayInt*	paiLengths;
 
-	bool	IsBefore(int iRun, int iOther);
+	bool	IsBefore(size uiRun, size uiOther);
 };
 
 
@@ -56,7 +56,7 @@ struct STraceAutoConnectionLengthOrder
 {
 	CArrayTraceAutoConnection*	pasConnections;
 
-	bool	IsBefore(int iConnection, int iOther);
+	bool	IsBefore(size uiConnection, size uiOther);
 };
 
 
@@ -64,15 +64,15 @@ struct STraceAutoConnectionLengthOrder
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool STraceAutoStairOrder::IsBefore(int iConnection, int iOther)
+bool STraceAutoStairOrder::IsBefore(size uiConnection, size uiOther)
 {
 	STraceAutoConnection*	psConnection;
 	SInt32Vec2				sFrom;
 	SInt32Vec2				sOtherFrom;
 
-	psConnection = pasConnections->Get(iConnection);
+	psConnection = pasConnections->Get(uiConnection);
 	sFrom = psConnection->pcFrom->GetGridPosition();
-	sOtherFrom = pasConnections->Get(iOther)->pcFrom->GetGridPosition();
+	sOtherFrom = pasConnections->Get(uiOther)->pcFrom->GetGridPosition();
 	return psConnection->bHorizontal ? (sFrom.y < sOtherFrom.y) : (sFrom.x < sOtherFrom.x);
 }
 
@@ -81,9 +81,9 @@ bool STraceAutoStairOrder::IsBefore(int iConnection, int iOther)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool STraceAutoLengthOrder::IsBefore(int iRun, int iOther)
+bool STraceAutoLengthOrder::IsBefore(size uiRun, size uiOther)
 {
-	return paiLengths->GetValue(iRun) < paiLengths->GetValue(iOther);
+	return paiLengths->GetValue(uiRun) < paiLengths->GetValue(uiOther);
 }
 
 
@@ -91,9 +91,9 @@ bool STraceAutoLengthOrder::IsBefore(int iRun, int iOther)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool STraceAutoConnectionLengthOrder::IsBefore(int iConnection, int iOther)
+bool STraceAutoConnectionLengthOrder::IsBefore(size uiConnection, size uiOther)
 {
-	return pasConnections->Get(iConnection)->iLength < pasConnections->Get(iOther)->iLength;
+	return pasConnections->Get(uiConnection)->iLength < pasConnections->Get(uiOther)->iLength;
 }
 
 
@@ -102,13 +102,13 @@ bool STraceAutoConnectionLengthOrder::IsBefore(int iConnection, int iOther)
 // The set the wire is in, for the circuit's wires joined into sets.
 //
 //////////////////////////////////////////////////////////////////////////
-static int FindTraceGroup(CArrayInt* paiParents, int iTrace)
+static size FindTraceGroup(CArraySize* pauiParents, size uiTrace)
 {
-	while (paiParents->GetValue(iTrace) != iTrace)
+	while (pauiParents->GetValue(uiTrace) != uiTrace)
 	{
-		iTrace = paiParents->GetValue(iTrace);
+		uiTrace = pauiParents->GetValue(uiTrace);
 	}
-	return iTrace;
+	return uiTrace;
 }
 
 
@@ -288,7 +288,7 @@ size CTraceAutoConnector::FindOrAddRun(void* pvFrom, void* pvTo)
 // TRACE_AUTO_CONNECT_NO_BEND.
 //
 //////////////////////////////////////////////////////////////////////////
-size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun)
+size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, size uiRun)
 {
 	STraceAutoConnection*	psConnection;
 
@@ -307,7 +307,7 @@ size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView
 	psConnection->pcFrom = pcFrom;
 	psConnection->pcTo = pcTo;
 	psConnection->fBend = fBend;
-	psConnection->iRun = iRun;
+	psConnection->uiRun = uiRun;
 	psConnection->bHorizontal = true;
 	psConnection->iBend = 0;
 	psConnection->bHasBend = false;
@@ -423,15 +423,15 @@ void CTraceAutoConnector::DropLoneRuns(void)
 		psConnection = masConnections.Get(i);
 		if (IsInRun(psConnection))
 		{
-			aiCounts.SetValue(psConnection->iRun, aiCounts.GetValue(psConnection->iRun) + 1);
+			aiCounts.SetValue(psConnection->uiRun, aiCounts.GetValue(psConnection->uiRun) + 1);
 		}
 	}
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
-		if (IsInRun(psConnection) && (aiCounts.GetValue(psConnection->iRun) == 1))
+		if (IsInRun(psConnection) && (aiCounts.GetValue(psConnection->uiRun) == 1))
 		{
-			psConnection->iRun = -1;
+			psConnection->uiRun = ARRAY_ELEMENT_NOT_FOUND;
 		}
 	}
 	aiCounts.Kill();
@@ -446,8 +446,8 @@ void CTraceAutoConnector::DropLoneRuns(void)
 //////////////////////////////////////////////////////////////////////////
 bool CTraceAutoConnector::Connect(void)
 {
-	CArrayInt	aiOrder;
-	CArrayInt	aiFailed;
+	CArraySize	auiOrder;
+	CArraySize	auiFailed;
 	size		i;
 
 	if (masConnections.NumElements() == 0)
@@ -459,28 +459,28 @@ bool CTraceAutoConnector::Connect(void)
 	InitNets();
 	InitSearch();
 
-	aiOrder.Init();
-	aiFailed.Init();
-	SortConnections(&aiOrder);
-	for (i = 0; i < aiOrder.NumElements(); i++)
+	auiOrder.Init();
+	auiFailed.Init();
+	SortConnections(&auiOrder);
+	for (i = 0; i < auiOrder.NumElements(); i++)
 	{
-		if (!Route(masConnections.Get(aiOrder.GetValue(i)), false, NULL))
+		if (!Route(masConnections.Get(auiOrder.GetValue(i)), false, NULL))
 		{
-			aiFailed.Add(aiOrder.GetValue(i));
+			auiFailed.Add(auiOrder.GetValue(i));
 		}
 	}
-	RipAndReroute(&aiOrder, &aiFailed);
+	RipAndReroute(&auiOrder, &auiFailed);
 
 	//Ripping a net unconnects all of its connections; when the rips run out some of them may not have been routed again.
-	for (i = 0; i < aiOrder.NumElements(); i++)
+	for (i = 0; i < auiOrder.NumElements(); i++)
 	{
-		if (!masConnections.Get(aiOrder.GetValue(i))->bConnected)
+		if (!masConnections.Get(auiOrder.GetValue(i))->bConnected)
 		{
-			Route(masConnections.Get(aiOrder.GetValue(i)), false, NULL);
+			Route(masConnections.Get(auiOrder.GetValue(i)), false, NULL);
 		}
 	}
-	aiFailed.Kill();
-	aiOrder.Kill();
+	auiFailed.Kill();
+	auiOrder.Kill();
 
 	return NumUnconnected() == 0;
 }
@@ -510,9 +510,10 @@ void CTraceAutoConnector::InitNets(void)
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
-		if (maiNetRuns.GetValue(psConnection->uiNet) == -1)
+		if ((maiNetRuns.GetValue(psConnection->uiNet) == -1) && IsInRun(psConnection))
 		{
-			maiNetRuns.SetValue(psConnection->uiNet, psConnection->iRun);
+			//The search reads each net's run, -1 for none, through mpiNetRuns.
+			maiNetRuns.SetValue(psConnection->uiNet, (int)psConnection->uiRun);
 		}
 	}
 	mapcAddedTraces.ReInit();
@@ -560,7 +561,7 @@ void CTraceAutoConnector::InitSearch(void)
 // ones, to be routed again in their turn, up to a limit on rips.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFailed)
+void CTraceAutoConnector::RipAndReroute(CArraySize* pauiOrder, CArraySize* pauiFailed)
 {
 	CArrayInt				aiConflicts;
 	size					i;
@@ -573,10 +574,10 @@ void CTraceAutoConnector::RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFaile
 
 	aiConflicts.Init();
 	uiRips = 0;
-	uiMaxRips = 2 * paiFailed->NumElements() + 8;
-	for (uiHead = 0; (uiHead < paiFailed->NumElements()) && (uiRips < uiMaxRips); uiHead++)
+	uiMaxRips = 2 * pauiFailed->NumElements() + 8;
+	for (uiHead = 0; (uiHead < pauiFailed->NumElements()) && (uiRips < uiMaxRips); uiHead++)
 	{
-		psConnection = masConnections.Get(paiFailed->GetValue(uiHead));
+		psConnection = masConnections.Get(pauiFailed->GetValue(uiHead));
 		if (psConnection->bConnected)
 		{
 			continue;
@@ -596,11 +597,11 @@ void CTraceAutoConnector::RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFaile
 		{
 			iNet = aiConflicts.GetValue(i);
 			RipNet(iNet);
-			for (j = 0; j < paiOrder->NumElements(); j++)
+			for (j = 0; j < pauiOrder->NumElements(); j++)
 			{
-				if ((int)masConnections.Get(paiOrder->GetValue(j))->uiNet == iNet)
+				if ((int)masConnections.Get(pauiOrder->GetValue(j))->uiNet == iNet)
 				{
-					paiFailed->Add(paiOrder->GetValue(j));
+					pauiFailed->Add(pauiOrder->GetValue(j));
 				}
 			}
 		}
@@ -833,10 +834,10 @@ void CTraceAutoConnector::MarkPorts(void)
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::MarkExistingTraces(void)
 {
-	CArrayInt		aiParents;
+	CArraySize		auiParents;
 	CArrayInt		aiGroupNets;
 	size			i;
-	int				iRoot;
+	size			uiRoot;
 	int				iNet;
 	CTraceView*		pcTrace;
 
@@ -845,44 +846,44 @@ void CTraceAutoConnector::MarkExistingTraces(void)
 		return;
 	}
 
-	aiParents.Init();
-	GroupExistingTraces(&aiParents);
+	auiParents.Init();
+	GroupExistingTraces(&auiParents);
 	aiGroupNets.Init();
-	GetExistingGroupNets(&aiParents, &aiGroupNets);
+	GetExistingGroupNets(&auiParents, &aiGroupNets);
 	for (i = 0; i < mpcCircuit->NumTraces(); i++)
 	{
-		iRoot = FindTraceGroup(&aiParents, (int)i);
-		iNet = aiGroupNets.GetValue(iRoot);
+		uiRoot = FindTraceGroup(&auiParents, i);
+		iNet = aiGroupNets.GetValue(uiRoot);
 		if (iNet == -1)
 		{
-			iNet = (int)(muiNumNets + iRoot);
+			iNet = (int)(muiNumNets + uiRoot);
 		}
 		pcTrace = mpcCircuit->GetTrace(i);
 		MarkTrace(pcTrace->GetStart().x, pcTrace->GetStart().y, pcTrace->GetEnd().x, pcTrace->GetEnd().y, iNet);
 	}
 	aiGroupNets.Kill();
-	aiParents.Kill();
+	auiParents.Kill();
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 // The circuit's wires that touch joined into groups: each wire's parent,
-// in paiParents, leads to its group's first wire (see FindTraceGroup).
+// in pauiParents, leads to its group's first wire (see FindTraceGroup).
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::GroupExistingTraces(CArrayInt* paiParents)
+void CTraceAutoConnector::GroupExistingTraces(CArraySize* pauiParents)
 {
 	size	uiTraces;
 	size	i;
 	size	j;
-	int		iRoot;
-	int		iOther;
+	size	uiRoot;
+	size	uiOther;
 
 	uiTraces = mpcCircuit->NumTraces();
 	for (i = 0; i < uiTraces; i++)
 	{
-		paiParents->Add((int)i);
+		pauiParents->Add(i);
 	}
 	for (i = 0; i < uiTraces; i++)
 	{
@@ -890,11 +891,11 @@ void CTraceAutoConnector::GroupExistingTraces(CArrayInt* paiParents)
 		{
 			if (mpcCircuit->GetTrace(i)->Touches(mpcCircuit->GetTrace(j)))
 			{
-				iRoot = FindTraceGroup(paiParents, (int)i);
-				iOther = FindTraceGroup(paiParents, (int)j);
-				if (iRoot != iOther)
+				uiRoot = FindTraceGroup(pauiParents, i);
+				uiOther = FindTraceGroup(pauiParents, j);
+				if (uiRoot != uiOther)
 				{
-					paiParents->SetValue(iOther, iRoot);
+					pauiParents->SetValue(uiOther, uiRoot);
 				}
 			}
 		}
@@ -910,11 +911,11 @@ void CTraceAutoConnector::GroupExistingTraces(CArrayInt* paiParents)
 // has existing wires.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::GetExistingGroupNets(CArrayInt* paiParents, CArrayInt* paiGroupNets)
+void CTraceAutoConnector::GetExistingGroupNets(CArraySize* pauiParents, CArrayInt* paiGroupNets)
 {
 	size			i;
 	size			j;
-	int				iRoot;
+	size			uiRoot;
 	int				iNet;
 	SInt32Vec2		sPosition;
 
@@ -930,15 +931,15 @@ void CTraceAutoConnector::GetExistingGroupNets(CArrayInt* paiParents, CArrayInt*
 		{
 			if (mpcCircuit->GetTrace(j)->Contains(sPosition))
 			{
-				iRoot = FindTraceGroup(paiParents, (int)j);
-				if (paiGroupNets->GetValue(iRoot) == -1)
+				uiRoot = FindTraceGroup(pauiParents, j);
+				if (paiGroupNets->GetValue(uiRoot) == -1)
 				{
-					paiGroupNets->SetValue(iRoot, iNet);
+					paiGroupNets->SetValue(uiRoot, iNet);
 					maiNetsWithExisting.SetValue(iNet, 1);
 				}
-				else if (paiGroupNets->GetValue(iRoot) != iNet)
+				else if (paiGroupNets->GetValue(uiRoot) != iNet)
 				{
-					paiGroupNets->SetValue(iRoot, (int)(muiNumNets + iRoot));
+					paiGroupNets->SetValue(uiRoot, (int)(muiNumNets + uiRoot));
 				}
 			}
 		}
@@ -1047,7 +1048,7 @@ void CTraceAutoConnector::CalculateBends(void)
 
 	for (i = 0; i < muiNumRuns; i++)
 	{
-		CalculateRunBends((int)i);
+		CalculateRunBends(i);
 	}
 }
 
@@ -1059,9 +1060,9 @@ void CTraceAutoConnector::CalculateBends(void)
 // crosses another.  They share the middle of their bends.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::CalculateRunBends(int iRun)
+void CTraceAutoConnector::CalculateRunBends(size uiRun)
 {
-	CArrayInt				aiMembers;
+	CArraySize				auiMembers;
 	size					i;
 	int						iMember;
 	STraceAutoConnection*	psConnection;
@@ -1072,37 +1073,37 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 	int						iCentre;
 	STraceAutoStairOrder	sOrder;
 
-	aiMembers.Init();
+	auiMembers.Init();
 	sOrder.pasConnections = &masConnections;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
-		if ((psConnection->iRun == iRun) && psConnection->bHasBend)
+		if ((psConnection->uiRun == uiRun) && psConnection->bHasBend)
 		{
-			aiMembers.InsertInOrder((int)i, &sOrder);
+			auiMembers.InsertInOrder(i, &sOrder);
 		}
 	}
-	if (aiMembers.NumElements() < 2)
+	if (auiMembers.NumElements() < 2)
 	{
-		aiMembers.Kill();
+		auiMembers.Kill();
 		return;
 	}
 
-	iBendSum = MeasureRun(&aiMembers, &iAcross, &iAlong);
+	iBendSum = MeasureRun(&auiMembers, &iAcross, &iAlong);
 
 	iSign = (iAcross > 0) ? -1 : 1;
 	if (iAlong < 0)
 	{
 		iSign = -iSign;
 	}
-	iCentre = (int)(aiMembers.NumElements() - 1) / 2;
-	for (i = 0; i < aiMembers.NumElements(); i++)
+	iCentre = (int)(auiMembers.NumElements() - 1) / 2;
+	for (i = 0; i < auiMembers.NumElements(); i++)
 	{
-		iMember = aiMembers.GetValue(i);
+		iMember = auiMembers.GetValue(i);
 		psConnection = masConnections.Get(iMember);
-		psConnection->iBend = (int32)floor((float64)iBendSum / (float64)aiMembers.NumElements() + 0.5) + iSign * ((int)i - iCentre);
+		psConnection->iBend = (int32)floor((float64)iBendSum / (float64)auiMembers.NumElements() + 0.5) + iSign * ((int)i - iCentre);
 	}
-	aiMembers.Kill();
+	auiMembers.Kill();
 }
 
 
@@ -1113,18 +1114,18 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 //////////////////////////////////////////////////////////////////////////
 bool CTraceAutoConnector::IsInRun(STraceAutoConnection* psConnection)
 {
-	return (psConnection->iRun >= 0) && (psConnection->iRun < (int)muiNumRuns);
+	return psConnection->uiRun < muiNumRuns;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// How far the run's connections (paiMembers) go across the way they leave
+// How far the run's connections (pauiMembers) go across the way they leave
 // (piAcross) and along it (piAlong), all together, and returned, the sum
 // of their bends.
 //
 //////////////////////////////////////////////////////////////////////////
-int32 CTraceAutoConnector::MeasureRun(CArrayInt* paiMembers, int32* piAcross, int32* piAlong)
+int32 CTraceAutoConnector::MeasureRun(CArraySize* pauiMembers, int32* piAcross, int32* piAlong)
 {
 	size					i;
 	STraceAutoConnection*	psConnection;
@@ -1136,10 +1137,10 @@ int32 CTraceAutoConnector::MeasureRun(CArrayInt* paiMembers, int32* piAcross, in
 	*piAcross = 0;
 	*piAlong = 0;
 	iBendSum = 0;
-	bHorizontal = masConnections.Get(paiMembers->GetValue(0))->bHorizontal;
-	for (i = 0; i < paiMembers->NumElements(); i++)
+	bHorizontal = masConnections.Get(pauiMembers->GetValue(0))->bHorizontal;
+	for (i = 0; i < pauiMembers->NumElements(); i++)
 	{
-		psConnection = masConnections.Get(paiMembers->GetValue(i));
+		psConnection = masConnections.Get(pauiMembers->GetValue(i));
 		sFrom = psConnection->pcFrom->GetGridPosition();
 		sTo = psConnection->pcTo->GetGridPosition();
 		if (bHorizontal)
@@ -1164,7 +1165,7 @@ int32 CTraceAutoConnector::MeasureRun(CArrayInt* paiMembers, int32* piAcross, in
 // shortest connection.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
+void CTraceAutoConnector::GetRunsByLength(CArraySize* pauiRuns)
 {
 	CArrayInt				aiRunLengths;
 	STraceAutoConnection*	psConnection;
@@ -1182,10 +1183,10 @@ void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 		psConnection = masConnections.Get(i);
 		if (IsInRun(psConnection))
 		{
-			iLength = aiRunLengths.GetValue(psConnection->iRun);
+			iLength = aiRunLengths.GetValue(psConnection->uiRun);
 			if ((iLength == -1) || (psConnection->iLength < iLength))
 			{
-				aiRunLengths.SetValue(psConnection->iRun, psConnection->iLength);
+				aiRunLengths.SetValue(psConnection->uiRun, psConnection->iLength);
 			}
 		}
 	}
@@ -1195,7 +1196,7 @@ void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 	{
 		if (aiRunLengths.GetValue(i) != -1)
 		{
-			paiRuns->InsertInOrder((int)i, &sOrder);
+			pauiRuns->InsertInOrder(i, &sOrder);
 		}
 	}
 	aiRunLengths.Kill();
@@ -1204,23 +1205,23 @@ void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The run's connections added to paiOrder in its stair's order: across
+// The run's connections added to pauiOrder in its stair's order: across
 // the way they leave, as their bends are stepped.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::AddRunInStairOrder(int iRun, CArrayInt* paiOrder)
+void CTraceAutoConnector::AddRunInStairOrder(size uiRun, CArraySize* pauiOrder)
 {
 	size					uiFirst;
 	size					i;
 	STraceAutoStairOrder	sOrder;
 
-	uiFirst = paiOrder->NumElements();
+	uiFirst = pauiOrder->NumElements();
 	sOrder.pasConnections = &masConnections;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
-		if (masConnections.Get(i)->iRun == iRun)
+		if (masConnections.Get(i)->uiRun == uiRun)
 		{
-			paiOrder->InsertInOrder((int)i, &sOrder, uiFirst);
+			pauiOrder->InsertInOrder(i, &sOrder, uiFirst);
 		}
 	}
 }
@@ -1228,22 +1229,22 @@ void CTraceAutoConnector::AddRunInStairOrder(int iRun, CArrayInt* paiOrder)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The connections not in a run added to paiOrder, shortest first.
+// The connections not in a run added to pauiOrder, shortest first.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::AddSinglesByLength(CArrayInt* paiOrder)
+void CTraceAutoConnector::AddSinglesByLength(CArraySize* pauiOrder)
 {
 	size								uiFirst;
 	size								i;
 	STraceAutoConnectionLengthOrder		sOrder;
 
-	uiFirst = paiOrder->NumElements();
+	uiFirst = pauiOrder->NumElements();
 	sOrder.pasConnections = &masConnections;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		if (!IsInRun(masConnections.Get(i)))
 		{
-			paiOrder->InsertInOrder((int)i, &sOrder, uiFirst);
+			pauiOrder->InsertInOrder(i, &sOrder, uiFirst);
 		}
 	}
 }
@@ -1255,19 +1256,19 @@ void CTraceAutoConnector::AddSinglesByLength(CArrayInt* paiOrder)
 // connections not in a run, shortest first.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::SortConnections(CArrayInt* paiOrder)
+void CTraceAutoConnector::SortConnections(CArraySize* pauiOrder)
 {
-	CArrayInt	aiRuns;
+	CArraySize	auiRuns;
 	size		i;
 
-	aiRuns.Init();
-	GetRunsByLength(&aiRuns);
-	for (i = 0; i < aiRuns.NumElements(); i++)
+	auiRuns.Init();
+	GetRunsByLength(&auiRuns);
+	for (i = 0; i < auiRuns.NumElements(); i++)
 	{
-		AddRunInStairOrder(aiRuns.GetValue(i), paiOrder);
+		AddRunInStairOrder(auiRuns.GetValue(i), pauiOrder);
 	}
-	aiRuns.Kill();
-	AddSinglesByLength(paiOrder);
+	auiRuns.Kill();
+	AddSinglesByLength(pauiOrder);
 }
 
 

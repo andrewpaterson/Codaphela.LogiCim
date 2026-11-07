@@ -446,7 +446,7 @@ void CKicadSchemLogicimWiring::AddRouteConnections(CTraceAutoConnector* pcConnec
 		psTo = mpcModel->GetTerminal(psConnection->uiTo);
 		uiNet = pcConnector->FindOrAddNet(psFrom->pcSubnet);
 		uiRun = pcConnector->FindOrAddRun(mpcModel->GetItem(psFrom->uiItem)->pcView, mpcModel->GetItem(psTo->uiItem)->pcView);
-		pauiRouted->Add(pcConnector->AddConnection(uiNet, psFrom->pcPortView, psTo->pcPortView, psConnection->fBend, (int)uiRun));
+		pauiRouted->Add(pcConnector->AddConnection(uiNet, psFrom->pcPortView, psTo->pcPortView, psConnection->fBend, uiRun));
 	}
 }
 

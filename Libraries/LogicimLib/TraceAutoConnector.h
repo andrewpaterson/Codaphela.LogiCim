@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __TRACE_AUTO_CONNECTOR_H__
 #define __TRACE_AUTO_CONNECTOR_H__
 #include "BaseLib/ArrayInt.h"
+#include "BaseLib/ArraySize.h"
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/MapBlock.h"
 #include "CircuitView.h"
@@ -60,7 +61,7 @@ struct STraceAutoConnection
 	CPortView*		pcFrom;
 	CPortView*		pcTo;
 	float64			fBend;
-	int				iRun;
+	size			uiRun;  //ARRAY_ELEMENT_NOT_FOUND if it isn't in one.
 	bool			bHorizontal;
 	int32			iBend;
 	bool			bHasBend;
@@ -192,7 +193,7 @@ public:
 	size			FindOrAddNet(void* pvKey);
 	size			AddRun(void);
 	size			FindOrAddRun(void* pvFrom, void* pvTo);
-	size			AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun = -1);
+	size			AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, size uiRun = ARRAY_ELEMENT_NOT_FOUND);
 
 	void			SetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox);
 	bool			Connect(void);
@@ -210,21 +211,21 @@ protected:
 	void			DropLoneRuns(void);
 	void			InitNets(void);
 	void			InitSearch(void);
-	void			RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFailed);
+	void			RipAndReroute(CArraySize* pauiOrder, CArraySize* pauiFailed);
 	void			CreateGrid(void);
 	void			MarkComponents(void);
 	void			MarkPorts(void);
 	void			MarkExistingTraces(void);
-	void			GroupExistingTraces(CArrayInt* paiParents);
-	void			GetExistingGroupNets(CArrayInt* paiParents, CArrayInt* paiGroupNets);
+	void			GroupExistingTraces(CArraySize* pauiParents);
+	void			GetExistingGroupNets(CArraySize* pauiParents, CArrayInt* paiGroupNets);
 	void			MarkTrace(int32 x0, int32 y0, int32 x1, int32 y1, int iNet);
 	void			CalculateBends(void);
-	void			CalculateRunBends(int iRun);
-	int32			MeasureRun(CArrayInt* paiMembers, int32* piAcross, int32* piAlong);
-	void			SortConnections(CArrayInt* paiOrder);
-	void			GetRunsByLength(CArrayInt* paiRuns);
-	void			AddRunInStairOrder(int iRun, CArrayInt* paiOrder);
-	void			AddSinglesByLength(CArrayInt* paiOrder);
+	void			CalculateRunBends(size uiRun);
+	int32			MeasureRun(CArraySize* pauiMembers, int32* piAcross, int32* piAlong);
+	void			SortConnections(CArraySize* pauiOrder);
+	void			GetRunsByLength(CArraySize* pauiRuns);
+	void			AddRunInStairOrder(size uiRun, CArraySize* pauiOrder);
+	void			AddSinglesByLength(CArraySize* pauiOrder);
 	bool			IsInRun(STraceAutoConnection* psConnection);
 	bool			Route(STraceAutoConnection* psConnection, bool bRipping, CArrayInt* paiConflicts);
 	void			ExpandRoute(STraceAutoConnectSearch* psSearch, STraceAutoConnectHeapNode* psNode);
