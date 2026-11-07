@@ -171,6 +171,7 @@ protected:
 	void							AddBoardPinView(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, const char* szName);
 	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
+	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage);
 	bool							AddLogicParts(SKicadSchemLogicPart* psPart);
 	bool							AddLogic74Block(SKicadSchemLogicPart* psPart);
 	void							CollectLogic74Pins(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions);

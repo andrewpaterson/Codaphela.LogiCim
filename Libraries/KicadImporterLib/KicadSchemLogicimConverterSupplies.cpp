@@ -97,27 +97,18 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A voltage regulator (an input pin "VIN", "6VIn"; an output pin "VOUT",
-// "3.3VOut"; and a ground) isn't drawn.  Its output's net, on all its
-// output pins if it has more than one (a tab), is remembered with the
-// voltage the output pin's name says ("3.3VOut") or, if it doesn't say,
-// its net's name ("+3V3"), for ApplyRegulatedVoltages.  False (and
-// nothing added) if it isn't a regulator or neither says its voltage.
+// The output pin of a voltage regulator: one with an input pin ("VIN",
+// "6VIn"), an output pin ("VOUT", "3.3VOut") and a ground.  NULL if the
+// symbol's unit isn't a regulator.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+static CKicadSchemLibPin* GetKicadSchemRegulatorOutput(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
 	size					i;
 	CKicadSchemLibPin*		pcPin;
 	CKicadSchemLibPin*		pcInput;
 	CKicadSchemLibPin*		pcOutput;
 	bool					bGround;
-	CKicadSchemSubnet*		pcSubnet;
-	CKicadSchemNet*			pcNet;
-	char*					szNetName;
-	const char*				szVoltage;
-	float32					fVoltage;
-	SKicadSchemLogicimRegulated*	psRegulated;
 
 	pcInput = NULL;
 	pcOutput = NULL;
@@ -142,7 +133,29 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 			bGround = true;
 		}
 	}
-	if ((pcInput == NULL) || (pcOutput == NULL) || !bGround)
+	return ((pcInput != NULL) && bGround) ? pcOutput : NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A voltage regulator isn't drawn (see GetKicadSchemRegulatorOutput).
+// Its output's net, on all its output pins if it has more than one (a
+// tab), is remembered with the voltage the output pin's name says
+// ("3.3VOut") or, if it doesn't say, its net's name ("+3V3"), for
+// ApplyRegulatedVoltages.  False (and nothing added) if it isn't a
+// regulator or neither says its voltage.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+{
+	CKicadSchemLibPin*		pcOutput;
+	CKicadSchemSubnet*		pcSubnet;
+	char*					szNetName;
+	const char*				szVoltage;
+
+	pcOutput = GetKicadSchemRegulatorOutput(pcSymbol, pcLibSymbol);
+	if (pcOutput == NULL)
 	{
 		return false;
 	}
@@ -161,7 +174,25 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 	{
 		return false;
 	}
-	fVoltage = GetKicadSchemSupplyVoltage(szVoltage);
+	AddRegulatedNets(pcSymbol, pcLibSymbol, GetKicadSchemSupplyVoltage(szVoltage));
+	msCounts.uiRegulators++;
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The nets of the regulator's output pins driven at fVoltage, unless
+// another regulator drives them.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage)
+{
+	size							i;
+	CKicadSchemLibPin*				pcPin;
+	CKicadSchemSubnet*				pcSubnet;
+	CKicadSchemNet*					pcNet;
+	SKicadSchemLogicimRegulated*	psRegulated;
 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
@@ -178,8 +209,6 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 			}
 		}
 	}
-	msCounts.uiRegulators++;
-	return true;
 }
 
 
