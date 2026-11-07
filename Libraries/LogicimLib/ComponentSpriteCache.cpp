@@ -253,13 +253,13 @@ void CComponentSpriteCache::Init(lsize uiMaxBytes, int32 iPageSize)
 //////////////////////////////////////////////////////////////////////////
 void CComponentSpriteCache::Class(void)
 {
-	U_Data(CMapBlock, mcSprites);
+	U_Unknown(CMapBlock, mcSprites);
 	M_Embedded(maPages);
 	U_Size(muiCurrentPage);
 	U_Int32(miPageSize);
 	M_Pointer(mpScratch);
 	M_Pointer(mpRaster);
-	U_Data(CArrayTemplate<uint8>, mauiKey);
+	U_Unknown(CArrayTemplate<uint8>, mauiKey);
 	U_UInt64(muiFrame);
 	U_LSize(muiBytes);
 	U_LSize(muiMaxBytes);

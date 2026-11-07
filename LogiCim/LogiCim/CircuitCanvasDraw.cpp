@@ -61,7 +61,7 @@ void CCircuitCanvasDraw::Class(void)
 	M_Pointer(mpSpriteCache);
 	M_Pointer(mpGrid);
 	M_Pointer(mpDestImage);
-	U_Data(CCircuitViewport, mcViewport);
+	U_Unknown(CCircuitViewport, mcViewport);
 	U_Bool(mbGrid);
 }
 

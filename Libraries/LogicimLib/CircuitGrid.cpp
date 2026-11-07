@@ -59,7 +59,7 @@ void CCircuitGrid::Class(void)
 {
 	M_Pointer(mpTile);
 	M_Embedded(maCels);
-	U_Data(CArrayTemplate<int32>, maiCelHeights);
+	U_Unknown(CArrayTemplate<int32>, maiCelHeights);
 	U_Int32(miMinTileWidth);
 	U_UInt32(muiLayout);
 	U_Int32(miViewportWidth);

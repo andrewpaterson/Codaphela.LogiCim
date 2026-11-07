@@ -97,12 +97,12 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 //////////////////////////////////////////////////////////////////////////
 void CLogicimApp::Class(void)
 {
-	U_Data(SLogicimWindowData, msData);
+	U_Unknown(SLogicimWindowData, msData);
 	M_Pointer(mpWindow);
 	M_Pointer(mpContent);
 	M_Pointer(mpInput);
 	M_Pointer(mpInputSource);
-	U_Data(CComponentInput, mcComponentInput);
+	U_Unknown(CComponentInput, mcComponentInput);
 	U_Bool(mbValid);
 	U_Bool(mbInputs);
 }
