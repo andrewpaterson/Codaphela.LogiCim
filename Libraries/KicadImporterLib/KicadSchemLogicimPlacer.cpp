@@ -875,13 +875,13 @@ static void TurnKicadSchemPortToward(CComponentView* pcView, CPortView* pcPort, 
 {
 	int			iWanted;
 	ERotation	eOriginal;
-	size		i;
+	int			iDirection;
 
 	iWanted = OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
 	eOriginal = pcView->GetRotation();
-	for (i = 0; i < 4; i++)
+	for (iDirection = 0; iDirection < 4; iDirection++)
 	{
-		pcView->SetRotation(DirectionToRotation((int)i));
+		pcView->SetRotation(DirectionToRotation(iDirection));
 		if (CTraceAutoConnector::GetPortFacing(pcPort) == iWanted)
 		{
 			return;
@@ -1158,7 +1158,7 @@ static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* psBox, EKicadSchemLogi
 // small and move aside.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimPlacer::GetSeparateOrder(CArrayInt* paiOrder)
+void CKicadSchemLogicimPlacer::GetSeparateOrder(CArraySize* pauiOrder)
 {
 	size	i;
 	size	uiPass;
@@ -1169,7 +1169,7 @@ void CKicadSchemLogicimPlacer::GetSeparateOrder(CArrayInt* paiOrder)
 		{
 			if ((mpcModel->GetItem(i)->pcPort == NULL) == (uiPass == 0))
 			{
-				paiOrder->Add((int)i);
+				pauiOrder->Add(i);
 			}
 		}
 	}
@@ -1188,7 +1188,7 @@ void CKicadSchemLogicimPlacer::GetSeparateOrder(CArrayInt* paiOrder)
 void CKicadSchemLogicimPlacer::SeparateItems(void)
 {
 	CArrayTemplate<SFloat64Bounds>	asPlaced;
-	CArrayInt						aiOrder;
+	CArraySize						auiOrder;
 	size							i;
 	size							uiOrder;
 	SKicadSchemLogicimItem*			psItem;
@@ -1200,11 +1200,11 @@ void CKicadSchemLogicimPlacer::SeparateItems(void)
 	asPlaced.Init();
 	mpsCounts->uiOverlaps = 0;
 
-	aiOrder.Init();
-	GetSeparateOrder(&aiOrder);
-	for (uiOrder = 0; uiOrder < aiOrder.NumElements(); uiOrder++)
+	auiOrder.Init();
+	GetSeparateOrder(&auiOrder);
+	for (uiOrder = 0; uiOrder < auiOrder.NumElements(); uiOrder++)
 	{
-		i = (size)aiOrder.GetValue(uiOrder);
+		i = auiOrder.GetValue(uiOrder);
 		psItem = mpcModel->GetItem(i);
 		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox))
 		{
@@ -1220,7 +1220,7 @@ void CKicadSchemLogicimPlacer::SeparateItems(void)
 		sBox.Move(SFloat64Vec2(sMove.x, sMove.y));
 		asPlaced.Add(&sBox);
 	}
-	aiOrder.Kill();
+	auiOrder.Kill();
 	PlaceAttachedItems();
 	asPlaced.Kill();
 }

@@ -22,6 +22,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #define __KICAD_SCHEM_LOGICIM_MODEL_H__
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/ArrayInt.h"
+#include "BaseLib/ArraySize.h"
 #include "BaseLib/MapBlock.h"
 #include "BaseLib/MapStringTemplate.h"
 #include "LogicimLib/CircuitViews.h"
@@ -204,7 +205,7 @@ public:
 	size							FindPortTerminal(CPortView* pcPortView);
 	size							FindItem(CComponentView* pcView);
 	size							FindBoardPin(const char* szName);
-	void							GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals);
+	void							GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArraySize* pauiTerminals);
 	bool							GetItemImportBox(size uiItem, SFloat64Bounds* psBox);
 };
 

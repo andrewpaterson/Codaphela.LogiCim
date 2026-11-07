@@ -302,11 +302,11 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 {
 	size								i;
 	size								uiKept;
-	CArrayInt							aiNewIndices;
+	CArraySize							auiNewIndices;
 	SKicadSchemLogicimModelTerminal*	psTerminal;
 	CComponentView*						pcView;
 
-	aiNewIndices.Init();
+	auiNewIndices.Init();
 	uiKept = 0;
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
@@ -315,10 +315,10 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 			pcView = masItems.Get(i)->sItem.pcView;
 			mpcCircuit->Remove(pcView);
 			SafeKill(pcView);
-			aiNewIndices.Add(-1);
+			auiNewIndices.Add(ARRAY_ELEMENT_NOT_FOUND);
 			continue;
 		}
-		aiNewIndices.Add((int)uiKept);
+		auiNewIndices.Add(uiKept);
 		if (uiKept != i)
 		{
 			*masItems.Get(uiKept) = *masItems.Get(i);
@@ -331,11 +331,11 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	for (i = 0; i < masTerminals.NumElements(); i++)
 	{
 		psTerminal = masTerminals.Get(i);
-		if (aiNewIndices.GetValue(psTerminal->sTerminal.uiItem) == -1)
+		if (auiNewIndices.GetValue(psTerminal->sTerminal.uiItem) == ARRAY_ELEMENT_NOT_FOUND)
 		{
 			continue;
 		}
-		psTerminal->sTerminal.uiItem = (size)aiNewIndices.GetValue(psTerminal->sTerminal.uiItem);
+		psTerminal->sTerminal.uiItem = auiNewIndices.GetValue(psTerminal->sTerminal.uiItem);
 		if (uiKept != i)
 		{
 			*masTerminals.Get(uiKept) = *psTerminal;
@@ -343,7 +343,7 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 		uiKept++;
 	}
 	masTerminals.SetUsedElements(uiKept);
-	aiNewIndices.Kill();
+	auiNewIndices.Kill();
 	Index();
 }
 
@@ -486,16 +486,16 @@ size CKicadSchemLogicimModel::FindBoardPin(const char* szName)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The terminals of the subnet, added to paiTerminals.
+// The terminals of the subnet, added to pauiTerminals.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimModel::GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals)
+void CKicadSchemLogicimModel::GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArraySize* pauiTerminals)
 {
 	size	i;
 
 	for (i = FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = NextSubnetTerminal(i))
 	{
-		paiTerminals->Add((int)i);
+		pauiTerminals->Add(i);
 	}
 }
 

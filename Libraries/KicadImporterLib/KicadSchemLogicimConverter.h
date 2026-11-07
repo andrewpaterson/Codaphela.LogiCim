@@ -56,11 +56,11 @@ class CSubcircuitInstanceView;
 //pins, of its inputs and of its outputs.
 struct SKicadSchemLogicLayout
 {
-	CArrayInt			aiInputs;
-	int					iOutput;
-	SFloat64Vec2		sCentre;
-	SFloat64Vec2		sInputs;
-	SFloat64Vec2		sOutputs;
+	CArraySize		auiInputs;
+	size			uiOutput;
+	SFloat64Vec2	sCentre;
+	SFloat64Vec2	sInputs;
+	SFloat64Vec2	sOutputs;
 };
 
 

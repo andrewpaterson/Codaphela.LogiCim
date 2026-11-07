@@ -23,6 +23,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/ArrayTemplatePtr.h"
 #include "BaseLib/ArrayInt.h"
+#include "BaseLib/ArraySize.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicimModel.h"
@@ -63,18 +64,18 @@ struct SKicadSchemLogicimSplitterPair
 
 //A run of a bus's taps being made into a splitter (see CKicadSchemLogicimBuses::AddBusSplitter): the component pins its
 //taps' members are wired to (by tap, NULL for a tap wired to none) and the way they face (a TRACE_DIRECTION,
-//TRACE_DIRECTION_NONE if none do), the order its ends go to the taps (indices into paiTaps) and its ends in order along
+//TRACE_DIRECTION_NONE if none do), the order its ends go to the taps (indices into pauiTaps) and its ends in order along
 //the bus.
 struct SKicadSchemLogicimBusRun
 {
 	CKicadSchemBus*					pcBus;
-	CArrayInt*						paiTaps;
+	CArraySize*						pauiTaps;
 	CArrayTemplatePtr<CPortView>	apcPins;
 	int								iPinFacing;
-	CArrayInt						aiOrder;
+	CArraySize						auiOrder;
 	CArrayInt						aiFans;
 
-	void				Init(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
+	void				Init(CKicadSchemBus* pcBus, CArraySize* pauiTaps);
 	void				Kill(void);
 	size				NumTaps(void);
 	SKicadSchemBusTap*	GetTap(size uiIndex);
@@ -115,12 +116,12 @@ protected:
 	bool							IsJoinedByBus(CKicadSchemNet* pcNet);
 	void							AddBus(CKicadSchemBus* pcBus);
 	void							AddBusTunnels(CKicadSchemBus* pcBus);
-	void							AddPinSplitters(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
-	void							AddRunSplitters(CKicadSchemBus* pcBus, CArrayInt* paiTaps);
-	void							AddBusSplitter(CKicadSchemBus* pcBus, CArrayInt* paiTaps, int iSide);
+	void							AddPinSplitters(CKicadSchemBus* pcBus, CArraySize* pauiTaps);
+	void							AddRunSplitters(CKicadSchemBus* pcBus, CArraySize* pauiTaps);
+	void							AddBusSplitter(CKicadSchemBus* pcBus, CArraySize* pauiTaps, int iSide);
 	void							AddBusSplitterTerminals(SKicadSchemLogicimBusRun* psRun, CSplitterView* pcSplitter, size uiItem);
-	int								GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins);
-	void							GetTapPinTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals);
+	int								GetBusPins(CKicadSchemBus* pcBus, CArraySize* pauiTaps, CArrayTemplatePtr<CPortView>* papcPins);
+	void							GetTapPinTerminals(CKicadSchemBus* pcBus, CArraySize* pauiTaps, CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals);
 	CComponentView*					GetMostPinsOwner(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals, int iFacing);
 	CPortView*						GetTapPin(SKicadSchemBusTap* psTap);
 	bool							IsComponentPin(SKicadSchemLogicimTerminal* psTerminal);

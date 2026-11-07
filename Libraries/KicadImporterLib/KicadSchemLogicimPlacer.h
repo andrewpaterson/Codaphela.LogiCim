@@ -103,7 +103,7 @@ protected:
 	void		AlignItems(void);
 	void		AlignItem(SKicadSchemLogicimAlignment* psAlignment, CArrayInt* paiFixed);
 	void		SeparateItems(void);
-	void		GetSeparateOrder(CArrayInt* paiOrder);
+	void		GetSeparateOrder(CArraySize* pauiOrder);
 	bool		GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	size		FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 	void		ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);

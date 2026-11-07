@@ -49,7 +49,7 @@ public:
 
 protected:
 	void	AddSubnetConnections(CKicadSchemSubnet* pcSubnet);
-	void	ConnectSubnetTerminals(CKicadSchemSubnet* pcSubnet, CKicadSchemSubnetGraph* pcGraph, CArrayInt* paiTerminals, CArrayInt* paiNodes);
+	void	ConnectSubnetTerminals(CKicadSchemSubnet* pcSubnet, CKicadSchemSubnetGraph* pcGraph, CArraySize* pauiTerminals, CArrayInt* paiNodes);
 	void	JoinSplitterPins(void);
 	void	JoinSplitterEnd(size uiEnd, size uiPin);
 	bool	IsConnectionBetween(size uiTerminal1, size uiTerminal2);

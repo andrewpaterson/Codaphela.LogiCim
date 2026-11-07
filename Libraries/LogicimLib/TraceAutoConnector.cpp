@@ -834,12 +834,12 @@ void CTraceAutoConnector::MarkPorts(void)
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::MarkExistingTraces(void)
 {
-	CArraySize		auiParents;
-	CArrayInt		aiGroupNets;
-	size			i;
-	size			uiRoot;
-	int				iNet;
-	CTraceView*		pcTrace;
+	CArraySize	auiParents;
+	CArrayInt	aiGroupNets;
+	size		i;
+	size		uiRoot;
+	int			iNet;
+	CTraceView*	pcTrace;
 
 	if (mpcCircuit->NumTraces() == 0)
 	{
