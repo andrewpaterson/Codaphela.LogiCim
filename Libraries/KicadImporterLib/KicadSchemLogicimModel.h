@@ -22,6 +22,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #define __KICAD_SCHEM_LOGICIM_MODEL_H__
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/MapBlock.h"
+#include "BaseLib/MapStringTemplate.h"
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/Bounds.h"
 #include "KicadLib/KicadSchemNetlist.h"
@@ -66,6 +67,13 @@ struct SKicadSchemLogicimItem
 	CKicadSchemSymbol*			pcSymbol;  //The symbol it was made for.  NULL for tunnels and splitters.
 	SFloat64Bounds				sImportBox;  //Its import box (see CComponentView::GetImportBoundingBox), from its position.
 	bool						bImportBox;
+
+	//The model's: its terminals, and the items attached to it and the next attached to the same item, by index.
+	size						uiFirstTerminal;
+	size						uiLastTerminal;
+	size						uiFirstAttached;
+	size						uiLastAttached;
+	size						uiNextAttached;
 };
 
 
@@ -79,6 +87,7 @@ struct SKicadSchemLogicimTerminal
 	size				uiItem;
 	bool				bBus;
 	size				uiNextOnSubnet;  //The model's: the next of the subnet's terminals, ARRAY_ELEMENT_NOT_FOUND after the last.
+	size				uiNextOfItem;	 //The model's: the next of the item's terminals.
 };
 
 
@@ -86,11 +95,11 @@ struct SKicadSchemLogicimTerminal
 //subnet), with the bend KiCad's wire between them has.
 struct SKicadSchemLogicimConnection
 {
-	size		uiSubnet;
-	size		uiFrom;
-	size		uiTo;
-	float64		fBend;
-	bool		bConnected;
+	CKicadSchemSubnet*	pcSubnet;
+	size				uiFrom;
+	size				uiTo;
+	float64				fBend;
+	bool				bConnected;
 };
 
 
@@ -116,9 +125,14 @@ protected:
 	CArrayKicadSchemLogicimTerminal		masTerminals;
 	CArrayKicadSchemLogicimConnection	masConnections;
 	CMapBlock							mcSubnetTerminals;  //A subnet to its SKicadSchemLogicimSubnetTerminals.
+	CMapBlock							mcPortTerminals;    //A port to its first terminal.
+	CMapBlock							mcViewItems;        //A view to its item.
+	CMapStringTemplate<size>			mcBoardPins;        //A board pin's name to its item.
 
+	void							LinkItem(size uiItem);
 	void							LinkTerminal(size uiTerminal);
-	void							IndexTerminals(void);
+	void							LinkAttached(size uiItem);
+	void							Index(void);
 
 public:
 	void							Init(void);
@@ -128,6 +142,7 @@ public:
 	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
 	SKicadSchemLogicimConnection*	AddConnection(void);
 	void							RemoveItems(CArrayInt* paiRemoved);
+	void							AttachItem(size uiItem, CPortView* pcTo);
 
 	size							NumItems(void);
 	SKicadSchemLogicimItem*			GetItem(size uiIndex);
@@ -138,6 +153,13 @@ public:
 
 	size							FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet);
 	size							NextSubnetTerminal(size uiTerminal);
+	size							FirstItemTerminal(size uiItem);
+	size							NextItemTerminal(size uiTerminal);
+	size							FirstAttached(size uiItem);
+	size							NextAttached(size uiItem);
+	size							FindPortTerminal(CPortView* pcPortView);
+	size							FindItem(CComponentView* pcView);
+	size							FindBoardPin(const char* szName);
 };
 
 

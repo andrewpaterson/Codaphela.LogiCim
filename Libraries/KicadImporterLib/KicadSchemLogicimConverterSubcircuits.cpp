@@ -93,49 +93,6 @@ static bool IsKicadSchemPowerNetName(const char* szName)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether the port's terminal (see AddTerminal) is of the subnet.
-//
-//////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemTerminalSubnet(CKicadSchemLogicimModel* pcModel, CPortView* pcPortView, CKicadSchemSubnet* pcSubnet)
-{
-	size	i;
-
-	for (i = 0; i < pcModel->NumTerminals(); i++)
-	{
-		if (pcModel->GetTerminal(i)->pcPortView == pcPortView)
-		{
-			return pcModel->GetTerminal(i)->pcSubnet == pcSubnet;
-		}
-	}
-	return false;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The item of the board pin named szName made already,
-// ARRAY_ELEMENT_NOT_FOUND if there isn't one.
-//
-//////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
-{
-	size						i;
-	SKicadSchemLogicimItem*		psItem;
-
-	for (i = 0; i < mcModel.NumItems(); i++)
-	{
-		psItem = mcModel.GetItem(i);
-		if ((psItem->eKind == KSLIK_BoardPin) && (StringCompare(psItem->pcView->GetName(), szName) == 0))
-		{
-			return i;
-		}
-	}
-	return ARRAY_ELEMENT_NOT_FOUND;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // The circuit pin's name for the connector's pin on the net: the net's
 // ("D0") or, on a net that's only the pin's, the connector's pin's
 // ("J1-5").  False, and szName empty, on a supply's net.
@@ -244,6 +201,7 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	SFloat64Vec2			sOuter;
 	ERotation				eRotation;
 	size					uiItem;
+	size					uiTerminal;
 	char*					szNumber;
 
 	pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
@@ -261,7 +219,7 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	}
 
 	szNumber = pcPin->GetNumber();
-	uiItem = FindBoardPin(szName.Text());
+	uiItem = mcModel.FindBoardPin(szName.Text());
 	if (uiItem != ARRAY_ELEMENT_NOT_FOUND)
 	{
 		szName.Kill();
@@ -272,7 +230,8 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 		}
 
 		//Another part of the net (joined by its labels) is already joined through its tunnels.
-		if (IsKicadSchemTerminalSubnet(&mcModel, pcPinView->GetPortView((size)0), pcSubnet))
+		uiTerminal = mcModel.FindPortTerminal(pcPinView->GetPortView((size)0));
+		if ((uiTerminal != ARRAY_ELEMENT_NOT_FOUND) && (mcModel.GetTerminal(uiTerminal)->pcSubnet == pcSubnet))
 		{
 			AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
 		}

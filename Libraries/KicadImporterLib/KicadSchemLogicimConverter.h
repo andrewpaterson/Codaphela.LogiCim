@@ -308,7 +308,7 @@ protected:
 	void							AddConnections(void);
 	void							FindAlignments(void);
 	void							AlignItems(void);
-	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet, size uiSubnet);
+	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet);
 	void							GetSubnetTerminals(CKicadSchemSubnet* pcSubnet, CArrayInt* paiTerminals);
 	bool							IsConnectionBetween(size uiTerminal1, size uiTerminal2);
 	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
@@ -320,7 +320,6 @@ protected:
 	void							PlaceSplitters(void);
 	bool							IsSplitterPin(CPortView* pcPortView);
 	void							JoinSplitterPins(void);
-	size							FindPortTerminal(CPortView* pcPortView);
 	int								GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins);
 	void							GetTapPinTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals);
 	CComponentView*					GetMostPinsOwner(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals, int iFacing);
@@ -328,7 +327,6 @@ protected:
 	bool							IsComponentPin(SKicadSchemLogicimTerminal* psTerminal);
 	CPortView*						GetComponentPin(CKicadSchemSubnet* pcSubnet, CComponentView* pcOwner, int iFacing);
 	bool							HasTunnel(CKicadSchemSubnet* pcSubnet);
-	size							FindBoardPin(const char* szName);
 	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	void							MeasureImportBoxes(void);
 	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Bounds* psBox);

@@ -31,6 +31,9 @@ void CKicadSchemLogicimModel::Init(void)
 	masTerminals.Init();
 	masConnections.Init();
 	mcSubnetTerminals.Init();
+	mcPortTerminals.Init();
+	mcViewItems.Init();
+	mcBoardPins.Init();
 }
 
 
@@ -41,6 +44,9 @@ void CKicadSchemLogicimModel::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::Kill(void)
 {
+	mcBoardPins.Kill();
+	mcViewItems.Kill();
+	mcPortTerminals.Kill();
 	mcSubnetTerminals.Kill();
 	masConnections.Kill();
 	masTerminals.Kill();
@@ -79,7 +85,32 @@ size CKicadSchemLogicimModel::AddItem(CComponentView* pcView, EKicadSchemLogicim
 	{
 		psItem->sAnchor.Init(0, 0);
 	}
+	LinkItem(masItems.NumElements() - 1);
 	return masItems.NumElements() - 1;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item, with no terminals or attached items yet, is found by its view
+// and, a board pin, by its name.  The first of a name is kept.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::LinkItem(size uiItem)
+{
+	SKicadSchemLogicimItem*		psItem;
+
+	psItem = masItems.Get(uiItem);
+	psItem->uiFirstTerminal = ARRAY_ELEMENT_NOT_FOUND;
+	psItem->uiLastTerminal = ARRAY_ELEMENT_NOT_FOUND;
+	psItem->uiFirstAttached = ARRAY_ELEMENT_NOT_FOUND;
+	psItem->uiLastAttached = ARRAY_ELEMENT_NOT_FOUND;
+	psItem->uiNextAttached = ARRAY_ELEMENT_NOT_FOUND;
+	mcViewItems.Put(&psItem->pcView, sizeof(psItem->pcView), &uiItem, sizeof(uiItem));
+	if ((psItem->eKind == KSLIK_BoardPin) && (mcBoardPins.Get(psItem->pcView->GetName()) == NULL))
+	{
+		mcBoardPins.Put(psItem->pcView->GetName(), &uiItem);
+	}
 }
 
 
@@ -108,7 +139,8 @@ void CKicadSchemLogicimModel::AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64V
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The terminal goes on the end of its subnet's terminals.
+// The terminal goes on the end of its item's terminals and its subnet's,
+// and is found by its port if it's the port's first.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
@@ -116,9 +148,28 @@ void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
 	SKicadSchemLogicimTerminal*				psTerminal;
 	SKicadSchemLogicimSubnetTerminals*		psSubnet;
 	SKicadSchemLogicimSubnetTerminals		sSubnet;
+	SKicadSchemLogicimItem*					psItem;
 
 	psTerminal = masTerminals.Get(uiTerminal);
 	psTerminal->uiNextOnSubnet = ARRAY_ELEMENT_NOT_FOUND;
+	psTerminal->uiNextOfItem = ARRAY_ELEMENT_NOT_FOUND;
+
+	psItem = masItems.Get(psTerminal->uiItem);
+	if (psItem->uiFirstTerminal == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		psItem->uiFirstTerminal = uiTerminal;
+	}
+	else
+	{
+		masTerminals.Get(psItem->uiLastTerminal)->uiNextOfItem = uiTerminal;
+	}
+	psItem->uiLastTerminal = uiTerminal;
+
+	if (mcPortTerminals.Get(&psTerminal->pcPortView, sizeof(psTerminal->pcPortView)) == NULL)
+	{
+		mcPortTerminals.Put(&psTerminal->pcPortView, sizeof(psTerminal->pcPortView), &uiTerminal, sizeof(uiTerminal));
+	}
+
 	psSubnet = (SKicadSchemLogicimSubnetTerminals*)mcSubnetTerminals.Get(&psTerminal->pcSubnet, sizeof(psTerminal->pcSubnet));
 	if (psSubnet == NULL)
 	{
@@ -134,19 +185,79 @@ void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Each subnet's terminals linked again, in order, after they've moved.
+// The item goes on the end of the items attached to its pcAttachedTo's
+// owner.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimModel::IndexTerminals(void)
+void CKicadSchemLogicimModel::LinkAttached(size uiItem)
+{
+	SKicadSchemLogicimItem*		psItem;
+	SKicadSchemLogicimItem*		psOwner;
+	size						uiOwner;
+
+	psItem = masItems.Get(uiItem);
+	uiOwner = FindItem(psItem->pcAttachedTo->GetOwner());
+	if (uiOwner == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		return;
+	}
+	psOwner = masItems.Get(uiOwner);
+	if (psOwner->uiFirstAttached == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		psOwner->uiFirstAttached = uiItem;
+	}
+	else
+	{
+		masItems.Get(psOwner->uiLastAttached)->uiNextAttached = uiItem;
+	}
+	psOwner->uiLastAttached = uiItem;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Every index made again, in order, after items and terminals have moved.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::Index(void)
 {
 	size	i;
 
+	mcBoardPins.Kill();
+	mcViewItems.Kill();
+	mcPortTerminals.Kill();
 	mcSubnetTerminals.Kill();
 	mcSubnetTerminals.Init();
+	mcPortTerminals.Init();
+	mcViewItems.Init();
+	mcBoardPins.Init();
+	for (i = 0; i < masItems.NumElements(); i++)
+	{
+		LinkItem(i);
+	}
 	for (i = 0; i < masTerminals.NumElements(); i++)
 	{
 		LinkTerminal(i);
 	}
+	for (i = 0; i < masItems.NumElements(); i++)
+	{
+		if (masItems.Get(i)->pcAttachedTo != NULL)
+		{
+			LinkAttached(i);
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item stands on the port: it's attached to the port's component.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::AttachItem(size uiItem, CPortView* pcTo)
+{
+	masItems.Get(uiItem)->pcAttachedTo = pcTo;
+	LinkAttached(uiItem);
 }
 
 
@@ -209,7 +320,7 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	}
 	masTerminals.SetUsedElements(uiKept);
 	aiNewIndices.Kill();
-	IndexTerminals();
+	Index();
 }
 
 
@@ -244,5 +355,50 @@ size CKicadSchemLogicimModel::FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet)
 size CKicadSchemLogicimModel::NextSubnetTerminal(size uiTerminal)
 {
 	return masTerminals.Get(uiTerminal)->uiNextOnSubnet;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item's terminals and the items attached to it, as the subnet's
+// terminals (see FirstSubnetTerminal).
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimModel::FirstItemTerminal(size uiItem) { return masItems.Get(uiItem)->uiFirstTerminal; }
+size CKicadSchemLogicimModel::NextItemTerminal(size uiTerminal) { return masTerminals.Get(uiTerminal)->uiNextOfItem; }
+size CKicadSchemLogicimModel::FirstAttached(size uiItem) { return masItems.Get(uiItem)->uiFirstAttached; }
+size CKicadSchemLogicimModel::NextAttached(size uiItem) { return masItems.Get(uiItem)->uiNextAttached; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The port's first terminal, the view's item and the item of the board
+// pin named szName; ARRAY_ELEMENT_NOT_FOUND if there's none.
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimModel::FindPortTerminal(CPortView* pcPortView)
+{
+	size*	puiTerminal;
+
+	puiTerminal = (size*)mcPortTerminals.Get(&pcPortView, sizeof(pcPortView));
+	return (puiTerminal != NULL) ? *puiTerminal : ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+size CKicadSchemLogicimModel::FindItem(CComponentView* pcView)
+{
+	size*	puiItem;
+
+	puiItem = (size*)mcViewItems.Get(&pcView, sizeof(pcView));
+	return (puiItem != NULL) ? *puiItem : ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+size CKicadSchemLogicimModel::FindBoardPin(const char* szName)
+{
+	size*	puiItem;
+
+	puiItem = mcBoardPins.Get(szName);
+	return (puiItem != NULL) ? *puiItem : ARRAY_ELEMENT_NOT_FOUND;
 }
 

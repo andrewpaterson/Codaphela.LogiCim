@@ -122,33 +122,13 @@ void CKicadSchemLogicimConverter::AddConnections(void)
 
 	for (i = 0; i < mpcNetlist->NumSubnets(); i++)
 	{
-		AddSubnetConnections(mpcNetlist->GetSubnet(i), i);
+		AddSubnetConnections(mpcNetlist->GetSubnet(i));
 	}
 	for (i = 0; i < mpcNetlist->NumBuses(); i++)
 	{
-		AddSubnetConnections(mpcNetlist->GetBus(i)->GetSubnet(), mpcNetlist->NumSubnets() + i);
+		AddSubnetConnections(mpcNetlist->GetBus(i)->GetSubnet());
 	}
 	JoinSplitterPins();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The terminal of the port, ARRAY_ELEMENT_NOT_FOUND if it has none.
-//
-//////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::FindPortTerminal(CPortView* pcPortView)
-{
-	size	i;
-
-	for (i = 0; i < mcModel.NumTerminals(); i++)
-	{
-		if (mcModel.GetTerminal(i)->pcPortView == pcPortView)
-		{
-			return i;
-		}
-	}
-	return ARRAY_ELEMENT_NOT_FOUND;
 }
 
 
@@ -284,8 +264,8 @@ void CKicadSchemLogicimConverter::JoinSplitterPins(void)
 
 	for (i = 0; i < masSplitterPairs.NumElements(); i++)
 	{
-		uiPin = FindPortTerminal(masSplitterPairs.Get(i)->pcPin);
-		uiEnd = FindPortTerminal(masSplitterPairs.Get(i)->pcEnd);
+		uiPin = mcModel.FindPortTerminal(masSplitterPairs.Get(i)->pcPin);
+		uiEnd = mcModel.FindPortTerminal(masSplitterPairs.Get(i)->pcEnd);
 		if ((uiPin != ARRAY_ELEMENT_NOT_FOUND) && (uiEnd != ARRAY_ELEMENT_NOT_FOUND) && !IsConnectionBetween(uiEnd, uiPin))
 		{
 			JoinSplitterEnd(uiEnd, uiPin);
@@ -428,7 +408,7 @@ static float64 GetKicadSchemPathBend(CKicadSchemSubnetGraph* pcGraph, CArrayInt*
 // pieces from those already in it, connected to the one it reaches.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubnet, size uiSubnet)
+void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubnet)
 {
 	CArrayInt						aiTerminals;
 	CArrayInt						aiNodes;
@@ -463,7 +443,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	{
 		iBest = FindKicadSchemNearestTerminal(&cGraph, &aiNodes, &aiConnected, &aiBestPath);
 		psConnection = mcModel.AddConnection();
-		psConnection->uiSubnet = uiSubnet;
+		psConnection->pcSubnet = pcSubnet;
 		if (iBest == -1)
 		{
 			//Not joined by wires (only by being at the same place): straight to the first.

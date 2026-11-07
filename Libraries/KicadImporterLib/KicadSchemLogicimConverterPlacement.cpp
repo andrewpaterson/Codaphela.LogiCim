@@ -469,7 +469,7 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 		for (j = 0; j < mcModel.NumConnections(); j++)
 		{
 			psOther = mcModel.GetConnection(j);
-			if (psOther->uiSubnet == psConnection->uiSubnet)
+			if (psOther->pcSubnet == psConnection->pcSubnet)
 			{
 				uiCount++;
 			}
@@ -791,13 +791,9 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 		}
 
 		pcTarget = NULL;
-		for (j = 0; (j < mcModel.NumTerminals()) && (pcTarget == NULL); j++)
+		for (j = mcModel.FirstItemTerminal(i); (j != ARRAY_ELEMENT_NOT_FOUND) && (pcTarget == NULL); j = mcModel.NextItemTerminal(j))
 		{
 			psTerminal = mcModel.GetTerminal(j);
-			if (psTerminal->uiItem != i)
-			{
-				continue;
-			}
 			for (k = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); k != ARRAY_ELEMENT_NOT_FOUND; k = mcModel.NextSubnetTerminal(k))
 			{
 				psOther = mcModel.GetTerminal(k);
@@ -814,7 +810,7 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 			continue;
 		}
 
-		psItem->pcAttachedTo = pcTarget;
+		mcModel.AttachItem(i, pcTarget);
 		iWanted = CTraceAutoConnector::OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
 		eOriginal = psItem->pcView->GetRotation();
 		for (k = 0; k < 4; k++)
@@ -887,20 +883,16 @@ bool CKicadSchemLogicimConverter::GetItemImportBox(SKicadSchemLogicimItem* psIte
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Bounds* psBox)
 {
-	size						i;
-	SKicadSchemLogicimItem*		psItem;
-	SKicadSchemLogicimItem*		psOther;
-	SFloat64Bounds				sOther;
+	size				i;
+	SFloat64Bounds		sOther;
 
-	psItem = mcModel.GetItem(uiItem);
-	if (!GetItemImportBox(psItem, psBox))
+	if (!GetItemImportBox(mcModel.GetItem(uiItem), psBox))
 	{
 		return false;
 	}
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = mcModel.FirstAttached(uiItem); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextAttached(i))
 	{
-		psOther = mcModel.GetItem(i);
-		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && GetItemImportBox(psOther, &sOther))
+		if (GetItemImportBox(mcModel.GetItem(i), &sOther))
 		{
 			psBox->Include(&sOther);
 		}
