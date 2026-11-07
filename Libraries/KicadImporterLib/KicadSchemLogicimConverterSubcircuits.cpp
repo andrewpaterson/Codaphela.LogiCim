@@ -162,12 +162,7 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	CKicadSchemSubnet*		pcSubnet;
 	CKicadSchemNet*			pcNet;
 	CChars					szName;
-	CPinView*				pcPinView;
-	SFloat64Vec2			sOuter;
-	ERotation				eRotation;
 	size					uiItem;
-	size					uiTerminal;
-	char*					szNumber;
 
 	pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
 	pcNet = (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL;
@@ -177,43 +172,71 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	}
 
 	szName.Init();
-	if (!GetKicadSchemBoardPinName(pcSymbol, pcPin, pcNet, &szName))
+	if (GetKicadSchemBoardPinName(pcSymbol, pcPin, pcNet, &szName))
 	{
-		szName.Kill();
-		return;
+		uiItem = mcModel.FindBoardPin(szName.Text());
+		if (uiItem != ARRAY_ELEMENT_NOT_FOUND)
+		{
+			JoinBoardPin(pcSymbol, pcPin, pcConnector, uiItem);
+		}
+		else
+		{
+			AddBoardPinView(pcSymbol, pcPin, pcConnector, szName.Text());
+		}
 	}
+	szName.Kill();
+}
 
-	szNumber = pcPin->GetNumber();
-	uiItem = mcModel.FindBoardPin(szName.Text());
-	if (uiItem != ARRAY_ELEMENT_NOT_FOUND)
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The connector's pin on the circuit's pin another of its pins on the
+// net made (item uiItem).  It's wired to it if it's on the same part of
+// the net; another part is already joined through its tunnels.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::JoinBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, size uiItem)
+{
+	CPinView*	pcPinView;
+	size		uiTerminal;
+
+	pcPinView = (CPinView*)mcModel.GetItem(uiItem)->pcView;
+	if (pcConnector != NULL)
 	{
-		szName.Kill();
-		pcPinView = (CPinView*)mcModel.GetItem(uiItem)->pcView;
-		if (pcConnector != NULL)
-		{
-			pcConnector->AddPin(szNumber, pcPinView);
-		}
-
-		//Another part of the net (joined by its labels) is already joined through its tunnels.
-		uiTerminal = mcModel.FindPortTerminal(pcPinView->GetPortView((size)0));
-		if ((uiTerminal != ARRAY_ELEMENT_NOT_FOUND) && (mcModel.GetTerminal(uiTerminal)->pcSubnet == pcSubnet))
-		{
-			AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
-		}
-		return;
+		pcConnector->AddPin(pcPin->GetNumber(), pcPinView);
 	}
+	uiTerminal = mcModel.FindPortTerminal(pcPinView->GetPortView((size)0));
+	if ((uiTerminal != ARRAY_ELEMENT_NOT_FOUND) && (mcModel.GetTerminal(uiTerminal)->pcSubnet == mpcNetlist->GetPinSubnet(pcSymbol, pcPin)))
+	{
+		AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A circuit pin named szName for the connector's pin: where the
+// connector's is, facing out of its body, and shown on that side of an
+// instance in the order of the pin numbers.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddBoardPinView(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, const char* szName)
+{
+	CPinView*		pcPinView;
+	SFloat64Vec2	sOuter;
+	ERotation		eRotation;
+	size			uiItem;
 
 	eRotation = GetBoardPinFacing(pcSymbol, pcPin, &sOuter);
 	pcPinView = NewMalloc<CPinView>();
-	pcPinView->Init(0, 0, eRotation, szName.Text(), "LVC", false, 1, RADIX_Binary, mpcFonts);
-	szName.Kill();
-	pcPinView->SetSubcircuitAppearance(GetKicadSchemBoardPinAlignment(eRotation), PAN_Negative, atoi(szNumber), false, false);
+	pcPinView->Init(0, 0, eRotation, szName, "LVC", false, 1, RADIX_Binary, mpcFonts);
+	pcPinView->SetSubcircuitAppearance(GetKicadSchemBoardPinAlignment(eRotation), PAN_Negative, atoi(pcPin->GetNumber()), false, false);
 	//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
 	uiItem = mcModel.AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL, pcSymbol);
 	msCounts.uiBoardPins++;
 	if (pcConnector != NULL)
 	{
-		pcConnector->AddPin(szNumber, pcPinView);
+		pcConnector->AddPin(pcPin->GetNumber(), pcPinView);
 	}
 	AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
 }
@@ -261,8 +284,27 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 
 //////////////////////////////////////////////////////////////////////////
 //
-// An instance of the placeholder subcircuit for the symbol's unit, turned
-// as KiCad turns the symbol (a mirrored symbol isn't mirrored).
+// An instance of the subcircuit for the symbol, named as its reference
+// with its value, turned as KiCad turns the symbol (a mirrored symbol
+// isn't mirrored), and its item, puiItem.
+//
+//////////////////////////////////////////////////////////////////////////
+CSubcircuitInstanceView* CKicadSchemLogicimConverter::AddSubcircuitInstance(CKicadSchemSymbol* pcSymbol, CCircuitView* pcSubcircuit, size* puiItem)
+{
+	CSubcircuitInstanceView*	pcInstance;
+	char*						szValue;
+
+	szValue = pcSymbol->GetValue();
+	pcInstance = NewMalloc<CSubcircuitInstanceView>();
+	pcInstance->Init(0, 0, GetKicadSchemRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcSubcircuit, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	*puiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
+	return pcInstance;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An instance of the placeholder subcircuit for the symbol's unit.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
@@ -274,7 +316,6 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 	SSubcircuitPinView*						psPin;
 	size									uiItem;
 	size									i;
-	char*									szValue;
 
 	pcPlaceholder = GetPlaceholderCircuit(pcSymbol, pcLibSymbol);
 	if (pcPlaceholder == NULL)
@@ -282,10 +323,7 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 		return false;
 	}
 
-	szValue = pcSymbol->GetValue();
-	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(0, 0, GetKicadSchemRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
+	pcInstance = AddSubcircuitInstance(pcSymbol, pcPlaceholder, &uiItem);
 
 	apcPins.Init();
 	aszNames.Init();
@@ -362,12 +400,31 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The schematic of the board a symbol stands for: its Schematic property
+// (see KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY), or else its library
+// symbol's.  NULL if neither has one.
+//
+//////////////////////////////////////////////////////////////////////////
+static char* GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+{
+	char*	szSchematic;
+
+	szSchematic = pcSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
+	if (StrEmpty(szSchematic))
+	{
+		szSchematic = pcLibSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
+	}
+	return StrEmpty(szSchematic) ? NULL : szSchematic;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A board drawn as a symbol (one with a Schematic property, see
-// KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY): an instance of the board's
-// circuit, made from its own schematic by the board source.  The
-// symbol's pins are joined to the circuit's pins of the board's connector
-// with the same numbers; a pin on a supply or on nothing on the board has
-// no circuit pin and isn't joined.  False, to make it a placeholder, if
+// GetKicadSchemBoardSchematic): an instance of the board's circuit, made
+// from its own schematic by the board source.  The symbol's pins are
+// joined to the circuit's pins of the board's connector with the same
+// numbers (see JoinBoardPins).  False, to make it a placeholder, if
 // there's no board source or the board can't be made.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -378,74 +435,107 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 	CKicadSchemBoardConnector*				pcConnector;
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
 	CArrayChars								aszNames;
-	CArrayTemplatePtr<CPortView>			apcJoined;
 	CSubcircuitInstanceView*				pcInstance;
-	SSubcircuitPinView*						psPin;
-	CPinView*								pcPinView;
 	size									uiItem;
-	size									i;
-	char*									szValue;
 
-	if (mpcBoardSource == NULL)
+	szSchematic = GetKicadSchemBoardSchematic(pcSymbol, pcLibSymbol);
+	if ((mpcBoardSource == NULL) || (szSchematic == NULL))
 	{
 		return false;
 	}
-	szSchematic = pcSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
-	if (StrEmpty(szSchematic))
-	{
-		szSchematic = pcLibSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
-	}
-	if (StrEmpty(szSchematic))
-	{
-		return false;
-	}
-
 	pcBoard = mpcBoardSource->GetBoard(szSchematic, mpcFile->GetFileName());
 	if (pcBoard == NULL)
 	{
-		gcLogger.Error2(__METHOD__, " Board [", pcSymbol->GetReference(), "]'s schematic [", szSchematic, "] couldn't be made, it's a placeholder.", NULL);
-		return false;
+		return gcLogger.Error2(__METHOD__, " Board [", pcSymbol->GetReference(), "]'s schematic [", szSchematic, "] couldn't be made, it's a placeholder.", NULL);
 	}
 
 	apcPins.Init();
 	aszNames.Init();
 	GetPlaceholderPins(pcSymbol, pcLibSymbol, &apcPins, &aszNames);
 	pcConnector = pcBoard->FindConnector(apcPins.NumElements());
-	if (pcConnector == NULL)
+	if (pcConnector != NULL)
+	{
+		if (!pcBoard->IsLaidOut())
+		{
+			LayOutBoardPins(&apcPins, pcConnector);
+			pcBoard->SetLaidOut();
+		}
+		pcInstance = AddSubcircuitInstance(pcSymbol, pcBoard->GetCircuit(), &uiItem);
+		JoinBoardPins(pcSymbol, &apcPins, pcConnector, pcInstance, uiItem);
+		msCounts.uiBoards++;
+	}
+	else
 	{
 		gcLogger.Error2(__METHOD__, " Board [", pcSymbol->GetReference(), "]'s schematic [", szSchematic, "] has no connector, it's a placeholder.", NULL);
-		aszNames.Kill();
-		apcPins.Kill();
-		return false;
 	}
-	if (!pcBoard->IsLaidOut())
-	{
-		LayOutBoardPins(&apcPins, pcConnector);
-		pcBoard->SetLaidOut();
-	}
+	aszNames.Kill();
+	apcPins.Kill();
+	return pcConnector != NULL;
+}
 
-	szValue = pcSymbol->GetValue();
-	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(0, 0, GetKicadSchemRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
 
-	//Two of the symbol's pins on one circuit pin (one net on the board) are joined to it once.
+//////////////////////////////////////////////////////////////////////////
+//
+// The symbol's pins joined to the instance's pins for the circuit's pins
+// of the board's connector with the same numbers.  A pin on a supply or
+// on nothing on the board has no circuit pin and isn't joined, and two of
+// the symbol's pins on one circuit pin (one net on the board) are joined
+// to it once.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::JoinBoardPins(CKicadSchemSymbol* pcSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector, CSubcircuitInstanceView* pcInstance, size uiItem)
+{
+	CArrayTemplatePtr<CPortView>	apcJoined;
+	SSubcircuitPinView*				psPin;
+	CPinView*						pcPinView;
+	size							i;
+
 	apcJoined.Init();
-	for (i = 0; i < apcPins.NumElements(); i++)
+	for (i = 0; i < papcPins->NumElements(); i++)
 	{
-		pcPinView = pcConnector->GetPin(apcPins.GetPtr(i)->GetNumber());
+		pcPinView = pcConnector->GetPin(papcPins->GetPtr(i)->GetNumber());
 		psPin = (pcPinView != NULL) ? pcInstance->GetPin(pcPinView) : NULL;
 		if ((psPin != NULL) && (apcJoined.Find(psPin->pcPortView) == ARRAY_ELEMENT_NOT_FOUND))
 		{
 			apcJoined.Add(psPin->pcPortView);
-			AddPinTerminal(pcSymbol, apcPins.GetPtr(i), psPin->pcPortView, uiItem);
+			AddPinTerminal(pcSymbol, papcPins->GetPtr(i), psPin->pcPortView, uiItem);
 		}
 	}
 	apcJoined.Kill();
-	aszNames.Kill();
-	apcPins.Kill();
-	msCounts.uiBoards++;
-	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Shows the circuit pin on an instance's side eAlignment, iWeight along
+// it, inverted and clocked as KiCad draws the library symbol's pin.
+//
+//////////////////////////////////////////////////////////////////////////
+static void SetKicadSchemPinAppearance(CPinView* pcPinView, CKicadSchemLibPin* pcPin, EPinAlignment eAlignment, int32 iWeight)
+{
+	pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, iWeight, strstr(pcPin->GetGraphicStyle(), "inverted") != NULL, strstr(pcPin->GetGraphicStyle(), "clock") != NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The placeholder's name: the library symbol's, without its library, and
+// the unit's letter if it has more than one.
+//
+//////////////////////////////////////////////////////////////////////////
+static void GetKicadSchemPlaceholderName(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CChars* pszTypeName)
+{
+	char*	szLibName;
+	char*	szColon;
+
+	szLibName = pcLibSymbol->GetName();
+	szColon = strrchr(szLibName, ':');
+	pszTypeName->Init((szColon != NULL) ? szColon + 1 : szLibName);
+	if (pcLibSymbol->NumUnits() > 1)
+	{
+		pszTypeName->Append('_');
+		pszTypeName->Append((char)('A' + pcSymbol->GetUnit() - 1));
+	}
 }
 
 
@@ -477,7 +567,7 @@ void CKicadSchemLogicimConverter::LayOutBoardPins(CArrayTemplatePtr<CKicadSchemL
 		}
 		apcLaidOut.Add(pcPinView);
 		iWeight = GetKicadSchemLibPinPlace(papcPins, i, &eAlignment);
-		pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, iWeight, strstr(pcPin->GetGraphicStyle(), "inverted") != NULL, strstr(pcPin->GetGraphicStyle(), "clock") != NULL);
+		SetKicadSchemPinAppearance(pcPinView, pcPin, eAlignment, iWeight);
 	}
 	apcLaidOut.Kill();
 }
@@ -485,17 +575,14 @@ void CKicadSchemLogicimConverter::LayOutBoardPins(CArrayTemplatePtr<CKicadSchemL
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The placeholder for the library symbol's unit, made the first time.
-// Its pins are on the sides the library symbol's are, in the same order
-// along them.  It's named as the library symbol, without its library, and
-// the unit's letter if it has more than one.
+// The placeholder for the library symbol's unit, made the first time
+// (see GetKicadSchemPlaceholderName).  Its pins are on the sides the
+// library symbol's are, in the same order along them.
 //
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
 	CChars									szTypeName;
-	char*									szLibName;
-	char*									szColon;
 	CCircuitView*							pcPlaceholder;
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
 	CArrayChars								aszNames;
@@ -506,15 +593,7 @@ CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymb
 	CPinView*								pcPinView;
 	SInt32Bounds							sBox;
 
-	szLibName = pcLibSymbol->GetName();
-	szColon = strrchr(szLibName, ':');
-	szTypeName.Init((szColon != NULL) ? szColon + 1 : szLibName);
-	if (pcLibSymbol->NumUnits() > 1)
-	{
-		szTypeName.Append('_');
-		szTypeName.Append((char)('A' + pcSymbol->GetUnit() - 1));
-	}
-
+	GetKicadSchemPlaceholderName(pcSymbol, pcLibSymbol, &szTypeName);
 	pcPlaceholder = mpcCircuits->Get(szTypeName.Text());
 	if (pcPlaceholder != NULL)
 	{
@@ -538,7 +617,7 @@ CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymb
 		iWeight = GetKicadSchemLibPinPlace(&apcPins, i, &eAlignment);
 		pcPinView = NewMalloc<CPinView>();
 		pcPinView->Init(0, (int32)(3 * i), ROT_East, aszNames.GetText(i), "LVC", false, 1, RADIX_Hexadecimal, &sBox);
-		pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, iWeight, strstr(pcPin->GetGraphicStyle(), "inverted") != NULL, strstr(pcPin->GetGraphicStyle(), "clock") != NULL);
+		SetKicadSchemPinAppearance(pcPinView, pcPin, eAlignment, iWeight);
 		pcPlaceholder->Add(pcPinView);
 	}
 	aszNames.Kill();

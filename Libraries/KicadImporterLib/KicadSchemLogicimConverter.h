@@ -38,6 +38,7 @@ class CKicadSchemBoard;
 class CKicadSchemBoardConnector;
 class CKicadSchemBoardSource;
 class CPinView;
+class CSubcircuitInstanceView;
 
 
 //The grid units between the pins of the parts made for KiCad's symbols (subcircuit instances, 74 series parts and
@@ -166,6 +167,8 @@ protected:
 	bool							AddBoardPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	CKicadSchemBoardConnector*		AddBoardConnector(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							AddBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector);
+	void							JoinBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, size uiItem);
+	void							AddBoardPinView(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, const char* szName);
 	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	bool							AddLogicParts(SKicadSchemLogicPart* psPart);
@@ -177,6 +180,8 @@ protected:
 	void							AddLogic74Unit(SKicadSchemLogicPart* psPart, int iUnit, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation);
 	void							AddLogic74Package(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation);
 	bool							AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
+	void							JoinBoardPins(CKicadSchemSymbol* pcSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector, CSubcircuitInstanceView* pcInstance, size uiItem);
+	CSubcircuitInstanceView*		AddSubcircuitInstance(CKicadSchemSymbol* pcSymbol, CCircuitView* pcSubcircuit, size* puiItem);
 	void							LayOutBoardPins(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector);
 	bool							AddPlaceholder(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	CCircuitView*					GetPlaceholderCircuit(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
