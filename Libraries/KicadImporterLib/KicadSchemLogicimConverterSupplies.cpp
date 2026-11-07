@@ -324,9 +324,9 @@ void CKicadSchemLogicimConverter::ApplyRegulatedVoltages(void)
 	{
 		return;
 	}
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		pcIntegratedCircuit = psItem->pcView->GetIntegratedCircuitView();
 		if ((psItem->pcSymbol == NULL) || (pcIntegratedCircuit == NULL))
 		{

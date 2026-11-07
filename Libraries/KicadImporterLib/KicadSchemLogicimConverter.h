@@ -26,6 +26,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/CircuitFonts.h"
 #include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicFunction.h"
+#include "KicadSchemLogicimModel.h"
 #include "KicadLib/KicadSchemSubnetGraph.h"
 
 
@@ -69,14 +70,6 @@ class CTraceAutoConnector;
 #define KICAD_SCHEM_LOGICIM_ALIGN_WEIGHT	4
 
 
-//Which way a component keeps to the line it's lined up on with another.
-enum EKicadSchemLogicimAlign
-{
-	KSLA_None,
-	KSLA_KeepY,		//A horizontal wire: moved across, not up or down.
-	KSLA_KeepX,		//A vertical wire.
-};
-
 //Knots are wire turns and crossings.  An area of DENSE_WINDOW grid units square with more than DENSE_KNOTS is dense,
 //and is exploded: EXPLODE_SPACE grid units are put in across it each way.
 #define KICAD_SCHEM_LOGICIM_DENSE_WINDOW	12
@@ -89,64 +82,6 @@ enum EKicadSchemLogicimAlign
 
 //How far a component is moved to keep it clear of the others before giving up.
 #define KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS	400
-
-
-//What the converter made an item for.
-enum EKicadSchemLogicimItemKind
-{
-	KSLIK_Part,			//A symbol's component: a gate, flip flop, 74 part, logic block...
-	KSLIK_Supply,		//A power symbol's supply.
-	KSLIK_Tunnel,		//A label's or a bus's tunnel.
-	KSLIK_Splitter,		//A bus's splitter.
-	KSLIK_BoardPin,		//A connector pin's subcircuit pin.
-	KSLIK_Subcircuit,	//A board or placeholder instance.
-};
-
-
-//A component made in the Logicim circuit and where KiCad has it, in Logicim grid units (see KICAD_SCHEM_LOGICIM_SCALE).  The anchor is the point of the view
-//that goes there (a power symbol's port, otherwise the view's position), from its position.  A tunnel or power
-//supply has one port; if KiCad has it right on a pin it's attached to that pin's port: it goes port to port with it
-//(Logicim joins ports in the same place), pointing away, and moves with it.
-struct SKicadSchemLogicimItem
-{
-	CComponentView*				pcView;
-	EKicadSchemLogicimItemKind	eKind;
-	bool						bPlacedSplitter;  //A splitter PlaceSplitters puts beside its component.
-	SFloat64Vec2				sKicadPosition;
-	SInt32Vec2					sAnchor;
-	SInt32Vec2					sOffset;
-	CPortView*					pcPort;
-	CPortView*					pcAttachedTo;
-	EKicadSchemLogicimAlign		eAlign;
-	CKicadSchemSymbol*			pcSymbol;  //The symbol it was made for.  NULL for tunnels and splitters.
-	SFloat64Bounds				sImportBox;  //Its import box (see CComponentView::GetImportBoundingBox), from its position.
-	bool						bImportBox;
-};
-
-
-//A port in the Logicim circuit standing for a pin, power symbol or label of a subnet, or (bBus) a bus's splitter or
-//tunnel, which carries all its members.
-struct SKicadSchemLogicimTerminal
-{
-	CKicadSchemSubnet*	pcSubnet;
-	SFloat64Vec2		sKicadPosition;
-	CPortView*			pcPortView;
-	size				uiItem;
-	bool				bBus;
-};
-
-
-//Two terminals of a subnet to be wired, the from terminal to the to terminal (already wired to the rest of the
-//subnet), with the bend KiCad's wire between them has.
-struct SKicadSchemLogicimConnection
-{
-	size		uiSubnet;
-	size		uiFrom;
-	size		uiTo;
-	float64		fBend;
-	bool		bConnected;
-};
-
 
 
 //Two components that are all of a subnet, wired by one straight wire in KiCad (their pins level or one above the
@@ -218,13 +153,10 @@ struct SKicadSchemLogicimRegulated
 };
 
 
-typedef CArrayTemplate<SKicadSchemLogicimItem>			CArrayKicadSchemLogicimItem;
 typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegulated;
 typedef CArrayTemplate<SKicadSchemLogicimSplitter>		CArrayKicadSchemLogicimSplitter;
 typedef CArrayTemplate<SKicadSchemLogicimSplitterPair>	CArrayKicadSchemLogicimSplitterPair;
 typedef CArrayTemplate<SKicadSchemLogicimAlignment>		CArrayKicadSchemLogicimAlignment;
-typedef CArrayTemplate<SKicadSchemLogicimTerminal>		CArrayKicadSchemLogicimTerminal;
-typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConnection;
 
 
 //Makes a Logicim circuit from one KiCad sheet.
@@ -277,9 +209,7 @@ protected:
 	CCircuitViews*						mpcCircuits;
 	CCircuitFonts*						mpcFonts;
 	CCircuitView*						mpcCircuit;
-	CArrayKicadSchemLogicimItem			masItems;
-	CArrayKicadSchemLogicimTerminal		masTerminals;
-	CArrayKicadSchemLogicimConnection	masConnections;
+	CKicadSchemLogicimModel				mcModel;
 	CArrayKicadSchemLogicimAlignment	masAlignments;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
 	CArrayKicadSchemLogicimSplitter		masSplitters;
@@ -402,7 +332,6 @@ protected:
 	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	void							MeasureImportBoxes(void);
 	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Bounds* psBox);
-	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
 
 	void							Place(float64 fSpread);

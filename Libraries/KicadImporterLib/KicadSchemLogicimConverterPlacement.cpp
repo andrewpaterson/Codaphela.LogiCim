@@ -68,9 +68,9 @@ void CKicadSchemLogicimConverter::Explode(void)
 	for (uiPass = 0; (uiPass < KICAD_SCHEM_LOGICIM_EXPLODE_PASSES) && (asCentres.NumElements() > 0); uiPass++)
 	{
 		asOffsets.ReInit();
-		for (i = 0; i < masItems.NumElements(); i++)
+		for (i = 0; i < mcModel.NumItems(); i++)
 		{
-			asOffsets.Add(&masItems.Get(i)->sOffset);
+			asOffsets.Add(&mcModel.GetItem(i)->sOffset);
 		}
 
 		if (bOnlyDensest)
@@ -88,9 +88,9 @@ void CKicadSchemLogicimConverter::Explode(void)
 		if ((uiUnconnected > muiUnconnected) || (uiNewExcess >= uiExcess))
 		{
 			//Worse: back to how it was.
-			for (i = 0; i < masItems.NumElements(); i++)
+			for (i = 0; i < mcModel.NumItems(); i++)
 			{
-				masItems.Get(i)->sOffset = *asOffsets.Get(i);
+				mcModel.GetItem(i)->sOffset = *asOffsets.Get(i);
 			}
 			Place(mfSpread);
 			muiUnconnected = Route();
@@ -132,9 +132,9 @@ void CKicadSchemLogicimConverter::ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pas
 	SInt32Vec2					sPosition;
 	SFloat64Vec2*				psCentre;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if (psItem->pcAttachedTo != NULL)
 		{
 			continue;
@@ -462,13 +462,13 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 	bool							bVertical;
 
 	masAlignments.ReInit();
-	for (i = 0; i < masConnections.NumElements(); i++)
+	for (i = 0; i < mcModel.NumConnections(); i++)
 	{
-		psConnection = masConnections.Get(i);
+		psConnection = mcModel.GetConnection(i);
 		uiCount = 0;
-		for (j = 0; j < masConnections.NumElements(); j++)
+		for (j = 0; j < mcModel.NumConnections(); j++)
 		{
-			psOther = masConnections.Get(j);
+			psOther = mcModel.GetConnection(j);
 			if (psOther->uiSubnet == psConnection->uiSubnet)
 			{
 				uiCount++;
@@ -479,14 +479,14 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 			continue;
 		}
 
-		psFrom = masTerminals.Get(psConnection->uiFrom);
-		psTo = masTerminals.Get(psConnection->uiTo);
-		if (psFrom->bBus || psTo->bBus || (psFrom->uiItem == psTo->uiItem) || (masItems.Get(psFrom->uiItem)->pcAttachedTo != NULL) || (masItems.Get(psTo->uiItem)->pcAttachedTo != NULL))
+		psFrom = mcModel.GetTerminal(psConnection->uiFrom);
+		psTo = mcModel.GetTerminal(psConnection->uiTo);
+		if (psFrom->bBus || psTo->bBus || (psFrom->uiItem == psTo->uiItem) || (mcModel.GetItem(psFrom->uiItem)->pcAttachedTo != NULL) || (mcModel.GetItem(psTo->uiItem)->pcAttachedTo != NULL))
 		{
 			continue;
 		}
 		//A splitter beside its component is put there, not lined up.
-		if (masItems.Get(psFrom->uiItem)->bPlacedSplitter || masItems.Get(psTo->uiItem)->bPlacedSplitter)
+		if (mcModel.GetItem(psFrom->uiItem)->bPlacedSplitter || mcModel.GetItem(psTo->uiItem)->bPlacedSplitter)
 		{
 			continue;
 		}
@@ -533,9 +533,9 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 	SInt32Vec2						sPosition;
 	bool							bFromMoves;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		masItems.Get(i)->eAlign = KSLA_None;
+		mcModel.GetItem(i)->eAlign = KSLA_None;
 	}
 	if (masAlignments.NumElements() == 0)
 	{
@@ -544,14 +544,14 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 
 	aiTerminals.Init();
 	aiFixed.Init();
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
 		aiTerminals.Add(0);
 		aiFixed.Add(0);
 	}
-	for (j = 0; j < masTerminals.NumElements(); j++)
+	for (j = 0; j < mcModel.NumTerminals(); j++)
 	{
-		i = masTerminals.Get(j)->uiItem;
+		i = mcModel.GetTerminal(j)->uiItem;
 		aiTerminals.SetValue(i, aiTerminals.GetValue(i) + 1);
 	}
 
@@ -575,8 +575,8 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 			bFromMoves = aiTerminals.GetValue(psAlignment->uiFromItem) <= aiTerminals.GetValue(psAlignment->uiToItem);
 		}
 
-		psFrom = masItems.Get(psAlignment->uiFromItem);
-		psTo = masItems.Get(psAlignment->uiToItem);
+		psFrom = mcModel.GetItem(psAlignment->uiFromItem);
+		psTo = mcModel.GetItem(psAlignment->uiToItem);
 		psMover = bFromMoves ? psFrom : psTo;
 		pcMoverPort = bFromMoves ? psAlignment->pcFromPort : psAlignment->pcToPort;
 		pcStillPort = bFromMoves ? psAlignment->pcToPort : psAlignment->pcFromPort;
@@ -614,9 +614,9 @@ void CKicadSchemLogicimConverter::Place(float64 fSpread)
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if (psItem->pcAttachedTo == NULL)
 		{
 			psItem->pcView->SetPosition((int32)floor(psItem->sKicadPosition.x * fSpread + 0.5) - psItem->sAnchor.x + psItem->sOffset.x, (int32)floor(psItem->sKicadPosition.y * fSpread + 0.5) - psItem->sAnchor.y + psItem->sOffset.y);
@@ -749,9 +749,9 @@ void CKicadSchemLogicimConverter::PlaceAttachedItems(void)
 	SInt32Vec2					sTarget;
 	SInt32Vec2					sPosition;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if (psItem->pcAttachedTo != NULL)
 		{
 			sPort = psItem->pcPort->GetGridPosition();
@@ -782,26 +782,26 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 	int								iWanted;
 	ERotation						eOriginal;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if (psItem->pcPort == NULL)
 		{
 			continue;
 		}
 
 		pcTarget = NULL;
-		for (j = 0; (j < masTerminals.NumElements()) && (pcTarget == NULL); j++)
+		for (j = 0; (j < mcModel.NumTerminals()) && (pcTarget == NULL); j++)
 		{
-			psTerminal = masTerminals.Get(j);
+			psTerminal = mcModel.GetTerminal(j);
 			if (psTerminal->uiItem != i)
 			{
 				continue;
 			}
-			for (k = 0; k < masTerminals.NumElements(); k++)
+			for (k = 0; k < mcModel.NumTerminals(); k++)
 			{
-				psOther = masTerminals.Get(k);
-				if ((psOther->pcSubnet == psTerminal->pcSubnet) && (masItems.Get(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
+				psOther = mcModel.GetTerminal(k);
+				if ((psOther->pcSubnet == psTerminal->pcSubnet) && (mcModel.GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
 				{
 					pcTarget = psOther->pcPortView;
 					break;
@@ -846,9 +846,9 @@ void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
 	SKicadSchemLogicimItem*		psItem;
 	SInt32Vec2					sPosition;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		psItem->bImportBox = psItem->pcView->GetImportBoundingBox(mpcFonts, &psItem->sImportBox);
 		if (psItem->bImportBox)
 		{
@@ -892,14 +892,14 @@ bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Bounds* psBox)
 	SKicadSchemLogicimItem*		psOther;
 	SFloat64Bounds				sOther;
 
-	psItem = masItems.Get(uiItem);
+	psItem = mcModel.GetItem(uiItem);
 	if (!GetItemImportBox(psItem, psBox))
 	{
 		return false;
 	}
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psOther = masItems.Get(i);
+		psOther = mcModel.GetItem(i);
 		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && GetItemImportBox(psOther, &sOther))
 		{
 			psBox->Include(&sOther);
@@ -1059,9 +1059,9 @@ void CKicadSchemLogicimConverter::GetSeparateOrder(CArrayInt* paiOrder)
 
 	for (uiPass = 0; uiPass < 2; uiPass++)
 	{
-		for (i = 0; i < masItems.NumElements(); i++)
+		for (i = 0; i < mcModel.NumItems(); i++)
 		{
-			if ((masItems.Get(i)->pcPort == NULL) == (uiPass == 0))
+			if ((mcModel.GetItem(i)->pcPort == NULL) == (uiPass == 0))
 			{
 				paiOrder->Add((int)i);
 			}
@@ -1099,7 +1099,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 	for (uiOrder = 0; uiOrder < aiOrder.NumElements(); uiOrder++)
 	{
 		i = (size)aiOrder.GetValue(uiOrder);
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox))
 		{
 			continue;

@@ -54,48 +54,45 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 {
 	size							i;
 	size							j;
-	size							uiKept;
 	SKicadSchemLogicimTerminal*		psTerminal;
 	SKicadSchemLogicimTerminal*		psOther;
 	SKicadSchemLogicimItem*			psItem;
-	CArrayInt						aiNewIndices;
+	CArrayInt						aiRemoved;
 	bool							bDrawn;
 
-	aiNewIndices.Init();
-	for (i = 0; i < masItems.NumElements(); i++)
+	aiRemoved.Init();
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		aiNewIndices.Add(0);
+		aiRemoved.Add(0);
 	}
 
-	//Which items go: -1.
-	for (i = 0; i < masTerminals.NumElements(); i++)
+	//Which items go.
+	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
-		psTerminal = masTerminals.Get(i);
-		if (psTerminal->bBus || (masItems.Get(psTerminal->uiItem)->pcPort == NULL))
+		psTerminal = mcModel.GetTerminal(i);
+		if (psTerminal->bBus || (mcModel.GetItem(psTerminal->uiItem)->pcPort == NULL))
 		{
 			continue;
 		}
 		bDrawn = false;
-		for (j = 0; (j < masTerminals.NumElements()) && !bDrawn; j++)
+		for (j = 0; (j < mcModel.NumTerminals()) && !bDrawn; j++)
 		{
-			psOther = masTerminals.Get(j);
-			if ((psOther->pcSubnet == psTerminal->pcSubnet) && (psOther->bBus || (masItems.Get(psOther->uiItem)->pcPort == NULL)))
+			psOther = mcModel.GetTerminal(j);
+			if ((psOther->pcSubnet == psTerminal->pcSubnet) && (psOther->bBus || (mcModel.GetItem(psOther->uiItem)->pcPort == NULL)))
 			{
 				bDrawn = true;
 			}
 		}
 		if (!bDrawn)
 		{
-			aiNewIndices.SetValue(psTerminal->uiItem, -1);
+			aiRemoved.SetValue(psTerminal->uiItem, 1);
 		}
 	}
 
-	//The items kept, in order, and where each is now.
-	uiKept = 0;
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
-		if (aiNewIndices.GetValue(i) == -1)
+		psItem = mcModel.GetItem(i);
+		if (aiRemoved.GetValue(i) != 0)
 		{
 			if (psItem->eKind == KSLIK_Tunnel)
 			{
@@ -107,34 +104,10 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 			}
 			mpcCircuit->Remove(psItem->pcView);
 			SafeKill(psItem->pcView);
-			continue;
 		}
-		aiNewIndices.SetValue(i, (int)uiKept);
-		if (uiKept != i)
-		{
-			*masItems.Get(uiKept) = *psItem;
-		}
-		uiKept++;
 	}
-	masItems.SetUsedElements(uiKept);
-
-	uiKept = 0;
-	for (i = 0; i < masTerminals.NumElements(); i++)
-	{
-		psTerminal = masTerminals.Get(i);
-		if (aiNewIndices.GetValue(psTerminal->uiItem) == -1)
-		{
-			continue;
-		}
-		psTerminal->uiItem = (size)aiNewIndices.GetValue(psTerminal->uiItem);
-		if (uiKept != i)
-		{
-			*masTerminals.Get(uiKept) = *psTerminal;
-		}
-		uiKept++;
-	}
-	masTerminals.SetUsedElements(uiKept);
-	aiNewIndices.Kill();
+	mcModel.RemoveItems(&aiRemoved);
+	aiRemoved.Kill();
 }
 
 
@@ -167,9 +140,9 @@ size CKicadSchemLogicimConverter::FindPortTerminal(CPortView* pcPortView)
 {
 	size	i;
 
-	for (i = 0; i < masTerminals.NumElements(); i++)
+	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
-		if (masTerminals.Get(i)->pcPortView == pcPortView)
+		if (mcModel.GetTerminal(i)->pcPortView == pcPortView)
 		{
 			return i;
 		}
@@ -188,9 +161,9 @@ bool CKicadSchemLogicimConverter::IsConnectionBetween(size uiTerminal1, size uiT
 	size							i;
 	SKicadSchemLogicimConnection*	psConnection;
 
-	for (i = 0; i < masConnections.NumElements(); i++)
+	for (i = 0; i < mcModel.NumConnections(); i++)
 	{
-		psConnection = masConnections.Get(i);
+		psConnection = mcModel.GetConnection(i);
 		if (((psConnection->uiFrom == uiTerminal1) && (psConnection->uiTo == uiTerminal2)) || ((psConnection->uiFrom == uiTerminal2) && (psConnection->uiTo == uiTerminal1)))
 		{
 			return true;
@@ -218,9 +191,9 @@ bool CKicadSchemLogicimConverter::ReachesTerminal(size uiFrom, size uiTo, size u
 	aiReached.Add((int)uiFrom);
 	for (uiHead = 0; uiHead < aiReached.NumElements(); uiHead++)
 	{
-		for (i = 0; i < masConnections.NumElements(); i++)
+		for (i = 0; i < mcModel.NumConnections(); i++)
 		{
-			psConnection = masConnections.Get(i);
+			psConnection = mcModel.GetConnection(i);
 			if (i == uiWithout)
 			{
 				continue;
@@ -266,9 +239,9 @@ void CKicadSchemLogicimConverter::JoinSplitterEnd(size uiEnd, size uiPin)
 	size							uiOther;
 	SKicadSchemLogicimConnection*	psConnection;
 
-	for (i = 0; i < masConnections.NumElements(); i++)
+	for (i = 0; i < mcModel.NumConnections(); i++)
 	{
-		psConnection = masConnections.Get(i);
+		psConnection = mcModel.GetConnection(i);
 		if ((psConnection->uiFrom != uiEnd) && (psConnection->uiTo != uiEnd))
 		{
 			continue;
@@ -329,9 +302,9 @@ void CKicadSchemLogicimConverter::GetSubnetTerminals(CKicadSchemSubnet* pcSubnet
 {
 	size	i;
 
-	for (i = 0; i < masTerminals.NumElements(); i++)
+	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
-		if (masTerminals.Get(i)->pcSubnet == pcSubnet)
+		if (mcModel.GetTerminal(i)->pcSubnet == pcSubnet)
 		{
 			paiTerminals->Add((int)i);
 		}
@@ -481,7 +454,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	aiNodes.Init();
 	for (i = 0; i < aiTerminals.NumElements(); i++)
 	{
-		aiNodes.Add((int)cGraph.AddPoint(&masTerminals.Get(aiTerminals.GetValue(i))->sKicadPosition));
+		aiNodes.Add((int)cGraph.AddPoint(&mcModel.GetTerminal(aiTerminals.GetValue(i))->sKicadPosition));
 	}
 	cGraph.Build();
 
@@ -491,7 +464,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	while (aiConnected.NumElements() < aiTerminals.NumElements())
 	{
 		iBest = FindKicadSchemNearestTerminal(&cGraph, &aiNodes, &aiConnected, &aiBestPath);
-		psConnection = masConnections.Add();
+		psConnection = mcModel.AddConnection();
 		psConnection->uiSubnet = uiSubnet;
 		if (iBest == -1)
 		{
@@ -531,9 +504,9 @@ void CKicadSchemLogicimConverter::SetRouteBoxes(CTraceAutoConnector* pcConnector
 	SKicadSchemLogicimItem*		psItem;
 	SFloat64Bounds				sBox;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if (psItem->bImportBox && GetItemImportBox(psItem, &sBox))
 		{
 			pcConnector->SetComponentBox(psItem->pcView, &sBox);
@@ -558,13 +531,13 @@ void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcCon
 	size							uiNet;
 	size							uiRun;
 
-	for (i = 0; i < masConnections.NumElements(); i++)
+	for (i = 0; i < mcModel.NumConnections(); i++)
 	{
-		psConnection = masConnections.Get(i);
-		psFrom = masTerminals.Get(psConnection->uiFrom);
-		psTo = masTerminals.Get(psConnection->uiTo);
+		psConnection = mcModel.GetConnection(i);
+		psFrom = mcModel.GetTerminal(psConnection->uiFrom);
+		psTo = mcModel.GetTerminal(psConnection->uiTo);
 		uiNet = pcConnector->FindOrAddNet(psFrom->pcSubnet);
-		uiRun = pcConnector->FindOrAddRun(masItems.Get(psFrom->uiItem)->pcView, masItems.Get(psTo->uiItem)->pcView);
+		uiRun = pcConnector->FindOrAddRun(mcModel.GetItem(psFrom->uiItem)->pcView, mcModel.GetItem(psTo->uiItem)->pcView);
 		pauiRouted->Add(pcConnector->AddConnection(uiNet, psFrom->pcPortView, psTo->pcPortView, psConnection->fBend, (int)uiRun));
 	}
 }
@@ -593,9 +566,9 @@ size CKicadSchemLogicimConverter::Route(void)
 	cConnector.Connect();
 
 	uiUnconnected = 0;
-	for (i = 0; i < masConnections.NumElements(); i++)
+	for (i = 0; i < mcModel.NumConnections(); i++)
 	{
-		psConnection = masConnections.Get(i);
+		psConnection = mcModel.GetConnection(i);
 		psConnection->bConnected = cConnector.IsConnected(auiRouted.GetValue(i));
 		if (!psConnection->bConnected)
 		{

@@ -206,7 +206,7 @@ void CKicadSchemLogicimConverter::AddBusTunnels(CKicadSchemBus* pcBus)
 		pcTunnel = NewMalloc<CTunnelView>();
 		pcTunnel->Init(0, 0, GetKicadRotation(ROT_East, pcLabel->GetAngle()), pcBus->GetName(), false, mpcFonts);
 		uiItem = AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0));
-		AddTerminal(pcBus->GetSubnet(), pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem, true);
+		mcModel.AddTerminal(pcBus->GetSubnet(), pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem, true);
 		muiTunnels++;
 	}
 }
@@ -355,7 +355,7 @@ bool CKicadSchemLogicimConverter::IsComponentPin(SKicadSchemLogicimTerminal* psT
 	{
 		return false;
 	}
-	psItem = masItems.Get(psTerminal->uiItem);
+	psItem = mcModel.GetItem(psTerminal->uiItem);
 	return (psItem->pcPort == NULL) && (psItem->eKind != KSLIK_Splitter);
 }
 
@@ -372,9 +372,9 @@ CPortView* CKicadSchemLogicimConverter::GetComponentPin(CKicadSchemSubnet* pcSub
 	size							i;
 	SKicadSchemLogicimTerminal*		psTerminal;
 
-	for (i = 0; i < masTerminals.NumElements(); i++)
+	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
-		psTerminal = masTerminals.Get(i);
+		psTerminal = mcModel.GetTerminal(i);
 		if ((psTerminal->pcSubnet == pcSubnet) && IsComponentPin(psTerminal) &&
 			((pcOwner == NULL) || (psTerminal->pcPortView->GetOwner() == pcOwner)) &&
 			((iFacing == -1) || (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing)))
@@ -396,10 +396,10 @@ bool CKicadSchemLogicimConverter::HasTunnel(CKicadSchemSubnet* pcSubnet)
 	size							i;
 	SKicadSchemLogicimTerminal*		psTerminal;
 
-	for (i = 0; i < masTerminals.NumElements(); i++)
+	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
-		psTerminal = masTerminals.Get(i);
-		if ((psTerminal->pcSubnet == pcSubnet) && (masItems.Get(psTerminal->uiItem)->eKind == KSLIK_Tunnel))
+		psTerminal = mcModel.GetTerminal(i);
+		if ((psTerminal->pcSubnet == pcSubnet) && (mcModel.GetItem(psTerminal->uiItem)->eKind == KSLIK_Tunnel))
 		{
 			return true;
 		}
@@ -424,9 +424,9 @@ void CKicadSchemLogicimConverter::GetTapPinTerminals(CKicadSchemBus* pcBus, CArr
 	for (i = 0; i < paiTaps->NumElements(); i++)
 	{
 		psTap = pcBus->GetTap(paiTaps->GetValue(i));
-		for (j = 0; j < masTerminals.NumElements(); j++)
+		for (j = 0; j < mcModel.NumTerminals(); j++)
 		{
-			psTerminal = masTerminals.Get(j);
+			psTerminal = mcModel.GetTerminal(j);
 			if ((psTerminal->pcSubnet == psTap->pcMember) && IsComponentPin(psTerminal))
 			{
 				papsTerminals->Add(psTerminal);
@@ -486,11 +486,11 @@ CComponentView* CKicadSchemLogicimConverter::GetMostPinsOwner(CArrayTemplatePtr<
 		{
 			continue;
 		}
-		pcView = masItems.Get(papsTerminals->GetPtr(i)->uiItem)->pcView;
+		pcView = mcModel.GetItem(papsTerminals->GetPtr(i)->uiItem)->pcView;
 		uiPins = 0;
 		for (j = 0; j < papsTerminals->NumElements(); j++)
 		{
-			if ((CTraceAutoConnector::GetPortFacing(papsTerminals->GetPtr(j)->pcPortView) == iFacing) && (masItems.Get(papsTerminals->GetPtr(j)->uiItem)->pcView == pcView))
+			if ((CTraceAutoConnector::GetPortFacing(papsTerminals->GetPtr(j)->pcPortView) == iFacing) && (mcModel.GetItem(papsTerminals->GetPtr(j)->uiItem)->pcView == pcView))
 			{
 				uiPins++;
 			}
@@ -767,7 +767,7 @@ void CKicadSchemLogicimConverter::AddBusSplitterTerminals(CKicadSchemBus* pcBus,
 	size						uiTap;
 
 	psTap = pcBus->GetTap(paiTaps->GetValue(0));
-	AddTerminal(pcBus->GetSubnet(), &psTap->sBusPoint, pcSplitter->GetStartPortView(), uiItem, true);
+	mcModel.AddTerminal(pcBus->GetSubnet(), &psTap->sBusPoint, pcSplitter->GetStartPortView(), uiItem, true);
 	psSplitter = masSplitters.Add();
 	psSplitter->pcSplitter = pcSplitter;
 	psSplitter->iFacing = iPinFacing;
@@ -786,14 +786,14 @@ void CKicadSchemLogicimConverter::AddBusSplitterTerminals(CKicadSchemBus* pcBus,
 		uiTap = paiOrder->GetValue(i);
 		psTap = pcBus->GetTap(paiTaps->GetValue(uiTap));
 		pcEnd = pcSplitter->GetEndPortView(paiFans->GetValue(i));
-		AddTerminal(psTap->pcMember, &psTap->sWirePoint, pcEnd, uiItem);
+		mcModel.AddTerminal(psTap->pcMember, &psTap->sWirePoint, pcEnd, uiItem);
 		if ((iPinFacing != -1) && (papcPins->GetPtr(uiTap) != NULL) && (pcEnd != NULL))
 		{
 			psPair = masSplitterPairs.Add();
 			psPair->pcPin = papcPins->GetPtr(uiTap);
 			psPair->pcEnd = pcEnd;
 			psSplitter->uiNumPairs++;
-			masItems.Get(uiItem)->bPlacedSplitter = true;
+			mcModel.GetItem(uiItem)->bPlacedSplitter = true;
 		}
 	}
 }
@@ -837,7 +837,7 @@ void CKicadSchemLogicimConverter::AddTunnels(void)
 				pcTunnel = NewMalloc<CTunnelView>();
 				pcTunnel->Init(0, 0, GetKicadRotation(ROT_East, pcLabel->GetAngle()), pcNet->GetName(), false, mpcFonts);
 				uiItem = AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0));
-				AddTerminal(pcSubnet, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem);
+				mcModel.AddTerminal(pcSubnet, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem);
 				muiTunnels++;
 			}
 		}

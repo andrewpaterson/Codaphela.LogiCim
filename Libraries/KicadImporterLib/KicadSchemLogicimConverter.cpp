@@ -61,9 +61,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcCircuits = pcCircuits;
 	mpcFonts = pcFonts;
 	mpcCircuit = NULL;
-	masItems.Init();
-	masTerminals.Init();
-	masConnections.Init();
+	mcModel.Init();
 	masAlignments.Init();
 	masRegulated.Init();
 	masSplitters.Init();
@@ -101,9 +99,7 @@ void CKicadSchemLogicimConverter::Kill(void)
 	masSplitters.Kill();
 	masRegulated.Kill();
 	masAlignments.Kill();
-	masConnections.Kill();
-	masTerminals.Kill();
-	masItems.Kill();
+	mcModel.Kill();
 	mpcBoardSource = NULL;
 	mpcBoard = NULL;
 	mpcCircuit = NULL;
@@ -347,51 +343,11 @@ ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo)
 //////////////////////////////////////////////////////////////////////////
 size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor)
 {
-	SKicadSchemLogicimItem*		psItem;
+	SFloat64Vec2	sPosition;
 
 	mpcCircuit->Add(pcView);
-	psItem = masItems.Add();
-	psItem->pcView = pcView;
-	psItem->eKind = eKind;
-	psItem->bPlacedSplitter = false;
-	psItem->sKicadPosition.Init(psKicadPosition->x / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->y / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
-	psItem->pcPort = pcAnchor;
-	psItem->pcAttachedTo = NULL;
-	psItem->eAlign = KSLA_None;
-	psItem->pcSymbol = mpcAddingSymbol;
-	psItem->sOffset.Init(0, 0);
-	psItem->sImportBox.Init();
-	psItem->bImportBox = false;
-	if (pcAnchor != NULL)
-	{
-		psItem->sAnchor = pcAnchor->GetGridPosition();
-	}
-	else
-	{
-		psItem->sAnchor.Init(0, 0);
-	}
-	return masItems.NumElements() - 1;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus)
-{
-	SKicadSchemLogicimTerminal*		psTerminal;
-
-	if ((pcSubnet == NULL) || (pcPortView == NULL))
-	{
-		return;
-	}
-	psTerminal = masTerminals.Add();
-	psTerminal->pcSubnet = pcSubnet;
-	psTerminal->sKicadPosition = *psKicadPosition;
-	psTerminal->pcPortView = pcPortView;
-	psTerminal->uiItem = uiItem;
-	psTerminal->bBus = bBus;
+	sPosition.Init(psKicadPosition->x / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->y / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
+	return mcModel.AddItem(pcView, eKind, &sPosition, pcAnchor, mpcAddingSymbol);
 }
 
 
@@ -404,7 +360,7 @@ void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CK
 	SFloat64Vec2		sPosition;
 
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
-	AddTerminal(mpcNetlist->GetPinSubnet(pcSymbol, pcPin), &sPosition, pcPortView, uiItem);
+	mcModel.AddTerminal(mpcNetlist->GetPinSubnet(pcSymbol, pcPin), &sPosition, pcPortView, uiItem);
 }
 
 
@@ -542,12 +498,12 @@ float32 CKicadSchemLogicimConverter::GetSupplyVoltage(const char* szName)
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mpcCircuit; }
 float64 CKicadSchemLogicimConverter::GetSpread(void) { return mfSpread; }
-size CKicadSchemLogicimConverter::NumConnections(void) { return masConnections.NumElements(); }
+size CKicadSchemLogicimConverter::NumConnections(void) { return mcModel.NumConnections(); }
 size CKicadSchemLogicimConverter::NumUnconnected(void) { return muiUnconnected; }
-SKicadSchemLogicimConnection* CKicadSchemLogicimConverter::GetConnection(size uiIndex) { return masConnections.SafeGet(uiIndex); }
-size CKicadSchemLogicimConverter::NumTerminals(void) { return masTerminals.NumElements(); }
-SKicadSchemLogicimTerminal* CKicadSchemLogicimConverter::GetTerminal(size uiIndex) { return masTerminals.SafeGet(uiIndex); }
-size CKicadSchemLogicimConverter::NumItems(void) { return masItems.NumElements(); }
+SKicadSchemLogicimConnection* CKicadSchemLogicimConverter::GetConnection(size uiIndex) { return mcModel.GetConnection(uiIndex); }
+size CKicadSchemLogicimConverter::NumTerminals(void) { return mcModel.NumTerminals(); }
+SKicadSchemLogicimTerminal* CKicadSchemLogicimConverter::GetTerminal(size uiIndex) { return mcModel.GetTerminal(uiIndex); }
+size CKicadSchemLogicimConverter::NumItems(void) { return mcModel.NumItems(); }
 size CKicadSchemLogicimConverter::NumGates(void) { return muiGates; }
 size CKicadSchemLogicimConverter::NumPlaceholders(void) { return muiPlaceholders; }
 size CKicadSchemLogicimConverter::NumBoards(void) { return muiBoards; }

@@ -96,15 +96,15 @@ static bool IsKicadSchemPowerNetName(const char* szName)
 // Whether the port's terminal (see AddTerminal) is of the subnet.
 //
 //////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemTerminalSubnet(CArrayKicadSchemLogicimTerminal* pasTerminals, CPortView* pcPortView, CKicadSchemSubnet* pcSubnet)
+static bool IsKicadSchemTerminalSubnet(CKicadSchemLogicimModel* pcModel, CPortView* pcPortView, CKicadSchemSubnet* pcSubnet)
 {
 	size	i;
 
-	for (i = 0; i < pasTerminals->NumElements(); i++)
+	for (i = 0; i < pcModel->NumTerminals(); i++)
 	{
-		if (pasTerminals->Get(i)->pcPortView == pcPortView)
+		if (pcModel->GetTerminal(i)->pcPortView == pcPortView)
 		{
-			return pasTerminals->Get(i)->pcSubnet == pcSubnet;
+			return pcModel->GetTerminal(i)->pcSubnet == pcSubnet;
 		}
 	}
 	return false;
@@ -122,9 +122,9 @@ size CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 
-	for (i = 0; i < masItems.NumElements(); i++)
+	for (i = 0; i < mcModel.NumItems(); i++)
 	{
-		psItem = masItems.Get(i);
+		psItem = mcModel.GetItem(i);
 		if ((psItem->eKind == KSLIK_BoardPin) && (StringCompare(psItem->pcView->GetName(), szName) == 0))
 		{
 			return i;
@@ -265,14 +265,14 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	if (uiItem != ARRAY_ELEMENT_NOT_FOUND)
 	{
 		szName.Kill();
-		pcPinView = (CPinView*)masItems.Get(uiItem)->pcView;
+		pcPinView = (CPinView*)mcModel.GetItem(uiItem)->pcView;
 		if (pcConnector != NULL)
 		{
 			pcConnector->AddPin(szNumber, pcPinView);
 		}
 
 		//Another part of the net (joined by its labels) is already joined through its tunnels.
-		if (IsKicadSchemTerminalSubnet(&masTerminals, pcPinView->GetPortView((size)0), pcSubnet))
+		if (IsKicadSchemTerminalSubnet(&mcModel, pcPinView->GetPortView((size)0), pcSubnet))
 		{
 			AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
 		}
