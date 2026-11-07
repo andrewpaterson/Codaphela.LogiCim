@@ -29,6 +29,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/ListContainer.h"
 #include "WindowLib/MenuBar.h"
 #include "WindowLib/Button.h"
+#include "WindowLib/CommandSet.h"
 #include "WindowLib/Label.h"
 #include "LogicimWindowData.h"
 #include "WindowLib/MessageDialog.h"
@@ -112,12 +113,11 @@ protected:
 	CArray<CImageCel>		mapIcons;  //One for each ELogicimAction, NULL if the action has no icon.
 	Ptr<CImageCel>			mpFileIcon;  //Beside a file in the file chooser, Load Project's beside a folder.
 
+	Ptr<CCommandSet>		mpCommands;  //The actions' commands, the window's.
 	Ptr<CMenuBar>			mpMenuBar;
 	Ptr<CMenuContainer>		mpCanvasMenu;  //The circuit canvas's right button menu, filled as it opens.
 	Ptr<CMenuItem>			mpEnterItem;
 	Ptr<CMenuItem>			mpPropertiesItem;
-	Ptr<CMenuItem>			mpLeaveItem;
-	Ptr<CMenuContainer>		mpEditMenu;  //Its undo and redo are greyed when there's nothing to undo or redo.
 	Ptr<CListContainer>		mpSubcircuits;
 	Ptr<CListContainer>		mpSimulations;
 	CArray<CLabel>			maSubcircuitLabels;  //The text of each row, the project's circuits in order.
@@ -130,11 +130,6 @@ protected:
 	Ptr<CLabel>				mpMouseXInfo;
 	Ptr<CLabel>				mpMouseYInfo;
 	Ptr<CLabel>				mpZoomInfo;
-
-	CArray<CButton>			maButtons;
-	CArrayInt				maiButtonActions;
-	CArray<CMenuItem>		maMenuItems;
-	CArrayInt				maiMenuItemActions;
 
 	Ptr<CLogicimCircuit>	mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
@@ -160,14 +155,16 @@ public:
 
 	bool			Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psData, const char* szFontFilename, const char* szIconDirectory, const char* szPropagationTimes, const char* szCircuitFontDirectory);
 
-	void			ButtonClicked(CButton* pcButton);
-	void			MenuItemClicked(CMenuItem* pcItem);
 	void			PointerOverCircuit(int x, int y);
 	void			Zoom(float32 fZoom);
 	void			ZoomToFit(bool bSelection);
 	void			EditProperties(void);
 	void			Undo(bool bStep);
 	void			Redo(bool bStep);
+	void			StepUndo(void);
+	void			StepRedo(void);
+	bool			CanUndo(void);
+	bool			CanRedo(void);
 	void			ShowDialog(ELogicimDialog eDialog);
 	void			Tick(int64 iUpdateTimeInMilliseconds);
 	bool			ImportKicadSchematic(const char* szFilename);
@@ -194,7 +191,6 @@ protected:
 	Ptr<CComponent>			CreateStatusBar(void);
 
 	Ptr<CButton>			CreateToolButton(ELogicimAction eAction);
-	void					RemoveFromButtons(void);
 	void					RemoveFromList(Ptr<CListContainer> pList);
 	Ptr<CCanvas>			CreateLine(int32 iWidth, int32 iHeight, ARGB32 sColour);
 	Ptr<CListContainer>		CreateList(void);
@@ -202,9 +198,10 @@ protected:
 	char*					GetListItemText(Ptr<CListContainer> pList, CArray<CLabel>* paLabels);
 	Ptr<CLabel>				AddStatusLabel(Ptr<CGridContainer> pBar, int* piColumn, int32 iWidth);
 
+	void					AddCommands(void);
+	void					ActionCommand(CCommand* pcCommand);
 	void					DoAction(ELogicimAction eAction);
 	void					UpdateInfo(void);
-	void					UpdateEditMenu(void);
 	void					ShowPropertiesDialog(void);
 	int						AddPropertyEditor(CComponentProperties* pcProperties, SComponentProperty* psProperty, CArray<CTextField>* paTextFields, CArray<CCheckBox>* paCheckBoxes, CArray<CComboBox>* paComboBoxes);
 	void					ShowNewSubcircuitDialog(void);

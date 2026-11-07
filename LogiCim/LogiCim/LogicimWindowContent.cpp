@@ -50,49 +50,49 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #define LOGICIM_SIMULATION_TICK_MILLISECONDS	16  //How often a running simulation is stepped.
 
 
-//In ELogicimAction's order.
+//In ELogicimAction's order.  Undo, Redo and Delete are the circuit canvas's keys' commands too, so they show them.
 SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 {
-	{ "Load Project", "directory_open", LDG_LoadProject, NULL },
-	{ "Save Project", "save", LDG_SaveProject, NULL },
-	{ "New Simulation...", "new_simulation", LDG_NewSimulation, NULL },
-	{ "Reset Simulation", "sim_reset", LDG_None, NULL },
-	{ "Run Simulation", "sim_run", LDG_None, NULL },
-	{ "Pause Simulation", "sim_stop", LDG_None, NULL },
-	{ "Default Speed", "sim_default", LDG_None, NULL },
-	{ "Increase Speed", "sim_faster", LDG_None, NULL },
-	{ "Decrease Speed", "sim_slower", LDG_None, NULL },
-	{ "Rotate Left", "rotate_ccw", LDG_None, NULL },
-	{ "Rotate Right", "rotate_cw", LDG_None, NULL },
-	{ "Flip Horizontally", "mirror_h", LDG_None, NULL },
-	{ "Flip Vertically", "mirror_v", LDG_None, NULL },
-	{ "Toggle Point View", "grid", LDG_None, NULL },
-	{ "Zoom In", "zoom_in", LDG_None, NULL },
-	{ "Zoom Out", "zoom_out", LDG_None, NULL },
-	{ "Reset Zoom", "zoom_center_on_screen", LDG_None, NULL },
-	{ "Select Zoom...", NULL, LDG_SelectZoom, NULL },
-	{ "Zoom to Fit All", "zoom_fit_in_page", LDG_None, NULL },
-	{ "Zoom to Fit Selection", "zoom_selection", LDG_None, NULL },
-	{ "Simulation Tree...", "simulation_tree", LDG_None, NULL },
-	{ "Add Component...", "add_component", LDG_ChooseComponent, NULL },
-	{ "Add Trace", "add_line", LDG_None, NULL },
-	{ "Add Splitter", "add_line2bus", LDG_None, "Splitter" },
-	{ "Add Tunnel", "add_glabel", LDG_None, "Tunnel" },
-	{ "Add Connection", "add_junction", LDG_None, NULL },
-	{ "Add Power", "add_power", LDG_None, "PositivePower" },
-	{ "Add Label", "add_label", LDG_None, "Label" },
-	{ "Add Subcircuit", "module", LDG_None, NULL },
-	{ "New Subcircuit...", "new_footprint", LDG_NewSubcircuit, NULL },
-	{ "Properties...", "edit", LDG_Properties, NULL },
-	{ "Undo", "undo", LDG_None, NULL },
-	{ "Redo", "redo", LDG_None, NULL },
-	{ "Cut", "cut", LDG_None, NULL },
-	{ "Copy", "copy", LDG_None, NULL },
-	{ "Paste", NULL, LDG_None, NULL },
-	{ "Duplicate", "duplicate", LDG_None, NULL },
-	{ "Delete", "trash", LDG_None, NULL },
-	{ "Import KiCad Schematic...", "import", LDG_ImportKicadSchematic, NULL },
-	{ "Exit", "exit", LDG_None, NULL },
+	{ "File.LoadProject", "Load Project", NULL, CIC_Ignored, "directory_open", LDG_LoadProject, NULL },
+	{ "File.SaveProject", "Save Project", NULL, CIC_Ignored, "save", LDG_SaveProject, NULL },
+	{ "Simulation.New", "New Simulation...", NULL, CIC_Ignored, "new_simulation", LDG_NewSimulation, NULL },
+	{ "Simulation.Reset", "Reset Simulation", NULL, CIC_Ignored, "sim_reset", LDG_None, NULL },
+	{ "Simulation.Run", "Run Simulation", NULL, CIC_Ignored, "sim_run", LDG_None, NULL },
+	{ "Simulation.Pause", "Pause Simulation", NULL, CIC_Ignored, "sim_stop", LDG_None, NULL },
+	{ "Simulation.DefaultSpeed", "Default Speed", NULL, CIC_Ignored, "sim_default", LDG_None, NULL },
+	{ "Simulation.IncreaseSpeed", "Increase Speed", NULL, CIC_Ignored, "sim_faster", LDG_None, NULL },
+	{ "Simulation.DecreaseSpeed", "Decrease Speed", NULL, CIC_Ignored, "sim_slower", LDG_None, NULL },
+	{ "Edit.RotateLeft", "Rotate Left", NULL, CIC_Ignored, "rotate_ccw", LDG_None, NULL },
+	{ "Edit.RotateRight", "Rotate Right", NULL, CIC_Ignored, "rotate_cw", LDG_None, NULL },
+	{ "Edit.FlipHorizontally", "Flip Horizontally", "Control+Shift+F, H", CIC_Ignored, "mirror_h", LDG_None, NULL },
+	{ "Edit.FlipVertically", "Flip Vertically", "Control+Shift+F, V", CIC_Ignored, "mirror_v", LDG_None, NULL },
+	{ "View.TogglePointView", "Toggle Point View", NULL, CIC_Ignored, "grid", LDG_None, NULL },
+	{ "View.ZoomIn", "Zoom In", NULL, CIC_Ignored, "zoom_in", LDG_None, NULL },
+	{ "View.ZoomOut", "Zoom Out", NULL, CIC_Ignored, "zoom_out", LDG_None, NULL },
+	{ "View.ResetZoom", "Reset Zoom", NULL, CIC_Ignored, "zoom_center_on_screen", LDG_None, NULL },
+	{ "View.SelectZoom", "Select Zoom...", NULL, CIC_Ignored, NULL, LDG_SelectZoom, NULL },
+	{ "View.ZoomToFitAll", "Zoom to Fit All", NULL, CIC_Ignored, "zoom_fit_in_page", LDG_None, NULL },
+	{ "View.ZoomToFitSelection", "Zoom to Fit Selection", NULL, CIC_Ignored, "zoom_selection", LDG_None, NULL },
+	{ "View.SimulationTree", "Simulation Tree...", NULL, CIC_Ignored, "simulation_tree", LDG_None, NULL },
+	{ "Place.Component", "Add Component...", NULL, CIC_Ignored, "add_component", LDG_ChooseComponent, NULL },
+	{ "Place.Trace", "Add Trace", NULL, CIC_Ignored, "add_line", LDG_None, NULL },
+	{ "Place.Splitter", "Add Splitter", NULL, CIC_Ignored, "add_line2bus", LDG_None, "Splitter" },
+	{ "Place.Tunnel", "Add Tunnel", NULL, CIC_Ignored, "add_glabel", LDG_None, "Tunnel" },
+	{ "Place.Connection", "Add Connection", NULL, CIC_Ignored, "add_junction", LDG_None, NULL },
+	{ "Place.Power", "Add Power", NULL, CIC_Ignored, "add_power", LDG_None, "PositivePower" },
+	{ "Place.Label", "Add Label", NULL, CIC_Ignored, "add_label", LDG_None, "Label" },
+	{ "Place.Subcircuit", "Add Subcircuit", NULL, CIC_Ignored, "module", LDG_None, NULL },
+	{ "Place.NewSubcircuit", "New Subcircuit...", NULL, CIC_Ignored, "new_footprint", LDG_NewSubcircuit, NULL },
+	{ "Edit.Properties", "Properties...", NULL, CIC_Ignored, "edit", LDG_Properties, NULL },
+	{ "Edit.Undo", "Undo", NULL, CIC_Undo, "undo", LDG_None, NULL },
+	{ "Edit.Redo", "Redo", NULL, CIC_Redo, "redo", LDG_None, NULL },
+	{ "Edit.Cut", "Cut", NULL, CIC_Cut, "cut", LDG_None, NULL },
+	{ "Edit.Copy", "Copy", NULL, CIC_Copy, "copy", LDG_None, NULL },
+	{ "Edit.Paste", "Paste", NULL, CIC_Paste, NULL, LDG_None, NULL },
+	{ "Edit.Duplicate", "Duplicate", NULL, CIC_Duplicate, "duplicate", LDG_None, NULL },
+	{ "Edit.Delete", "Delete", NULL, CIC_Delete, "trash", LDG_None, NULL },
+	{ "File.ImportKicadSchematic", "Import KiCad Schematic...", NULL, CIC_Ignored, "import", LDG_ImportKicadSchematic, NULL },
+	{ "File.Exit", "Exit", NULL, CIC_Ignored, "exit", LDG_None, NULL },
 };
 
 
@@ -109,10 +109,6 @@ void CLogicimWindowContent::Init(void)
 	mbRunning = true;
 	mbRanLastTick = false;
 	mfNanosecondsPerMillisecond = LOGICIM_DEFAULT_SPEED;
-	maButtons.Init();
-	maiButtonActions.Init();
-	maMenuItems.Init();
-	maiMenuItemActions.Init();
 	mapIcons.Init();
 	maSubcircuitLabels.Init();
 	maSimulationLabels.Init();
@@ -145,13 +141,12 @@ void CLogicimWindowContent::Class(void)
 	U_Data(ARGB32, msDialogLook.sDivider);
 	M_Embedded(mapIcons);
 	M_Pointer(mpFileIcon);
+	M_Pointer(mpCommands);
 	M_Pointer(mpMenuBar);
-	M_Pointer(mpEditMenu);
 	M_Pointer(mpSubcircuits);
 	M_Pointer(mpCanvasMenu);
 	M_Pointer(mpEnterItem);
 	M_Pointer(mpPropertiesItem);
-	M_Pointer(mpLeaveItem);
 	M_Pointer(mpSimulations);
 	M_Embedded(maSubcircuitLabels);
 	M_Embedded(maSimulationLabels);
@@ -162,10 +157,6 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMouseXInfo);
 	M_Pointer(mpMouseYInfo);
 	M_Pointer(mpZoomInfo);
-	M_Embedded(maButtons);
-	U_Unknown(CArrayInt, maiButtonActions);
-	M_Embedded(maMenuItems);
-	U_Unknown(CArrayInt, maiMenuItemActions);
 	M_Pointer(mpLogicimCircuit);
 	M_Pointer(mpDialog);
 	M_Pointer(mpMessageDialog);
@@ -243,6 +234,8 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 		return false;
 	}
 	CreateLooks();
+	AddCommands();
+	pWindow->SetCommands(mpCommands);
 
 	pGrid = OMalloc<CGridContainer>(pWindow);
 	pWindow->SetContainer(pGrid);
@@ -273,24 +266,21 @@ void CLogicimWindowContent::Free(void)
 {
 	//An object's memory is freed without its destructor running so the content takes itself off the widgets still
 	//here.  The widgets, the theme, the fonts and the circuit are freed with the content's pointers.
-	RemoveFromButtons();
+	if (mpWindow.IsNotNull())
+	{
+		mpWindow->SetCommands(NULL);
+	}
 	RemoveFromList(mpSubcircuits);
 	if (mpCanvasMenu.IsNotNull())
 	{
 		mpCanvasMenu->GetItemClickEvent()->Remove(this);
 	}
 	RemoveFromList(mpSimulations);
-	if (mpMenuBar.IsNotNull())
-	{
-		mpMenuBar->GetItemClickEvent()->Remove(this);
-	}
 	if (mpsData)
 	{
 		mpsData->pcContent = NULL;
 	}
 
-	maiButtonActions.Kill();
-	maiMenuItemActions.Kill();
 	mszStartupImport.Kill();
 	mszKicadFilename.Kill();
 	mszProjectFilename.Kill();
@@ -457,37 +447,48 @@ void CLogicimWindowContent::EditProperties(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A command for each action, run by its menu items, tool buttons and
+// keys, then the keys with no menu item: Ctrl+Alt+Z and Ctrl+Alt+Shift+Z
+// undo and redo a change at a time, and Alt+Backspace leaves the
+// subcircuit entered, as KiCad's Leave Sheet.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::RemoveFromButtons(void)
+void CLogicimWindowContent::AddCommands(void)
 {
-	size			i;
-	Ptr<CButton>	pButton;
+	int					i;
+	Ptr<CCommand>		pCommand;
+	SLogicimActionDesc*	psAction;
 
-	for (i = 0; i < maButtons.Size(); i++)
+	mpCommands = OMalloc<CCommandSet>();
+	for (i = 0; i < NUM_LOGICIM_ACTIONS; i++)
 	{
-		pButton = maButtons.Get(i);
-		if (pButton.IsNotNull())
-		{
-			pButton->GetClickEvent()->Remove(this);
-		}
+		psAction = &gasLogicimActions[i];
+		pCommand = mpCommands->Add(psAction->szCommand, psAction->szName, psAction->szKeys, mapIcons.Get(i), this, &CLogicimWindowContent::ActionCommand);
+		pCommand->SetStandardCommand(psAction->eStandard);
 	}
+	mpCommands->Find("Edit.Undo")->SetEnabledCheck(this, &CLogicimWindowContent::CanUndo);
+	mpCommands->Find("Edit.Redo")->SetEnabledCheck(this, &CLogicimWindowContent::CanRedo);
+
+	mpCommands->Add("Edit.StepUndo", "Undo Step", "Control+Alt+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepUndo);
+	mpCommands->Add("Edit.StepRedo", "Redo Step", "Control+Alt+Shift+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepRedo);
+	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
+// An action's command: the action of that name.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::ButtonClicked(CButton* pcButton)
+void CLogicimWindowContent::ActionCommand(CCommand* pcCommand)
 {
-	size	i;
+	int		i;
 
-	for (i = 0; i < maButtons.Size(); i++)
+	for (i = 0; i < NUM_LOGICIM_ACTIONS; i++)
 	{
-		if (&maButtons.Get(i) == pcButton)
+		if (StringCompare(gasLogicimActions[i].szCommand, pcCommand->GetName()) == 0)
 		{
-			DoAction((ELogicimAction)maiButtonActions.GetValue(i));
+			DoAction((ELogicimAction)i);
 			return;
 		}
 	}
@@ -496,21 +497,14 @@ void CLogicimWindowContent::ButtonClicked(CButton* pcButton)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Undo and Redo can run when there is something to undo or redo and no
+// edit is in progress.  The steps are Ctrl+Alt+Z and Ctrl+Alt+Shift+Z.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::MenuItemClicked(CMenuItem* pcItem)
-{
-	size	i;
-
-	for (i = 0; i < maMenuItems.Size(); i++)
-	{
-		if (&maMenuItems.Get(i) == pcItem)
-		{
-			DoAction((ELogicimAction)maiMenuItemActions.GetValue(i));
-			return;
-		}
-	}
-}
+bool CLogicimWindowContent::CanUndo(void) { return mpLogicimCircuit->GetEditor()->CanUndo(); }
+bool CLogicimWindowContent::CanRedo(void) { return mpLogicimCircuit->GetEditor()->CanRedo(); }
+void CLogicimWindowContent::StepUndo(void) { Undo(true); }
+void CLogicimWindowContent::StepRedo(void) { Redo(true); }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -651,14 +645,13 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 		mpWindow->RequestTick(LOGICIM_SIMULATION_TICK_MILLISECONDS);
 	}
 	mbRanLastTick = mbRunning;
-	UpdateEditMenu();
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 // Ctrl+Z, or the menu's Undo, goes back to before the last change that
-// wasn't only to the selection; bStep (Ctrl+Shift+Z) goes back one change.
+// wasn't only to the selection; bStep (Ctrl+Alt+Z) goes back one change.
 // The simulation goes back with the circuit, but keeps running or paused.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -666,55 +659,16 @@ void CLogicimWindowContent::Undo(bool bStep)
 {
 	mpLogicimCircuit->GetEditor()->Undo(bStep);
 	UpdateInfo();
-	UpdateEditMenu();
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Ctrl+Y, or the menu's Redo; bStep is Ctrl+Shift+Y.  As Undo.
+// Ctrl+Shift+Z, or the menu's Redo; bStep is Ctrl+Alt+Shift+Z.  As Undo.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::Redo(bool bStep)
 {
 	mpLogicimCircuit->GetEditor()->Redo(bStep);
 	UpdateInfo();
-	UpdateEditMenu();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Greys the Edit menu's Undo and Redo when there's nothing to undo or
-// redo, or an edit is in progress.
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::UpdateEditMenu(void)
-{
-	size			i;
-	ELogicimAction	eAction;
-	int32			iRow;
-	bool			bEnabled;
-
-	if (mpEditMenu.IsNull())
-	{
-		return;
-	}
-
-	for (i = 0; i < maMenuItems.Size(); i++)
-	{
-		eAction = (ELogicimAction)maiMenuItemActions.GetValue(i);
-		if ((eAction == LA_Undo) || (eAction == LA_Redo))
-		{
-			iRow = mpEditMenu->GetItemRow(maMenuItems.Get(i));
-			if (iRow >= 0)
-			{
-				bEnabled = (eAction == LA_Undo) ? mpLogicimCircuit->GetEditor()->CanUndo() : mpLogicimCircuit->GetEditor()->CanRedo();
-				if (mpEditMenu->IsRowEnabled(iRow) != bEnabled)
-				{
-					mpEditMenu->SetRowEnabled(iRow, bEnabled);
-				}
-			}
-		}
-	}
 }

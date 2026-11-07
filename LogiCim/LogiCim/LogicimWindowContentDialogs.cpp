@@ -280,7 +280,6 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 				mpLogicimCircuit->GetEditor()->Simulate(szName);
 			}
 			UpdateInfo();
-			UpdateEditMenu();
 		}
 	}
 

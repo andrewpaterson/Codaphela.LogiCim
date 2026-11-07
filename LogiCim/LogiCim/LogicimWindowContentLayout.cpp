@@ -133,7 +133,6 @@ void CLogicimWindowContent::CreateLooks(void)
 Ptr<CMenuContainer> CLogicimWindowContent::CreateMenu(ELogicimAction* aeActions, int iNumActions)
 {
 	Ptr<CMenuContainer>		pMenu;
-	Ptr<CMenuItem>			pItem;
 	int						i;
 
 	pMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
@@ -145,9 +144,7 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateMenu(ELogicimAction* aeActions,
 		}
 		else
 		{
-			pItem = pMenu->AddItem(gasLogicimActions[aeActions[i]].szName, mapIcons.Get(aeActions[i]));
-			maMenuItems.Add(pItem);
-			maiMenuItemActions.Add(aeActions[i]);
+			pMenu->AddItem(mpCommands->Find(gasLogicimActions[aeActions[i]].szCommand));
 		}
 	}
 	return pMenu;
@@ -169,12 +166,10 @@ Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 
 	mpMenuBar = OMalloc<CMenuBar>(mpWindow, mpTheme);
 	mpMenuBar->AddMenu("File", CreateMenu(aeFile, sizeof(aeFile) / sizeof(ELogicimAction)));
-	mpEditMenu = CreateMenu(aeEdit, sizeof(aeEdit) / sizeof(ELogicimAction));
-	mpMenuBar->AddMenu("Edit", mpEditMenu);
+	mpMenuBar->AddMenu("Edit", CreateMenu(aeEdit, sizeof(aeEdit) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("View", CreateMenu(aeView, sizeof(aeView) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Simulation", CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Place", CreateMenu(aePlace, sizeof(aePlace) / sizeof(ELogicimAction)));
-	mpMenuBar->GetItemClickEvent()->Add(this, &CLogicimWindowContent::MenuItemClicked);
 	mpMenuBar->SetAlignment(CSH_Stretch, CSV_Stretch);
 	return mpMenuBar;
 }
@@ -192,10 +187,8 @@ Ptr<CButton> CLogicimWindowContent::CreateToolButton(ELogicimAction eAction)
 	pButton = OMalloc<CButton>(mpWindow, mpTheme, BL_Flat, mapIcons.Get(eAction), (const char*)NULL);
 	pButton->SetPadding(0, 0);
 	pButton->SetShowsPushed(true);
-	pButton->GetClickEvent()->Add(this, &CLogicimWindowContent::ButtonClicked);
+	pButton->SetCommand(mpCommands->Find(gasLogicimActions[eAction].szCommand));
 	pButton->SetAlignment(CSH_Center, CSV_Center);
-	maButtons.Add(pButton);
-	maiButtonActions.Add(eAction);
 	return pButton;
 }
 

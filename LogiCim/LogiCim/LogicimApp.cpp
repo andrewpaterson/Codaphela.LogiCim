@@ -80,6 +80,7 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 		mbInputs = true;
 		mcComponentInput.AddKeyboards();
 		mcComponentInput.AddMice();
+		mpWindow->GetCommands()->BindKeys(&mcComponentInput);  //LogiCim's keys, Control+Alt+Z and so on.
 		mpWindow->SetComponentInput(&mcComponentInput);
 		mpWindow->SetWindowSize(1280, 800);
 		if (getenv("LOGICIM_IMPORT") != NULL)

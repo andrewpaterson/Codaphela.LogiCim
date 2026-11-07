@@ -53,12 +53,17 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #define LOGICIM_FONT_CHARACTERS	" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
 
+//An action's command (see CLogicimWindowContent::AddCommands): its name, caption and keys, or the standard command
+//whose keys it shows.
 struct SLogicimActionDesc
 {
-	const char*		szName;
-	const char*		szIcon;  //The Logicim icon's name, without _24.png.  NULL for none.
-	ELogicimDialog	eDialog;  //The dialog the action shows (by the window's next tick), LDG_None if it doesn't.
-	const char*		szPlaced;  //The element name of the component the action places, NULL if it doesn't.
+	const char*				szCommand;
+	const char*				szName;
+	const char*				szKeys;  //NULL for none.
+	EComponentInputCommand	eStandard;  //CIC_Ignored for none.
+	const char*				szIcon;  //The Logicim icon's name, without _24.png.  NULL for none.
+	ELogicimDialog			eDialog;  //The dialog the action shows (by the window's next tick), LDG_None if it doesn't.
+	const char*				szPlaced;  //The element name of the component the action places, NULL if it doesn't.
 };
 
 

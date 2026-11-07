@@ -38,14 +38,13 @@ class CCircuitEditor;
 //until the next click (see CCircuitEditor::StartMove); Delete deletes; Escape stops the edit and clears the selection;
 //e (or E) edits the properties of the component under the pointer or selected, and a double click those of the
 //component it's on, or enters it if it's a subcircuit instance; the right button selects the component it's on and
-//opens its menu (see CLogicimWindowContent::PrepareCanvasMenu); Alt+Backspace leaves the subcircuit entered, as KiCad's
-//Leave Sheet; and letters
-//place components, as Logicim's KeyInputsFactory (g a ground, v a supply, p a pin, c a constant; with shift: A an AND
+//opens its menu (see CLogicimWindowContent::PrepareCanvasMenu); and letters place components, as Logicim's KeyInputsFactory (g a ground, v a supply, p a pin, c a constant; with shift: A an AND
 //gate, O an OR, X an XOR, N an inverter, C a clock, P a probe, S a splitter, T a tunnel, L a label and F a flip flop).
 //Logicim's control and alt placements aren't printable keys and aren't here.
 //
-//Ctrl+Z undoes back to before the last change that wasn't only to the selection and Ctrl+Y redoes forward to after the
-//next one; with shift they step one change at a time, as Logicim's do (see CCircuitEditor::Undo).
+//Ctrl+Z undoes back to before the last change that wasn't only to the selection and Ctrl+Shift+Z redoes forward to
+//after the next one.  The window's commands step one change at a time and leave a subcircuit (see
+//CLogicimWindowContent::AddCommands).
 class CCircuitCanvas : public CCanvas
 {
 CONSTRUCTABLE(CCircuitCanvas);
@@ -82,9 +81,7 @@ public:
 	void						ClearSelection(void);
 	void						Printable(char c, bool bInsert);
 	void						Undo(void);
-	void						StepUndo(void);
 	void						Redo(void);
-	void						StepRedo(void);
 
 protected:
 	SFloat64Vec2				ToGrid(int x, int y);

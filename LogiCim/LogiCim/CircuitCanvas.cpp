@@ -36,7 +36,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 static EComponentInputCommand	gaeCircuitCanvasCommands[] =
 {
 	CIC_ActivateComponent, CIC_ExecuteComponent, CIC_StartDragSelect, CIC_ContDragSelect, CIC_StopDragSelect,
-	CIC_StartDragScroll, CIC_ContDragScroll, CIC_Delete, CIC_ClearSelection, CIC_Undo, CIC_StepUndo, CIC_Redo, CIC_StepRedo, CIC_LeaveSheet,
+	CIC_StartDragScroll, CIC_ContDragScroll, CIC_Delete, CIC_ClearSelection, CIC_Undo, CIC_Redo,
 };
 
 
@@ -86,10 +86,7 @@ void CCircuitCanvas::CommandAction(SComponentInputEvent* psEvent)
 	case CIC_Delete:			Delete();									break;
 	case CIC_ClearSelection:	ClearSelection();							break;
 	case CIC_Undo:				Undo();										break;
-	case CIC_StepUndo:			StepUndo();									break;
 	case CIC_Redo:				Redo();										break;
-	case CIC_StepRedo:			StepRedo();									break;
-	case CIC_LeaveSheet:		mpcContent->LeaveSubcircuit();				break;
 	default:					break;
 	}
 }
@@ -400,9 +397,7 @@ void CCircuitCanvas::Printable(char c, bool bInsert)
 //
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvas::Undo(void) { mpcContent->Undo(false); }
-void CCircuitCanvas::StepUndo(void) { mpcContent->Undo(true); }
 void CCircuitCanvas::Redo(void) { mpcContent->Redo(false); }
-void CCircuitCanvas::StepRedo(void) { mpcContent->Redo(true); }
 
 
 //////////////////////////////////////////////////////////////////////////

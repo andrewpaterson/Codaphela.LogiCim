@@ -132,7 +132,6 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 		ZoomToFit(false);
 	}
 	UpdateInfo();
-	UpdateEditMenu();
 }
 
 
@@ -149,7 +148,6 @@ void CLogicimWindowContent::EnterSubcircuit(CComponentView* pcInstance)
 		ZoomToFit(false);
 	}
 	UpdateInfo();
-	UpdateEditMenu();
 }
 
 
@@ -165,7 +163,6 @@ void CLogicimWindowContent::LeaveSubcircuit(void)
 		ZoomToFit(false);
 	}
 	UpdateInfo();
-	UpdateEditMenu();
 }
 
 
@@ -186,7 +183,6 @@ void CLogicimWindowContent::PrepareCanvasMenu(SFloat64Vec2 sGrid)
 	mpCanvasMenu->RemoveAllItems();
 	mpEnterItem = NULL;
 	mpPropertiesItem = NULL;
-	mpLeaveItem = NULL;
 	if (pcEditor->IsEditing())
 	{
 		return;
@@ -201,9 +197,8 @@ void CLogicimWindowContent::PrepareCanvasMenu(SFloat64Vec2 sGrid)
 	}
 	else if (pcEditor->IsInInstance())
 	{
-		mpLeaveItem = mpCanvasMenu->AddItem("Leave Sub-circuit");
+		mpCanvasMenu->AddItem(mpCommands->Find("Circuit.LeaveSubcircuit"));
 	}
-	UpdateEditMenu();
 }
 
 
@@ -223,9 +218,5 @@ void CLogicimWindowContent::CanvasMenuItemClicked(CMenuItem* pcItem)
 	else if (pcItem == &mpPropertiesItem)
 	{
 		EditProperties();
-	}
-	else if (pcItem == &mpLeaveItem)
-	{
-		LeaveSubcircuit();
 	}
 }
