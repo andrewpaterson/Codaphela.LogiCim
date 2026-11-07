@@ -91,13 +91,13 @@ void TestKicadSchemLogicimNames(void)
 	AssertFloat(12.0f, CKicadSchemLogicimConverter::GetSupplyVoltage("12VOut"), 4);
 	AssertFloat(5.0f, CKicadSchemLogicimConverter::GetSupplyVoltage("VCC"), 4);
 
-	AssertInt(ROT_East, CKicadSchemLogicimConverter::GetKicadRotation(ROT_East, 0));
-	AssertInt(ROT_North, CKicadSchemLogicimConverter::GetKicadRotation(ROT_East, 90));
-	AssertInt(ROT_West, CKicadSchemLogicimConverter::GetKicadRotation(ROT_East, 180));
-	AssertInt(ROT_South, CKicadSchemLogicimConverter::GetKicadRotation(ROT_East, 270));
-	AssertInt(ROT_South, CKicadSchemLogicimConverter::GetKicadRotation(ROT_East, -90));
-	AssertInt(ROT_West, CKicadSchemLogicimConverter::GetKicadRotation(ROT_North, 90));
-	AssertInt(ROT_East, CKicadSchemLogicimConverter::GetKicadRotation(ROT_South, 90));
+	AssertInt(ROT_East, GetKicadSchemRotation(ROT_East, 0));
+	AssertInt(ROT_North, GetKicadSchemRotation(ROT_East, 90));
+	AssertInt(ROT_West, GetKicadSchemRotation(ROT_East, 180));
+	AssertInt(ROT_South, GetKicadSchemRotation(ROT_East, 270));
+	AssertInt(ROT_South, GetKicadSchemRotation(ROT_East, -90));
+	AssertInt(ROT_West, GetKicadSchemRotation(ROT_North, 90));
+	AssertInt(ROT_East, GetKicadSchemRotation(ROT_South, 90));
 }
 
 

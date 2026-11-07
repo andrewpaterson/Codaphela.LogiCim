@@ -36,6 +36,11 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #define KICAD_SCHEM_LOGICIM_SCALE			2.0
 
 
+//KiCad's angles as Logicim's rotations.
+int			GetKicadSchemQuarterTurns(float64 fAngle);
+ERotation	GetKicadSchemRotation(ERotation eUpright, float64 fAngle);
+
+
 //Which way a component keeps to the line it's lined up on with another.
 enum EKicadSchemLogicimAlign
 {

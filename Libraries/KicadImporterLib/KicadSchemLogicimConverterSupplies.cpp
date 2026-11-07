@@ -77,13 +77,13 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	if (IsGroundName(szName))
 	{
 		pcGround = NewMalloc<CGroundView>();
-		pcGround->Init(0, 0, GetKicadRotation(ROT_North, pcSymbol->GetAngle()), szName);
+		pcGround->Init(0, 0, GetKicadSchemRotation(ROT_North, pcSymbol->GetAngle()), szName);
 		pcView = pcGround;
 	}
 	else
 	{
 		pcPositive = NewMalloc<CPositivePowerView>();
-		pcPositive->Init(0, 0, GetKicadRotation(ROT_South, pcSymbol->GetAngle()), szName, GetSupplyVoltage(szName));
+		pcPositive->Init(0, 0, GetKicadSchemRotation(ROT_South, pcSymbol->GetAngle()), szName, GetSupplyVoltage(szName));
 		pcView = pcPositive;
 	}
 

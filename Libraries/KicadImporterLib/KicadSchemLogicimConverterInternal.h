@@ -57,7 +57,6 @@ struct SKicadSchemPointMean
 //The helpers the files of KicadSchemLogicimConverter share.
 bool IsKicadSchemPowerPinName(const char* szName);
 ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo);
-int GetKicadSchemQuarterTurns(float64 fAngle);
 extern ERotation gaeKicadSchemLogicimRotations[];
 
 

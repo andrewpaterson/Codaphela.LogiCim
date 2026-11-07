@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <math.h>
 #include "BaseLib/PointerFunctions.h"
 #include "KicadSchemLogicimModel.h"
 
@@ -473,5 +474,28 @@ bool CKicadSchemLogicimModel::GetItemImportBox(size uiItem, SFloat64Bounds* psBo
 	*psBox = psItem->sImportBox;
 	psBox->Move(SFloat64Vec2(sPosition.x, sPosition.y));
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// KiCad's angle in anticlockwise quarter turns (to the nearest), 0 to 3.
+//
+//////////////////////////////////////////////////////////////////////////
+int GetKicadSchemQuarterTurns(float64 fAngle)
+{
+	return (((int)floor(fAngle / 90.0 + 0.5)) % 4 + 4) % 4;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rotation of a thing that is eUpright when KiCad hasn't turned it,
+// turned anticlockwise by KiCad's angle (to the nearest right angle).
+//
+//////////////////////////////////////////////////////////////////////////
+ERotation GetKicadSchemRotation(ERotation eUpright, float64 fAngle)
+{
+	return RotateRight(eUpright, (4 - GetKicadSchemQuarterTurns(fAngle)) % 4);
 }
 

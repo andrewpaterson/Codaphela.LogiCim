@@ -204,7 +204,7 @@ void CKicadSchemLogicimConverter::AddBusTunnels(CKicadSchemBus* pcBus)
 	{
 		pcLabel = pcBus->GetLabel(i);
 		pcTunnel = NewMalloc<CTunnelView>();
-		pcTunnel->Init(0, 0, GetKicadRotation(ROT_East, pcLabel->GetAngle()), pcBus->GetName(), false, mpcFonts);
+		pcTunnel->Init(0, 0, GetKicadSchemRotation(ROT_East, pcLabel->GetAngle()), pcBus->GetName(), false, mpcFonts);
 		uiItem = mcModel.AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), NULL);
 		mcModel.AddTerminal(pcBus->GetSubnet(), pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem, true);
 		msCounts.uiTunnels++;
@@ -835,7 +835,7 @@ void CKicadSchemLogicimConverter::AddTunnels(void)
 					continue;
 				}
 				pcTunnel = NewMalloc<CTunnelView>();
-				pcTunnel->Init(0, 0, GetKicadRotation(ROT_East, pcLabel->GetAngle()), pcNet->GetName(), false, mpcFonts);
+				pcTunnel->Init(0, 0, GetKicadSchemRotation(ROT_East, pcLabel->GetAngle()), pcNet->GetName(), false, mpcFonts);
 				uiItem = mcModel.AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), NULL);
 				mcModel.AddTerminal(pcSubnet, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem);
 				msCounts.uiTunnels++;

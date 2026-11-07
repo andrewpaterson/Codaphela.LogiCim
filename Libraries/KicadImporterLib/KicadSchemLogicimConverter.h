@@ -228,7 +228,6 @@ public:
 	static bool						IsSkippedSymbol(CKicadSchemSymbol* pcSymbol);
 	static bool						IsGroundName(const char* szName);
 	static float32					GetSupplyVoltage(const char* szName);
-	static ERotation				GetKicadRotation(ERotation eUpright, float64 fAngle);
 
 protected:
 	bool							AddSymbol(CKicadSchemSymbol* pcSymbol);

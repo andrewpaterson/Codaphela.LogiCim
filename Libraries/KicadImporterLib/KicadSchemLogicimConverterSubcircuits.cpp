@@ -319,7 +319,7 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	pcInstance->Init(0, 0, GetKicadSchemRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 	uiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
 
 	apcPins.Init();
@@ -461,7 +461,7 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
-	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	pcInstance->Init(0, 0, GetKicadSchemRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 	uiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
 
 	//Two of the symbol's pins on one circuit pin (one net on the board) are joined to it once.
