@@ -759,9 +759,10 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddBusSplitterTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CSplitterView* pcSplitter, size uiItem, CArrayInt* paiOrder, CArrayInt* paiFans, CArrayTemplatePtr<CPortView>* papcPins, int iPinFacing)
 {
-	SKicadSchemLogicimSplitter*	psSplitter;
-	SKicadSchemBusTap*			psTap;
-	CPortView*					pcEnd;
+	SKicadSchemLogicimSplitter*		psSplitter;
+	SKicadSchemLogicimSplitterPair*	psPair;
+	SKicadSchemBusTap*				psTap;
+	CPortView*						pcEnd;
 	size						i;
 	size						uiTap;
 
@@ -778,7 +779,7 @@ void CKicadSchemLogicimConverter::AddBusSplitterTerminals(CKicadSchemBus* pcBus,
 			psSplitter->iGap = KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP;
 		}
 	}
-	psSplitter->uiFirstPair = mapcSplitterPins.NumElements();
+	psSplitter->uiFirstPair = masSplitterPairs.NumElements();
 	psSplitter->uiNumPairs = 0;
 	for (i = 0; i < paiTaps->NumElements(); i++)
 	{
@@ -788,8 +789,9 @@ void CKicadSchemLogicimConverter::AddBusSplitterTerminals(CKicadSchemBus* pcBus,
 		AddTerminal(psTap->pcMember, &psTap->sWirePoint, pcEnd, uiItem);
 		if ((iPinFacing != -1) && (papcPins->GetPtr(uiTap) != NULL) && (pcEnd != NULL))
 		{
-			mapcSplitterPins.Add(papcPins->GetPtr(uiTap));
-			mapcSplitterEnds.Add(pcEnd);
+			psPair = masSplitterPairs.Add();
+			psPair->pcPin = papcPins->GetPtr(uiTap);
+			psPair->pcEnd = pcEnd;
 			psSplitter->uiNumPairs++;
 			masItems.Get(uiItem)->bPlacedSplitter = true;
 		}

@@ -633,6 +633,27 @@ void CKicadSchemLogicimConverter::Place(float64 fSpread)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Whether the port is a component's pin a splitter beside it is wired
+// straight to.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsSplitterPin(CPortView* pcPortView)
+{
+	size	i;
+
+	for (i = 0; i < masSplitterPairs.NumElements(); i++)
+	{
+		if (masSplitterPairs.Get(i)->pcPin == pcPortView)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Each splitter beside the component its ends go to: its ends
 // KICAD_SCHEM_LOGICIM_SPLITTER_GAP grid units out from the outermost of
 // their pins (KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP if a member has a
@@ -646,6 +667,7 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 	size							i;
 	size							j;
 	SKicadSchemLogicimSplitter*		psSplitter;
+	SKicadSchemLogicimSplitterPair*	psPair;
 	SInt32Vec2						sPin;
 	SInt32Vec2						sEnd;
 	SInt32Vec2						sPosition;
@@ -674,8 +696,9 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 		fAlong = 0;
 		for (j = 0; j < psSplitter->uiNumPairs; j++)
 		{
-			sPin = mapcSplitterPins.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
-			sEnd = mapcSplitterEnds.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
+			psPair = masSplitterPairs.Get(psSplitter->uiFirstPair + j);
+			sPin = psPair->pcPin->GetGridPosition();
+			sEnd = psPair->pcEnd->GetGridPosition();
 			iAcross = bAcrossX ? sPin.x : sPin.y;
 			if ((j == 0) || (iAcross * iOut > iPinAcross * iOut))
 			{
@@ -690,8 +713,9 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 		iStep = 0;
 		for (j = 0; j < psSplitter->uiNumPairs; j++)
 		{
-			sPin = mapcSplitterPins.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
-			sEnd = mapcSplitterEnds.GetPtr(psSplitter->uiFirstPair + j)->GetGridPosition();
+			psPair = masSplitterPairs.Get(psSplitter->uiFirstPair + j);
+			sPin = psPair->pcPin->GetGridPosition();
+			sEnd = psPair->pcEnd->GetGridPosition();
 			iOffset = bAcrossX ? (sPin.y - sEnd.y - iAlong) : (sPin.x - sEnd.x - iAlong);
 			iOffset = (iOffset < 0) ? -iOffset : iOffset;
 			if (iOffset > iStep)
@@ -787,7 +811,7 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 			}
 		}
 		//A pin wired to a splitter beside it keeps its way out for that wire; its tunnel stands on its own, wired too.
-		if ((pcTarget == NULL) || (mapcSplitterPins.Find(pcTarget) != ARRAY_ELEMENT_NOT_FOUND))
+		if ((pcTarget == NULL) || IsSplitterPin(pcTarget))
 		{
 			continue;
 		}

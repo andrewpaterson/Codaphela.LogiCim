@@ -163,8 +163,8 @@ struct SKicadSchemLogicimAlignment
 
 
 //A bus splitter kept beside the component most of its ends are wired to: its ends face the way that component's pins
-//face (iFacing, a TRACE_DIRECTION, is the pins'), each end lined up with its pin.  The pairs are uiNumPairs from
-//uiFirstPair in the converter's splitter pins and ends.
+//face (iFacing, a TRACE_DIRECTION, is the pins'), each end lined up with its pin.  Its pairs are uiNumPairs from
+//uiFirstPair in the converter's masSplitterPairs.
 struct SKicadSchemLogicimSplitter
 {
 	CComponentView*		pcSplitter;
@@ -172,6 +172,14 @@ struct SKicadSchemLogicimSplitter
 	int32				iGap;  //KICAD_SCHEM_LOGICIM_SPLITTER_GAP, or more if a member has a tunnel too.
 	size				uiFirstPair;
 	size				uiNumPairs;
+};
+
+
+//A splitter's end (see SKicadSchemLogicimSplitter) and the component's pin it's wired straight to.
+struct SKicadSchemLogicimSplitterPair
+{
+	CPortView*	pcPin;
+	CPortView*	pcEnd;
 };
 
 
@@ -214,6 +222,7 @@ struct SKicadSchemLogicimRegulated
 typedef CArrayTemplate<SKicadSchemLogicimItem>			CArrayKicadSchemLogicimItem;
 typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegulated;
 typedef CArrayTemplate<SKicadSchemLogicimSplitter>		CArrayKicadSchemLogicimSplitter;
+typedef CArrayTemplate<SKicadSchemLogicimSplitterPair>	CArrayKicadSchemLogicimSplitterPair;
 typedef CArrayTemplate<SKicadSchemLogicimAlignment>		CArrayKicadSchemLogicimAlignment;
 typedef CArrayTemplate<SKicadSchemLogicimTerminal>		CArrayKicadSchemLogicimTerminal;
 typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConnection;
@@ -275,8 +284,7 @@ protected:
 	CArrayKicadSchemLogicimAlignment	masAlignments;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
 	CArrayKicadSchemLogicimSplitter		masSplitters;
-	CArrayTemplatePtr<CPortView>		mapcSplitterPins;
-	CArrayTemplatePtr<CPortView>		mapcSplitterEnds;
+	CArrayKicadSchemLogicimSplitterPair	masSplitterPairs;
 	CKicadSchemSymbol*					mpcAddingSymbol;
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
@@ -381,6 +389,7 @@ protected:
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);
+	bool							IsSplitterPin(CPortView* pcPortView);
 	void							JoinSplitterPins(void);
 	size							FindPortTerminal(CPortView* pcPortView);
 	int								GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins);

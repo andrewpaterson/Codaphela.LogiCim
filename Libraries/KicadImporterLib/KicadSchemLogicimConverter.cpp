@@ -67,8 +67,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	masAlignments.Init();
 	masRegulated.Init();
 	masSplitters.Init();
-	mapcSplitterPins.Init();
-	mapcSplitterEnds.Init();
+	masSplitterPairs.Init();
 	mpcAddingSymbol = NULL;
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
@@ -98,8 +97,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::Kill(void)
 {
-	mapcSplitterEnds.Kill();
-	mapcSplitterPins.Kill();
+	masSplitterPairs.Kill();
 	masSplitters.Kill();
 	masRegulated.Kill();
 	masAlignments.Kill();

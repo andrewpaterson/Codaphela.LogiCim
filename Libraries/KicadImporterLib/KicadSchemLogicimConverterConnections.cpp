@@ -308,10 +308,10 @@ void CKicadSchemLogicimConverter::JoinSplitterPins(void)
 	size	uiPin;
 	size	uiEnd;
 
-	for (i = 0; i < mapcSplitterPins.NumElements(); i++)
+	for (i = 0; i < masSplitterPairs.NumElements(); i++)
 	{
-		uiPin = FindPortTerminal(mapcSplitterPins.GetPtr(i));
-		uiEnd = FindPortTerminal(mapcSplitterEnds.GetPtr(i));
+		uiPin = FindPortTerminal(masSplitterPairs.Get(i)->pcPin);
+		uiEnd = FindPortTerminal(masSplitterPairs.Get(i)->pcEnd);
 		if ((uiPin != ARRAY_ELEMENT_NOT_FOUND) && (uiEnd != ARRAY_ELEMENT_NOT_FOUND) && !IsConnectionBetween(uiEnd, uiPin))
 		{
 			JoinSplitterEnd(uiEnd, uiPin);
