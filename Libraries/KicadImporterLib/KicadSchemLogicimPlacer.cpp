@@ -876,7 +876,7 @@ static void TurnKicadSchemPortToward(CComponentView* pcView, CPortView* pcPort, 
 	ERotation	eOriginal;
 	size		i;
 
-	iWanted = CTraceAutoConnector::OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
+	iWanted = OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
 	eOriginal = pcView->GetRotation();
 	for (i = 0; i < 4; i++)
 	{

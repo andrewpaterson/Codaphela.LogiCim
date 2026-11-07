@@ -186,6 +186,7 @@ void			AddRadixProperty(CComponentProperties* pcProperties, ERadix eRadix);
 ERadix			GetRadixProperty(CComponentProperties* pcProperties, ERadix eDefault);
 const char*		PinAlignmentToString(EPinAlignment eAlignment);
 EPinAlignment	StringToPinAlignment(const char* szAlignment);
+EPinAlignment	RotationToPinAlignment(ERotation eFacing);
 const char*		PinAnchourToString(EPinAnchour eAnchour);
 EPinAnchour		StringToPinAnchour(const char* szAnchour);
 

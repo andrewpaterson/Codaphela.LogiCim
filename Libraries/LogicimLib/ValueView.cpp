@@ -767,6 +767,24 @@ const char* PinAlignmentToString(EPinAlignment eAlignment)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The side of an instance a circuit pin facing eFacing (pointing out of
+// the instance that way) is shown on.
+//
+//////////////////////////////////////////////////////////////////////////
+EPinAlignment RotationToPinAlignment(ERotation eFacing)
+{
+	switch (eFacing)
+	{
+	case ROT_West:	return PA_Left;
+	case ROT_North:	return PA_Top;
+	case ROT_South:	return PA_Bottom;
+	default:		return PA_Right;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // PA_Cannot if it isn't one PinAlignmentToString gives.
 //
 //////////////////////////////////////////////////////////////////////////

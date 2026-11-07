@@ -25,6 +25,10 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 char* gaszRotationNames[] = { "Cannot", "North", "East", "South", "West" };
 
 
+const int32 gaiDirectionX[4] = { 1, 0, -1, 0 };
+const int32 gaiDirectionY[4] = { 0, 1, 0, -1 };
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -276,5 +280,38 @@ ERotation StringToRotation(const char* szRotation)
 		}
 	}
 	return ROT_Cannot;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int OppositeDirection(int iDirection)
+{
+	return (iDirection + 2) % 4;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the direction is East or West.
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsDirectionHorizontal(int iDirection)
+{
+	return (iDirection == TRACE_DIRECTION_EAST) || (iDirection == TRACE_DIRECTION_WEST);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rotation that faces the direction (a TRACE_DIRECTION), so the four
+// directions in order are the four rotations turning right from East.
+//
+//////////////////////////////////////////////////////////////////////////
+ERotation DirectionToRotation(int iDirection)
+{
+	return RotateRight(ROT_East, iDirection);
 }
 

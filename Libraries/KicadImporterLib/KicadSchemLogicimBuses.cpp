@@ -802,7 +802,7 @@ void CKicadSchemLogicimBuses::AddBusSplitter(CKicadSchemBus* pcBus, CArrayInt* p
 	sRun.iPinFacing = GetBusPins(pcBus, paiTaps, &sRun.apcPins);
 	if (sRun.iPinFacing != -1)
 	{
-		iSide = CTraceAutoConnector::OppositeDirection(sRun.iPinFacing);
+		iSide = OppositeDirection(sRun.iPinFacing);
 	}
 	bAlongY = (iSide == TRACE_DIRECTION_EAST) || (iSide == TRACE_DIRECTION_WEST);
 	OrderKicadSchemSplitterTaps(&sRun.apcPins, sRun.iPinFacing, bAlongY, &sRun.aiOrder);

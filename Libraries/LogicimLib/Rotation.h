@@ -49,6 +49,18 @@ enum ERotation
 };
 
 
+//The four ways a route goes, a port faces and a step on the grid is taken (see CTraceAutoConnector::GetPortFacing),
+//turning right from East, and none.  gaiDirectionX and gaiDirectionY are a step each way.
+#define TRACE_DIRECTION_EAST			0
+#define TRACE_DIRECTION_SOUTH			1
+#define TRACE_DIRECTION_WEST			2
+#define TRACE_DIRECTION_NORTH			3
+#define TRACE_DIRECTION_NONE			-1
+
+extern const int32	gaiDirectionX[4];
+extern const int32	gaiDirectionY[4];
+
+
 ERotation	RotateRight(ERotation eRotation);
 ERotation	RotateRight(ERotation eRotation, int iRightRotations);
 ERotation	RotateLeft(ERotation eRotation);
@@ -63,6 +75,10 @@ ERotation	MirrorRotation(ERotation eRotation);
 void		TransformOrientation(ERotation* peRotation, bool* pbMirrored, bool bMirror, int iRightRotations);
 const char*	RotationToString(ERotation eRotation);
 ERotation	StringToRotation(const char* szRotation);
+
+int			OppositeDirection(int iDirection);
+bool		IsDirectionHorizontal(int iDirection);
+ERotation	DirectionToRotation(int iDirection);
 
 
 #endif // __ROTATION_H__

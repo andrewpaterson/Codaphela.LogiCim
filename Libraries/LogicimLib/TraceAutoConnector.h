@@ -24,13 +24,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/MapBlock.h"
 #include "CircuitView.h"
-
-
-//The four ways a route goes and a port faces (see GetPortFacing), turning right from East.
-#define TRACE_DIRECTION_EAST			0
-#define TRACE_DIRECTION_SOUTH			1
-#define TRACE_DIRECTION_WEST			2
-#define TRACE_DIRECTION_NORTH			3
+#include "Rotation.h"
 
 
 //A connection with no hint takes the cheapest route.
@@ -208,7 +202,6 @@ public:
 	size			NumUnconnected(void);
 
 	static int		GetPortFacing(CPortView* pcPortView);
-	static int		OppositeDirection(int iDirection);
 
 protected:
 	bool			GetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox);
