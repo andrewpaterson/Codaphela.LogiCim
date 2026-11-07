@@ -29,6 +29,13 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadLib/KicadSchemNetlist.h"
 
 
+//KiCad's 2.54mm (100 mil) pin spacing, its grid.
+#define KICAD_SCHEM_LOGICIM_GRID			2.54
+
+//Logicim grid units to one of KiCad's.  Logicim's parts are bigger than KiCad's symbols for their pins.
+#define KICAD_SCHEM_LOGICIM_SCALE			2.0
+
+
 //Which way a component keeps to the line it's lined up on with another.
 enum EKicadSchemLogicimAlign
 {
@@ -50,8 +57,8 @@ enum EKicadSchemLogicimItemKind
 };
 
 
-//A component made in the Logicim circuit and where KiCad has it, in Logicim grid units (see KICAD_SCHEM_LOGICIM_SCALE).  The anchor is the point of the view
-//that goes there (a power symbol's port, otherwise the view's position), from its position.  A tunnel or power
+//A component made in the Logicim circuit and where KiCad has it, in Logicim grid units (see KICAD_SCHEM_LOGICIM_SCALE).
+//The anchor is the point of the view that goes there (a power symbol's port, otherwise the view's position), from its position.  A tunnel or power
 //supply has one port; if KiCad has it right on a pin it's attached to that pin's port: it goes port to port with it
 //(Logicim joins ports in the same place), pointing away, and moves with it.
 struct SKicadSchemLogicimItem
@@ -117,11 +124,12 @@ struct SKicadSchemLogicimSubnetTerminals
 };
 
 
-//What the converter has made so far: the items (the Logicim components), their terminals (the ports standing for
-//KiCad's pins, labels and supplies on each subnet) and the connections to be wired between terminals.
+//What the converter has made so far: the circuit, its items (the Logicim components), their terminals (the ports
+//standing for KiCad's pins, labels and supplies on each subnet) and the connections to be wired between terminals.
 class CKicadSchemLogicimModel
 {
 protected:
+	CCircuitView*						mpcCircuit;
 	CArrayKicadSchemLogicimItem			masItems;
 	CArrayKicadSchemLogicimTerminal		masTerminals;
 	CArrayKicadSchemLogicimConnection	masConnections;
@@ -139,7 +147,10 @@ public:
 	void							Init(void);
 	void							Kill(void);
 
-	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol);
+	void							SetCircuit(CCircuitView* pcCircuit);
+	CCircuitView*					GetCircuit(void);
+
+	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol);
 	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
 	SKicadSchemLogicimConnection*	AddConnection(void);
 	void							RemoveItems(CArrayInt* paiRemoved);

@@ -60,7 +60,6 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcNetlist = pcNetlist;
 	mpcCircuits = pcCircuits;
 	mpcFonts = pcFonts;
-	mpcCircuit = NULL;
 	mcModel.Init();
 	masAlignments.Init();
 	masRegulated.Init();
@@ -87,7 +86,6 @@ void CKicadSchemLogicimConverter::Kill(void)
 	mcModel.Kill();
 	mpcBoardSource = NULL;
 	mpcBoard = NULL;
-	mpcCircuit = NULL;
 	mpcFonts = NULL;
 	mpcCircuits = NULL;
 	mpcNetlist = NULL;
@@ -118,17 +116,19 @@ void CKicadSchemLogicimConverter::SetBoards(CKicadSchemBoard* pcBoard, CKicadSch
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 {
-	size	i;
-	size	uiFirstUnconnected;
-	float64	fWorse;
-	float64	fSpread;
-	bool	bRouted;
+	size			i;
+	size			uiFirstUnconnected;
+	float64			fWorse;
+	float64			fSpread;
+	bool			bRouted;
+	CCircuitView*	pcCircuit;
 
-	mpcCircuit = mpcCircuits->Add(szTypeName);
-	if (mpcCircuit == NULL)
+	pcCircuit = mpcCircuits->Add(szTypeName);
+	if (pcCircuit == NULL)
 	{
 		return false;
 	}
+	mcModel.SetCircuit(pcCircuit);
 
 	for (i = 0; i < mpcFile->NumSymbols(); i++)
 	{
@@ -319,23 +319,6 @@ ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Adds the view, made at (0, 0), to the circuit, as what eKind says.  The anchor is the port
-// that goes where KiCad has the thing, if not the view's position.  pcSymbol is the symbol it
-// was made for, NULL for a tunnel or splitter.
-//
-//////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol)
-{
-	SFloat64Vec2	sPosition;
-
-	mpcCircuit->Add(pcView);
-	sPosition.Init(psKicadPosition->x / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->y / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
-	return mcModel.AddItem(pcView, eKind, &sPosition, pcAnchor, pcSymbol);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem)
@@ -479,7 +462,7 @@ float32 CKicadSchemLogicimConverter::GetSupplyVoltage(const char* szName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mpcCircuit; }
+CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mcModel.GetCircuit(); }
 float64 CKicadSchemLogicimConverter::GetSpread(void) { return mfSpread; }
 SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
 CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }

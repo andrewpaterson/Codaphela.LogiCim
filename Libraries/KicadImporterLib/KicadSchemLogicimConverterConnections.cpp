@@ -103,8 +103,6 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 			{
 				msCounts.uiPowers--;
 			}
-			mpcCircuit->Remove(psItem->pcView);
-			SafeKill(psItem->pcView);
 		}
 	}
 	mcModel.RemoveItems(&aiRemoved);
@@ -520,8 +518,8 @@ size CKicadSchemLogicimConverter::Route(void)
 	SKicadSchemLogicimConnection*	psConnection;
 	size							uiUnconnected;
 
-	mpcCircuit->KillTraces();
-	cConnector.Init(mpcCircuit);
+	mcModel.GetCircuit()->KillTraces();
+	cConnector.Init(mcModel.GetCircuit());
 	SetRouteBoxes(&cConnector);
 	auiRouted.Init();
 	AddRouteConnections(&cConnector, &auiRouted);

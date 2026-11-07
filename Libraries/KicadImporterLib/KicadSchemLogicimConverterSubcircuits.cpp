@@ -244,7 +244,7 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	szName.Kill();
 	pcPinView->SetSubcircuitAppearance(GetKicadSchemBoardPinAlignment(eRotation), PAN_Negative, atoi(szNumber), false, false);
 	//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
-	uiItem = AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL, pcSymbol);
+	uiItem = mcModel.AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL, pcSymbol);
 	msCounts.uiBoardPins++;
 	if (pcConnector != NULL)
 	{
@@ -320,7 +320,7 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
 	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcPlaceholder, mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
+	uiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
 
 	apcPins.Init();
 	aszNames.Init();
@@ -462,7 +462,7 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
 	pcInstance->Init(0, 0, GetKicadRotation(ROT_East, pcSymbol->GetAngle()), pcSymbol->GetReference(), (szValue != NULL) ? szValue : "", pcBoard->GetCircuit(), mpcFonts, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
+	uiItem = mcModel.AddItem(pcInstance, KSLIK_Subcircuit, pcSymbol->GetPosition(), NULL, pcSymbol);
 
 	//Two of the symbol's pins on one circuit pin (one net on the board) are joined to it once.
 	apcJoined.Init();

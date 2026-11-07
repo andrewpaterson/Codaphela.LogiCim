@@ -39,12 +39,6 @@ class CSplitterView;
 class CTraceAutoConnector;
 
 
-//KiCad's 2.54mm (100 mil) pin spacing, its grid.
-#define KICAD_SCHEM_LOGICIM_GRID			2.54
-
-//Logicim grid units to one of KiCad's.  Logicim's parts are bigger than KiCad's symbols for their pins.
-#define KICAD_SCHEM_LOGICIM_SCALE			2.0
-
 //The grid units between the pins of the parts made for KiCad's symbols (subcircuit instances, 74 series parts and
 //gates): a KiCad grid unit, so a tunnel fits on each pin and a splitter's ends line up with them.
 #define KICAD_SCHEM_LOGICIM_PIN_SPACING		2
@@ -209,7 +203,6 @@ protected:
 	CKicadSchemNetlist*					mpcNetlist;
 	CCircuitViews*						mpcCircuits;
 	CCircuitFonts*						mpcFonts;
-	CCircuitView*						mpcCircuit;
 	CKicadSchemLogicimModel				mcModel;
 	CArrayKicadSchemLogicimAlignment	masAlignments;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
@@ -280,7 +273,6 @@ protected:
 	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
 	void							JoinSplitterEnd(size uiEnd, size uiPin);
 
-	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol);
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);

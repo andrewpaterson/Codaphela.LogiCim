@@ -596,7 +596,7 @@ void CKicadSchemLogicimConverter::AddLogicPart(CKicadSchemSymbol* pcSymbol, CKic
 	pcView = NewKicadSchemLogicPartView(eFunction, eRotation, szName.Text(), szFamily, (int)sLayout.aiInputs.NumElements());
 	szName.Kill();
 
-	uiItem = AddItem(pcView, KSLIK_Part, &sLayout.sCentre, NULL, pcSymbol);
+	uiItem = mcModel.AddItem(pcView, KSLIK_Part, &sLayout.sCentre, NULL, pcSymbol);
 	if (eFunction == KSLF_DFlipFlop)
 	{
 		for (i = 0; i < psPins->apcPins.NumElements(); i++)
@@ -748,7 +748,7 @@ void CKicadSchemLogicimConverter::AddLogic74Unit(CKicadSchemSymbol* pcSymbol, in
 
 	pcUnit = NewMalloc<CLogic74UnitView>();
 	pcUnit->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType, iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = AddItem(pcUnit, KSLIK_Part, &psLayout->sCentre, NULL, pcSymbol);
+	uiItem = mcModel.AddItem(pcUnit, KSLIK_Part, &psLayout->sCentre, NULL, pcSymbol);
 	for (i = 0; i < psLayout->aiInputs.NumElements(); i++)
 	{
 		szPortName.Init();
@@ -777,7 +777,7 @@ void CKicadSchemLogicimConverter::AddLogic74Package(CKicadSchemSymbol* pcSymbol,
 
 	pcPackage = NewMalloc<CLogic74PackageView>();
 	pcPackage->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	uiItem = AddItem(pcPackage, KSLIK_Part, &psLayout->sCentre, NULL, pcSymbol);
+	uiItem = mcModel.AddItem(pcPackage, KSLIK_Part, &psLayout->sCentre, NULL, pcSymbol);
 	for (i = 0; i < psPins->apcPins.NumElements(); i++)
 	{
 		pszIndex = psPins->aszIndices.Get(psPins->aiGroups.GetValue(i));
@@ -1076,7 +1076,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 			sMean.Add(asPositions.Get(i));
 		}
 		sMean.Get(&sCentre);
-		uiItem = AddItem(pcView, KSLIK_Part, &sCentre, NULL, pcSymbol);
+		uiItem = mcModel.AddItem(pcView, KSLIK_Part, &sCentre, NULL, pcSymbol);
 		for (i = 0; i < apcPins.NumElements(); i++)
 		{
 			AddPinTerminal(pcSymbol, apcPins.GetPtr(i), apcPorts.GetPtr(i), uiItem);

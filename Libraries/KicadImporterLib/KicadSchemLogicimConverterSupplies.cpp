@@ -88,7 +88,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	}
 
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
-	uiItem = AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0), pcSymbol);
+	uiItem = mcModel.AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0), pcSymbol);
 	AddPinTerminal(pcSymbol, pcPin, pcView->GetPortView((size)0), uiItem);
 	msCounts.uiPowers++;
 	return true;

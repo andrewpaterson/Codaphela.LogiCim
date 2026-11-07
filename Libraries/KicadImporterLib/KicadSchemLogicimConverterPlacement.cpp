@@ -405,7 +405,7 @@ size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* p
 	SFloat64Vec2				sCentre;
 
 	asKnots.Init();
-	CollectKicadSchemKnots(mpcCircuit, &asKnots);
+	CollectKicadSchemKnots(mcModel.GetCircuit(), &asKnots);
 	if (asKnots.NumElements() == 0)
 	{
 		asKnots.Kill();

@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/PointerFunctions.h"
 #include "KicadSchemLogicimModel.h"
 
 
@@ -27,6 +28,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::Init(void)
 {
+	mpcCircuit = NULL;
 	masItems.Init();
 	masTerminals.Init();
 	masConnections.Init();
@@ -51,25 +53,40 @@ void CKicadSchemLogicimModel::Kill(void)
 	masConnections.Kill();
 	masTerminals.Kill();
 	masItems.Kill();
+	mpcCircuit = NULL;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// An item for the view, where KiCad has it (psPosition, in Logicim grid
-// units).  The anchor is the port that goes there, if not the view's
-// position.  pcSymbol is the symbol it was made for, NULL if none.
+// The circuit the items are made in.  Must be set before they're added.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimModel::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol)
+void CKicadSchemLogicimModel::SetCircuit(CCircuitView* pcCircuit)
+{
+	mpcCircuit = pcCircuit;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Adds the view, made at (0, 0), to the circuit, and an item for it as
+// what eKind says, where KiCad has it (psKicadPosition, scaled to Logicim
+// grid units).  The anchor is the port that goes there, if not the view's
+// position.  pcSymbol is the symbol it was made for, NULL for a tunnel or
+// splitter.
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimModel::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol)
 {
 	SKicadSchemLogicimItem*		psItem;
 
+	mpcCircuit->Add(pcView);
 	psItem = masItems.Add();
 	psItem->pcView = pcView;
 	psItem->eKind = eKind;
 	psItem->bPlacedSplitter = false;
-	psItem->sKicadPosition = *psPosition;
+	psItem->sKicadPosition.Init(psKicadPosition->x / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->y / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
 	psItem->pcPort = pcAnchor;
 	psItem->pcAttachedTo = NULL;
 	psItem->eAlign = KSLA_None;
@@ -273,9 +290,9 @@ SKicadSchemLogicimConnection* CKicadSchemLogicimModel::AddConnection(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Takes out the items paiRemoved marks (not 0) and their terminals; the
-// others keep their order and are numbered again.  Their views must
-// already be gone.  Must be before there are connections.
+// Takes out the items paiRemoved marks (not 0), their views (from the
+// circuit, killed) and their terminals; the others keep their order and
+// are numbered again.  Must be before there are connections.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
@@ -284,6 +301,7 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	size							uiKept;
 	CArrayInt						aiNewIndices;
 	SKicadSchemLogicimTerminal*		psTerminal;
+	CComponentView*					pcView;
 
 	aiNewIndices.Init();
 	uiKept = 0;
@@ -291,6 +309,9 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	{
 		if (paiRemoved->GetValue(i) != 0)
 		{
+			pcView = masItems.Get(i)->pcView;
+			mpcCircuit->Remove(pcView);
+			SafeKill(pcView);
 			aiNewIndices.Add(-1);
 			continue;
 		}
@@ -328,6 +349,7 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CCircuitView* CKicadSchemLogicimModel::GetCircuit(void) { return mpcCircuit; }
 size CKicadSchemLogicimModel::NumItems(void) { return masItems.NumElements(); }
 SKicadSchemLogicimItem* CKicadSchemLogicimModel::GetItem(size uiIndex) { return masItems.SafeGet(uiIndex); }
 size CKicadSchemLogicimModel::NumTerminals(void) { return masTerminals.NumElements(); }
