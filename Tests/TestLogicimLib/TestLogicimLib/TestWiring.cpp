@@ -234,12 +234,14 @@ void TestWiringSplitter(void)
 	CProbeView*		pcProbe;
 	CChars			sz;
 	CArrayInt		aiBits;
+	SSplitterParams	sSplitter;
 
 	sTest.Init();
 
 	//Left handed, start offset 1: the bus is at 11, -1 and the ends at 10, 2 and 8, 2.
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(10, 0, ROT_North, "S", 8, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(8, 2);
+	pcSplitter->Init(10, 0, ROT_North, "S", &sSplitter);
 	sTest.cCircuit.Add(pcSplitter);
 	AssertInt(11, pcSplitter->GetStartPortView()->GetGridPosition().x);
 	AssertInt(-1, pcSplitter->GetStartPortView()->GetGridPosition().y);
@@ -253,7 +255,8 @@ void TestWiringSplitter(void)
 
 	//The other way: two nybbles into the ends, the byte out of the bus.
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(40, 0, ROT_North, "M", 8, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(8, 2);
+	pcSplitter->Init(40, 0, ROT_North, "M", &sSplitter);
 	sTest.cCircuit.Add(pcSplitter);
 	pcProbe = AddWiringProbe(&sTest.cCircuit, 41, -1, ROT_South, 8, RADIX_Hexadecimal);
 	pcLow = AddWiringConstant(&sTest.cCircuit, 40, 2, ROT_South, 4, RADIX_Hexadecimal);
@@ -313,12 +316,16 @@ void TestWiringSplitterIndicesAndChains(void)
 	CProbeView*		pcLowPair;
 	CProbeView*		pcHighPair;
 	int				aiSplitIndices[4] = { 1, 0, 1, 0 };
+	SSplitterParams	sSplitter;
 
 	sTest.Init();
 
 	//Odd bits to end 0, even bits to end 1.
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(0, 0, ROT_North, "", 4, 2, 2, SA_RightHanded, 0, aiSplitIndices);
+	sSplitter.Init(4, 2);
+	sSplitter.eAppearance = SA_RightHanded;
+	sSplitter.iEndOffset = 0;
+	pcSplitter->Init(0, 0, ROT_North, "", &sSplitter, aiSplitIndices);
 	sTest.cCircuit.Add(pcSplitter);
 	AssertInt(0, pcSplitter->GetStartPortView()->GetGridPosition().x);
 	AssertInt(2, pcSplitter->GetEndPortView(1)->GetGridPosition().x);
@@ -328,13 +335,15 @@ void TestWiringSplitterIndicesAndChains(void)
 
 	//A byte split in two and the low nybble split again, through a wire.
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(20, 0, ROT_North, "", 8, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(8, 2);
+	pcSplitter->Init(20, 0, ROT_North, "", &sSplitter);
 	sTest.cCircuit.Add(pcSplitter);
 	pcByte = AddWiringConstant(&sTest.cCircuit, 21, -1, ROT_South, 8, RADIX_Hexadecimal);
 	sTest.cCircuit.AddTrace(20, 2, 20, 6);
 	sTest.cCircuit.AddTrace(20, 6, 31, 6);
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(30, 8, ROT_North, "", 4, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(4, 2);
+	pcSplitter->Init(30, 8, ROT_North, "", &sSplitter);
 	sTest.cCircuit.Add(pcSplitter);
 	sTest.cCircuit.AddTrace(31, 6, 31, 7);
 	pcLowPair = AddWiringProbe(&sTest.cCircuit, 30, 10, ROT_South, 2, RADIX_Hexadecimal);
@@ -582,6 +591,7 @@ void TestWiringRenderViews(void)
 	CTunnelView*		pcTunnel;
 	CLabelView*			pcLabel;
 	COscilloscopeView*	pcScope;
+	SSplitterParams		sSplitter;
 
 	ObjectsInit();
 	pFonts = LoadTestCircuitFonts();
@@ -598,7 +608,8 @@ void TestWiringRenderViews(void)
 	pcPin->Init(-26, -6, ROT_East, "Pin", "LVC", false, 1, RADIX_Binary, &pFonts);
 	cCircuit.Add(pcPin);
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(-18, -6, ROT_North, "", 2, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(2, 2);
+	pcSplitter->Init(-18, -6, ROT_North, "", &sSplitter);
 	cCircuit.Add(pcSplitter);
 	pcTunnel = NewMalloc<CTunnelView>();
 	pcTunnel->Init(-12, -6, ROT_North, "  ", false, &pFonts);
@@ -620,7 +631,10 @@ void TestWiringRenderViews(void)
 	pcPin->Init(-22, 8, ROT_East, "Address", "LVC", false, 8, RADIX_Hexadecimal, &pFonts);
 	cCircuit.Add(pcPin);
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(-14, 8, ROT_North, "", 8, 3, 2, SA_RightHanded, 1);
+	sSplitter.Init(8, 3);
+	sSplitter.eAppearance = SA_RightHanded;
+	sSplitter.iEndOffset = 1;
+	pcSplitter->Init(-14, 8, ROT_North, "", &sSplitter);
 	cCircuit.Add(pcSplitter);
 	pcTunnel = NewMalloc<CTunnelView>();
 	pcTunnel->Init(-2, 8, ROT_East, "Bus", false, &pFonts);

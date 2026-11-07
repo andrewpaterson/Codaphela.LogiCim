@@ -37,6 +37,21 @@ enum ESplitterAppearance
 };
 
 
+//A splitter's shape (see CSplitterView): its bus's width, its ends and how far apart they are, which way they run from
+//the bus and where along the bar the bus comes in.  Init gives a placed splitter's others: two grid units apart, left
+//handed, the bus a grid unit back.
+struct SSplitterParams
+{
+	int32				iBitWidth;
+	int32				iFanOut;
+	int32				iGridSpacing;
+	ESplitterAppearance	eAppearance;
+	int32				iEndOffset;
+
+	void	Init(int32 iBitWidth, int32 iFanOut);
+};
+
+
 //Splits a bus into ends, as Logicim's SplitterView.  The bus comes in at its start, a grid unit right and iEndOffset
 //along from the position, onto a bar; the iFanOut ends leave the bar leftwards iGridSpacing apart (upwards, or
 //downwards when right handed) and stop two grid units left.  Bit b of the bus goes to end aiSplitIndices[b], in
@@ -58,8 +73,7 @@ protected:
 	CArrayInt				maiEndPortViews;	//By fan: the end's port view, or -1 with no bits.
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, int32 iBitWidth, int32 iFanOut, int32 iGridSpacing, ESplitterAppearance eAppearance, int32 iEndOffset, int* aiSplitIndices);
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, int32 iBitWidth, int32 iFanOut, int32 iGridSpacing, ESplitterAppearance eAppearance, int32 iEndOffset);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, SSplitterParams* psParams, int* aiSplitIndices = NULL);
 	virtual void					Kill(void);
 
 	virtual const char*				GetType(void);
@@ -83,6 +97,7 @@ public:
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
+			void					InitSplit(int32 x, int32 y, ERotation eRotation, const char* szName, SSplitterParams* psParams, int* aiSplitIndices);
 			SFloat64Vec2			GetFanPosition(int32 iFan, float64 fAlong);
 			SFloat64Vec2			GetStartPosition(void);
 			SFloat64Vec2			GetBarPosition(void);

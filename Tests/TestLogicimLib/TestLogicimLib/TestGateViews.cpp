@@ -301,6 +301,7 @@ void TestMirroredViewGeometry(void)
 	CSplitterView*	pcSplitter;
 	SFloat64Bounds	sLocalBox;
 	SFloat64Bounds	sBox;
+	SSplitterParams	sSplitter;
 
 	pcAnd = NewMalloc<CAndGateView>();
 	pcAnd->Init(10, 20, ROT_East, "U1", "LVC", false, 2, 1);
@@ -318,7 +319,8 @@ void TestMirroredViewGeometry(void)
 	SafeKill(pcAnd);
 
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(5, 7, ROT_East, "", 8, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(8, 2);
+	pcSplitter->Init(5, 7, ROT_East, "", &sSplitter);
 	AssertTrue(pcSplitter->GetLocalBounds(&sLocalBox));
 	AssertTrue(sLocalBox.sMinimum.y != -sLocalBox.sMaximum.y);
 	pcSplitter->SetMirrored(true);

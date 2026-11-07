@@ -697,12 +697,16 @@ static ERotation GetKicadSchemSplitterEndAlongs(int32 iBitWidth, int32 iFanOut, 
 	ERotation		eRotation;
 	int				iDirection;
 	int32			iFan;
+	SSplitterParams	sSplitter;
 
 	for (iDirection = 0; iDirection < 4; iDirection++)
 	{
 		eRotation = DirectionToRotation(iDirection);
 		pcSplitter = NewMalloc<CSplitterView>();
-		pcSplitter->Init(0, 0, eRotation, "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0);
+		sSplitter.Init(iBitWidth, iFanOut);
+		sSplitter.iGridSpacing = iSpacing;
+		sSplitter.iEndOffset = 0;
+		pcSplitter->Init(0, 0, eRotation, "", &sSplitter);
 		pcEnd = pcSplitter->GetEndPortView(0);
 		if ((pcEnd != NULL) && (CTraceAutoConnector::GetPortFacing(pcEnd) == iSide))
 		{
@@ -855,6 +859,7 @@ void CKicadSchemLogicimBuses::AddBusSplitter(CKicadSchemBus* pcBus, CArraySize* 
 	bool						bAlongY;
 	size						uiItem;
 	SFloat64Vec2				sCentre;
+	SSplitterParams				sSplitter;
 
 	iBitWidth = (int32)pcBus->NumMembers();
 	iFanOut = (int32)pauiTaps->NumElements() + (((size)iBitWidth > pauiTaps->NumElements()) ? 1 : 0);
@@ -874,7 +879,10 @@ void CKicadSchemLogicimBuses::AddBusSplitter(CKicadSchemBus* pcBus, CArraySize* 
 	aiSplitIndices.Init();
 	GetKicadSchemSplitIndices(&sRun, iBitWidth, iFanOut, &aiSplitIndices, &sCentre);
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(0, 0, eRotation, "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0, aiSplitIndices.GetData());
+	sSplitter.Init(iBitWidth, iFanOut);
+	sSplitter.iGridSpacing = iSpacing;
+	sSplitter.iEndOffset = 0;
+	pcSplitter->Init(0, 0, eRotation, "", &sSplitter, aiSplitIndices.GetData());
 	aiSplitIndices.Kill();
 	uiItem = mpcModel->AddItem(pcSplitter, KSLIK_Splitter, &sCentre, NULL, NULL);
 	AddBusSplitterTerminals(&sRun, pcSplitter, uiItem);

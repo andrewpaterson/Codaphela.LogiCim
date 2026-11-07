@@ -63,26 +63,50 @@ void CSplitterView::CreateSplitIndices(int* aiSplitIndices, int32 iBitWidth, int
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The bits shared out over the ends in order.
+// iBitWidth bits over iFanOut ends, two grid units apart, left handed,
+// the bus a grid unit back.
 //
 //////////////////////////////////////////////////////////////////////////
-void CSplitterView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, int32 iBitWidth, int32 iFanOut, int32 iGridSpacing, ESplitterAppearance eAppearance, int32 iEndOffset)
+void SSplitterParams::Init(int32 iBitWidth, int32 iFanOut)
 {
-	int*	aiSplitIndices;
-
-	aiSplitIndices = (int*)malloc(sizeof(int) * (iBitWidth + 1));
-	CreateSplitIndices(aiSplitIndices, iBitWidth, iFanOut);
-	Init(x, y, eRotation, szName, iBitWidth, iFanOut, iGridSpacing, eAppearance, iEndOffset, aiSplitIndices);
-	free(aiSplitIndices);
+	this->iBitWidth = iBitWidth;
+	this->iFanOut = iFanOut;
+	iGridSpacing = 2;
+	eAppearance = SA_LeftHanded;
+	iEndOffset = -1;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// aiSplitIndices has an end for each of the iBitWidth bits.
+// aiSplitIndices has an end for each of the bits; NULL shares the bits
+// out over the ends in order (see CreateSplitIndices).
 //
 //////////////////////////////////////////////////////////////////////////
-void CSplitterView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, int32 iBitWidth, int32 iFanOut, int32 iGridSpacing, ESplitterAppearance eAppearance, int32 iEndOffset, int* aiSplitIndices)
+void CSplitterView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, SSplitterParams* psParams, int* aiSplitIndices)
+{
+	CArrayInt	aiInOrder;
+
+	if (aiSplitIndices == NULL)
+	{
+		aiInOrder.Init();
+		aiInOrder.GrowToAtLeastNumElements(psParams->iBitWidth + 1, true, 0);
+		CreateSplitIndices(aiInOrder.GetData(), psParams->iBitWidth, psParams->iFanOut);
+		InitSplit(x, y, eRotation, szName, psParams, aiInOrder.GetData());
+		aiInOrder.Kill();
+	}
+	else
+	{
+		InitSplit(x, y, eRotation, szName, psParams, aiSplitIndices);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CSplitterView::InitSplit(int32 x, int32 y, ERotation eRotation, const char* szName, SSplitterParams* psParams, int* aiSplitIndices)
 {
 	int32				i;
 	int32				iFan;
@@ -100,11 +124,11 @@ void CSplitterView::Init(int32 x, int32 y, ERotation eRotation, const char* szNa
 	int32				iName;
 
 	CComponentView::Init(x, y, eRotation, szName);
-	miBitWidth = iBitWidth;
-	miFanOut = iFanOut;
-	miGridSpacing = iGridSpacing;
-	meAppearance = eAppearance;
-	miEndOffset = iEndOffset;
+	miBitWidth = psParams->iBitWidth;
+	miFanOut = psParams->iFanOut;
+	miGridSpacing = psParams->iGridSpacing;
+	meAppearance = psParams->eAppearance;
+	miEndOffset = psParams->iEndOffset;
 	maiSplitIndices.Init();
 	for (i = 0; i < miBitWidth; i++)
 	{
@@ -520,33 +544,30 @@ bool CSplitterView::LoadXML(CMarkupTag* pcTag)
 	int32				y;
 	ERotation			eRotation;
 	char*				szName;
-	int32				iBitWidth;
-	int32				iFanOut;
-	int32				iGridSpacing;
-	int32				iEndOffset;
+	SSplitterParams		sParams;
 	char*				szAppearance;
-	ESplitterAppearance	eAppearance;
 	char*				szSplitIndices;
 	char*				szEnd;
-	int*				aiSplitIndices;
+	CArrayInt			aiSplitIndices;
 	int32				i;
+	int					iIndex;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName))
 	{
 		return false;
 	}
-	if (!pcTag->GetInt32Attribute("bitWidth", &iBitWidth) || !pcTag->GetInt32Attribute("fanOut", &iFanOut) ||
-		!pcTag->GetInt32Attribute("gridSpacing", &iGridSpacing) || !pcTag->GetInt32Attribute("endOffset", &iEndOffset))
+	if (!pcTag->GetInt32Attribute("bitWidth", &sParams.iBitWidth) || !pcTag->GetInt32Attribute("fanOut", &sParams.iFanOut) ||
+		!pcTag->GetInt32Attribute("gridSpacing", &sParams.iGridSpacing) || !pcTag->GetInt32Attribute("endOffset", &sParams.iEndOffset))
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs whole number bitWidth, fanOut, gridSpacing and endOffset attributes.", NULL);
 	}
-	if ((iBitWidth < 1) || (iBitWidth > 64) || (iFanOut < 1) || (iFanOut > 64) || (iGridSpacing < 1) || (iGridSpacing > 12))
+	if ((sParams.iBitWidth < 1) || (sParams.iBitWidth > 64) || (sParams.iFanOut < 1) || (sParams.iFanOut > 64) || (sParams.iGridSpacing < 1) || (sParams.iGridSpacing > 12))
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has a property out of range.", NULL);
 	}
 	szAppearance = pcTag->GetStringAttribute("appearance");
-	eAppearance = StringToSplitterAppearance(szAppearance);
-	if (eAppearance == SA_Cannot)
+	sParams.eAppearance = StringToSplitterAppearance(szAppearance);
+	if (sParams.eAppearance == SA_Cannot)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has no appearance or an unknown one [", (szAppearance != NULL) ? szAppearance : "", "].", NULL);
 	}
@@ -556,15 +577,16 @@ bool CSplitterView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a splitIndices attribute.", NULL);
 	}
-	aiSplitIndices = (int*)malloc(sizeof(int) * (iBitWidth + 1));
-	for (i = 0; i < iBitWidth; i++)
+	aiSplitIndices.Init();
+	for (i = 0; i < sParams.iBitWidth; i++)
 	{
-		aiSplitIndices[i] = (int)strtol(szSplitIndices, &szEnd, 10);
-		if ((szEnd == szSplitIndices) || (aiSplitIndices[i] < 0) || (aiSplitIndices[i] >= iFanOut))
+		iIndex = (int)strtol(szSplitIndices, &szEnd, 10);
+		if ((szEnd == szSplitIndices) || (iIndex < 0) || (iIndex >= sParams.iFanOut))
 		{
-			free(aiSplitIndices);
+			aiSplitIndices.Kill();
 			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a split index from 0 to fanOut - 1 for each bit.", NULL);
 		}
+		aiSplitIndices.Add(iIndex);
 		szSplitIndices = szEnd;
 	}
 	while (*szSplitIndices == ' ')
@@ -573,12 +595,12 @@ bool CSplitterView::LoadXML(CMarkupTag* pcTag)
 	}
 	if (*szSplitIndices != '\0')
 	{
-		free(aiSplitIndices);
+		aiSplitIndices.Kill();
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has more split indices than bits.", NULL);
 	}
 
-	Init(x, y, eRotation, szName, iBitWidth, iFanOut, iGridSpacing, eAppearance, iEndOffset, aiSplitIndices);
-	free(aiSplitIndices);
+	Init(x, y, eRotation, szName, &sParams, aiSplitIndices.GetData());
+	aiSplitIndices.Kill();
 	return true;
 }
 
@@ -675,7 +697,10 @@ void CSplitterView::GetProperties(CComponentProperties* pcProperties, SComponent
 //////////////////////////////////////////////////////////////////////////
 bool CSplitterView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
 {
-	Init(x, y, eRotation, "", 2, 2, 2, SA_LeftHanded, -1);
+	SSplitterParams		sParams;
+
+	sParams.Init(2, 2);
+	Init(x, y, eRotation, "", &sParams);
 	return true;
 }
 
@@ -686,6 +711,13 @@ bool CSplitterView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitVi
 //////////////////////////////////////////////////////////////////////////
 bool CSplitterView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), (int32)pcProperties->GetInteger("bitWidth", miBitWidth), (int32)pcProperties->GetInteger("fanOut", miFanOut), (int32)pcProperties->GetInteger("gridSpacing", miGridSpacing), (ESplitterAppearance)(SA_LeftHanded + pcProperties->GetChoice("appearance", (size)meAppearance - SA_LeftHanded)), (int32)pcProperties->GetInteger("endOffset", miEndOffset));
+	SSplitterParams		sParams;
+
+	sParams.iBitWidth = (int32)pcProperties->GetInteger("bitWidth", miBitWidth);
+	sParams.iFanOut = (int32)pcProperties->GetInteger("fanOut", miFanOut);
+	sParams.iGridSpacing = (int32)pcProperties->GetInteger("gridSpacing", miGridSpacing);
+	sParams.eAppearance = (ESplitterAppearance)(SA_LeftHanded + pcProperties->GetChoice("appearance", (size)meAppearance - SA_LeftHanded));
+	sParams.iEndOffset = (int32)pcProperties->GetInteger("endOffset", miEndOffset);
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), &sParams);
 	return true;
 }

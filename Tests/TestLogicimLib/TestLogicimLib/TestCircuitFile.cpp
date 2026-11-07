@@ -61,6 +61,7 @@ void AddEveryCircuitFileView(CCircuitView* pcCircuit)
 	CTunnelView*		pcTunnel;
 	CLabelView*			pcLabel;
 	C65C64View*			pc65C64;
+	SSplitterParams		sSplitter;
 
 	pcAnd = NewMalloc<CAndGateView>();
 	pcAnd->Init(-30, -5, ROT_East, "U1", "LVC", false, 2, 1);
@@ -123,7 +124,8 @@ void AddEveryCircuitFileView(CCircuitView* pcCircuit)
 	pcScope->Init(30, 20, ROT_East, "Scope", "LVC", 2, 8, 4, 3, 1000000000);
 	pcCircuit->Add(pcScope);
 	pcSplitter = NewMalloc<CSplitterView>();
-	pcSplitter->Init(10, 6, ROT_North, "", 8, 2, 2, SA_LeftHanded, -1);
+	sSplitter.Init(8, 2);
+	pcSplitter->Init(10, 6, ROT_North, "", &sSplitter);
 	pcSplitter->SetMirrored(true);
 	pcCircuit->Add(pcSplitter);
 	sFloatBox.Init(SFloat64Vec2(0, -0.75), SFloat64Vec2(3.25, 0.75));
