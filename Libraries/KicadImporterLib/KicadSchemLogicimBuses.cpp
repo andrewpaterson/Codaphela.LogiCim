@@ -25,7 +25,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/SplitterView.h"
 #include "LogicimLib/TraceAutoConnector.h"
 #include "KicadSchemLogicimBuses.h"
-#include "KicadSchemLogicimConverterInternal.h"
 
 
 //////////////////////////////////////////////////////////////////////////

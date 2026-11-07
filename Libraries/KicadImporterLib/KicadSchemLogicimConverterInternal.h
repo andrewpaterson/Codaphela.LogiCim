@@ -42,22 +42,9 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemBoards.h"
 
 
-//The middle of the points added to it.
-struct SKicadSchemPointMean
-{
-	SFloat64Vec2		sSum;
-	size				uiCount;
-
-	void	Init(void);
-	void	Add(SFloat64Vec2* psPoint);
-	void	Get(SFloat64Vec2* psMean);
-};
-
-
 //The helpers the files of KicadSchemLogicimConverter share.
 bool IsKicadSchemPowerPinName(const char* szName);
 ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo);
-extern ERotation gaeKicadSchemLogicimRotations[];
 
 
 #endif // __KICAD_SCHEM_LOGICIM_CONVERTER_INTERNAL_H__

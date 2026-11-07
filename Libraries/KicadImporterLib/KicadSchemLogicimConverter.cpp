@@ -41,10 +41,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimConverterInternal.h"
 
 
-//The rotations, turning right from East, to try something in each of.
-ERotation gaeKicadSchemLogicimRotations[4] = { ROT_East, ROT_South, ROT_West, ROT_North };
-
-
 //Reference prefixes and library names of the symbols that are left out.
 static const char* gaszKicadSchemSkippedReferences[] = { "R", "RN", "C", "CN", "L", "FB", "D", "LED", "H", "MH", "TP", "NT", "FID" };
 static const char* gaszKicadSchemSkippedLibraryNames[] = { "MountingHole", "NetTie", "TestPoint", "PWR_FLAG", "Fiducial" };
@@ -333,46 +329,6 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 	}
 	mcModel.RemoveItems(&aiRemoved);
 	aiRemoved.Kill();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// No points yet.
-//
-//////////////////////////////////////////////////////////////////////////
-void SKicadSchemPointMean::Init(void)
-{
-	sSum.Zero();
-	uiCount = 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// One more point.
-//
-//////////////////////////////////////////////////////////////////////////
-void SKicadSchemPointMean::Add(SFloat64Vec2* psPoint)
-{
-	sSum += *psPoint;
-	uiCount++;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The middle of the points, the origin if there are none.
-//
-//////////////////////////////////////////////////////////////////////////
-void SKicadSchemPointMean::Get(SFloat64Vec2* psMean)
-{
-	if (uiCount == 0)
-	{
-		psMean->Zero();
-		return;
-	}
-	*psMean = sSum / (float64)uiCount;
 }
 
 

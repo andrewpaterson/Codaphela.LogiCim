@@ -21,7 +21,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include <math.h>
 #include "LogicimLib/TraceAutoConnector.h"
 #include "KicadSchemLogicimPlacer.h"
-#include "KicadSchemLogicimConverterInternal.h"
 
 
 //////////////////////////////////////////////////////////////////////////

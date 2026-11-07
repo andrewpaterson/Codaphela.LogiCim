@@ -23,6 +23,10 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimModel.h"
 
 
+//The rotations, turning right from East, to try something in each of.
+ERotation gaeKicadSchemLogicimRotations[4] = { ROT_East, ROT_South, ROT_West, ROT_North };
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -524,5 +528,45 @@ int GetKicadSchemQuarterTurns(float64 fAngle)
 ERotation GetKicadSchemRotation(ERotation eUpright, float64 fAngle)
 {
 	return RotateRight(eUpright, (4 - GetKicadSchemQuarterTurns(fAngle)) % 4);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// No points yet.
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemPointMean::Init(void)
+{
+	sSum.Zero();
+	uiCount = 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// One more point.
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemPointMean::Add(SFloat64Vec2* psPoint)
+{
+	sSum += *psPoint;
+	uiCount++;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The middle of the points, the origin if there are none.
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemPointMean::Get(SFloat64Vec2* psMean)
+{
+	if (uiCount == 0)
+	{
+		psMean->Zero();
+		return;
+	}
+	*psMean = sSum / (float64)uiCount;
 }
 

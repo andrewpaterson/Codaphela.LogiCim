@@ -40,6 +40,21 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 int			GetKicadSchemQuarterTurns(float64 fAngle);
 ERotation	GetKicadSchemRotation(ERotation eUpright, float64 fAngle);
 
+//The rotations, turning right from East, to try something in each of.
+extern ERotation	gaeKicadSchemLogicimRotations[];
+
+
+//The middle of the points added to it.
+struct SKicadSchemPointMean
+{
+	SFloat64Vec2		sSum;
+	size				uiCount;
+
+	void	Init(void);
+	void	Add(SFloat64Vec2* psPoint);
+	void	Get(SFloat64Vec2* psMean);
+};
+
 
 //Which way a component keeps to the line it's lined up on with another.
 enum EKicadSchemLogicimAlign
