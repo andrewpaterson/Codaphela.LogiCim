@@ -136,6 +136,25 @@ bool SKicadSchemLogicPart::ParseFunction(void)
 }
 
 
+//Orders a part's pins, by index, by their letters.
+struct SKicadSchemLetterOrder
+{
+	SKicadSchemLogicPins*	psPins;
+
+	bool	IsBefore(int iPin, int iOther);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool SKicadSchemLetterOrder::IsBefore(int iPin, int iOther)
+{
+	return strcmp(psPins->GetPin(iPin)->szLetters.Text(), psPins->GetPin(iOther)->szLetters.Text()) < 0;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The layout of the pins of gate number uiGroup (all the pins if
@@ -148,12 +167,13 @@ bool SKicadSchemLogicPart::ParseFunction(void)
 static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, size uiGroup, EKicadSchemLogicFunction eFunction, SKicadSchemLogicLayout* psLayout)
 {
 	size					i;
-	size					j;
 	SKicadSchemLogicPin*	psPin;
 	SKicadSchemPointMean	sCentre;
 	SKicadSchemPointMean	sInputs;
 	SKicadSchemPointMean	sOutputs;
+	SKicadSchemLetterOrder	sOrder;
 
+	sOrder.psPins = psPins;
 	psLayout->aiInputs.Init();
 	psLayout->iOutput = -1;
 	sCentre.Init();
@@ -177,14 +197,7 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, size uiGroup,
 		}
 		else
 		{
-			for (j = 0; j < psLayout->aiInputs.NumElements(); j++)
-			{
-				if (strcmp(psPin->szLetters.Text(), psPins->GetPin(psLayout->aiInputs.GetValue(j))->szLetters.Text()) < 0)
-				{
-					break;
-				}
-			}
-			psLayout->aiInputs.InsertAt((int)i, j);
+			psLayout->aiInputs.InsertInOrder((int)i, &sOrder);
 			sInputs.Add(&psPin->sPosition);
 		}
 	}

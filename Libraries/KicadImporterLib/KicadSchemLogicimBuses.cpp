@@ -135,6 +135,25 @@ static bool IsKicadSchemTapBefore(SKicadSchemBusTap* psTap, SKicadSchemBusTap* p
 }
 
 
+//Orders a bus's taps, by index, as IsKicadSchemTapBefore does.
+struct SKicadSchemTapOrder
+{
+	CKicadSchemBus*	pcBus;
+
+	bool	IsBefore(int iTap, int iOther);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool SKicadSchemTapOrder::IsBefore(int iTap, int iOther)
+{
+	return IsKicadSchemTapBefore(pcBus->GetTap(iTap), pcBus->GetTap(iOther));
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The bus's taps of its members, sorted (see IsKicadSchemTapBefore).
@@ -142,25 +161,18 @@ static bool IsKicadSchemTapBefore(SKicadSchemBusTap* psTap, SKicadSchemBusTap* p
 //////////////////////////////////////////////////////////////////////////
 static void SortKicadSchemBusTaps(CKicadSchemBus* pcBus, CArrayInt* paiTaps)
 {
-	size				i;
-	size				j;
-	SKicadSchemBusTap*	psTap;
+	size					i;
+	SKicadSchemBusTap*		psTap;
+	SKicadSchemTapOrder		sOrder;
 
+	sOrder.pcBus = pcBus;
 	for (i = 0; i < pcBus->NumTaps(); i++)
 	{
 		psTap = pcBus->GetTap(i);
-		if (pcBus->GetMemberIndex(psTap->pcMember->GetNet()->GetName()) == ARRAY_ELEMENT_NOT_FOUND)
+		if (pcBus->GetMemberIndex(psTap->pcMember->GetNet()->GetName()) != ARRAY_ELEMENT_NOT_FOUND)
 		{
-			continue;
+			paiTaps->InsertInOrder((int)i, &sOrder);
 		}
-		for (j = 0; j < paiTaps->NumElements(); j++)
-		{
-			if (IsKicadSchemTapBefore(psTap, pcBus->GetTap(paiTaps->GetValue(j))))
-			{
-				break;
-			}
-		}
-		paiTaps->InsertAt((int)i, j);
 	}
 }
 
@@ -552,6 +564,48 @@ int CKicadSchemLogicimBuses::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTap
 }
 
 
+//Orders a run's taps, by index, by where their pins are along the side (bAlongY when it's an East or West side), the
+//taps wired to no pin after them.  If the pins don't face one way (bPinned) the taps keep their order.
+struct SKicadSchemSplitterTapOrder
+{
+	CArrayTemplatePtr<CPortView>*	papcPins;
+	bool							bPinned;
+	bool							bAlongY;
+
+	bool	IsBefore(int iTap, int iOther);
+	int32	GetAlong(CPortView* pcPin);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool SKicadSchemSplitterTapOrder::IsBefore(int iTap, int iOther)
+{
+	CPortView*	pcPin;
+	CPortView*	pcOther;
+
+	pcPin = papcPins->GetPtr(iTap);
+	if (!bPinned || (pcPin == NULL))
+	{
+		return false;
+	}
+	pcOther = papcPins->GetPtr(iOther);
+	return (pcOther == NULL) || (GetAlong(pcPin) < GetAlong(pcOther));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int32 SKicadSchemSplitterTapOrder::GetAlong(CPortView* pcPin)
+{
+	return bAlongY ? pcPin->GetGridPosition().y : pcPin->GetGridPosition().x;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The order the splitter's ends go to the run's taps (indices into the
@@ -563,35 +617,15 @@ int CKicadSchemLogicimBuses::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTap
 //////////////////////////////////////////////////////////////////////////
 static void OrderKicadSchemSplitterTaps(CArrayTemplatePtr<CPortView>* papcPins, int iPinFacing, bool bAlongY, CArrayInt* paiOrder)
 {
-	size		i;
-	size		j;
-	int32		iKey;
-	int32		iOtherKey;
-	CPortView*	pcPin;
-	CPortView*	pcOther;
+	size							i;
+	SKicadSchemSplitterTapOrder		sOrder;
 
+	sOrder.papcPins = papcPins;
+	sOrder.bPinned = iPinFacing != TRACE_DIRECTION_NONE;
+	sOrder.bAlongY = bAlongY;
 	for (i = 0; i < papcPins->NumElements(); i++)
 	{
-		j = paiOrder->NumElements();
-		pcPin = papcPins->GetPtr(i);
-		if ((iPinFacing != TRACE_DIRECTION_NONE) && (pcPin != NULL))
-		{
-			iKey = bAlongY ? pcPin->GetGridPosition().y : pcPin->GetGridPosition().x;
-			for (j = 0; j < paiOrder->NumElements(); j++)
-			{
-				pcOther = papcPins->GetPtr(paiOrder->GetValue(j));
-				if (pcOther == NULL)
-				{
-					break;
-				}
-				iOtherKey = bAlongY ? pcOther->GetGridPosition().y : pcOther->GetGridPosition().x;
-				if (iKey < iOtherKey)
-				{
-					break;
-				}
-			}
-		}
-		paiOrder->InsertAt((int)i, j);
+		paiOrder->InsertInOrder((int)i, &sOrder);
 	}
 }
 
@@ -629,6 +663,66 @@ static int32 GetKicadSchemSplitterSpacing(CArrayTemplatePtr<CPortView>* papcPins
 }
 
 
+//Orders a splitter's ends, by index, by where they are along the bus.
+struct SKicadSchemSplitterEndOrder
+{
+	CArrayInt*	paiAlongs;
+
+	bool	IsBefore(int iFan, int iOther);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool SKicadSchemSplitterEndOrder::IsBefore(int iFan, int iOther)
+{
+	return paiAlongs->GetValue(iFan) < paiAlongs->GetValue(iOther);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rotation that has a splitter's ends facing iSide (East if none
+// does), and where its ends are along the bus (bAlongY: in y), paiAlongs.
+// The ends' own order along it if none does.
+//
+//////////////////////////////////////////////////////////////////////////
+static ERotation GetKicadSchemSplitterEndAlongs(int32 iBitWidth, int32 iFanOut, int32 iSpacing, int iSide, bool bAlongY, CArrayInt* paiAlongs)
+{
+	CSplitterView*	pcSplitter;
+	CPortView*		pcEnd;
+	ERotation		eRotation;
+	int				iDirection;
+	int32			iFan;
+
+	for (iDirection = 0; iDirection < 4; iDirection++)
+	{
+		eRotation = DirectionToRotation(iDirection);
+		pcSplitter = NewMalloc<CSplitterView>();
+		pcSplitter->Init(0, 0, eRotation, "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0);
+		pcEnd = pcSplitter->GetEndPortView(0);
+		if ((pcEnd != NULL) && (CTraceAutoConnector::GetPortFacing(pcEnd) == iSide))
+		{
+			for (iFan = 0; iFan < iFanOut; iFan++)
+			{
+				pcEnd = pcSplitter->GetEndPortView(iFan);
+				paiAlongs->Add((pcEnd == NULL) ? 0 : (bAlongY ? pcEnd->GetGridPosition().y : pcEnd->GetGridPosition().x));
+			}
+			SafeKill(pcSplitter);
+			return eRotation;
+		}
+		SafeKill(pcSplitter);
+	}
+	for (iFan = 0; iFan < iFanOut; iFan++)
+	{
+		paiAlongs->Add(iFan);
+	}
+	return ROT_East;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The rotation that has a splitter's ends facing iSide (East if none
@@ -637,52 +731,17 @@ static int32 GetKicadSchemSplitterSpacing(CArrayTemplatePtr<CPortView>* papcPins
 //////////////////////////////////////////////////////////////////////////
 static ERotation OrderKicadSchemSplitterEnds(int32 iBitWidth, int32 iFanOut, int32 iSpacing, int iSide, bool bAlongY, CArrayInt* paiFans)
 {
-	ERotation		eRotation;
-	CSplitterView*	pcSplitter;
-	CPortView*		pcEnd;
-	CArrayInt		aiAlongs;
-	size			i;
-	size			j;
-	int32			iFan;
+	ERotation					eRotation;
+	CArrayInt					aiAlongs;
+	int32						iFan;
+	SKicadSchemSplitterEndOrder	sOrder;
 
-	eRotation = ROT_East;
 	aiAlongs.Init();
-	for (i = 0; i < 4; i++)
-	{
-		pcSplitter = NewMalloc<CSplitterView>();
-		pcSplitter->Init(0, 0, DirectionToRotation((int)i), "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0);
-		pcEnd = pcSplitter->GetEndPortView(0);
-		if ((pcEnd != NULL) && (CTraceAutoConnector::GetPortFacing(pcEnd) == iSide))
-		{
-			eRotation = DirectionToRotation((int)i);
-			for (iFan = 0; iFan < iFanOut; iFan++)
-			{
-				pcEnd = pcSplitter->GetEndPortView(iFan);
-				aiAlongs.Add((pcEnd == NULL) ? 0 : (bAlongY ? pcEnd->GetGridPosition().y : pcEnd->GetGridPosition().x));
-			}
-			SafeKill(pcSplitter);
-			break;
-		}
-		SafeKill(pcSplitter);
-	}
-	if (aiAlongs.NumElements() == 0)
-	{
-		for (iFan = 0; iFan < iFanOut; iFan++)
-		{
-			aiAlongs.Add(iFan);
-		}
-	}
-
+	eRotation = GetKicadSchemSplitterEndAlongs(iBitWidth, iFanOut, iSpacing, iSide, bAlongY, &aiAlongs);
+	sOrder.paiAlongs = &aiAlongs;
 	for (iFan = 0; iFan < iFanOut; iFan++)
 	{
-		for (j = 0; j < paiFans->NumElements(); j++)
-		{
-			if (aiAlongs.GetValue(iFan) < aiAlongs.GetValue(paiFans->GetValue(j)))
-			{
-				break;
-			}
-		}
-		paiFans->InsertAt(iFan, j);
+		paiFans->InsertInOrder(iFan, &sOrder);
 	}
 	aiAlongs.Kill();
 	return eRotation;

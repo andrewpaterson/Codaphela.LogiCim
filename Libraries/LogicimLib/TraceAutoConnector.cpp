@@ -32,6 +32,71 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define OWNER_BODY		-3
 
 
+//Orders a run's connections, by index, across the way they leave: by the y of a horizontal one's start, the x of a
+//vertical one's.
+struct STraceAutoStairOrder
+{
+	CArrayTraceAutoConnection*	pasConnections;
+
+	bool	IsBefore(int iConnection, int iOther);
+};
+
+
+//Orders runs, by index, shortest first (paiLengths, each run's length).
+struct STraceAutoLengthOrder
+{
+	CArrayInt*	paiLengths;
+
+	bool	IsBefore(int iRun, int iOther);
+};
+
+
+//Orders connections, by index, shortest first.
+struct STraceAutoConnectionLengthOrder
+{
+	CArrayTraceAutoConnection*	pasConnections;
+
+	bool	IsBefore(int iConnection, int iOther);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool STraceAutoStairOrder::IsBefore(int iConnection, int iOther)
+{
+	STraceAutoConnection*	psConnection;
+	SInt32Vec2				sFrom;
+	SInt32Vec2				sOtherFrom;
+
+	psConnection = pasConnections->Get(iConnection);
+	sFrom = psConnection->pcFrom->GetGridPosition();
+	sOtherFrom = pasConnections->Get(iOther)->pcFrom->GetGridPosition();
+	return psConnection->bHorizontal ? (sFrom.y < sOtherFrom.y) : (sFrom.x < sOtherFrom.x);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool STraceAutoLengthOrder::IsBefore(int iRun, int iOther)
+{
+	return paiLengths->GetValue(iRun) < paiLengths->GetValue(iOther);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool STraceAutoConnectionLengthOrder::IsBefore(int iConnection, int iOther)
+{
+	return pasConnections->Get(iConnection)->iLength < pasConnections->Get(iOther)->iLength;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The set the wire is in, for the circuit's wires joined into sets.
@@ -963,10 +1028,8 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 {
 	CArrayInt				aiMembers;
 	size					i;
-	size					j;
 	int						iMember;
 	STraceAutoConnection*	psConnection;
-	STraceAutoConnection*	psOther;
 	int32					iAcross;
 	int32					iAlong;
 	int32					iBendSum;
@@ -974,27 +1037,17 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 	int						iCentre;
 	SInt32Vec2				sFrom;
 	SInt32Vec2				sTo;
-	SInt32Vec2				sOtherFrom;
 	bool					bHorizontal;
+	STraceAutoStairOrder	sOrder;
 
 	aiMembers.Init();
+	sOrder.pasConnections = &masConnections;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
 		if ((psConnection->iRun == iRun) && psConnection->bHasBend)
 		{
-			//Sorted across the way they leave.
-			sFrom = psConnection->pcFrom->GetGridPosition();
-			for (j = 0; j < aiMembers.NumElements(); j++)
-			{
-				psOther = masConnections.Get(aiMembers.GetValue(j));
-				sOtherFrom = psOther->pcFrom->GetGridPosition();
-				if ((psConnection->bHorizontal && (sFrom.y < sOtherFrom.y)) || (!psConnection->bHorizontal && (sFrom.x < sOtherFrom.x)))
-				{
-					break;
-				}
-			}
-			aiMembers.InsertAt((int)i, j);
+			aiMembers.InsertInOrder((int)i, &sOrder);
 		}
 	}
 	if (aiMembers.NumElements() < 2)
@@ -1063,8 +1116,8 @@ void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 	CArrayInt				aiRunLengths;
 	STraceAutoConnection*	psConnection;
 	size					i;
-	size					j;
 	int						iLength;
+	STraceAutoLengthOrder	sOrder;
 
 	aiRunLengths.Init();
 	for (i = 0; i < muiNumRuns; i++)
@@ -1084,16 +1137,13 @@ void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 		}
 	}
 
+	sOrder.paiLengths = &aiRunLengths;
 	for (i = 0; i < muiNumRuns; i++)
 	{
-		if (aiRunLengths.GetValue(i) == -1)
+		if (aiRunLengths.GetValue(i) != -1)
 		{
-			continue;
+			paiRuns->InsertInOrder((int)i, &sOrder);
 		}
-		for (j = 0; (j < paiRuns->NumElements()) && (aiRunLengths.GetValue(i) >= aiRunLengths.GetValue(paiRuns->GetValue(j))); j++)
-		{
-		}
-		paiRuns->InsertAt((int)i, j);
 	}
 	aiRunLengths.Kill();
 }
@@ -1107,31 +1157,18 @@ void CTraceAutoConnector::GetRunsByLength(CArrayInt* paiRuns)
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::AddRunInStairOrder(int iRun, CArrayInt* paiOrder)
 {
-	STraceAutoConnection*	psConnection;
-	SInt32Vec2				sFrom;
-	SInt32Vec2				sOtherFrom;
 	size					uiFirst;
 	size					i;
-	size					j;
+	STraceAutoStairOrder	sOrder;
 
 	uiFirst = paiOrder->NumElements();
+	sOrder.pasConnections = &masConnections;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
-		psConnection = masConnections.Get(i);
-		if (psConnection->iRun != iRun)
+		if (masConnections.Get(i)->iRun == iRun)
 		{
-			continue;
+			paiOrder->InsertInOrder((int)i, &sOrder, uiFirst);
 		}
-		sFrom = psConnection->pcFrom->GetGridPosition();
-		for (j = uiFirst; j < paiOrder->NumElements(); j++)
-		{
-			sOtherFrom = masConnections.Get(paiOrder->GetValue(j))->pcFrom->GetGridPosition();
-			if ((psConnection->bHorizontal && (sFrom.y < sOtherFrom.y)) || (!psConnection->bHorizontal && (sFrom.x < sOtherFrom.x)))
-			{
-				break;
-			}
-		}
-		paiOrder->InsertAt((int)i, j);
 	}
 }
 
@@ -1143,23 +1180,18 @@ void CTraceAutoConnector::AddRunInStairOrder(int iRun, CArrayInt* paiOrder)
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::AddSinglesByLength(CArrayInt* paiOrder)
 {
-	STraceAutoConnection*	psConnection;
-	size					uiFirst;
-	size					i;
-	size					j;
+	size								uiFirst;
+	size								i;
+	STraceAutoConnectionLengthOrder		sOrder;
 
 	uiFirst = paiOrder->NumElements();
+	sOrder.pasConnections = &masConnections;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
-		psConnection = masConnections.Get(i);
-		if (IsInRun(psConnection))
+		if (!IsInRun(masConnections.Get(i)))
 		{
-			continue;
+			paiOrder->InsertInOrder((int)i, &sOrder, uiFirst);
 		}
-		for (j = uiFirst; (j < paiOrder->NumElements()) && (psConnection->iLength >= masConnections.Get(paiOrder->GetValue(j))->iLength); j++)
-		{
-		}
-		paiOrder->InsertAt((int)i, j);
 	}
 }
 
