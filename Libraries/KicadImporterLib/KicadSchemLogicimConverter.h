@@ -394,6 +394,8 @@ protected:
 	void							JoinSplitterPins(void);
 	size							FindPortTerminal(CPortView* pcPortView);
 	int								GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins);
+	void							GetTapPinTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals);
+	CComponentView*					GetMostPinsOwner(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals, int iFacing);
 	CPortView*						GetTapPin(SKicadSchemBusTap* psTap);
 	bool							IsComponentPin(SKicadSchemLogicimTerminal* psTerminal);
 	CPortView*						GetComponentPin(CKicadSchemSubnet* pcSubnet, CComponentView* pcOwner, int iFacing);

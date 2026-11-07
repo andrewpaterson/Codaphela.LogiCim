@@ -410,80 +410,95 @@ bool CKicadSchemLogicimConverter::HasTunnel(CKicadSchemSubnet* pcSubnet)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The component pins the run's taps' members are wired to, by tap (NULL
-// for a tap wired to none), and the way most of them face, a
-// TRACE_DIRECTION (-1 if none are).  Each tap's pin is the first facing
-// that way on the component most of them are on.
+// The component pins' terminals (see IsComponentPin) the run's taps'
+// members are wired to, tap by tap.
 //
 //////////////////////////////////////////////////////////////////////////
-int CKicadSchemLogicimConverter::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins)
+void CKicadSchemLogicimConverter::GetTapPinTerminals(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals)
 {
 	size							i;
 	size							j;
-	size							k;
 	SKicadSchemBusTap*				psTap;
 	SKicadSchemLogicimTerminal*		psTerminal;
-	SKicadSchemLogicimItem*			psItem;
-	int								aiFacings[4];
-	int								iFacing;
-	CArrayTemplatePtr<CComponentView>	apcOwners;
-	CArrayInt						aiOwnerPins;
-	size							uiOwner;
-	CComponentView*					pcMost;
-	int								iMost;
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < paiTaps->NumElements(); i++)
 	{
-		aiFacings[i] = 0;
-	}
-	apcOwners.Init();
-	aiOwnerPins.Init();
-	for (k = 0; k < 2; k++)
-	{
-		for (i = 0; i < paiTaps->NumElements(); i++)
+		psTap = pcBus->GetTap(paiTaps->GetValue(i));
+		for (j = 0; j < masTerminals.NumElements(); j++)
 		{
-			psTap = pcBus->GetTap(paiTaps->GetValue(i));
-			for (j = 0; j < masTerminals.NumElements(); j++)
+			psTerminal = masTerminals.Get(j);
+			if ((psTerminal->pcSubnet == psTap->pcMember) && IsComponentPin(psTerminal))
 			{
-				psTerminal = masTerminals.Get(j);
-				if ((psTerminal->pcSubnet != psTap->pcMember) || !IsComponentPin(psTerminal))
-				{
-					continue;
-				}
-				psItem = masItems.Get(psTerminal->uiItem);
-				if (k == 0)
-				{
-					aiFacings[CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView)]++;
-				}
-				else if (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing)
-				{
-					uiOwner = apcOwners.Find(psItem->pcView);
-					if (uiOwner == ARRAY_ELEMENT_NOT_FOUND)
-					{
-						apcOwners.Add(psItem->pcView);
-						aiOwnerPins.Add(1);
-					}
-					else
-					{
-						aiOwnerPins.SetValue(uiOwner, aiOwnerPins.GetValue(uiOwner) + 1);
-					}
-				}
+				papsTerminals->Add(psTerminal);
 			}
 		}
-		if (k == 0)
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The way most of the pins face, a TRACE_DIRECTION, -1 if there are none.
+//
+//////////////////////////////////////////////////////////////////////////
+static int GetKicadSchemMostFacing(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals)
+{
+	int		aiFacings[4] = { 0, 0, 0, 0 };
+	int		iFacing;
+	size	i;
+
+	for (i = 0; i < papsTerminals->NumElements(); i++)
+	{
+		aiFacings[CTraceAutoConnector::GetPortFacing(papsTerminals->GetPtr(i)->pcPortView)]++;
+	}
+	iFacing = -1;
+	for (i = 0; i < 4; i++)
+	{
+		if ((aiFacings[i] > 0) && ((iFacing == -1) || (aiFacings[i] > aiFacings[iFacing])))
 		{
-			iFacing = -1;
-			for (i = 0; i < 4; i++)
-			{
-				if ((aiFacings[i] > 0) && ((iFacing == -1) || (aiFacings[i] > aiFacings[iFacing])))
-				{
-					iFacing = (int)i;
-				}
-			}
-			if (iFacing == -1)
-			{
-				break;
-			}
+			iFacing = (int)i;
+		}
+	}
+	return iFacing;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The component most of the pins facing iFacing are on, the first of
+// them if more than one has as many.  NULL if no pin faces that way.
+//
+//////////////////////////////////////////////////////////////////////////
+CComponentView* CKicadSchemLogicimConverter::GetMostPinsOwner(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals, int iFacing)
+{
+	CArrayTemplatePtr<CComponentView>	apcOwners;
+	CArrayInt							aiOwnerPins;
+	SKicadSchemLogicimTerminal*			psTerminal;
+	CComponentView*						pcView;
+	CComponentView*						pcMost;
+	size								i;
+	size								uiOwner;
+	int									iMost;
+
+	apcOwners.Init();
+	aiOwnerPins.Init();
+	for (i = 0; i < papsTerminals->NumElements(); i++)
+	{
+		psTerminal = papsTerminals->GetPtr(i);
+		if (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) != iFacing)
+		{
+			continue;
+		}
+		pcView = masItems.Get(psTerminal->uiItem)->pcView;
+		uiOwner = apcOwners.Find(pcView);
+		if (uiOwner == ARRAY_ELEMENT_NOT_FOUND)
+		{
+			apcOwners.Add(pcView);
+			aiOwnerPins.Add(1);
+		}
+		else
+		{
+			aiOwnerPins.SetValue(uiOwner, aiOwnerPins.GetValue(uiOwner) + 1);
 		}
 	}
 
@@ -497,15 +512,38 @@ int CKicadSchemLogicimConverter::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* pa
 			pcMost = apcOwners.GetPtr(i);
 		}
 	}
+	aiOwnerPins.Kill();
+	apcOwners.Kill();
+	return pcMost;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The component pins the run's taps' members are wired to, by tap (NULL
+// for a tap wired to none), and the way most of them face, a
+// TRACE_DIRECTION (-1 if none are).  Each tap's pin is the first facing
+// that way on the component most of them are on.
+//
+//////////////////////////////////////////////////////////////////////////
+int CKicadSchemLogicimConverter::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins)
+{
+	CArrayTemplatePtr<SKicadSchemLogicimTerminal>	apsTerminals;
+	size											i;
+	int												iFacing;
+	CComponentView*									pcOwner;
+
+	apsTerminals.Init();
+	GetTapPinTerminals(pcBus, paiTaps, &apsTerminals);
+	iFacing = GetKicadSchemMostFacing(&apsTerminals);
+	pcOwner = (iFacing != -1) ? GetMostPinsOwner(&apsTerminals, iFacing) : NULL;
+	apsTerminals.Kill();
 
 	for (i = 0; i < paiTaps->NumElements(); i++)
 	{
-		psTap = pcBus->GetTap(paiTaps->GetValue(i));
-		papcPins->Add((pcMost != NULL) ? GetComponentPin(psTap->pcMember, pcMost, iFacing) : NULL);
+		papcPins->Add((pcOwner != NULL) ? GetComponentPin(pcBus->GetTap(paiTaps->GetValue(i))->pcMember, pcOwner, iFacing) : NULL);
 	}
-	aiOwnerPins.Kill();
-	apcOwners.Kill();
-	return (pcMost != NULL) ? iFacing : -1;
+	return (pcOwner != NULL) ? iFacing : -1;
 }
 
 
