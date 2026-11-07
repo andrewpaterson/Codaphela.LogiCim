@@ -68,6 +68,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mfSpread = 1.0;
 	msCounts.Init();
 	mcBuses.Init(pcNetlist, pcFonts, &mcModel, &msCounts);
+	mcWiring.Init(pcNetlist, &mcModel, &mcBuses);
 }
 
 
@@ -78,6 +79,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::Kill(void)
 {
+	mcWiring.Kill();
 	mcBuses.Kill();
 	masRegulated.Kill();
 	masAlignments.Kill();
@@ -141,16 +143,16 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	RemoveUnconnectedItems();
 	AttachItems();
 	MeasureImportBoxes();
-	AddConnections();
+	mcWiring.AddConnections();
 	FindAlignments();
 
 	//Wired spread out, then as close as it wires as well: the least spread if that does, otherwise halfway between
 	//the closest that does and the widest that doesn't, a few times.  The circuit is left wired at the chosen spread.
 	Place(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM);
-	uiFirstUnconnected = Route();
+	uiFirstUnconnected = mcWiring.Route();
 	mfSpread = KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM;
 	Place(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM);
-	msCounts.uiUnconnected = Route();
+	msCounts.uiUnconnected = mcWiring.Route();
 	bRouted = true;
 	if (msCounts.uiUnconnected <= uiFirstUnconnected)
 	{
@@ -164,7 +166,7 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 		{
 			fSpread = (mfSpread + fWorse) / 2;
 			Place(fSpread);
-			msCounts.uiUnconnected = Route();
+			msCounts.uiUnconnected = mcWiring.Route();
 			if (msCounts.uiUnconnected > uiFirstUnconnected)
 			{
 				fWorse = fSpread;
@@ -180,7 +182,7 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	if (!bRouted)
 	{
 		Place(mfSpread);
-		msCounts.uiUnconnected = Route();
+		msCounts.uiUnconnected = mcWiring.Route();
 	}
 	Explode();
 	return true;
@@ -252,6 +254,75 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 		return true;
 	}
 	return AddPlaceholder(pcSymbol, pcLibSymbol);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A tunnel or supply whose subnet has nothing drawn on it but tunnels and
+// supplies (a supply wired only to parts' power pins, which are left out
+// as the parts have implied power, or a label on a wire to nothing) would
+// be drawn joined to nothing, so it's taken out with its terminal, and so
+// isn't wired.  Bus tunnels are kept: they're on their bus's splitters.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
+{
+	size							i;
+	size							j;
+	SKicadSchemLogicimTerminal*		psTerminal;
+	SKicadSchemLogicimTerminal*		psOther;
+	SKicadSchemLogicimItem*			psItem;
+	CArrayInt						aiRemoved;
+	bool							bDrawn;
+
+	aiRemoved.Init();
+	for (i = 0; i < mcModel.NumItems(); i++)
+	{
+		aiRemoved.Add(0);
+	}
+
+	//Which items go.
+	for (i = 0; i < mcModel.NumTerminals(); i++)
+	{
+		psTerminal = mcModel.GetTerminal(i);
+		if (psTerminal->bBus || (mcModel.GetItem(psTerminal->uiItem)->pcPort == NULL))
+		{
+			continue;
+		}
+		bDrawn = false;
+		for (j = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); j != ARRAY_ELEMENT_NOT_FOUND; j = mcModel.NextSubnetTerminal(j))
+		{
+			psOther = mcModel.GetTerminal(j);
+			if (psOther->bBus || (mcModel.GetItem(psOther->uiItem)->pcPort == NULL))
+			{
+				bDrawn = true;
+				break;
+			}
+		}
+		if (!bDrawn)
+		{
+			aiRemoved.SetValue(psTerminal->uiItem, 1);
+		}
+	}
+
+	for (i = 0; i < mcModel.NumItems(); i++)
+	{
+		psItem = mcModel.GetItem(i);
+		if (aiRemoved.GetValue(i) != 0)
+		{
+			if (psItem->eKind == KSLIK_Tunnel)
+			{
+				msCounts.uiTunnels--;
+			}
+			else
+			{
+				msCounts.uiPowers--;
+			}
+		}
+	}
+	mcModel.RemoveItems(&aiRemoved);
+	aiRemoved.Kill();
 }
 
 

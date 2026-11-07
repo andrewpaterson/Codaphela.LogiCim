@@ -82,7 +82,7 @@ void CKicadSchemLogicimConverter::Explode(void)
 		}
 		ExplodeAreas(&asCentres);
 		Place(mfSpread);
-		uiUnconnected = Route();
+		uiUnconnected = mcWiring.Route();
 		asCentres.ReInit();
 		uiNewExcess = FindDenseAreas(&asCentres);
 		if ((uiUnconnected > msCounts.uiUnconnected) || (uiNewExcess >= uiExcess))
@@ -93,7 +93,7 @@ void CKicadSchemLogicimConverter::Explode(void)
 				mcModel.GetItem(i)->sOffset = *asOffsets.Get(i);
 			}
 			Place(mfSpread);
-			msCounts.uiUnconnected = Route();
+			msCounts.uiUnconnected = mcWiring.Route();
 			if (bOnlyDensest)
 			{
 				break;

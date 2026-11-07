@@ -18,95 +18,22 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include <math.h>
-#include "BaseLib/ConstructorCall.h"
-#include "BaseLib/StringHelper.h"
-#include "BaseLib/Logger.h"
-#include "BaseLib/PointerFunctions.h"
-#include "LogicimLib/AndGateView.h"
-#include "LogicimLib/OrGateView.h"
-#include "LogicimLib/BufferView.h"
-#include "LogicimLib/Logic74View.h"
-#include "LogicimLib/FlipFlopView.h"
-#include "LogicimLib/PowerSourceView.h"
-#include "LogicimLib/TunnelView.h"
-#include "LogicimLib/CircuitTextMarkupParser.h"
-#include "LogicimLib/SplitterView.h"
-#include "LogicimLib/ValueView.h"
-#include "LogicimLib/SubcircuitInstanceView.h"
 #include "LogicimLib/TraceAutoConnector.h"
-#include "LogicimLib/ComponentShapes.h"
-#include "KicadSchemLogicimConverter.h"
-#include "KicadSchemBoards.h"
-#include "KicadSchemLogicimConverterInternal.h"
+#include "KicadLib/KicadSchemSubnetGraph.h"
+#include "KicadSchemLogicimWiring.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A tunnel or supply whose subnet has nothing drawn on it but tunnels and
-// supplies (a supply wired only to parts' power pins, which are left out
-// as the parts have implied power, or a label on a wire to nothing) would
-// be drawn joined to nothing, so it's taken out with its terminal, and so
-// isn't wired.  Bus tunnels are kept: they're on their bus's splitters.
+// Wires pcModel's terminals, the splitters' ends to their pins as
+// pcBuses has them.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
+void CKicadSchemLogicimWiring::Init(CKicadSchemNetlist* pcNetlist, CKicadSchemLogicimModel* pcModel, CKicadSchemLogicimBuses* pcBuses)
 {
-	size							i;
-	size							j;
-	SKicadSchemLogicimTerminal*		psTerminal;
-	SKicadSchemLogicimTerminal*		psOther;
-	SKicadSchemLogicimItem*			psItem;
-	CArrayInt						aiRemoved;
-	bool							bDrawn;
-
-	aiRemoved.Init();
-	for (i = 0; i < mcModel.NumItems(); i++)
-	{
-		aiRemoved.Add(0);
-	}
-
-	//Which items go.
-	for (i = 0; i < mcModel.NumTerminals(); i++)
-	{
-		psTerminal = mcModel.GetTerminal(i);
-		if (psTerminal->bBus || (mcModel.GetItem(psTerminal->uiItem)->pcPort == NULL))
-		{
-			continue;
-		}
-		bDrawn = false;
-		for (j = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); j != ARRAY_ELEMENT_NOT_FOUND; j = mcModel.NextSubnetTerminal(j))
-		{
-			psOther = mcModel.GetTerminal(j);
-			if (psOther->bBus || (mcModel.GetItem(psOther->uiItem)->pcPort == NULL))
-			{
-				bDrawn = true;
-				break;
-			}
-		}
-		if (!bDrawn)
-		{
-			aiRemoved.SetValue(psTerminal->uiItem, 1);
-		}
-	}
-
-	for (i = 0; i < mcModel.NumItems(); i++)
-	{
-		psItem = mcModel.GetItem(i);
-		if (aiRemoved.GetValue(i) != 0)
-		{
-			if (psItem->eKind == KSLIK_Tunnel)
-			{
-				msCounts.uiTunnels--;
-			}
-			else
-			{
-				msCounts.uiPowers--;
-			}
-		}
-	}
-	mcModel.RemoveItems(&aiRemoved);
-	aiRemoved.Kill();
+	mpcNetlist = pcNetlist;
+	mpcModel = pcModel;
+	mpcBuses = pcBuses;
 }
 
 
@@ -114,7 +41,19 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddConnections(void)
+void CKicadSchemLogicimWiring::Kill(void)
+{
+	mpcBuses = NULL;
+	mpcModel = NULL;
+	mpcNetlist = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimWiring::AddConnections(void)
 {
 	size	i;
 
@@ -135,14 +74,14 @@ void CKicadSchemLogicimConverter::AddConnections(void)
 // Whether a connection joins the two terminals, either way round.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::IsConnectionBetween(size uiTerminal1, size uiTerminal2)
+bool CKicadSchemLogicimWiring::IsConnectionBetween(size uiTerminal1, size uiTerminal2)
 {
 	size							i;
 	SKicadSchemLogicimConnection*	psConnection;
 
-	for (i = 0; i < mcModel.NumConnections(); i++)
+	for (i = 0; i < mpcModel->NumConnections(); i++)
 	{
-		psConnection = mcModel.GetConnection(i);
+		psConnection = mpcModel->GetConnection(i);
 		if (((psConnection->uiFrom == uiTerminal1) && (psConnection->uiTo == uiTerminal2)) || ((psConnection->uiFrom == uiTerminal2) && (psConnection->uiTo == uiTerminal1)))
 		{
 			return true;
@@ -158,7 +97,7 @@ bool CKicadSchemLogicimConverter::IsConnectionBetween(size uiTerminal1, size uiT
 // terminal uiTo.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::ReachesTerminal(size uiFrom, size uiTo, size uiWithout)
+bool CKicadSchemLogicimWiring::ReachesTerminal(size uiFrom, size uiTo, size uiWithout)
 {
 	CArrayInt						aiReached;
 	size							uiHead;
@@ -170,9 +109,9 @@ bool CKicadSchemLogicimConverter::ReachesTerminal(size uiFrom, size uiTo, size u
 	aiReached.Add((int)uiFrom);
 	for (uiHead = 0; uiHead < aiReached.NumElements(); uiHead++)
 	{
-		for (i = 0; i < mcModel.NumConnections(); i++)
+		for (i = 0; i < mpcModel->NumConnections(); i++)
 		{
-			psConnection = mcModel.GetConnection(i);
+			psConnection = mpcModel->GetConnection(i);
 			if (i == uiWithout)
 			{
 				continue;
@@ -212,15 +151,15 @@ bool CKicadSchemLogicimConverter::ReachesTerminal(size uiFrom, size uiTo, size u
 // JoinSplitterPins).
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::JoinSplitterEnd(size uiEnd, size uiPin)
+void CKicadSchemLogicimWiring::JoinSplitterEnd(size uiEnd, size uiPin)
 {
 	size							i;
 	size							uiOther;
 	SKicadSchemLogicimConnection*	psConnection;
 
-	for (i = 0; i < mcModel.NumConnections(); i++)
+	for (i = 0; i < mpcModel->NumConnections(); i++)
 	{
-		psConnection = mcModel.GetConnection(i);
+		psConnection = mpcModel->GetConnection(i);
 		if ((psConnection->uiFrom != uiEnd) && (psConnection->uiTo != uiEnd))
 		{
 			continue;
@@ -254,16 +193,16 @@ void CKicadSchemLogicimConverter::JoinSplitterEnd(size uiEnd, size uiPin)
 // the pin by the other connections.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::JoinSplitterPins(void)
+void CKicadSchemLogicimWiring::JoinSplitterPins(void)
 {
 	size	i;
 	size	uiPin;
 	size	uiEnd;
 
-	for (i = 0; i < mcBuses.NumSplitterPairs(); i++)
+	for (i = 0; i < mpcBuses->NumSplitterPairs(); i++)
 	{
-		uiPin = mcModel.FindPortTerminal(mcBuses.GetSplitterPair(i)->pcPin);
-		uiEnd = mcModel.FindPortTerminal(mcBuses.GetSplitterPair(i)->pcEnd);
+		uiPin = mpcModel->FindPortTerminal(mpcBuses->GetSplitterPair(i)->pcPin);
+		uiEnd = mpcModel->FindPortTerminal(mpcBuses->GetSplitterPair(i)->pcEnd);
 		if ((uiPin != ARRAY_ELEMENT_NOT_FOUND) && (uiEnd != ARRAY_ELEMENT_NOT_FOUND) && !IsConnectionBetween(uiEnd, uiPin))
 		{
 			JoinSplitterEnd(uiEnd, uiPin);
@@ -390,7 +329,7 @@ static float64 GetKicadSchemPathBend(CKicadSchemSubnetGraph* pcGraph, CArrayInt*
 // pieces from those already in it, connected to the one it reaches.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubnet)
+void CKicadSchemLogicimWiring::AddSubnetConnections(CKicadSchemSubnet* pcSubnet)
 {
 	CArrayInt						aiTerminals;
 	CArrayInt						aiNodes;
@@ -403,7 +342,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	SKicadSchemLogicimConnection*	psConnection;
 
 	aiTerminals.Init();
-	mcModel.GetSubnetTerminals(pcSubnet, &aiTerminals);
+	mpcModel->GetSubnetTerminals(pcSubnet, &aiTerminals);
 	if (aiTerminals.NumElements() < 2)
 	{
 		aiTerminals.Kill();
@@ -414,7 +353,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	aiNodes.Init();
 	for (i = 0; i < aiTerminals.NumElements(); i++)
 	{
-		aiNodes.Add((int)cGraph.AddPoint(&mcModel.GetTerminal(aiTerminals.GetValue(i))->sKicadPosition));
+		aiNodes.Add((int)cGraph.AddPoint(&mpcModel->GetTerminal(aiTerminals.GetValue(i))->sKicadPosition));
 	}
 	cGraph.Build();
 
@@ -424,7 +363,7 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 	while (aiConnected.NumElements() < aiTerminals.NumElements())
 	{
 		iBest = FindKicadSchemNearestTerminal(&cGraph, &aiNodes, &aiConnected, &aiBestPath);
-		psConnection = mcModel.AddConnection();
+		psConnection = mpcModel->AddConnection();
 		psConnection->pcSubnet = pcSubnet;
 		if (iBest == -1)
 		{
@@ -458,16 +397,16 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 // one.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::SetRouteBoxes(CTraceAutoConnector* pcConnector)
+void CKicadSchemLogicimWiring::SetRouteBoxes(CTraceAutoConnector* pcConnector)
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 	SFloat64Bounds				sBox;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		psItem = mcModel.GetItem(i);
-		if (psItem->bImportBox && mcModel.GetItemImportBox(i, &sBox))
+		psItem = mpcModel->GetItem(i);
+		if (psItem->bImportBox && mpcModel->GetItemImportBox(i, &sBox))
 		{
 			pcConnector->SetComponentBox(psItem->pcView, &sBox);
 		}
@@ -482,7 +421,7 @@ void CKicadSchemLogicimConverter::SetRouteBoxes(CTraceAutoConnector* pcConnector
 // each one's connection in the router.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiRouted)
+void CKicadSchemLogicimWiring::AddRouteConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiRouted)
 {
 	size							i;
 	SKicadSchemLogicimConnection*	psConnection;
@@ -491,13 +430,13 @@ void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcCon
 	size							uiNet;
 	size							uiRun;
 
-	for (i = 0; i < mcModel.NumConnections(); i++)
+	for (i = 0; i < mpcModel->NumConnections(); i++)
 	{
-		psConnection = mcModel.GetConnection(i);
-		psFrom = mcModel.GetTerminal(psConnection->uiFrom);
-		psTo = mcModel.GetTerminal(psConnection->uiTo);
+		psConnection = mpcModel->GetConnection(i);
+		psFrom = mpcModel->GetTerminal(psConnection->uiFrom);
+		psTo = mpcModel->GetTerminal(psConnection->uiTo);
 		uiNet = pcConnector->FindOrAddNet(psFrom->pcSubnet);
-		uiRun = pcConnector->FindOrAddRun(mcModel.GetItem(psFrom->uiItem)->pcView, mcModel.GetItem(psTo->uiItem)->pcView);
+		uiRun = pcConnector->FindOrAddRun(mpcModel->GetItem(psFrom->uiItem)->pcView, mpcModel->GetItem(psTo->uiItem)->pcView);
 		pauiRouted->Add(pcConnector->AddConnection(uiNet, psFrom->pcPortView, psTo->pcPortView, psConnection->fBend, (int)uiRun));
 	}
 }
@@ -510,7 +449,7 @@ void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcCon
 // same two items are a run.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::Route(void)
+size CKicadSchemLogicimWiring::Route(void)
 {
 	CTraceAutoConnector				cConnector;
 	CArrayTemplatePrimitive<size>	auiRouted;
@@ -518,17 +457,17 @@ size CKicadSchemLogicimConverter::Route(void)
 	SKicadSchemLogicimConnection*	psConnection;
 	size							uiUnconnected;
 
-	mcModel.GetCircuit()->KillTraces();
-	cConnector.Init(mcModel.GetCircuit());
+	mpcModel->GetCircuit()->KillTraces();
+	cConnector.Init(mpcModel->GetCircuit());
 	SetRouteBoxes(&cConnector);
 	auiRouted.Init();
 	AddRouteConnections(&cConnector, &auiRouted);
 	cConnector.Connect();
 
 	uiUnconnected = 0;
-	for (i = 0; i < mcModel.NumConnections(); i++)
+	for (i = 0; i < mpcModel->NumConnections(); i++)
 	{
-		psConnection = mcModel.GetConnection(i);
+		psConnection = mpcModel->GetConnection(i);
 		psConnection->bConnected = cConnector.IsConnected(auiRouted.GetValue(i));
 		if (!psConnection->bConnected)
 		{

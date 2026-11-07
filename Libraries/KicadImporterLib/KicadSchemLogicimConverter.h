@@ -29,6 +29,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimModel.h"
 #include "KicadSchemLogicimCounts.h"
 #include "KicadSchemLogicimBuses.h"
+#include "KicadSchemLogicimWiring.h"
 #include "KicadLib/KicadSchemSubnetGraph.h"
 
 
@@ -36,7 +37,6 @@ class CKicadSchemBoard;
 class CKicadSchemBoardConnector;
 class CKicadSchemBoardSource;
 class CPinView;
-class CTraceAutoConnector;
 
 
 //The grid units between the pins of the parts made for KiCad's symbols (subcircuit instances, 74 series parts and
@@ -177,6 +177,7 @@ protected:
 	CArrayKicadSchemLogicimAlignment	masAlignments;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
 	CKicadSchemLogicimBuses				mcBuses;
+	CKicadSchemLogicimWiring			mcWiring;
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
 	float64								mfSpread;
@@ -223,18 +224,12 @@ protected:
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);
 	float32							GetNetRegulatedVoltage(CKicadSchemNet* pcNet);
 	void							RemoveUnconnectedItems(void);
-	void							AddConnections(void);
 	void							FindAlignments(void);
 	void							AlignItems(void);
-	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet);
-	bool							IsConnectionBetween(size uiTerminal1, size uiTerminal2);
-	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
-	void							JoinSplitterEnd(size uiEnd, size uiPin);
 
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);
-	void							JoinSplitterPins(void);
 	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	void							MeasureImportBoxes(void);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
@@ -245,9 +240,6 @@ protected:
 	void							ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 	void							SeparateItems(void);
 	void							GetSeparateOrder(CArrayInt* paiOrder);
-	size							Route(void);
-	void							SetRouteBoxes(CTraceAutoConnector* pcConnector);
-	void							AddRouteConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiRouted);
 };
 
 
