@@ -454,7 +454,7 @@ void CCircuitEditor::PushUndo(bool bSelectionOnly)
 //////////////////////////////////////////////////////////////////////////
 //
 // Ctrl+Z goes back to before the last change that wasn't only to the
-// selection; bStep (Ctrl+Shift+Z) goes back one change, whatever it was.
+// selection; bStep (Ctrl+Alt+Z) goes back one change, whatever it was.
 // An edit in progress is discarded first.  False if there's nothing to
 // undo or the snapshot couldn't be loaded, when nothing changes.
 //
@@ -467,8 +467,8 @@ bool CCircuitEditor::Undo(bool bStep)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Ctrl+Y goes forward to after the next change that wasn't only to the
-// selection, or to the last change if they all were; bStep (Ctrl+Shift+Y)
+// Ctrl+Shift+Z goes forward to after the next change that wasn't only to the
+// selection, or to the last change if they all were; bStep (Ctrl+Alt+Shift+Z)
 // goes forward one change.  As Undo otherwise.
 //
 //////////////////////////////////////////////////////////////////////////
