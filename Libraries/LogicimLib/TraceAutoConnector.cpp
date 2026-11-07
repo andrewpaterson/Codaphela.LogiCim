@@ -825,77 +825,31 @@ void CTraceAutoConnector::MarkPorts(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The circuit's wires joined into groups as Logicim's wiring joins them.
-// A group on a port being connected is that port's net; any other group
-// is a net of its own that routes keep clear of.
+// The circuit's wires joined into groups as Logicim's wiring joins them
+// (see GroupExistingTraces).  A group on a port being connected is that
+// port's net; any other group is a net of its own that routes keep clear
+// of (see GetExistingGroupNets).
 //
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::MarkExistingTraces(void)
 {
 	CArrayInt		aiParents;
 	CArrayInt		aiGroupNets;
-	size			uiTraces;
 	size			i;
-	size			j;
 	int				iRoot;
-	int				iOther;
 	int				iNet;
 	CTraceView*		pcTrace;
-	SInt32Vec2		sPosition;
 
-	uiTraces = mpcCircuit->NumTraces();
-	if (uiTraces == 0)
+	if (mpcCircuit->NumTraces() == 0)
 	{
 		return;
 	}
 
 	aiParents.Init();
+	GroupExistingTraces(&aiParents);
 	aiGroupNets.Init();
-	for (i = 0; i < uiTraces; i++)
-	{
-		aiParents.Add((int)i);
-		aiGroupNets.Add(-1);
-	}
-	for (i = 0; i < uiTraces; i++)
-	{
-		for (j = i + 1; j < uiTraces; j++)
-		{
-			if (mpcCircuit->GetTrace(i)->Touches(mpcCircuit->GetTrace(j)))
-			{
-				iRoot = FindTraceGroup(&aiParents, (int)i);
-				iOther = FindTraceGroup(&aiParents, (int)j);
-				if (iRoot != iOther)
-				{
-					aiParents.SetValue(iOther, iRoot);
-				}
-			}
-		}
-	}
-
-	for (i = 0; i < masPorts.NumElements(); i++)
-	{
-		sPosition = masPorts.Get(i)->pcPort->GetGridPosition();
-		iNet = (int)masPorts.Get(i)->uiNet;
-		for (j = 0; j < uiTraces; j++)
-		{
-			if (mpcCircuit->GetTrace(j)->Contains(sPosition))
-			{
-				iRoot = FindTraceGroup(&aiParents, (int)j);
-				if (aiGroupNets.GetValue(iRoot) == -1)
-				{
-					aiGroupNets.SetValue(iRoot, iNet);
-					maiNetsWithExisting.SetValue(iNet, 1);
-				}
-				else if (aiGroupNets.GetValue(iRoot) != iNet)
-				{
-					//Already joins two nets; it's no use to either.
-					aiGroupNets.SetValue(iRoot, (int)(muiNumNets + iRoot));
-				}
-			}
-		}
-	}
-
-	for (i = 0; i < uiTraces; i++)
+	GetExistingGroupNets(&aiParents, &aiGroupNets);
+	for (i = 0; i < mpcCircuit->NumTraces(); i++)
 	{
 		iRoot = FindTraceGroup(&aiParents, (int)i);
 		iNet = aiGroupNets.GetValue(iRoot);
@@ -908,6 +862,87 @@ void CTraceAutoConnector::MarkExistingTraces(void)
 	}
 	aiGroupNets.Kill();
 	aiParents.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit's wires that touch joined into groups: each wire's parent,
+// in paiParents, leads to its group's first wire (see FindTraceGroup).
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::GroupExistingTraces(CArrayInt* paiParents)
+{
+	size	uiTraces;
+	size	i;
+	size	j;
+	int		iRoot;
+	int		iOther;
+
+	uiTraces = mpcCircuit->NumTraces();
+	for (i = 0; i < uiTraces; i++)
+	{
+		paiParents->Add((int)i);
+	}
+	for (i = 0; i < uiTraces; i++)
+	{
+		for (j = i + 1; j < uiTraces; j++)
+		{
+			if (mpcCircuit->GetTrace(i)->Touches(mpcCircuit->GetTrace(j)))
+			{
+				iRoot = FindTraceGroup(paiParents, (int)i);
+				iOther = FindTraceGroup(paiParents, (int)j);
+				if (iRoot != iOther)
+				{
+					paiParents->SetValue(iOther, iRoot);
+				}
+			}
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each group's net (paiGroupNets, by its first wire): the net of the
+// ports being connected on it, -1 if there are none, or a net of its own
+// if it joins two nets (it's no use to either).  A net with a group on it
+// has existing wires.
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::GetExistingGroupNets(CArrayInt* paiParents, CArrayInt* paiGroupNets)
+{
+	size			i;
+	size			j;
+	int				iRoot;
+	int				iNet;
+	SInt32Vec2		sPosition;
+
+	for (i = 0; i < mpcCircuit->NumTraces(); i++)
+	{
+		paiGroupNets->Add(-1);
+	}
+	for (i = 0; i < masPorts.NumElements(); i++)
+	{
+		sPosition = masPorts.Get(i)->pcPort->GetGridPosition();
+		iNet = (int)masPorts.Get(i)->uiNet;
+		for (j = 0; j < mpcCircuit->NumTraces(); j++)
+		{
+			if (mpcCircuit->GetTrace(j)->Contains(sPosition))
+			{
+				iRoot = FindTraceGroup(paiParents, (int)j);
+				if (paiGroupNets->GetValue(iRoot) == -1)
+				{
+					paiGroupNets->SetValue(iRoot, iNet);
+					maiNetsWithExisting.SetValue(iNet, 1);
+				}
+				else if (paiGroupNets->GetValue(iRoot) != iNet)
+				{
+					paiGroupNets->SetValue(iRoot, (int)(muiNumNets + iRoot));
+				}
+			}
+		}
+	}
 }
 
 
@@ -1035,9 +1070,6 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 	int32					iBendSum;
 	int						iSign;
 	int						iCentre;
-	SInt32Vec2				sFrom;
-	SInt32Vec2				sTo;
-	bool					bHorizontal;
 	STraceAutoStairOrder	sOrder;
 
 	aiMembers.Init();
@@ -1056,27 +1088,7 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 		return;
 	}
 
-	iAcross = 0;
-	iAlong = 0;
-	iBendSum = 0;
-	bHorizontal = masConnections.Get(aiMembers.GetValue(0))->bHorizontal;
-	for (i = 0; i < aiMembers.NumElements(); i++)
-	{
-		psConnection = masConnections.Get(aiMembers.GetValue(i));
-		sFrom = psConnection->pcFrom->GetGridPosition();
-		sTo = psConnection->pcTo->GetGridPosition();
-		if (bHorizontal)
-		{
-			iAcross += sTo.y - sFrom.y;
-			iAlong += sTo.x - sFrom.x;
-		}
-		else
-		{
-			iAcross += sTo.x - sFrom.x;
-			iAlong += sTo.y - sFrom.y;
-		}
-		iBendSum += psConnection->iBend;
-	}
+	iBendSum = MeasureRun(&aiMembers, &iAcross, &iAlong);
 
 	iSign = (iAcross > 0) ? -1 : 1;
 	if (iAlong < 0)
@@ -1102,6 +1114,47 @@ void CTraceAutoConnector::CalculateRunBends(int iRun)
 bool CTraceAutoConnector::IsInRun(STraceAutoConnection* psConnection)
 {
 	return (psConnection->iRun >= 0) && (psConnection->iRun < (int)muiNumRuns);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// How far the run's connections (paiMembers) go across the way they leave
+// (piAcross) and along it (piAlong), all together, and returned, the sum
+// of their bends.
+//
+//////////////////////////////////////////////////////////////////////////
+int32 CTraceAutoConnector::MeasureRun(CArrayInt* paiMembers, int32* piAcross, int32* piAlong)
+{
+	size					i;
+	STraceAutoConnection*	psConnection;
+	SInt32Vec2				sFrom;
+	SInt32Vec2				sTo;
+	bool					bHorizontal;
+	int32					iBendSum;
+
+	*piAcross = 0;
+	*piAlong = 0;
+	iBendSum = 0;
+	bHorizontal = masConnections.Get(paiMembers->GetValue(0))->bHorizontal;
+	for (i = 0; i < paiMembers->NumElements(); i++)
+	{
+		psConnection = masConnections.Get(paiMembers->GetValue(i));
+		sFrom = psConnection->pcFrom->GetGridPosition();
+		sTo = psConnection->pcTo->GetGridPosition();
+		if (bHorizontal)
+		{
+			*piAcross += sTo.y - sFrom.y;
+			*piAlong += sTo.x - sFrom.x;
+		}
+		else
+		{
+			*piAcross += sTo.x - sFrom.x;
+			*piAlong += sTo.y - sFrom.y;
+		}
+		iBendSum += psConnection->iBend;
+	}
+	return iBendSum;
 }
 
 

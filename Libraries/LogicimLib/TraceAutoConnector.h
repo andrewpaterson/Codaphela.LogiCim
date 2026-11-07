@@ -215,9 +215,12 @@ protected:
 	void			MarkComponents(void);
 	void			MarkPorts(void);
 	void			MarkExistingTraces(void);
+	void			GroupExistingTraces(CArrayInt* paiParents);
+	void			GetExistingGroupNets(CArrayInt* paiParents, CArrayInt* paiGroupNets);
 	void			MarkTrace(int32 x0, int32 y0, int32 x1, int32 y1, int iNet);
 	void			CalculateBends(void);
 	void			CalculateRunBends(int iRun);
+	int32			MeasureRun(CArrayInt* paiMembers, int32* piAcross, int32* piAlong);
 	void			SortConnections(CArrayInt* paiOrder);
 	void			GetRunsByLength(CArrayInt* paiRuns);
 	void			AddRunInStairOrder(int iRun, CArrayInt* paiOrder);
