@@ -745,8 +745,82 @@ void CCircuitEditor::LiftLeads(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Each lead with a port to go to added to the router, those to the same
+// net (pcNetPort) in one of its nets.  paiConnections gets each lead's
+// connection in the router, -1 for a lead that isn't routed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayInt* paiConnections)
+{
+	size					i;
+	size					uiNet;
+	size					uiNetIndex;
+	SMoveLead*				psLead;
+	CArrayPortViewPtr		apcNetPorts;
+	CArrayInt				aiNets;
+
+	apcNetPorts.Init();
+	aiNets.Init();
+	for (i = 0; i < masLeads.NumElements(); i++)
+	{
+		psLead = masLeads.Get(i);
+		if (psLead->pcTargetPort == NULL)
+		{
+			paiConnections->Add(-1);
+			continue;
+		}
+
+		uiNetIndex = apcNetPorts.Find(psLead->pcNetPort);
+		if (uiNetIndex == ARRAY_ELEMENT_NOT_FOUND)
+		{
+			uiNet = pcConnector->AddNet();
+			apcNetPorts.Add(psLead->pcNetPort);
+			aiNets.Add((int)uiNet);
+		}
+		else
+		{
+			uiNet = (size)aiNets.GetValue(uiNetIndex);
+		}
+		if (pcConnector->AddConnection(uiNet, psLead->pcPort, psLead->pcTargetPort, TRACE_AUTO_CONNECT_NO_BEND))
+		{
+			paiConnections->Add((int)(pcConnector->NumConnections() - 1));
+		}
+		else
+		{
+			paiConnections->Add(-1);
+		}
+	}
+	aiNets.Kill();
+	apcNetPorts.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The lead wired straight from its port to where it went: along and then
+// across.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::AddStraightLead(SMoveLead* psLead)
+{
+	SInt32Vec2	sPort;
+
+	sPort = psLead->pcPort->GetGridPosition();
+	if (sPort.x != psLead->sTarget.x)
+	{
+		mpcCircuit->AddTrace(sPort.x, sPort.y, psLead->sTarget.x, sPort.y);
+	}
+	if (sPort.y != psLead->sTarget.y)
+	{
+		mpcCircuit->AddTrace(psLead->sTarget.x, sPort.y, psLead->sTarget.x, psLead->sTarget.y);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Routes each moved port again to where its lead went, where the ports
-// are now, or wires it there straight (along and then across) if it can't
+// are now, or wires it there straight (see AddStraightLead) if it can't
 // be routed.  Leads that end on the same net (pcNetPort) are routed as one
 // net, as a port can only be on one.  The routes replace those of the
 // last time and are left in the circuit, not merged, split or simulated,
@@ -757,18 +831,11 @@ void CCircuitEditor::LiftLeads(void)
 void CCircuitEditor::RouteLeads(void)
 {
 	size					i;
-	size					uiConnection;
-	size					uiNet;
-	size					uiNetIndex;
+	size					uiFirstRoute;
 	SMoveLead*				psLead;
-	CTraceView*				pcTrace;
-	CArrayTraceViewPtr		apcBefore;
 	CArrayInt				aiConnections;
-	CArrayPortViewPtr		apcNetPorts;
-	CArrayInt				aiNets;
 	CTraceAutoConnector		cConnector;
-	SInt32Vec2				sPort;
-	bool					bRouted;
+	int						iConnection;
 
 	if (masLeads.NumElements() == 0)
 	{
@@ -780,78 +847,29 @@ void CCircuitEditor::RouteLeads(void)
 	}
 	KillLeadRoutes();
 
-	apcBefore.Init();
-	for (i = 0; i < mpcCircuit->NumTraces(); i++)
-	{
-		apcBefore.Add(mpcCircuit->GetTrace(i));
-	}
+	//The router and AddTrace only add traces, after those already in the circuit.
+	uiFirstRoute = mpcCircuit->NumTraces();
 
 	aiConnections.Init();
-	apcNetPorts.Init();
-	aiNets.Init();
 	cConnector.Init(mpcCircuit);
-	uiConnection = 0;
-	for (i = 0; i < masLeads.NumElements(); i++)
-	{
-		psLead = masLeads.Get(i);
-		uiNet = 0;
-		if (psLead->pcTargetPort != NULL)
-		{
-			uiNetIndex = apcNetPorts.Find(psLead->pcNetPort);
-			if (uiNetIndex == ARRAY_ELEMENT_NOT_FOUND)
-			{
-				uiNet = cConnector.AddNet();
-				apcNetPorts.Add(psLead->pcNetPort);
-				aiNets.Add((int)uiNet);
-			}
-			else
-			{
-				uiNet = (size)aiNets.GetValue(uiNetIndex);
-			}
-		}
-		if ((psLead->pcTargetPort != NULL) && cConnector.AddConnection(uiNet, psLead->pcPort, psLead->pcTargetPort, TRACE_AUTO_CONNECT_NO_BEND))
-		{
-			aiConnections.Add((int)uiConnection);
-			uiConnection++;
-		}
-		else
-		{
-			aiConnections.Add(-1);
-		}
-	}
+	AddLeadConnections(&cConnector, &aiConnections);
 	cConnector.Connect();
-	aiNets.Kill();
-	apcNetPorts.Kill();
-
 	for (i = 0; i < masLeads.NumElements(); i++)
 	{
 		psLead = masLeads.Get(i);
-		bRouted = (aiConnections.GetValue(i) != -1) && cConnector.IsConnected((size)aiConnections.GetValue(i));
-		if (!bRouted)
+		iConnection = aiConnections.GetValue(i);
+		if ((iConnection == -1) || !cConnector.IsConnected((size)iConnection))
 		{
-			sPort = psLead->pcPort->GetGridPosition();
-			if (sPort.x != psLead->sTarget.x)
-			{
-				mpcCircuit->AddTrace(sPort.x, sPort.y, psLead->sTarget.x, sPort.y);
-			}
-			if (sPort.y != psLead->sTarget.y)
-			{
-				mpcCircuit->AddTrace(psLead->sTarget.x, sPort.y, psLead->sTarget.x, psLead->sTarget.y);
-			}
+			AddStraightLead(psLead);
 		}
 	}
 	cConnector.Kill();
 	aiConnections.Kill();
 
-	for (i = 0; i < mpcCircuit->NumTraces(); i++)
+	for (i = uiFirstRoute; i < mpcCircuit->NumTraces(); i++)
 	{
-		pcTrace = mpcCircuit->GetTrace(i);
-		if (apcBefore.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND)
-		{
-			mapcLeadRoutes.Add(pcTrace);
-		}
+		mapcLeadRoutes.Add(mpcCircuit->GetTrace(i));
 	}
-	apcBefore.Kill();
 }
 
 

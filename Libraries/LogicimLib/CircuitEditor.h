@@ -33,6 +33,7 @@ class CWirePullEdit;
 class CMoveComponentsEdit;
 class CXMLWriter;
 class CMarkupTag;
+class CTraceAutoConnector;
 
 
 //The wires from a port of a component being moved to the next junction or port, and where they end: a port of a
@@ -278,6 +279,8 @@ protected:
 	CPortView*			FindNetPort(SInt32Vec2 sPoint, CArrayTraceViewPtr* papcExcluded, CArrayComponentViewPtr* papcComponents);
 	void				LiftLeads(void);
 	void				RouteLeads(void);
+	void				AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayInt* paiConnections);
+	void				AddStraightLead(SMoveLead* psLead);
 	void				KillLeadRoutes(void);
 	void				RestoreLeads(void);
 	void				FinishLeads(CArrayTraceViewPtr* papcSeeds);
