@@ -675,3 +675,5 @@ void CLogicimWindowContent::Redo(bool bStep)
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) { return mpTheme; }
+Ptr<CMenuBar> CLogicimWindowContent::GetMenuBar(void) { return mpMenuBar; }
+float32 CLogicimWindowContent::GetZoom(void) { return mpCircuit->GetCircuitDraw()->GetZoom(); }

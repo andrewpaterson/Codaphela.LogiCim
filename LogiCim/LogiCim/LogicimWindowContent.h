@@ -170,6 +170,8 @@ public:
 	bool				ImportKicadSchematic(const char* szFilename);
 	void				SetStartupImport(const char* szFilename);
 	Ptr<CWindowTheme>	GetTheme(void);
+	Ptr<CMenuBar>	GetMenuBar(void);
+	float32			GetZoom(void);
 	void				SubcircuitSelected(void);
 	void				EnterSubcircuit(CComponentView* pcInstance);
 	void				LeaveSubcircuit(void);

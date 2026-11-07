@@ -26,6 +26,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "StandardLib/Objects.h"
 #include "WindowLib/ClearCanvasDraw.h"
+#include "WindowLib/MenuBar.h"
 #include "LogicimWindowTick.h"
 #include "LogicimApp.h"
 
@@ -201,6 +202,168 @@ void KillLogicimGlobals(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The comma separated steps of a scripted check (Checks/LogicimChecks.py),
+// run once the window is set up but not shown, each printing what is
+// checked.  False if a step isn't known.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimApp::Check(const char* szSteps)
+{
+	CChars		szAll;
+	CArrayChars	aszSteps;
+	size		i;
+	bool		bResult;
+
+	szAll.Init(szSteps);
+	aszSteps.Init();
+	szAll.Split(&aszSteps, ',');
+	bResult = true;
+	for (i = 0; bResult && (i < aszSteps.NumElements()); i++)
+	{
+		bResult = CheckStep(aszSteps.Get(i)->Text());
+	}
+	aszSteps.Kill();
+	szAll.Kill();
+	fflush(stdout);
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// commands: every command, its keys and whether the keyboard gives them.
+// menus: each menu's items and their commands.  buttons: how many of the
+// tool buttons run a command.  command:<name> runs one.  zoom: the
+// circuit's zoom.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimApp::CheckStep(const char* szStep)
+{
+	size	uiWithCommand;
+	size	uiWithout;
+
+	if (StringCompare(szStep, "commands") == 0)
+	{
+		PrintCommands();
+	}
+	else if (StringCompare(szStep, "menus") == 0)
+	{
+		PrintMenus();
+	}
+	else if (StringCompare(szStep, "buttons") == 0)
+	{
+		uiWithCommand = 0;
+		uiWithout = 0;
+		CountButtons(mpWindow->GetContainer(), &uiWithCommand, &uiWithout);
+		printf("Buttons: %d with a command, %d without\n", (int)uiWithCommand, (int)uiWithout);
+	}
+	else if (strncmp(szStep, "command:", 8) == 0)
+	{
+		printf("Command %s: %s\n", &szStep[8], mpWindow->GetCommands()->Run(&szStep[8]) ? "run" : "not run");
+	}
+	else if (StringCompare(szStep, "zoom") == 0)
+	{
+		printf("Zoom: %.2f\n", mpContent->GetZoom());
+	}
+	else
+	{
+		printf("Unknown check step [%s]\n", szStep);
+		return false;
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintCommands(void)
+{
+	Ptr<CCommandSet>	pCommands;
+	Ptr<CCommand>		pCommand;
+	size				i;
+
+	pCommands = mpWindow->GetCommands();
+	printf("Commands: %d\n", (int)pCommands->NumCommands());
+	for (i = 0; i < pCommands->NumCommands(); i++)
+	{
+		pCommand = pCommands->GetCommand(i);
+		if (StrEmpty(pCommand->GetKeys()))
+		{
+			printf("Command: %s\n", pCommand->GetName());
+		}
+		else
+		{
+			printf("Command: %s [%s] %s\n", pCommand->GetName(), pCommand->GetKeys(), mcComponentInput.IsBound(pCommand->GetKeys()) ? "bound" : "NOT BOUND");
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintMenus(void)
+{
+	Ptr<CMenuBar>		pBar;
+	Ptr<CMenuContainer>	pMenu;
+	Ptr<CMenuItem>		pItem;
+	size				i;
+	size				j;
+
+	pBar = mpContent->GetMenuBar();
+	for (i = 0; i < pBar->NumMenus(); i++)
+	{
+		pMenu = pBar->GetItem(i)->GetMenu();
+		printf("Menu %s:", pBar->GetItem(i)->GetCaption());
+		for (j = 0; j < pMenu->NumItems(); j++)
+		{
+			pItem = pMenu->GetItem(j);
+			printf(" %s [%s]", pItem->GetText(), pItem->GetCommand().IsNotNull() ? pItem->GetCommand()->GetName() : "none");
+		}
+		printf("\n");
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The buttons in pComponent and its children, but not the menu bar's,
+// which open menus.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::CountButtons(Ptr<CComponent> pComponent, size* puiWithCommand, size* puiWithout)
+{
+	CButton*	pcButton;
+	size		i;
+
+	if (pComponent.IsNull())
+	{
+		return;
+	}
+	pcButton = dynamic_cast<CButton*>(&pComponent);
+	if (pcButton && (dynamic_cast<CMenuBarItem*>(pcButton) == NULL))
+	{
+		if (pcButton->GetCommand().IsNotNull())
+		{
+			(*puiWithCommand)++;
+		}
+		else
+		{
+			(*puiWithout)++;
+		}
+	}
+	for (i = 0; i < pComponent->NumComponents(); i++)
+	{
+		CountButtons(pComponent->GetComponent(i), puiWithCommand, puiWithout);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Runs LogiCim on the platform's window factory and input, which must be
 // initialised (the app's input reads the devices from the XML in
 // szInputDirectory, then adds the native input's).  The app (its window,
@@ -218,7 +381,12 @@ bool RunLogicimApp(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNative
 
 	pApp = OMalloc<CLogicimApp>();
 	ORoot()->Add(pApp);
-	bResult = pApp->Setup(pcNativeFactory, pcNativeInput, szInputDirectory) && pApp->Run();
+	bResult = pApp->Setup(pcNativeFactory, pcNativeInput, szInputDirectory);
+	if (bResult)
+	{
+		//LOGICIM_CHECK="commands,menus,..." runs the steps (see CLogicimApp::Check) instead of the window.
+		bResult = (getenv("LOGICIM_CHECK") != NULL) ? pApp->Check(getenv("LOGICIM_CHECK")) : pApp->Run();
+	}
 	ORoot()->Remove(pApp);
 	pApp = NULL;
 

@@ -58,6 +58,13 @@ public:
 	bool	Load(CObjectReader* pcFile) override;
 
 	bool	Run(void);
+	bool	Check(const char* szSteps);
+
+protected:
+	bool	CheckStep(const char* szStep);
+	void	PrintCommands(void);
+	void	PrintMenus(void);
+	void	CountButtons(Ptr<CComponent> pComponent, size* puiWithCommand, size* puiWithout);
 };
 
 
