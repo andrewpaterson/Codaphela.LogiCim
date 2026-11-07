@@ -174,6 +174,7 @@ protected:
 	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage);
 	bool							AddLogicParts(SKicadSchemLogicPart* psPart);
 	bool							AddLogic74Block(SKicadSchemLogicPart* psPart);
+	void							AddLogic74BlockView(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions, CComponentView* pcView, bool bUnit);
 	void							CollectLogic74Pins(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions);
 	void							CollectLogicPins(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins);
 	void							AddLogicPart(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins, size uiGroup);

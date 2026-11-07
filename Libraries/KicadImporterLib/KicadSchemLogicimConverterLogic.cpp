@@ -227,79 +227,112 @@ void CKicadSchemLogicimConverter::CollectLogicPins(SKicadSchemLogicPart* psPart,
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether every gate number has an output and its inputs (a flip flop a
-// clock, data and output), named as a logic part's pins are.
+// Whether flip flop number uiGroup's pins are all flip flop ports, among
+// them a clock, data and an output.
 //
 //////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemLogicPartValid(SKicadSchemLogicPins* psPins, EKicadSchemLogicFunction eFunction)
+static bool IsKicadSchemFlipFlopValid(SKicadSchemLogicPins* psPins, size uiGroup)
 {
 	size					i;
-	size					uiGroup;
-	bool					bValid;
-	int						iOutput;
-	int						iInputs;
 	const char*				szPortName;
 	bool					bHasCP;
 	bool					bHasD;
 	bool					bHasQ;
 	SKicadSchemLogicPin*	psPin;
 
-	bValid = psPins->aszIndices.NumElements() > 0;
-	for (uiGroup = 0; bValid && (uiGroup < psPins->aszIndices.NumElements()); uiGroup++)
+	bHasCP = false;
+	bHasD = false;
+	bHasQ = false;
+	for (i = 0; i < psPins->NumPins(); i++)
 	{
-		iOutput = 0;
-		iInputs = 0;
-		bHasCP = false;
-		bHasD = false;
-		bHasQ = false;
-		for (i = 0; i < psPins->NumPins(); i++)
+		psPin = psPins->GetPin(i);
+		if (psPin->uiGroup == uiGroup)
 		{
-			psPin = psPins->GetPin(i);
-			if (psPin->uiGroup != uiGroup)
+			szPortName = GetKicadSchemFlipFlopPortName(&psPin->szLetters, psPin->bNegated);
+			if (szPortName == NULL)
 			{
-				continue;
+				return false;
 			}
-			if (eFunction == KSLF_DFlipFlop)
-			{
-				szPortName = GetKicadSchemFlipFlopPortName(&psPin->szLetters, psPin->bNegated);
-				if (szPortName == NULL)
-				{
-					bValid = false;
-				}
-				else
-				{
-					bHasCP |= StringCompare(szPortName, "CP") == 0;
-					bHasD |= StringCompare(szPortName, "D") == 0;
-					bHasQ |= StringCompare(szPortName, "Q") == 0;
-				}
-			}
-			else if (psPin->szLetters.Equals("Y"))
-			{
-				iOutput++;
-			}
-			else if (psPin->szLetters.Length() == 1)
-			{
-				iInputs++;
-			}
-			else
-			{
-				bValid = false;
-			}
+			bHasCP |= StringCompare(szPortName, "CP") == 0;
+			bHasD |= StringCompare(szPortName, "D") == 0;
+			bHasQ |= StringCompare(szPortName, "Q") == 0;
 		}
-		if (eFunction == KSLF_DFlipFlop)
+	}
+	return bHasCP && bHasD && bHasQ;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether gate number uiGroup has an output (Y) and its inputs (one
+// letter each): one input for an inverter or buffer, two or more for any
+// other gate.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool IsKicadSchemLogicGateValid(SKicadSchemLogicPins* psPins, size uiGroup, EKicadSchemLogicFunction eFunction)
+{
+	size					i;
+	int						iOutput;
+	int						iInputs;
+	SKicadSchemLogicPin*	psPin;
+
+	if (eFunction == KSLF_DFlipFlop)
+	{
+		return IsKicadSchemFlipFlopValid(psPins, uiGroup);
+	}
+
+	iOutput = 0;
+	iInputs = 0;
+	for (i = 0; i < psPins->NumPins(); i++)
+	{
+		psPin = psPins->GetPin(i);
+		if (psPin->uiGroup != uiGroup)
 		{
-			bValid &= bHasCP && bHasD && bHasQ;
+			continue;
 		}
-		else if ((eFunction == KSLF_Inverter) || (eFunction == KSLF_Buffer))
+		if (psPin->szLetters.Equals("Y"))
 		{
-			bValid &= (iOutput == 1) && (iInputs == 1);
+			iOutput++;
+		}
+		else if (psPin->szLetters.Length() == 1)
+		{
+			iInputs++;
 		}
 		else
 		{
-			bValid &= (iOutput == 1) && (iInputs >= 2);
+			return false;
 		}
 	}
-	return bValid;
+	if ((eFunction == KSLF_Inverter) || (eFunction == KSLF_Buffer))
+	{
+		return (iOutput == 1) && (iInputs == 1);
+	}
+	return (iOutput == 1) && (iInputs >= 2);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the part has gates and every one is valid (see
+// IsKicadSchemLogicGateValid).
+//
+//////////////////////////////////////////////////////////////////////////
+static bool IsKicadSchemLogicPartValid(SKicadSchemLogicPins* psPins, EKicadSchemLogicFunction eFunction)
+{
+	size	uiGroup;
+
+	if (psPins->aszIndices.NumElements() == 0)
+	{
+		return false;
+	}
+	for (uiGroup = 0; uiGroup < psPins->aszIndices.NumElements(); uiGroup++)
+	{
+		if (!IsKicadSchemLogicGateValid(psPins, uiGroup, eFunction))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -774,6 +807,36 @@ static ERotation GetKicadSchemLogic74Rotation(CArrayFloat64Vec2* pasPositions, C
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The way KiCad turned the part, from which side of the part's middle
+// each pin's port is on, unturned (see GetKicadSchemLogic74Rotation).
+// False if a logic pin has no port, or there are no logic pins.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool GetKicadSchemLogic74Turn(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions, bool bUnit, int iUnit, ERotation* peRotation)
+{
+	CComponentView*		pcView;
+	CArrayPortViewPtr	apcPorts;
+	bool				bMapped;
+
+	if (papcPins->NumElements() == 0)
+	{
+		return false;
+	}
+	pcView = NewKicadSchemLogic74View(psPart, ROT_East, bUnit, iUnit);
+	apcPorts.Init();
+	bMapped = MapKicadSchemLogic74Pins(pcView, papcPins, &apcPorts, bUnit);
+	if (bMapped)
+	{
+		*peRotation = GetKicadSchemLogic74Rotation(pasPositions, &apcPorts);
+	}
+	apcPorts.Kill();
+	SafeKill(pcView);
+	return bMapped;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A real 74 series part that isn't gates (see SLogic74Part): a package of
 // the whole part, or a unit of a part KiCad draws as units (a 74LVC74's
 // flip flop).  Each KiCad pin is on the port its name labels (see
@@ -786,16 +849,10 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(SKicadSchemLogicPart* psPart)
 {
 	SLogic74PartType						sType;
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
-	CArrayPortViewPtr						apcPorts;
 	CArrayFloat64Vec2						asPositions;
-	SKicadSchemPointMean					sMean;
-	SFloat64Vec2							sCentre;
 	bool									bUnit;
 	int										iUnit;
-	size									i;
-	CComponentView*							pcView;
 	bool									bMapped;
-	size									uiItem;
 	ERotation								eRotation;
 
 	if (!FindLogic74Part(&sType, psPart->szPartType.Text()) || (sType.psPart->eKind != L74K_Block))
@@ -807,44 +864,46 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(SKicadSchemLogicPart* psPart)
 
 	apcPins.Init();
 	asPositions.Init();
-	apcPorts.Init();
 	CollectLogic74Pins(psPart, &apcPins, &asPositions);
-	bMapped = false;
-	eRotation = ROT_East;
-	if (apcPins.NumElements() > 0)
-	{
-		//Which side of the part's middle each pin's port is on, unturned, gives the way KiCad turned it.
-		pcView = NewKicadSchemLogic74View(psPart, ROT_East, bUnit, iUnit);
-		bMapped = MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
-		if (bMapped)
-		{
-			eRotation = GetKicadSchemLogic74Rotation(&asPositions, &apcPorts);
-		}
-		SafeKill(pcView);
-	}
-
+	bMapped = GetKicadSchemLogic74Turn(psPart, &apcPins, &asPositions, bUnit, iUnit, &eRotation);
 	if (bMapped)
 	{
-		pcView = NewKicadSchemLogic74View(psPart, eRotation, bUnit, iUnit);
-		MapKicadSchemLogic74Pins(pcView, &apcPins, &apcPorts, bUnit);
-		sMean.Init();
-		for (i = 0; i < asPositions.NumElements(); i++)
-		{
-			sMean.Add(asPositions.Get(i));
-		}
-		sMean.Get(&sCentre);
-		uiItem = mcModel.AddItem(pcView, KSLIK_Part, &sCentre, NULL, psPart->pcSymbol);
-		for (i = 0; i < apcPins.NumElements(); i++)
-		{
-			AddPinTerminal(psPart->pcSymbol, apcPins.GetPtr(i), apcPorts.GetPtr(i), uiItem);
-		}
-		msCounts.uiBlocks++;
+		AddLogic74BlockView(psPart, &apcPins, &asPositions, NewKicadSchemLogic74View(psPart, eRotation, bUnit, iUnit), bUnit);
 	}
-
-	apcPorts.Kill();
 	asPositions.Kill();
 	apcPins.Kill();
 	return bMapped;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The block's view where the middle of its pins is, each pin on its port.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddLogic74BlockView(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions, CComponentView* pcView, bool bUnit)
+{
+	CArrayPortViewPtr		apcPorts;
+	SKicadSchemPointMean	sMean;
+	SFloat64Vec2			sCentre;
+	size					i;
+	size					uiItem;
+
+	apcPorts.Init();
+	MapKicadSchemLogic74Pins(pcView, papcPins, &apcPorts, bUnit);
+	sMean.Init();
+	for (i = 0; i < pasPositions->NumElements(); i++)
+	{
+		sMean.Add(pasPositions->Get(i));
+	}
+	sMean.Get(&sCentre);
+	uiItem = mcModel.AddItem(pcView, KSLIK_Part, &sCentre, NULL, psPart->pcSymbol);
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		AddPinTerminal(psPart->pcSymbol, papcPins->GetPtr(i), apcPorts.GetPtr(i), uiItem);
+	}
+	apcPorts.Kill();
+	msCounts.uiBlocks++;
 }
 
 
