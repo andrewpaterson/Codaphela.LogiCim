@@ -55,7 +55,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	CGroundView*			pcGround;
 	CPositivePowerView*		pcPositive;
 	CComponentView*			pcView;
-	SKicadSchemPoint		sPosition;
+	SFloat64Vec2			sPosition;
 	size					uiItem;
 
 	pcPin = NULL;

@@ -200,8 +200,8 @@ void TestKicadSchemNetlistBuses(void)
 		AssertNotNull(psTap->pcMember->GetNet());
 	}
 	AssertString("D3", pcBus->GetTap(4)->pcMember->GetNet()->GetName());
-	AssertDouble(78.74, pcBus->GetTap(4)->sBusPoint.fX, 6);
-	AssertDouble(81.28, pcBus->GetTap(4)->sWirePoint.fX, 6);
+	AssertDouble(78.74, pcBus->GetTap(4)->sBusPoint.x, 6);
+	AssertDouble(81.28, pcBus->GetTap(4)->sWirePoint.x, 6);
 	AssertTrue(pcBus->GetSubnet()->GetNet() == cNetlist.GetBusNet(0));
 	AssertString("D[0..3]", cNetlist.GetBusNet(0)->GetName());
 	AssertTrue(cNetlist.IsBusLabel(pcBus->GetLabel(0)));

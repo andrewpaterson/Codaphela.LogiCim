@@ -139,9 +139,7 @@ void CKicadSchemLogicimConverter::ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pas
 		{
 			continue;
 		}
-		sPosition = psItem->pcView->GetPosition();
-		sPosition.x += psItem->sAnchor.x;
-		sPosition.y += psItem->sAnchor.y;
+		sPosition = psItem->pcView->GetPosition() + psItem->sAnchor;
 		for (j = 0; j < pasCentres->NumElements(); j++)
 		{
 			psCentre = pasCentres->Get(j);
@@ -492,8 +490,8 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 		{
 			continue;
 		}
-		bHorizontal = fabs(psFrom->sKicadPosition.fY - psTo->sKicadPosition.fY) < 0.001;
-		bVertical = fabs(psFrom->sKicadPosition.fX - psTo->sKicadPosition.fX) < 0.001;
+		bHorizontal = fabs(psFrom->sKicadPosition.y - psTo->sKicadPosition.y) < 0.001;
+		bVertical = fabs(psFrom->sKicadPosition.x - psTo->sKicadPosition.x) < 0.001;
 		if (bHorizontal == bVertical)
 		{
 			continue;
@@ -803,7 +801,7 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 			for (k = 0; k < masTerminals.NumElements(); k++)
 			{
 				psOther = masTerminals.Get(k);
-				if ((psOther->pcSubnet == psTerminal->pcSubnet) && (masItems.Get(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.Equals(&psTerminal->sKicadPosition))
+				if ((psOther->pcSubnet == psTerminal->pcSubnet) && (masItems.Get(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
 				{
 					pcTarget = psOther->pcPortView;
 					break;

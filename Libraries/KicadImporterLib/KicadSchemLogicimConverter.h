@@ -130,7 +130,7 @@ struct SKicadSchemLogicimItem
 struct SKicadSchemLogicimTerminal
 {
 	CKicadSchemSubnet*	pcSubnet;
-	SKicadSchemPoint	sKicadPosition;
+	SFloat64Vec2		sKicadPosition;
 	CPortView*			pcPortView;
 	size				uiItem;
 	bool				bBus;
@@ -192,7 +192,7 @@ struct SKicadSchemLogicPins
 	CArrayInt							aiGroups;
 	CArrayChars							aszLetters;
 	CArrayInt							aiNegated;
-	CArrayKicadSchemPoint				asPositions;
+	CArrayFloat64Vec2					asPositions;
 
 	void	Init(void);
 	void	Kill(void);
@@ -205,9 +205,9 @@ struct SKicadSchemLogicLayout
 {
 	CArrayInt			aiInputs;
 	int					iOutput;
-	SKicadSchemPoint	sCentre;
-	SKicadSchemPoint	sInputs;
-	SKicadSchemPoint	sOutputs;
+	SFloat64Vec2		sCentre;
+	SFloat64Vec2		sInputs;
+	SFloat64Vec2		sOutputs;
 };
 
 
@@ -347,11 +347,11 @@ protected:
 	bool							AddBoardPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	CKicadSchemBoardConnector*		AddBoardConnector(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							AddBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector);
-	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SKicadSchemPoint* psOuter);
+	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	bool							AddLogicParts(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, const char* szFamily, const char* szPartType);
 	bool							AddLogic74Block(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, const char* szFamily, const char* szPartType);
-	void							CollectLogic74Pins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayKicadSchemPoint* pasPositions);
+	void							CollectLogic74Pins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions);
 	void							CollectLogicPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, SKicadSchemLogicPins* psPins);
 	void							AddLogicPart(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, SKicadSchemLogicPins* psPins, size uiGroup, const char* szFamily);
 	bool							AddLogic74Part(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, SKicadSchemLogicPins* psPins, const char* szFamily, const char* szPartType);
@@ -385,7 +385,7 @@ protected:
 	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
 	void							JoinSplitterEnd(size uiEnd, size uiPin);
 
-	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor);
+	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor);
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);
@@ -403,7 +403,7 @@ protected:
 	bool							GetItemBox(size uiItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 	void							MeasureImportBoxes(void);
 	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
-	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SKicadSchemPoint* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
+	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
 
 	void							Place(float64 fSpread);

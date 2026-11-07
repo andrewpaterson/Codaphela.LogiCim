@@ -112,16 +112,16 @@ void TestKicadSchemSubnetGraph(void)
 	CKicadSchemWire			cAcross;
 	CKicadSchemWire			cDown;
 	CKicadSchemSubnetGraph	cGraph;
-	SKicadSchemPoint		sStart;
-	SKicadSchemPoint		sCorner;
-	SKicadSchemPoint		sEnd;
-	SKicadSchemPoint		sMiddle;
+	SFloat64Vec2			sStart;
+	SFloat64Vec2			sCorner;
+	SFloat64Vec2			sEnd;
+	SFloat64Vec2			sMiddle;
 	size					uiStart;
 	size					uiEnd;
 	size					uiMiddle;
 	CArrayInt				aiTargets;
 	CArrayInt				aiPath;
-	CArrayKicadSchemPoint	asPath;
+	CArrayFloat64Vec2		asPath;
 	size					i;
 	bool					bHorizontal;
 

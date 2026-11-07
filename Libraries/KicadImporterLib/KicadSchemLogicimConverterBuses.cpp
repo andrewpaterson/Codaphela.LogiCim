@@ -67,9 +67,9 @@ static int GetKicadSchemTapSide(SKicadSchemBusTap* psTap)
 {
 	if (psTap->bVertical)
 	{
-		return (psTap->sWirePoint.fX >= psTap->sBusPoint.fX) ? TRACE_DIRECTION_EAST : TRACE_DIRECTION_WEST;
+		return (psTap->sWirePoint.x >= psTap->sBusPoint.x) ? TRACE_DIRECTION_EAST : TRACE_DIRECTION_WEST;
 	}
-	return (psTap->sWirePoint.fY >= psTap->sBusPoint.fY) ? TRACE_DIRECTION_SOUTH : TRACE_DIRECTION_NORTH;
+	return (psTap->sWirePoint.y >= psTap->sBusPoint.y) ? TRACE_DIRECTION_SOUTH : TRACE_DIRECTION_NORTH;
 }
 
 
@@ -79,7 +79,7 @@ static int GetKicadSchemTapSide(SKicadSchemBusTap* psTap)
 //////////////////////////////////////////////////////////////////////////
 static float64 GetKicadSchemTapAlong(SKicadSchemBusTap* psTap)
 {
-	return psTap->bVertical ? psTap->sBusPoint.fY : psTap->sBusPoint.fX;
+	return psTap->bVertical ? psTap->sBusPoint.y : psTap->sBusPoint.x;
 }
 
 
@@ -90,7 +90,7 @@ static float64 GetKicadSchemTapAlong(SKicadSchemBusTap* psTap)
 //////////////////////////////////////////////////////////////////////////
 static float64 GetKicadSchemTapAcross(SKicadSchemBusTap* psTap)
 {
-	return psTap->bVertical ? psTap->sBusPoint.fX : psTap->sBusPoint.fY;
+	return psTap->bVertical ? psTap->sBusPoint.x : psTap->sBusPoint.y;
 }
 
 
@@ -700,7 +700,7 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	size							uiTaps;
 	size							uiItem;
 	SKicadSchemBusTap*				psTap;
-	SKicadSchemPoint				sCentre;
+	SFloat64Vec2					sCentre;
 	SKicadSchemPointMean			sMean;
 
 	uiTaps = paiTaps->NumElements();

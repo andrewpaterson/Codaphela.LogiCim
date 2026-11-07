@@ -435,7 +435,7 @@ static int GetKicadSchemConnectedAt(CArrayInt* paiNodes, CArrayInt* paiConnected
 //////////////////////////////////////////////////////////////////////////
 static float64 GetKicadSchemPathBend(CKicadSchemSubnetGraph* pcGraph, CArrayInt* paiPath)
 {
-	CArrayKicadSchemPoint	asPath;
+	CArrayFloat64Vec2		asPath;
 	size					i;
 	bool					bHorizontal;
 	float64					fBend;

@@ -253,7 +253,7 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, E
 {
 	size					i;
 	size					j;
-	SKicadSchemPoint*		psPosition;
+	SFloat64Vec2*			psPosition;
 	SKicadSchemPointMean	sCentre;
 	SKicadSchemPointMean	sInputs;
 	SKicadSchemPointMean	sOutputs;
@@ -312,7 +312,7 @@ void CKicadSchemLogicimConverter::CollectLogicPins(CKicadSchemSymbol* pcSymbol, 
 	CChars					szIndex;
 	CChars					szLetters;
 	bool					bNegated;
-	SKicadSchemPoint		sPosition;
+	SFloat64Vec2			sPosition;
 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
@@ -984,12 +984,12 @@ static CComponentView* NewKicadSchemLogic74View(CKicadSchemSymbol* pcSymbol, ERo
 // unturned.  East if its pins aren't on both sides.
 //
 //////////////////////////////////////////////////////////////////////////
-static ERotation GetKicadSchemLogic74Rotation(CArrayKicadSchemPoint* pasPositions, CArrayPortViewPtr* papcPorts)
+static ERotation GetKicadSchemLogic74Rotation(CArrayFloat64Vec2* pasPositions, CArrayPortViewPtr* papcPorts)
 {
 	SKicadSchemPointMean	sLeftMean;
 	SKicadSchemPointMean	sRightMean;
-	SKicadSchemPoint		sLeft;
-	SKicadSchemPoint		sRight;
+	SFloat64Vec2			sLeft;
+	SFloat64Vec2			sRight;
 	size					i;
 
 	sLeftMean.Init();
@@ -1030,9 +1030,9 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 	SLogic74PartType						sType;
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
 	CArrayPortViewPtr						apcPorts;
-	CArrayKicadSchemPoint					asPositions;
+	CArrayFloat64Vec2						asPositions;
 	SKicadSchemPointMean					sMean;
-	SKicadSchemPoint						sCentre;
+	SFloat64Vec2							sCentre;
 	bool									bUnit;
 	int										iUnit;
 	size									i;
@@ -1097,11 +1097,11 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 // KiCad has them on the sheet.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::CollectLogic74Pins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayKicadSchemPoint* pasPositions)
+void CKicadSchemLogicimConverter::CollectLogic74Pins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions)
 {
 	size				i;
 	CKicadSchemLibPin*	pcPin;
-	SKicadSchemPoint	sPosition;
+	SFloat64Vec2		sPosition;
 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{

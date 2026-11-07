@@ -9,7 +9,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SKicadSchemPoint* psPoint, CKicadSchemSymbol* pcPinSymbol, CKicadSchemLibPin* pcPinLibPin)
+bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SFloat64Vec2* psPoint, CKicadSchemSymbol* pcPinSymbol, CKicadSchemLibPin* pcPinLibPin)
 {
 	size					i;
 	size					j;
@@ -18,7 +18,7 @@ bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SKicadSchemPoint* psPoi
 	CKicadSchemLibSymbol*	pcLibSymbol;
 	CKicadSchemLibPin*		pcPin;
 	CKicadSchemSheet*		pcSheet;
-	SKicadSchemPoint		sPosition;
+	SFloat64Vec2			sPosition;
 
 	for (i = 0; i < pcFile->NumWires(); i++)
 	{
@@ -29,21 +29,21 @@ bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SKicadSchemPoint* psPoi
 	}
 	for (i = 0; i < pcFile->NumLabels(); i++)
 	{
-		if (pcFile->GetLabel(i)->GetPosition()->Equals(psPoint))
+		if (pcFile->GetLabel(i)->GetPosition()->CloselyEqual(psPoint, KICAD_SCHEM_POINT_TOLERANCE))
 		{
 			return true;
 		}
 	}
 	for (i = 0; i < pcFile->NumNoConnects(); i++)
 	{
-		if (pcFile->GetNoConnect(i)->GetPosition()->Equals(psPoint))
+		if (pcFile->GetNoConnect(i)->GetPosition()->CloselyEqual(psPoint, KICAD_SCHEM_POINT_TOLERANCE))
 		{
 			return true;
 		}
 	}
 	for (i = 0; i < pcFile->NumJunctions(); i++)
 	{
-		if (pcFile->GetJunction(i)->GetPosition()->Equals(psPoint))
+		if (pcFile->GetJunction(i)->GetPosition()->CloselyEqual(psPoint, KICAD_SCHEM_POINT_TOLERANCE))
 		{
 			return true;
 		}
@@ -53,7 +53,7 @@ bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SKicadSchemPoint* psPoi
 		pcSheet = pcFile->GetSheet(i);
 		for (j = 0; j < pcSheet->NumPins(); j++)
 		{
-			if (pcSheet->GetPin(j)->GetPosition()->Equals(psPoint))
+			if (pcSheet->GetPin(j)->GetPosition()->CloselyEqual(psPoint, KICAD_SCHEM_POINT_TOLERANCE))
 			{
 				return true;
 			}
@@ -74,7 +74,7 @@ bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SKicadSchemPoint* psPoi
 			}
 
 			pcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
-			if (sPosition.Equals(psPoint))
+			if (sPosition.CloselyEqual(psPoint, KICAD_SCHEM_POINT_TOLERANCE))
 			{
 				return true;
 			}
@@ -95,7 +95,7 @@ void AssertKicadSchemPinsConnected(CKicadSchemFile* pcFile)
 	CKicadSchemSymbol*		pcSymbol;
 	CKicadSchemLibSymbol*	pcLibSymbol;
 	CKicadSchemLibPin*		pcPin;
-	SKicadSchemPoint		sPosition;
+	SFloat64Vec2			sPosition;
 	CChars					szUnconnected;
 	size					uiNumPins;
 

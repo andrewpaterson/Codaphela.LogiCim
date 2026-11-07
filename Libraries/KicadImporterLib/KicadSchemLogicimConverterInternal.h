@@ -45,18 +45,18 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 //The middle of the points added to it.
 struct SKicadSchemPointMean
 {
-	SKicadSchemPoint	sSum;
+	SFloat64Vec2		sSum;
 	size				uiCount;
 
 	void	Init(void);
-	void	Add(SKicadSchemPoint* psPoint);
-	void	Get(SKicadSchemPoint* psMean);
+	void	Add(SFloat64Vec2* psPoint);
+	void	Get(SFloat64Vec2* psMean);
 };
 
 
 //The helpers the files of KicadSchemLogicimConverter share.
 bool IsKicadSchemPowerPinName(const char* szName);
-ERotation GetKicadSchemFacing(SKicadSchemPoint* psFrom, SKicadSchemPoint* psTo);
+ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo);
 int GetKicadSchemQuarterTurns(float64 fAngle);
 extern ERotation gaeKicadSchemLogicimRotations[];
 

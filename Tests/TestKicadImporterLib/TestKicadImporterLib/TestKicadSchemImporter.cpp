@@ -63,10 +63,10 @@ char gszKicadSchemTestFile[] =
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void AssertKicadSchemPoint(float64 fX, float64 fY, SKicadSchemPoint* psPoint)
+void AssertKicadSchemPoint(float64 fX, float64 fY, SFloat64Vec2* psPoint)
 {
-	AssertDouble(fX, psPoint->fX, 6);
-	AssertDouble(fY, psPoint->fY, 6);
+	AssertDouble(fX, psPoint->x, 6);
+	AssertDouble(fY, psPoint->y, 6);
 }
 
 
@@ -211,7 +211,7 @@ void TestKicadSchemImporterSymbols(void)
 	CKicadSchemSymbol*			pcSymbol;
 	CKicadSchemLibSymbol*		pcLibSymbol;
 	CKicadSchemSymbolInstance*	pcInstance;
-	SKicadSchemPoint			sPosition;
+	SFloat64Vec2				sPosition;
 
 	cFile.Init();
 	AssertTrue(cFile.Import(gszKicadSchemTestFile, strlen(gszKicadSchemTestFile), "test.kicad_sch"));
@@ -288,8 +288,8 @@ void TestKicadSchemImporterSymbols(void)
 void TestKicadSchemImporterTransforms(void)
 {
 	CKicadSchemTransform	cTransform;
-	SKicadSchemPoint		sLibrary;
-	SKicadSchemPoint		sSheet;
+	SFloat64Vec2			sLibrary;
+	SFloat64Vec2			sSheet;
 
 	//A pin above the symbol's centre in the library, where Y is up.
 	sLibrary.Init(0, 3.81);
@@ -355,7 +355,7 @@ void TestKicadSchemImporterWiring(void)
 	CKicadSchemWire*		pcWire;
 	CKicadSchemLabel*		pcLabel;
 	CKicadSchemBusEntry*	pcBusEntry;
-	SKicadSchemPoint		sPoint;
+	SFloat64Vec2			sPoint;
 
 	cFile.Init();
 	AssertTrue(cFile.Import(gszKicadSchemTestFile, strlen(gszKicadSchemTestFile), "test.kicad_sch"));

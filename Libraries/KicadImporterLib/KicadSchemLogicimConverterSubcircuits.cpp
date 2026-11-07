@@ -184,10 +184,10 @@ static EPinAlignment GetKicadSchemBoardPinAlignment(ERotation eRotation)
 // of the connector's body, returned.
 //
 //////////////////////////////////////////////////////////////////////////
-ERotation CKicadSchemLogicimConverter::GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SKicadSchemPoint* psOuter)
+ERotation CKicadSchemLogicimConverter::GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter)
 {
-	SKicadSchemPoint	sInner;
-	SKicadSchemPoint	sLibrary;
+	SFloat64Vec2		sInner;
+	SFloat64Vec2		sLibrary;
 	int					iAngle;
 	int					aiDX[4] = { 1, 0, -1, 0 };
 	int					aiDY[4] = { 0, 1, 0, -1 };
@@ -195,7 +195,7 @@ ERotation CKicadSchemLogicimConverter::GetBoardPinFacing(CKicadSchemSymbol* pcSy
 	//The pin points into the connector's body from where it's wired (library Y is up).
 	mpcFile->GetPinPosition(psOuter, pcSymbol, pcPin);
 	iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
-	sLibrary.Init(pcPin->GetPosition()->fX + aiDX[iAngle] * pcPin->GetLength(), pcPin->GetPosition()->fY + aiDY[iAngle] * pcPin->GetLength());
+	sLibrary = *pcPin->GetPosition() + SFloat64Vec2(aiDX[iAngle], aiDY[iAngle]) * pcPin->GetLength();
 	pcSymbol->GetSheetPosition(&sInner, &sLibrary);
 	return GetKicadSchemFacing(&sInner, psOuter);
 }
@@ -241,7 +241,7 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	CKicadSchemNet*			pcNet;
 	CChars					szName;
 	CPinView*				pcPinView;
-	SKicadSchemPoint		sOuter;
+	SFloat64Vec2			sOuter;
 	ERotation				eRotation;
 	size					uiItem;
 	char*					szNumber;
@@ -421,11 +421,11 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 		}
 		if ((iAngle == 0) || (iAngle == 2))
 		{
-			bBefore = (pcOther->GetPosition()->fY > pcPin->GetPosition()->fY) || ((pcOther->GetPosition()->fY == pcPin->GetPosition()->fY) && (j < i));
+			bBefore = (pcOther->GetPosition()->y > pcPin->GetPosition()->y) || ((pcOther->GetPosition()->y == pcPin->GetPosition()->y) && (j < i));
 		}
 		else
 		{
-			bBefore = (pcOther->GetPosition()->fX > pcPin->GetPosition()->fX) || ((pcOther->GetPosition()->fX == pcPin->GetPosition()->fX) && (j < i));
+			bBefore = (pcOther->GetPosition()->x > pcPin->GetPosition()->x) || ((pcOther->GetPosition()->x == pcPin->GetPosition()->x) && (j < i));
 		}
 		if (bBefore)
 		{

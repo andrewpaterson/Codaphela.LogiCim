@@ -286,7 +286,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 //////////////////////////////////////////////////////////////////////////
 void SKicadSchemPointMean::Init(void)
 {
-	sSum.Init();
+	sSum.Zero();
 	uiCount = 0;
 }
 
@@ -296,10 +296,9 @@ void SKicadSchemPointMean::Init(void)
 // One more point.
 //
 //////////////////////////////////////////////////////////////////////////
-void SKicadSchemPointMean::Add(SKicadSchemPoint* psPoint)
+void SKicadSchemPointMean::Add(SFloat64Vec2* psPoint)
 {
-	sSum.fX += psPoint->fX;
-	sSum.fY += psPoint->fY;
+	sSum += *psPoint;
 	uiCount++;
 }
 
@@ -309,14 +308,14 @@ void SKicadSchemPointMean::Add(SKicadSchemPoint* psPoint)
 // The middle of the points, the origin if there are none.
 //
 //////////////////////////////////////////////////////////////////////////
-void SKicadSchemPointMean::Get(SKicadSchemPoint* psMean)
+void SKicadSchemPointMean::Get(SFloat64Vec2* psMean)
 {
 	if (uiCount == 0)
 	{
-		psMean->Init();
+		psMean->Zero();
 		return;
 	}
-	psMean->Init(sSum.fX / (float64)uiCount, sSum.fY / (float64)uiCount);
+	*psMean = sSum / (float64)uiCount;
 }
 
 
@@ -325,13 +324,13 @@ void SKicadSchemPointMean::Get(SKicadSchemPoint* psMean)
 // The way from the inputs to the output.
 //
 //////////////////////////////////////////////////////////////////////////
-ERotation GetKicadSchemFacing(SKicadSchemPoint* psFrom, SKicadSchemPoint* psTo)
+ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo)
 {
 	float64		fDX;
 	float64		fDY;
 
-	fDX = psTo->fX - psFrom->fX;
-	fDY = psTo->fY - psFrom->fY;
+	fDX = psTo->x - psFrom->x;
+	fDY = psTo->y - psFrom->y;
 	if (fabs(fDX) >= fabs(fDY))
 	{
 		return (fDX >= 0) ? ROT_East : ROT_West;
@@ -346,7 +345,7 @@ ERotation GetKicadSchemFacing(SKicadSchemPoint* psFrom, SKicadSchemPoint* psTo)
 // that goes where KiCad has the thing, if not the view's position.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor)
+size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor)
 {
 	SKicadSchemLogicimItem*		psItem;
 
@@ -355,7 +354,7 @@ size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLog
 	psItem->pcView = pcView;
 	psItem->eKind = eKind;
 	psItem->bPlacedSplitter = false;
-	psItem->sKicadPosition.Init(psKicadPosition->fX / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->fY / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
+	psItem->sKicadPosition.Init(psKicadPosition->x / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->y / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
 	psItem->pcPort = pcAnchor;
 	psItem->pcAttachedTo = NULL;
 	psItem->eAlign = KSLA_None;
@@ -380,7 +379,7 @@ size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLog
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddTerminal(CKicadSchemSubnet* pcSubnet, SKicadSchemPoint* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus)
+void CKicadSchemLogicimConverter::AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus)
 {
 	SKicadSchemLogicimTerminal*		psTerminal;
 
@@ -403,7 +402,7 @@ void CKicadSchemLogicimConverter::AddTerminal(CKicadSchemSubnet* pcSubnet, SKica
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem)
 {
-	SKicadSchemPoint	sPosition;
+	SFloat64Vec2		sPosition;
 
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
 	AddTerminal(mpcNetlist->GetPinSubnet(pcSymbol, pcPin), &sPosition, pcPortView, uiItem);
