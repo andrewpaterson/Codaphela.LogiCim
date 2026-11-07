@@ -235,6 +235,7 @@ void AppendKicadSchemLogicimPort(CChars* psz, CPortView* pcPortView)
 void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 {
 	CCircuitView*					pcCircuit;
+	CKicadSchemLogicimModel*		pcModel;
 	CArrayPortViewPtr				apcPorts;
 	CArrayInt						aiParents;
 	CArrayTemplatePtr<CKicadSchemNet>	apcGroupNets;
@@ -256,6 +257,7 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 	int								iBit;
 
 	pcCircuit = pcConverter->GetCircuit();
+	pcModel = pcConverter->GetModel();
 	apcPorts.Init();
 	pcCircuit->CollectPortViews(&apcPorts);
 	uiTraces = pcCircuit->NumTraces();
@@ -322,13 +324,13 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 		apcGroupNets.Add(NULL);
 	}
 	aiSubnetGroups.Init();
-	for (i = 0; i < pcConverter->NumTerminals(); i++)
+	for (i = 0; i < pcModel->NumTerminals(); i++)
 	{
 		aiSubnetGroups.Add(-1);
 	}
-	for (i = 0; i < pcConverter->NumTerminals(); i++)
+	for (i = 0; i < pcModel->NumTerminals(); i++)
 	{
-		psTerminal = pcConverter->GetTerminal(i);
+		psTerminal = pcModel->GetTerminal(i);
 		iGroup = FindKicadSchemRoot(&aiParents, (int)(uiTraces + apcPorts.Find(psTerminal->pcPortView)));
 
 		//Nothing of another net, bit for bit (a bus's own terminals are many nets).
@@ -356,7 +358,7 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 		//All of its subnet: the first terminal of the subnet's group.
 		for (j = 0; j < i; j++)
 		{
-			if (pcConverter->GetTerminal(j)->pcSubnet == psTerminal->pcSubnet)
+			if (pcModel->GetTerminal(j)->pcSubnet == psTerminal->pcSubnet)
 			{
 				break;
 			}
@@ -371,7 +373,7 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 			//Names the two terminals that aren't wired together.
 			szFirst.Init(pcConverter->GetCircuit()->GetTypeName());
 			szFirst.Append(": ");
-			AppendKicadSchemLogicimPort(&szFirst, pcConverter->GetTerminal(uiSubnet)->pcPortView);
+			AppendKicadSchemLogicimPort(&szFirst, pcModel->GetTerminal(uiSubnet)->pcPortView);
 			szThis.Init();
 			AppendKicadSchemLogicimPort(&szThis, psTerminal->pcPortView);
 			AssertString(szFirst.Text(), szThis.Text());
@@ -448,6 +450,8 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 	CChars							szUnconnected;
 	size							i;
 	SKicadSchemLogicimConnection*	psConnection;
+	SKicadSchemLogicimCounts*		psCounts;
+	CKicadSchemLogicimModel*		pcModel;
 
 	ObjectsInit();
 	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
@@ -472,17 +476,19 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 	cCircuits.Init();
 	cConverter.Init(&cFile, &cNetlist, &cCircuits, &pFonts);
 	AssertTrue(cConverter.Convert(szName));
-	AssertTrue(cConverter.NumGates() >= uiMinimumGates);
-	AssertTrue(cConverter.NumPlaceholders() >= uiMinimumPlaceholders);
-	AssertSize(uiBoardPins, cConverter.NumBoardPins());
+	psCounts = cConverter.GetCounts();
+	pcModel = cConverter.GetModel();
+	AssertTrue(psCounts->uiGates >= uiMinimumGates);
+	AssertTrue(psCounts->uiPlaceholders >= uiMinimumPlaceholders);
+	AssertSize(uiBoardPins, psCounts->uiBoardPins);
 	if (szText == NULL)
 	{
-		AssertTrue(cConverter.NumConnections() > 0);
+		AssertTrue(pcModel->NumConnections() > 0);
 	}
-	AssertSize(0, cConverter.NumOverlaps());
-	AssertSize(uiPowers, cConverter.NumPowers());
-	AssertSize(uiSplitters, cConverter.NumSplitters());
-	AssertTrue(cConverter.GetExcessKnotsAfter() <= cConverter.GetExcessKnotsBefore());
+	AssertSize(0, psCounts->uiOverlaps);
+	AssertSize(uiPowers, psCounts->uiPowers);
+	AssertSize(uiSplitters, psCounts->uiSplitters);
+	AssertTrue(psCounts->uiExcessKnotsAfter <= psCounts->uiExcessKnotsBefore);
 	if (szFirstGate != NULL)
 	{
 		AssertNotNull(FindKicadSchemLogicimComponent(cConverter.GetCircuit(), szFirstGate));
@@ -497,20 +503,20 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 	AssertKicadSchemLogicimExpected(szName);
 
 	szUnconnected.Init();
-	for (i = 0; i < cConverter.NumConnections(); i++)
+	for (i = 0; i < pcModel->NumConnections(); i++)
 	{
-		psConnection = cConverter.GetConnection(i);
+		psConnection = pcModel->GetConnection(i);
 		if (!psConnection->bConnected)
 		{
-			AppendKicadSchemLogicimPort(&szUnconnected, cConverter.GetTerminal(psConnection->uiFrom)->pcPortView);
+			AppendKicadSchemLogicimPort(&szUnconnected, pcModel->GetTerminal(psConnection->uiFrom)->pcPortView);
 			szUnconnected.Append(" to ");
-			AppendKicadSchemLogicimPort(&szUnconnected, cConverter.GetTerminal(psConnection->uiTo)->pcPortView);
+			AppendKicadSchemLogicimPort(&szUnconnected, pcModel->GetTerminal(psConnection->uiTo)->pcPortView);
 			szUnconnected.Append("; ");
 		}
 	}
 	AssertString("", szUnconnected.Text());
 	szUnconnected.Kill();
-	AssertSize(0, cConverter.NumUnconnected());
+	AssertSize(0, psCounts->uiUnconnected);
 	AssertKicadSchemLogicimWired(&cConverter);
 
 	cLoaded.Init();
@@ -736,20 +742,20 @@ void TestKicadSchemLogicimBoards(void)
 	{
 		pcBoard = cImporter.GetBoard(i);
 		AssertNotNull(pcBoard->GetCircuit());
-		if ((pcBoard->NumOverlaps() != 0) || (pcBoard->NumUnconnected() != 0))
+		if ((pcBoard->GetCounts()->uiOverlaps != 0) || (pcBoard->GetCounts()->uiUnconnected != 0))
 		{
 			szProblems.Append(pcBoard->GetCircuit()->GetTypeName());
 			szProblems.Append(": ");
-			szProblems.Append(pcBoard->NumOverlaps());
+			szProblems.Append(pcBoard->GetCounts()->uiOverlaps);
 			szProblems.Append(" overlaps, ");
-			szProblems.Append(pcBoard->NumUnconnected());
+			szProblems.Append(pcBoard->GetCounts()->uiUnconnected);
 			szProblems.Append(" unconnected; ");
 		}
 	}
 	AssertString("", szProblems.Text());
 	szProblems.Kill();
 	pcBoard = cImporter.GetBoardForCircuit(pcTop);
-	AssertSize(15, pcBoard->NumBoards());
+	AssertSize(15, pcBoard->GetCounts()->uiBoards);
 
 	uiInstances = 0;
 	for (i = 0; i < pcTop->NumComponents(); i++)

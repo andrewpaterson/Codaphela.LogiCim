@@ -69,22 +69,8 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcAddingSymbol = NULL;
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
-	muiBoards = 0;
-	muiRegulators = 0;
 	mfSpread = 1.0;
-	muiUnconnected = 0;
-	muiGates = 0;
-	muiPlaceholders = 0;
-	muiPowers = 0;
-	muiTunnels = 0;
-	muiSplitters = 0;
-	muiBlocks = 0;
-	muiBoardPins = 0;
-	muiSkipped = 0;
-	muiOverlaps = 0;
-	muiExplosions = 0;
-	muiExcessBefore = 0;
-	muiExcessAfter = 0;
+	msCounts.Init();
 }
 
 
@@ -170,9 +156,9 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	uiFirstUnconnected = Route();
 	mfSpread = KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM;
 	Place(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM);
-	muiUnconnected = Route();
+	msCounts.uiUnconnected = Route();
 	bRouted = true;
-	if (muiUnconnected <= uiFirstUnconnected)
+	if (msCounts.uiUnconnected <= uiFirstUnconnected)
 	{
 		mfSpread = KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM;
 	}
@@ -184,8 +170,8 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 		{
 			fSpread = (mfSpread + fWorse) / 2;
 			Place(fSpread);
-			muiUnconnected = Route();
-			if (muiUnconnected > uiFirstUnconnected)
+			msCounts.uiUnconnected = Route();
+			if (msCounts.uiUnconnected > uiFirstUnconnected)
 			{
 				fWorse = fSpread;
 				bRouted = false;
@@ -200,7 +186,7 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	if (!bRouted)
 	{
 		Place(mfSpread);
-		muiUnconnected = Route();
+		msCounts.uiUnconnected = Route();
 	}
 	Explode();
 	return true;
@@ -230,7 +216,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 	}
 	if (IsSkippedSymbol(pcSymbol))
 	{
-		muiSkipped++;
+		msCounts.uiSkipped++;
 		return true;
 	}
 	if (AddRegulator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
@@ -498,23 +484,5 @@ float32 CKicadSchemLogicimConverter::GetSupplyVoltage(const char* szName)
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mpcCircuit; }
 float64 CKicadSchemLogicimConverter::GetSpread(void) { return mfSpread; }
-size CKicadSchemLogicimConverter::NumConnections(void) { return mcModel.NumConnections(); }
-size CKicadSchemLogicimConverter::NumUnconnected(void) { return muiUnconnected; }
-SKicadSchemLogicimConnection* CKicadSchemLogicimConverter::GetConnection(size uiIndex) { return mcModel.GetConnection(uiIndex); }
-size CKicadSchemLogicimConverter::NumTerminals(void) { return mcModel.NumTerminals(); }
-SKicadSchemLogicimTerminal* CKicadSchemLogicimConverter::GetTerminal(size uiIndex) { return mcModel.GetTerminal(uiIndex); }
-size CKicadSchemLogicimConverter::NumItems(void) { return mcModel.NumItems(); }
-size CKicadSchemLogicimConverter::NumGates(void) { return muiGates; }
-size CKicadSchemLogicimConverter::NumPlaceholders(void) { return muiPlaceholders; }
-size CKicadSchemLogicimConverter::NumBoards(void) { return muiBoards; }
-size CKicadSchemLogicimConverter::NumPowers(void) { return muiPowers; }
-size CKicadSchemLogicimConverter::NumRegulators(void) { return muiRegulators; }
-size CKicadSchemLogicimConverter::NumTunnels(void) { return muiTunnels; }
-size CKicadSchemLogicimConverter::NumSplitters(void) { return muiSplitters; }
-size CKicadSchemLogicimConverter::NumBlocks(void) { return muiBlocks; }
-size CKicadSchemLogicimConverter::NumBoardPins(void) { return muiBoardPins; }
-size CKicadSchemLogicimConverter::NumSkipped(void) { return muiSkipped; }
-size CKicadSchemLogicimConverter::NumOverlaps(void) { return muiOverlaps; }
-size CKicadSchemLogicimConverter::NumExplosions(void) { return muiExplosions; }
-size CKicadSchemLogicimConverter::GetExcessKnotsBefore(void) { return muiExcessBefore; }
-size CKicadSchemLogicimConverter::GetExcessKnotsAfter(void) { return muiExcessAfter; }
+SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
+CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }

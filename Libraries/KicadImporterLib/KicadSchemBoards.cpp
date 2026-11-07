@@ -101,10 +101,7 @@ void CKicadSchemBoard::Init(const char* szSchematic)
 	mapcConnectors.Init();
 	mbConverting = false;
 	mbLaidOut = false;
-	muiUnconnected = 0;
-	muiOverlaps = 0;
-	muiPlaceholders = 0;
-	muiBoards = 0;
+	msCounts.Init();
 }
 
 
@@ -179,12 +176,9 @@ CKicadSchemBoardConnector* CKicadSchemBoard::FindConnector(size uiNumSymbolPins)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemBoard::SetCounts(size uiUnconnected, size uiOverlaps, size uiPlaceholders, size uiBoards)
+void CKicadSchemBoard::SetCounts(SKicadSchemLogicimCounts* psCounts)
 {
-	muiUnconnected = uiUnconnected;
-	muiOverlaps = uiOverlaps;
-	muiPlaceholders = uiPlaceholders;
-	muiBoards = uiBoards;
+	msCounts = *psCounts;
 }
 
 
@@ -201,10 +195,7 @@ char* CKicadSchemBoard::GetSchematic(void) { return mszSchematic.Text(); }
 CCircuitView* CKicadSchemBoard::GetCircuit(void) { return mpcCircuit; }
 bool CKicadSchemBoard::IsConverting(void) { return mbConverting; }
 bool CKicadSchemBoard::IsLaidOut(void) { return mbLaidOut; }
-size CKicadSchemBoard::NumUnconnected(void) { return muiUnconnected; }
-size CKicadSchemBoard::NumOverlaps(void) { return muiOverlaps; }
-size CKicadSchemBoard::NumPlaceholders(void) { return muiPlaceholders; }
-size CKicadSchemBoard::NumBoards(void) { return muiBoards; }
+SKicadSchemLogicimCounts* CKicadSchemBoard::GetCounts(void) { return &msCounts; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -334,7 +325,7 @@ CKicadSchemBoard* CKicadSchemBoardImporter::Convert(const char* szFullPath)
 	if (bResult)
 	{
 		pcBoard->SetCircuit(cConverter.GetCircuit());
-		pcBoard->SetCounts(cConverter.NumUnconnected(), cConverter.NumOverlaps(), cConverter.NumPlaceholders(), cConverter.NumBoards());
+		pcBoard->SetCounts(cConverter.GetCounts());
 	}
 	else
 	{

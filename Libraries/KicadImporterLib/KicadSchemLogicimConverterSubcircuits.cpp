@@ -245,7 +245,7 @@ void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKica
 	pcPinView->SetSubcircuitAppearance(GetKicadSchemBoardPinAlignment(eRotation), PAN_Negative, atoi(szNumber), false, false);
 	//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
 	uiItem = AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL);
-	muiBoardPins++;
+	msCounts.uiBoardPins++;
 	if (pcConnector != NULL)
 	{
 		pcConnector->AddPin(szNumber, pcPinView);
@@ -335,7 +335,7 @@ bool CKicadSchemLogicimConverter::AddPlaceholder(CKicadSchemSymbol* pcSymbol, CK
 	}
 	aszNames.Kill();
 	apcPins.Kill();
-	muiPlaceholders++;
+	msCounts.uiPlaceholders++;
 	return true;
 }
 
@@ -479,7 +479,7 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 	apcJoined.Kill();
 	aszNames.Kill();
 	apcPins.Kill();
-	muiBoards++;
+	msCounts.uiBoards++;
 	return true;
 }
 

@@ -617,7 +617,7 @@ void CKicadSchemLogicimConverter::AddLogicPart(CKicadSchemSymbol* pcSymbol, CKic
 		AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(sLayout.iOutput), pcView->GetPortView(sLayout.aiInputs.NumElements()), uiItem);
 	}
 	sLayout.aiInputs.Kill();
-	muiGates++;
+	msCounts.uiGates++;
 }
 
 
@@ -757,7 +757,7 @@ void CKicadSchemLogicimConverter::AddLogic74Unit(CKicadSchemSymbol* pcSymbol, in
 		szPortName.Kill();
 	}
 	AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(psLayout->iOutput), pcUnit->GetPortView("Output"), uiItem);
-	muiGates++;
+	msCounts.uiGates++;
 }
 
 
@@ -791,7 +791,7 @@ void CKicadSchemLogicimConverter::AddLogic74Package(CKicadSchemSymbol* pcSymbol,
 			AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(i), pcPortView, uiItem);
 		}
 	}
-	muiGates += psPins->aszIndices.NumElements();
+	msCounts.uiGates += psPins->aszIndices.NumElements();
 }
 
 
@@ -1081,7 +1081,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Block(CKicadSchemSymbol* pcSymbol, C
 		{
 			AddPinTerminal(pcSymbol, apcPins.GetPtr(i), apcPorts.GetPtr(i), uiItem);
 		}
-		muiBlocks++;
+		msCounts.uiBlocks++;
 	}
 
 	apcPorts.Kill();

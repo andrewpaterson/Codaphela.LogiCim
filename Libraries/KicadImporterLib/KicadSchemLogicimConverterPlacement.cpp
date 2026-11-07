@@ -63,7 +63,7 @@ void CKicadSchemLogicimConverter::Explode(void)
 	asCentres.Init();
 	asOffsets.Init();
 	uiExcess = FindDenseAreas(&asCentres);
-	muiExcessBefore = uiExcess;
+	msCounts.uiExcessKnotsBefore = uiExcess;
 	bOnlyDensest = false;
 	for (uiPass = 0; (uiPass < KICAD_SCHEM_LOGICIM_EXPLODE_PASSES) && (asCentres.NumElements() > 0); uiPass++)
 	{
@@ -85,7 +85,7 @@ void CKicadSchemLogicimConverter::Explode(void)
 		uiUnconnected = Route();
 		asCentres.ReInit();
 		uiNewExcess = FindDenseAreas(&asCentres);
-		if ((uiUnconnected > muiUnconnected) || (uiNewExcess >= uiExcess))
+		if ((uiUnconnected > msCounts.uiUnconnected) || (uiNewExcess >= uiExcess))
 		{
 			//Worse: back to how it was.
 			for (i = 0; i < mcModel.NumItems(); i++)
@@ -93,7 +93,7 @@ void CKicadSchemLogicimConverter::Explode(void)
 				mcModel.GetItem(i)->sOffset = *asOffsets.Get(i);
 			}
 			Place(mfSpread);
-			muiUnconnected = Route();
+			msCounts.uiUnconnected = Route();
 			if (bOnlyDensest)
 			{
 				break;
@@ -103,12 +103,12 @@ void CKicadSchemLogicimConverter::Explode(void)
 			FindDenseAreas(&asCentres);
 			continue;
 		}
-		muiUnconnected = uiUnconnected;
+		msCounts.uiUnconnected = uiUnconnected;
 		uiExcess = uiNewExcess;
-		muiExplosions++;
+		msCounts.uiExplosions++;
 		bOnlyDensest = false;
 	}
-	muiExcessAfter = uiExcess;
+	msCounts.uiExcessKnotsAfter = uiExcess;
 	asOffsets.Kill();
 	asCentres.Kill();
 }
@@ -1084,7 +1084,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 
 	PlaceAttachedItems();
 	asPlaced.Init();
-	muiOverlaps = 0;
+	msCounts.uiOverlaps = 0;
 
 	aiOrder.Init();
 	GetSeparateOrder(&aiOrder);
@@ -1099,7 +1099,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 
 		if (!FindKicadSchemLogicimFreeMove(&sBox, psItem->eAlign, &asPlaced, &sMove))
 		{
-			muiOverlaps++;
+			msCounts.uiOverlaps++;
 		}
 		sPosition = psItem->pcView->GetPosition();
 		psItem->pcView->SetPosition(sPosition.x + sMove.x, sPosition.y + sMove.y);

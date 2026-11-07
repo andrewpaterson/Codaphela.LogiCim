@@ -28,6 +28,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/CircuitFonts.h"
 #include "LogicimLib/ValueView.h"
 #include "KicadLib/KicadPathVariables.h"
+#include "KicadSchemLogicimCounts.h"
 
 
 //The property of a board's symbol that names the board's own schematic, as
@@ -63,15 +64,12 @@ public:
 class CKicadSchemBoard
 {
 protected:
-	CChars									mszSchematic;  //The schematic's full path.
-	CCircuitView*							mpcCircuit;
+	CChars											mszSchematic;  //The schematic's full path.
+	CCircuitView*									mpcCircuit;
 	CArrayTemplatePtr<CKicadSchemBoardConnector>	mapcConnectors;
-	bool									mbConverting;
-	bool									mbLaidOut;
-	size									muiUnconnected;
-	size									muiOverlaps;
-	size									muiPlaceholders;
-	size									muiBoards;
+	bool											mbConverting;
+	bool											mbLaidOut;
+	SKicadSchemLogicimCounts						msCounts;  //What converting it made.
 
 public:
 	void						Init(const char* szSchematic);
@@ -85,16 +83,13 @@ public:
 	void						SetCircuit(CCircuitView* pcCircuit);
 	void						SetConverting(bool bConverting);
 	void						SetLaidOut(void);
-	void						SetCounts(size uiUnconnected, size uiOverlaps, size uiPlaceholders, size uiBoards);
+	void						SetCounts(SKicadSchemLogicimCounts* psCounts);
 
 	char*						GetSchematic(void);
 	CCircuitView*				GetCircuit(void);
 	bool						IsConverting(void);
 	bool						IsLaidOut(void);
-	size						NumUnconnected(void);
-	size						NumOverlaps(void);
-	size						NumPlaceholders(void);
-	size						NumBoards(void);
+	SKicadSchemLogicimCounts*	GetCounts(void);
 };
 
 

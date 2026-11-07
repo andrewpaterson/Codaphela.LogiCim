@@ -97,11 +97,11 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 		{
 			if (psItem->eKind == KSLIK_Tunnel)
 			{
-				muiTunnels--;
+				msCounts.uiTunnels--;
 			}
 			else
 			{
-				muiPowers--;
+				msCounts.uiPowers--;
 			}
 			mpcCircuit->Remove(psItem->pcView);
 			SafeKill(psItem->pcView);

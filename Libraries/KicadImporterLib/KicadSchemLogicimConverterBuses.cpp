@@ -207,7 +207,7 @@ void CKicadSchemLogicimConverter::AddBusTunnels(CKicadSchemBus* pcBus)
 		pcTunnel->Init(0, 0, GetKicadRotation(ROT_East, pcLabel->GetAngle()), pcBus->GetName(), false, mpcFonts);
 		uiItem = AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0));
 		mcModel.AddTerminal(pcBus->GetSubnet(), pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem, true);
-		muiTunnels++;
+		msCounts.uiTunnels++;
 	}
 }
 
@@ -746,7 +746,7 @@ void CKicadSchemLogicimConverter::AddBusSplitter(CKicadSchemBus* pcBus, CArrayIn
 	aiOrder.Kill();
 	apcPins.Kill();
 	aiFans.Kill();
-	muiSplitters++;
+	msCounts.uiSplitters++;
 }
 
 
@@ -838,7 +838,7 @@ void CKicadSchemLogicimConverter::AddTunnels(void)
 				pcTunnel->Init(0, 0, GetKicadRotation(ROT_East, pcLabel->GetAngle()), pcNet->GetName(), false, mpcFonts);
 				uiItem = AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0));
 				mcModel.AddTerminal(pcSubnet, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem);
-				muiTunnels++;
+				msCounts.uiTunnels++;
 			}
 		}
 	}

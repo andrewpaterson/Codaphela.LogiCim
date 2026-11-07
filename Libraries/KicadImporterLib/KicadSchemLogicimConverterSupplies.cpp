@@ -70,7 +70,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	szName = (pcPin != NULL) ? CKicadSchemNetlist::GetGlobalPowerName(pcSymbol, pcLibSymbol, pcPin) : NULL;
 	if ((pcPin == NULL) || StrEmpty(szName) || (StringCompare(szName, "PWR_FLAG") == 0) || (strstr(pcLibSymbol->GetName(), "PWR_FLAG") != NULL))
 	{
-		muiSkipped++;
+		msCounts.uiSkipped++;
 		return true;
 	}
 
@@ -90,7 +90,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
 	uiItem = AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0));
 	AddPinTerminal(pcSymbol, pcPin, pcView->GetPortView((size)0), uiItem);
-	muiPowers++;
+	msCounts.uiPowers++;
 	return true;
 }
 
@@ -231,7 +231,7 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 			}
 		}
 	}
-	muiRegulators++;
+	msCounts.uiRegulators++;
 	return true;
 }
 

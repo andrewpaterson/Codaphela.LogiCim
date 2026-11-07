@@ -27,6 +27,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicFunction.h"
 #include "KicadSchemLogicimModel.h"
+#include "KicadSchemLogicimCounts.h"
 #include "KicadLib/KicadSchemSubnetGraph.h"
 
 
@@ -217,22 +218,8 @@ protected:
 	CKicadSchemSymbol*					mpcAddingSymbol;
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
-	size								muiBoards;
-	size								muiRegulators;
 	float64								mfSpread;
-	size								muiUnconnected;
-	size								muiGates;
-	size								muiPlaceholders;
-	size								muiPowers;
-	size								muiTunnels;
-	size								muiSplitters;
-	size								muiBlocks;
-	size								muiBoardPins;
-	size								muiSkipped;
-	size								muiOverlaps;
-	size								muiExplosions;
-	size								muiExcessBefore;
-	size								muiExcessAfter;
+	SKicadSchemLogicimCounts			msCounts;
 
 public:
 	void							Init(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, CCircuitViews* pcCircuits, CCircuitFonts* pcFonts);
@@ -242,28 +229,9 @@ public:
 	bool							Convert(const char* szTypeName);
 
 	CCircuitView*					GetCircuit(void);
-	size							NumBoards(void);
 	float64							GetSpread(void);
-	size							NumConnections(void);
-	size							NumUnconnected(void);
-	SKicadSchemLogicimConnection*	GetConnection(size uiIndex);
-	size							NumTerminals(void);
-	SKicadSchemLogicimTerminal*		GetTerminal(size uiIndex);
-	size							NumItems(void);
-	size							NumGates(void);
-	size							NumPlaceholders(void);
-	size							NumPowers(void);
-	size							NumRegulators(void);
-	size							NumTunnels(void);
-	size							NumSplitters(void);
-	size							NumBlocks(void);
-	size							NumBoardPins(void);
-	size							NumSkipped(void);
-	size							NumOverlaps(void);
-	size							NumExplosions(void);
-	size							GetExcessKnotsBefore(void);
-	size							GetExcessKnotsAfter(void);
-	size							FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
+	SKicadSchemLogicimCounts*		GetCounts(void);
+	CKicadSchemLogicimModel*		GetModel(void);
 
 	static bool						IsSkippedSymbol(CKicadSchemSymbol* pcSymbol);
 	static bool						IsGroundName(const char* szName);
@@ -334,6 +302,7 @@ protected:
 
 	void							Place(float64 fSpread);
 	void							Explode(void);
+	size							FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 	void							ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 	void							SeparateItems(void);
 	void							GetSeparateOrder(CArrayInt* paiOrder);
