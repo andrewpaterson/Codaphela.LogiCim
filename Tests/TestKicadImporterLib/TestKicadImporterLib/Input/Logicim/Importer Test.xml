@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="Importer Test">
+      <Logic74Unit name="U1" x="77" y="39" rotation="East" family="LVC" explicitPowerPorts="false" partType="00" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="U1" x="94" y="37" rotation="South" family="LVC" explicitPowerPorts="false" partType="00" unit="B" pinSpacing="2"/>
+    </Circuit>
+  </Circuits>
+</Logicim>

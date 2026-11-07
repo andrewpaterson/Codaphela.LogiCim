@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="LED Display">
+      <Subcircuit name="IC6" x="50" y="102" rotation="East" type="ATF16V8BQL-15XU" comment="ATF16V8BQL-15XU" left="-11" top="-11" right="9" bottom="11" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="DS2" x="139" y="101" rotation="East" type="KCDC03-123" comment="KCDC03-123" left="-12" top="-11" right="13" bottom="11" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="IC14" x="50" y="46" rotation="East" type="ATF16V8BQL-15XU" comment="ATF16V8BQL-15XU" left="-11" top="-11" right="9" bottom="11" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Tunnel name="GND" x="38" y="103" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="105" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="107" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="111" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="93" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="47" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="49" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="51" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="55" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="38" y="37" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="Cathode" x="126" y="96" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.4250000000000007" bottom="0.65000000000000002"/>
+      <Tunnel name="Cathode" x="126" y="106" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.4250000000000007" bottom="0.65000000000000002"/>
+      <Tunnel name="Cathode" x="153" y="96" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.4250000000000007" bottom="0.65000000000000002"/>
+      <Tunnel name="Cathode" x="153" y="106" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.4250000000000007" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Digit Enable}" x="38" y="109" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Digit Enable}" x="38" y="53" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="Left Ω Digit 0 A segment" x="153" y="98" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.025" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Ω Digit 0 B segment" x="153" y="100" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.025" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Ω Digit 0 C segment" x="126" y="98" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="13.025" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 A segment" x="60" y="37" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.725000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 B segment" x="60" y="39" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.725000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 C segment" x="60" y="41" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.725000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 D segment" x="126" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="13.825000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 E segment" x="126" y="102" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="13.725000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 F segment" x="153" y="104" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.725000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 G segment" x="153" y="102" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.925000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 D segment" x="60" y="99" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.525" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 E segment" x="60" y="101" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.425000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 F segment" x="60" y="103" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.425000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 G segment" x="60" y="105" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.625" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 A segment" x="153" y="108" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.825000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 B segment" x="153" y="110" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.825000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Ω Digit 0 C segment" x="126" y="108" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="13.825000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 A segment" x="60" y="93" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.525" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 B segment" x="60" y="95" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.525" bottom="0.65000000000000002"/>
+      <Tunnel name="Right Digit 0 C segment" x="60" y="97" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.525" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Ω Digit 0 D segment" x="126" y="94" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="13.025" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Ω Digit 0 E segment" x="126" y="92" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="12.925000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Ω Digit 0 F segment" x="153" y="94" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.925000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Ω Digit 0 G segment" x="153" y="92" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="13.125" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 D segment" x="60" y="43" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.725000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 E segment" x="60" y="45" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.625" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 F segment" x="60" y="47" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.625" bottom="0.65000000000000002"/>
+      <Tunnel name="Left Digit 0 G segment" x="60" y="49" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.825000000000001" bottom="0.65000000000000002"/>
+    </Circuit>
+    <Circuit type="ATF16V8BQL-15XU">
+      <Pin name="IN1" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="IN2" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="IN3/PD" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="IN4" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="IN5" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="IN6" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="IN7" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="IN8" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="IN9/~{OE}" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="I/O0" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="I/O1" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="I/O2" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="I/O3" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="I/O4" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="I/O5" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="I/O6" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="I/O7" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="CLK/IN" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="true"/>
+    </Circuit>
+    <Circuit type="KCDC03-123">
+      <Pin name="E-Seg_{(Left)}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="D-Seg_{(Left)}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="Cathode_{(Left)}" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="C-Seg_{(Left)}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="Dot_{(Left)}" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="E-Seg_{(Right)}" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="D-Seg_{(Right)}" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="Cathode_{(Right)}" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="C-Seg_{(Right)}" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="Dot_{(Right)}" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="G-Seg_{(Left)}" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="F-Seg_{(Left)}" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="Cathode_{(Left)}_18" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="A-Seg_{(Left)}" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="B-Seg_{(Left)}" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="G-Seg_{(Right)}" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="F-Seg_{(Right)}" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="Cathode_{(Right)}_13" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="A-Seg_{(Right)}" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="B-Seg_{(Right)}" x="0" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+    </Circuit>
+  </Circuits>
+</Logicim>

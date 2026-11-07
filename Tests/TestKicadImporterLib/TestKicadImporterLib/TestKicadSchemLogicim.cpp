@@ -12,6 +12,7 @@
 #include "KicadImporterLib/KicadSchemLogicimConverter.h"
 #include "KicadImporterLib/KicadSchemBoards.h"
 #include "TestLib/Assert.h"
+#include "TestLib/AssertFile.h"
 
 
 #define KICAD_SCHEM_LOGICIM_FONTS		"Input" _FS_ "Fonts"
@@ -406,8 +407,31 @@ CComponentView* FindKicadSchemLogicimComponent(CCircuitView* pcCircuit, const ch
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The converted Output/name.xml is the same, byte for byte, as the
+// expected Input/Logicim/name.xml.
+//
+//////////////////////////////////////////////////////////////////////////
+void AssertKicadSchemLogicimExpected(const char* szName)
+{
+	CChars	szExpected;
+	CChars	szActual;
+
+	szExpected.Init("Input" _FS_ "Logicim" _FS_);
+	szExpected.Append(szName);
+	szExpected.Append(".xml");
+	szActual.Init("Output" _FS_);
+	szActual.Append(szName);
+	szActual.Append(".xml");
+	AssertFile(szExpected.Text(), szActual.Text());
+	szActual.Kill();
+	szExpected.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Converts the schematic, checks its wiring and saves it as
-// Output/name.xml, which must load back.
+// Output/name.xml, which must be the expected file and load back.
 //
 //////////////////////////////////////////////////////////////////////////
 void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiMinimumPlaceholders, const char* szFirstGate, char* szText = NULL, size uiPowers = 0, size uiSplitters = 0, size uiBoardPins = 0)
@@ -470,6 +494,7 @@ void AssertKicadSchemLogicimConverts(char* szName, size uiMinimumGates, size uiM
 	szPath.Append(szName);
 	szPath.Append(".xml");
 	AssertTrue(SaveCircuitsFile(&cCircuits, cConverter.GetCircuit(), NULL, szPath.Text()));
+	AssertKicadSchemLogicimExpected(szName);
 
 	szUnconnected.Init();
 	for (i = 0; i < cConverter.NumConnections(); i++)
@@ -762,6 +787,7 @@ void TestKicadSchemLogicimBoards(void)
 
 	cFileUtil.MakeDir("Output");
 	AssertTrue(SaveCircuitsFile(&cCircuits, pcTop, NULL, "Output" _FS_ "Audio Board.xml"));
+	AssertKicadSchemLogicimExpected("Audio Board");
 	cLoaded.Init();
 	AssertTrue(LoadCircuitsFile(&cLoaded, "Audio Board", NULL, NULL, "Output" _FS_ "Audio Board.xml"));
 	AssertSize(cCircuits.NumCircuits(), cLoaded.NumCircuits());

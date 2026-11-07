@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="Regulator Test">
+      <Logic74Unit name="U2" x="80" y="40" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="5" partType="1G04" unit="A" pinSpacing="2"/>
+    </Circuit>
+  </Circuits>
+</Logicim>

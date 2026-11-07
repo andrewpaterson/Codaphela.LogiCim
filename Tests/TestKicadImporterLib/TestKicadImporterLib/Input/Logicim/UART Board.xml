@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="UART Board">
+      <Subcircuit name="B3" x="253" y="150" rotation="East" type="UART RS232" comment="UART RS232" left="-13" top="-11" right="15" bottom="13" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B6" x="174" y="23" rotation="East" type="UART_Signals" comment="UART Signals" left="-15" top="-8" right="15" bottom="8" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B5" x="253" y="83" rotation="East" type="UART TTL5V" comment="UART TTL5V" left="-13" top="-11" right="15" bottom="13" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="IC3" x="166" y="134" rotation="East" type="SST39VF010-70-4I-NHE" comment="SST39VF010-70-4I-NHE" left="-12" top="-21" right="11" bottom="23" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B4" x="174" y="73" rotation="East" type="Device_Decode_Stage_A" comment="Device Decode Stage A" left="-17" top="-15" right="18" bottom="15" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B2" x="273" y="19" rotation="East" type="Clock_Hold_Standard" comment="Clock Hold Standard" left="-17" top="-12" right="12" bottom="12" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B1" x="90" y="80" rotation="East" type="Device_Buffer" comment="Device Buffer" left="-13" top="-34" right="12" bottom="34" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Pin name="Main CLK" x="37" y="71" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B4" x="37" y="76" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B5" x="37" y="81" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B6" x="29" y="77" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B7" x="37" y="86" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B8" x="45" y="81" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Main}" x="37" y="91" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Main Access}" x="45" y="87" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B12" x="37" y="96" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="D~{RD}" x="29" y="91" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="D~{WD}" x="37" y="101" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="Device CLK" x="37" y="106" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Device CLK}" x="46" y="97" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B18" x="37" y="111" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Device Interrupt}" x="48" y="103" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Reset Device}" x="37" y="116" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Select Device}" x="37" y="121" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Device Enable}" x="49" y="113" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B23" x="37" y="126" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B25" x="37" y="131" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B26" x="49" y="121" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B27" x="28" y="126" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-B28" x="46" y="126" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Memory A}" x="37" y="136" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Memory B}" x="46" y="131" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D1" x="37" y="141" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D2" x="29" y="135" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D3" x="37" y="146" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D4" x="29" y="140" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D5" x="45" y="141" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D6" x="37" y="151" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D7" x="29" y="145" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D8" x="45" y="147" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D10" x="37" y="156" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D11" x="37" y="161" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D12" x="28" y="155" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D13" x="37" y="166" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D14" x="46" y="159" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D15" x="37" y="171" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D16" x="28" y="163" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-D17" x="37" y="176" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{Reset System}" x="55" y="66" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-A2" x="55" y="71" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-A3" x="55" y="76" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD0" x="62" y="73" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD1" x="57" y="81" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD2" x="61" y="86" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD3" x="55" y="92" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD4" x="55" y="61" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD5" x="61" y="97" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD6" x="55" y="108" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD7" x="31" y="86" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD8" x="31" y="96" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD9" x="62" y="118" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD10" x="27" y="101" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD11" x="63" y="123" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD12" x="61" y="128" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD13" x="73" y="118" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD14" x="30" y="111" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD15" x="27" y="106" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="AD16" x="55" y="136" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD7" x="62" y="133" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD6" x="74" y="123" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD5" x="57" y="141" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD4" x="72" y="128" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD3" x="57" y="146" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD2" x="67" y="138" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD1" x="72" y="133" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="DD0" x="55" y="152" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="HD2" x="67" y="143" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="HD1" x="82" y="129" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="HD0" x="67" y="148" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C1" x="78" y="138" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C2" x="60" y="157" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C3" x="55" y="164" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C4" x="68" y="153" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C5" x="78" y="143" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C6" x="55" y="169" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C7" x="63" y="162" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C8" x="34" y="150" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C9" x="78" y="149" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C10" x="55" y="174" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C11" x="64" y="167" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C12" x="72" y="158" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C13" x="55" y="179" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C14" x="64" y="172" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C15" x="73" y="163" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C16" x="55" y="184" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C17" x="64" y="177" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="J5-C18" x="55" y="189" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Tunnel name="5V" x="239" y="155" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="157" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="158" y="29" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="88" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="90" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="156" y="84" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="156" y="86" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="255" y="27" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="255" y="29" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="76" y="106" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="76" y="108" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="141" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="143" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="145" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="147" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="190" y="17" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="74" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="76" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="78" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="80" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="155" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="121" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="123" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="125" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="127" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="129" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="131" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="133" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="66" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="156" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="156" y="64" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="60" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="62" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="64" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="255" y="21" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="255" y="23" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="9" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="11" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="13" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="15" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="103" y="52" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="76" y="56" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="76" y="58" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="103" y="48" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="103" y="50" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="103" y="54" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Device ROM}" x="193" y="72" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device ROM}" x="153" y="119" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device ROM}" x="255" y="11" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device Interrupt}" x="19" y="103" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="9.5035714285714299" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device Interrupt}" x="190" y="25" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="9.5035714285714299" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device Enable}" x="22" y="113" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.5035714285714299" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device Enable}" x="190" y="23" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="8.5035714285714299" bottom="0.82857142857142851"/>
+      <Tunnel name="3.3V" x="178" y="115" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="255" y="25" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="286" y="23" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Reset Device}" x="156" y="80" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.9035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Reset Device}" x="37" y="116" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.9035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Reset System}" x="156" y="82" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Reset System}" x="55" y="66" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="HD2" x="286" y="17" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD2" x="67" y="143" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD1" x="286" y="19" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD1" x="82" y="129" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD0" x="286" y="21" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD0" x="67" y="148" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Select Device}" x="76" y="48" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.1035714285714278" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Select Device}" x="37" y="121" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.1035714285714278" bottom="0.82857142857142851"/>
+      <Tunnel name="D~{RD}" x="76" y="50" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="3.5035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="D~{RD}" x="29" y="91" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="3.5035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="D~{WD}" x="76" y="52" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="3.7035714285714287" bottom="0.82857142857142851"/>
+      <Tunnel name="D~{WD}" x="37" y="101" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="3.7035714285714287" bottom="0.82857142857142851"/>
+      <Tunnel name="Device CLK" x="76" y="54" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.0250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="Device CLK" x="37" y="106" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.0250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="AD14" x="76" y="60" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD14" x="30" y="111" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD13" x="76" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD13" x="73" y="118" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD12" x="76" y="64" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD12" x="61" y="128" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD11" x="76" y="66" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD11" x="63" y="123" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD10" x="76" y="68" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD10" x="27" y="101" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.7249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="AD9" x="76" y="70" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD9" x="62" y="118" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD8" x="76" y="72" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD8" x="31" y="96" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD7" x="76" y="74" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD7" x="31" y="86" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD6" x="76" y="76" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD6" x="55" y="108" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD5" x="76" y="78" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD5" x="61" y="97" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD4" x="76" y="80" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD4" x="55" y="61" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD3" x="76" y="82" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD3" x="55" y="92" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD2" x="76" y="84" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD2" x="61" y="86" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD1" x="76" y="86" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD1" x="57" y="81" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD0" x="76" y="88" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="AD0" x="62" y="73" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD0" x="76" y="90" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD0" x="55" y="152" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD1" x="76" y="92" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD1" x="72" y="133" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD2" x="76" y="94" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD2" x="67" y="138" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD3" x="76" y="96" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD3" x="57" y="146" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD4" x="76" y="98" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD4" x="72" y="128" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD5" x="76" y="100" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD5" x="57" y="141" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD6" x="76" y="102" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD6" x="74" y="123" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD7" x="76" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="DD7" x="62" y="133" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Splitter name="" x="150" y="21" rotation="West" bitWidth="15" fanOut="2" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="1 1 1 0 1 1 1 1 1 1 1 1 1 1 1"/>
+      <Splitter name="" x="143" y="66" rotation="West" bitWidth="15" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 7 7 6 5 7 7 7 7 7 4 3 2 1 0"/>
+      <Splitter name="" x="141" y="135" rotation="West" bitWidth="15" fanOut="11" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="9 8 7 6 5 4 3 2 1 0 10 10 10 10 10"/>
+      <Splitter name="" x="232" y="82" rotation="West" bitWidth="15" fanOut="4" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="2 1 0 3 3 3 3 3 3 3 3 3 3 3 3"/>
+      <Splitter name="" x="232" y="149" rotation="West" bitWidth="15" fanOut="4" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="2 1 0 3 3 3 3 3 3 3 3 3 3 3 3"/>
+      <Splitter name="" x="111" y="96" rotation="East" bitWidth="15" fanOut="15" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14"/>
+      <Splitter name="" x="111" y="114" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Splitter name="" x="255" y="121" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Splitter name="" x="168" y="182" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Splitter name="" x="255" y="188" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Trace x0="234" y0="149" x1="239" y1="149"/>
+      <Trace x0="234" y0="151" x1="239" y1="151"/>
+      <Trace x0="234" y0="153" x1="239" y1="153"/>
+      <Trace x0="234" y0="82" x1="239" y1="82"/>
+      <Trace x0="234" y0="84" x1="239" y1="84"/>
+      <Trace x0="234" y0="86" x1="239" y1="86"/>
+      <Trace x0="109" y0="68" x1="103" y1="68"/>
+      <Trace x0="109" y0="70" x1="103" y1="70"/>
+      <Trace x0="109" y0="72" x1="103" y1="72"/>
+      <Trace x0="109" y0="74" x1="103" y1="74"/>
+      <Trace x0="109" y0="76" x1="103" y1="76"/>
+      <Trace x0="109" y0="78" x1="103" y1="78"/>
+      <Trace x0="109" y0="80" x1="103" y1="80"/>
+      <Trace x0="109" y0="82" x1="103" y1="82"/>
+      <Trace x0="109" y0="84" x1="103" y1="84"/>
+      <Trace x0="109" y0="86" x1="103" y1="86"/>
+      <Trace x0="109" y0="88" x1="103" y1="88"/>
+      <Trace x0="109" y0="90" x1="103" y1="90"/>
+      <Trace x0="109" y0="92" x1="103" y1="92"/>
+      <Trace x0="109" y0="94" x1="103" y1="94"/>
+      <Trace x0="109" y0="96" x1="103" y1="96"/>
+      <Trace x0="108" y0="98" x1="103" y1="98"/>
+      <Trace x0="108" y0="100" x1="108" y1="98"/>
+      <Trace x0="109" y0="100" x1="108" y1="100"/>
+      <Trace x0="107" y0="100" x1="103" y1="100"/>
+      <Trace x0="107" y0="102" x1="107" y1="100"/>
+      <Trace x0="109" y0="102" x1="107" y1="102"/>
+      <Trace x0="106" y0="102" x1="103" y1="102"/>
+      <Trace x0="106" y0="104" x1="106" y1="102"/>
+      <Trace x0="109" y0="104" x1="106" y1="104"/>
+      <Trace x0="105" y0="104" x1="103" y1="104"/>
+      <Trace x0="105" y0="106" x1="105" y1="104"/>
+      <Trace x0="109" y0="106" x1="105" y1="106"/>
+      <Trace x0="104" y0="106" x1="103" y1="106"/>
+      <Trace x0="104" y0="107" x1="104" y1="106"/>
+      <Trace x0="105" y0="107" x1="104" y1="107"/>
+      <Trace x0="105" y0="108" x1="105" y1="107"/>
+      <Trace x0="109" y0="108" x1="105" y1="108"/>
+      <Trace x0="104" y0="108" x1="103" y1="108"/>
+      <Trace x0="104" y0="109" x1="104" y1="108"/>
+      <Trace x0="105" y0="109" x1="104" y1="109"/>
+      <Trace x0="105" y0="110" x1="105" y1="109"/>
+      <Trace x0="109" y0="110" x1="105" y1="110"/>
+      <Trace x0="104" y0="110" x1="103" y1="110"/>
+      <Trace x0="104" y0="111" x1="104" y1="110"/>
+      <Trace x0="105" y0="111" x1="104" y1="111"/>
+      <Trace x0="105" y0="112" x1="105" y1="111"/>
+      <Trace x0="109" y0="112" x1="105" y1="112"/>
+      <Trace x0="104" y0="112" x1="103" y1="112"/>
+      <Trace x0="104" y0="114" x1="104" y1="112"/>
+      <Trace x0="109" y0="114" x1="104" y1="114"/>
+      <Trace x0="143" y0="135" x1="153" y1="135"/>
+      <Trace x0="143" y0="137" x1="153" y1="137"/>
+      <Trace x0="143" y0="139" x1="153" y1="139"/>
+      <Trace x0="143" y0="141" x1="153" y1="141"/>
+      <Trace x0="143" y0="143" x1="153" y1="143"/>
+      <Trace x0="143" y0="145" x1="153" y1="145"/>
+      <Trace x0="143" y0="147" x1="153" y1="147"/>
+      <Trace x0="143" y0="149" x1="153" y1="149"/>
+      <Trace x0="143" y0="151" x1="153" y1="151"/>
+      <Trace x0="143" y0="153" x1="153" y1="153"/>
+      <Trace x0="145" y0="66" x1="156" y1="66"/>
+      <Trace x0="145" y0="68" x1="156" y1="68"/>
+      <Trace x0="145" y0="70" x1="156" y1="70"/>
+      <Trace x0="145" y0="72" x1="156" y1="72"/>
+      <Trace x0="145" y0="74" x1="156" y1="74"/>
+      <Trace x0="145" y0="76" x1="156" y1="76"/>
+      <Trace x0="145" y0="78" x1="156" y1="78"/>
+      <Trace x0="173" y0="160" x1="173" y1="158"/>
+      <Trace x0="169" y0="160" x1="173" y1="160"/>
+      <Trace x0="169" y0="167" x1="169" y1="160"/>
+      <Trace x0="165" y0="167" x1="169" y1="167"/>
+      <Trace x0="165" y0="168" x1="165" y1="167"/>
+      <Trace x0="166" y0="168" x1="165" y1="168"/>
+      <Trace x0="171" y0="166" x1="171" y1="158"/>
+      <Trace x0="164" y0="166" x1="171" y1="166"/>
+      <Trace x0="164" y0="170" x1="164" y1="166"/>
+      <Trace x0="166" y0="170" x1="164" y1="170"/>
+      <Trace x0="169" y0="159" x1="169" y1="158"/>
+      <Trace x0="168" y0="159" x1="169" y1="159"/>
+      <Trace x0="168" y0="165" x1="168" y1="159"/>
+      <Trace x0="163" y0="165" x1="168" y1="165"/>
+      <Trace x0="163" y0="172" x1="163" y1="165"/>
+      <Trace x0="166" y0="172" x1="163" y1="172"/>
+      <Trace x0="167" y0="164" x1="167" y1="158"/>
+      <Trace x0="162" y0="164" x1="167" y1="164"/>
+      <Trace x0="162" y0="174" x1="162" y1="164"/>
+      <Trace x0="166" y0="174" x1="162" y1="174"/>
+      <Trace x0="165" y0="161" x1="165" y1="158"/>
+      <Trace x0="173" y0="161" x1="165" y1="161"/>
+      <Trace x0="173" y0="183" x1="173" y1="161"/>
+      <Trace x0="164" y0="183" x1="173" y1="183"/>
+      <Trace x0="164" y0="176" x1="164" y1="183"/>
+      <Trace x0="166" y0="176" x1="164" y1="176"/>
+      <Trace x0="163" y0="162" x1="163" y1="158"/>
+      <Trace x0="174" y0="162" x1="163" y1="162"/>
+      <Trace x0="174" y0="184" x1="174" y1="162"/>
+      <Trace x0="163" y0="184" x1="174" y1="184"/>
+      <Trace x0="163" y0="178" x1="163" y1="184"/>
+      <Trace x0="166" y0="178" x1="163" y1="178"/>
+      <Trace x0="161" y0="163" x1="161" y1="158"/>
+      <Trace x0="175" y0="163" x1="161" y1="163"/>
+      <Trace x0="175" y0="185" x1="175" y1="163"/>
+      <Trace x0="162" y0="185" x1="175" y1="185"/>
+      <Trace x0="162" y0="180" x1="162" y1="185"/>
+      <Trace x0="166" y0="180" x1="162" y1="180"/>
+      <Trace x0="159" y0="182" x1="159" y1="158"/>
+      <Trace x0="166" y0="182" x1="159" y1="182"/>
+      <Trace x0="260" y0="166" x1="260" y1="164"/>
+      <Trace x0="258" y0="166" x1="260" y1="166"/>
+      <Trace x0="258" y0="173" x1="258" y1="166"/>
+      <Trace x0="252" y0="173" x1="258" y1="173"/>
+      <Trace x0="252" y0="174" x1="252" y1="173"/>
+      <Trace x0="253" y0="174" x1="252" y1="174"/>
+      <Trace x0="258" y0="165" x1="258" y1="164"/>
+      <Trace x0="259" y0="165" x1="258" y1="165"/>
+      <Trace x0="259" y0="172" x1="259" y1="165"/>
+      <Trace x0="251" y0="172" x1="259" y1="172"/>
+      <Trace x0="251" y0="176" x1="251" y1="172"/>
+      <Trace x0="253" y0="176" x1="251" y1="176"/>
+      <Trace x0="256" y0="171" x1="256" y1="164"/>
+      <Trace x0="250" y0="171" x1="256" y1="171"/>
+      <Trace x0="250" y0="178" x1="250" y1="171"/>
+      <Trace x0="253" y0="178" x1="250" y1="178"/>
+      <Trace x0="254" y0="170" x1="254" y1="164"/>
+      <Trace x0="249" y0="170" x1="254" y1="170"/>
+      <Trace x0="249" y0="180" x1="249" y1="170"/>
+      <Trace x0="253" y0="180" x1="249" y1="180"/>
+      <Trace x0="252" y0="166" x1="252" y1="164"/>
+      <Trace x0="248" y0="166" x1="252" y1="166"/>
+      <Trace x0="248" y0="182" x1="248" y1="166"/>
+      <Trace x0="253" y0="182" x1="248" y1="182"/>
+      <Trace x0="250" y0="167" x1="250" y1="164"/>
+      <Trace x0="263" y0="167" x1="250" y1="167"/>
+      <Trace x0="263" y0="189" x1="263" y1="167"/>
+      <Trace x0="251" y0="189" x1="263" y1="189"/>
+      <Trace x0="251" y0="184" x1="251" y1="189"/>
+      <Trace x0="253" y0="184" x1="251" y1="184"/>
+      <Trace x0="248" y0="165" x1="248" y1="164"/>
+      <Trace x0="249" y0="165" x1="248" y1="165"/>
+      <Trace x0="249" y0="168" x1="249" y1="165"/>
+      <Trace x0="264" y0="168" x1="249" y1="168"/>
+      <Trace x0="264" y0="190" x1="264" y1="168"/>
+      <Trace x0="250" y0="190" x1="264" y1="190"/>
+      <Trace x0="250" y0="186" x1="250" y1="190"/>
+      <Trace x0="253" y0="186" x1="250" y1="186"/>
+      <Trace x0="246" y0="169" x1="246" y1="164"/>
+      <Trace x0="265" y0="169" x1="246" y1="169"/>
+      <Trace x0="265" y0="191" x1="265" y1="169"/>
+      <Trace x0="252" y0="191" x1="265" y1="191"/>
+      <Trace x0="252" y0="188" x1="252" y1="191"/>
+      <Trace x0="253" y0="188" x1="252" y1="188"/>
+      <Trace x0="260" y0="99" x1="260" y1="97"/>
+      <Trace x0="258" y0="99" x1="260" y1="99"/>
+      <Trace x0="258" y0="106" x1="258" y1="99"/>
+      <Trace x0="252" y0="106" x1="258" y1="106"/>
+      <Trace x0="252" y0="107" x1="252" y1="106"/>
+      <Trace x0="253" y0="107" x1="252" y1="107"/>
+      <Trace x0="258" y0="98" x1="258" y1="97"/>
+      <Trace x0="259" y0="98" x1="258" y1="98"/>
+      <Trace x0="259" y0="105" x1="259" y1="98"/>
+      <Trace x0="251" y0="105" x1="259" y1="105"/>
+      <Trace x0="251" y0="109" x1="251" y1="105"/>
+      <Trace x0="253" y0="109" x1="251" y1="109"/>
+      <Trace x0="256" y0="104" x1="256" y1="97"/>
+      <Trace x0="250" y0="104" x1="256" y1="104"/>
+      <Trace x0="250" y0="111" x1="250" y1="104"/>
+      <Trace x0="253" y0="111" x1="250" y1="111"/>
+      <Trace x0="254" y0="103" x1="254" y1="97"/>
+      <Trace x0="249" y0="103" x1="254" y1="103"/>
+      <Trace x0="249" y0="113" x1="249" y1="103"/>
+      <Trace x0="253" y0="113" x1="249" y1="113"/>
+      <Trace x0="252" y0="99" x1="252" y1="97"/>
+      <Trace x0="248" y0="99" x1="252" y1="99"/>
+      <Trace x0="248" y0="115" x1="248" y1="99"/>
+      <Trace x0="253" y0="115" x1="248" y1="115"/>
+      <Trace x0="250" y0="100" x1="250" y1="97"/>
+      <Trace x0="263" y0="100" x1="250" y1="100"/>
+      <Trace x0="263" y0="122" x1="263" y1="100"/>
+      <Trace x0="251" y0="122" x1="263" y1="122"/>
+      <Trace x0="251" y0="117" x1="251" y1="122"/>
+      <Trace x0="253" y0="117" x1="251" y1="117"/>
+      <Trace x0="248" y0="98" x1="248" y1="97"/>
+      <Trace x0="249" y0="98" x1="248" y1="98"/>
+      <Trace x0="249" y0="101" x1="249" y1="98"/>
+      <Trace x0="264" y0="101" x1="249" y1="101"/>
+      <Trace x0="264" y0="123" x1="264" y1="101"/>
+      <Trace x0="250" y0="123" x1="264" y1="123"/>
+      <Trace x0="250" y0="119" x1="250" y1="123"/>
+      <Trace x0="253" y0="119" x1="250" y1="119"/>
+      <Trace x0="246" y0="102" x1="246" y1="97"/>
+      <Trace x0="265" y0="102" x1="246" y1="102"/>
+      <Trace x0="265" y0="124" x1="265" y1="102"/>
+      <Trace x0="252" y0="124" x1="265" y1="124"/>
+      <Trace x0="252" y0="121" x1="252" y1="124"/>
+      <Trace x0="253" y0="121" x1="252" y1="121"/>
+      <Trace x0="156" y0="19" x1="158" y1="19"/>
+      <Trace x0="156" y0="28" x1="156" y1="19"/>
+      <Trace x0="154" y0="28" x1="156" y1="28"/>
+      <Trace x0="154" y0="32" x1="154" y1="28"/>
+      <Trace x0="163" y0="32" x1="154" y1="32"/>
+      <Trace x0="163" y0="57" x1="163" y1="32"/>
+      <Trace x0="155" y0="57" x1="163" y1="57"/>
+      <Trace x0="155" y0="60" x1="155" y1="57"/>
+      <Trace x0="156" y0="60" x1="155" y1="60"/>
+      <Trace x0="154" y0="23" x1="158" y1="23"/>
+      <Trace x0="154" y0="26" x1="154" y1="23"/>
+      <Trace x0="152" y0="26" x1="154" y1="26"/>
+      <Trace x0="152" y0="34" x1="152" y1="26"/>
+      <Trace x0="161" y0="34" x1="152" y1="34"/>
+      <Trace x0="161" y0="55" x1="161" y1="34"/>
+      <Trace x0="202" y0="55" x1="161" y1="55"/>
+      <Trace x0="202" y0="76" x1="202" y1="55"/>
+      <Trace x0="193" y0="76" x1="202" y1="76"/>
+      <Trace x0="227" y0="19" x1="190" y1="19"/>
+      <Trace x0="227" y0="76" x1="227" y1="19"/>
+      <Trace x0="239" y0="76" x1="227" y1="76"/>
+      <Trace x0="150" y0="25" x1="158" y1="25"/>
+      <Trace x0="150" y0="35" x1="150" y1="25"/>
+      <Trace x0="226" y0="35" x1="150" y1="35"/>
+      <Trace x0="226" y0="70" x1="226" y1="35"/>
+      <Trace x0="274" y0="70" x1="226" y1="70"/>
+      <Trace x0="274" y0="82" x1="274" y1="70"/>
+      <Trace x0="269" y0="82" x1="274" y1="82"/>
+      <Trace x0="130" y0="58" x1="103" y1="58"/>
+      <Trace x0="130" y0="115" x1="130" y1="58"/>
+      <Trace x0="153" y0="115" x1="130" y1="115"/>
+      <Trace x0="129" y0="60" x1="103" y1="60"/>
+      <Trace x0="129" y0="117" x1="129" y1="60"/>
+      <Trace x0="153" y0="117" x1="129" y1="117"/>
+      <Trace x0="229" y0="68" x1="193" y1="68"/>
+      <Trace x0="229" y0="15" x1="229" y1="68"/>
+      <Trace x0="255" y0="15" x1="229" y1="15"/>
+      <Trace x0="201" y0="143" x1="239" y1="143"/>
+      <Trace x0="201" y0="77" x1="201" y1="143"/>
+      <Trace x0="203" y0="77" x1="201" y1="77"/>
+      <Trace x0="203" y0="71" x1="203" y1="77"/>
+      <Trace x0="201" y0="71" x1="203" y1="71"/>
+      <Trace x0="201" y0="21" x1="201" y1="71"/>
+      <Trace x0="190" y0="21" x1="201" y1="21"/>
+      <Trace x0="226" y0="17" x1="255" y1="17"/>
+      <Trace x0="226" y0="13" x1="226" y1="17"/>
+      <Trace x0="132" y0="13" x1="226" y1="13"/>
+      <Trace x0="132" y0="58" x1="132" y1="13"/>
+      <Trace x0="103" y0="58" x1="132" y1="58"/>
+      <Trace x0="253" y0="19" x1="255" y1="19"/>
+      <Trace x0="253" y0="18" x1="253" y1="19"/>
+      <Trace x0="225" y0="18" x1="253" y1="18"/>
+      <Trace x0="225" y0="14" x1="225" y1="18"/>
+      <Trace x0="133" y0="14" x1="225" y1="14"/>
+      <Trace x0="133" y0="60" x1="133" y1="14"/>
+      <Trace x0="103" y0="60" x1="133" y1="60"/>
+      <Trace x0="152" y0="21" x1="158" y1="21"/>
+      <Trace x0="22" y0="113" x1="49" y1="113"/>
+      <Trace x0="19" y0="103" x1="48" y1="103"/>
+      <Trace x0="212" y0="78" x1="193" y1="78"/>
+      <Trace x0="212" y0="74" x1="212" y1="78"/>
+      <Trace x0="239" y0="74" x1="212" y1="74"/>
+      <Trace x0="146" y0="21" x1="149" y1="21"/>
+      <Trace x0="146" y0="65" x1="146" y1="21"/>
+      <Trace x0="141" y0="65" x1="146" y1="65"/>
+      <Trace x0="141" y0="66" x1="141" y1="65"/>
+      <Trace x0="142" y0="66" x1="141" y1="66"/>
+      <Trace x0="137" y0="57" x1="155" y1="57"/>
+      <Trace x0="137" y0="56" x1="137" y1="57"/>
+      <Trace x0="103" y0="56" x1="137" y1="56"/>
+      <Trace x0="237" y0="145" x1="239" y1="145"/>
+      <Trace x0="237" y0="137" x1="237" y1="145"/>
+      <Trace x0="254" y0="137" x1="237" y1="137"/>
+      <Trace x0="254" y0="125" x1="254" y1="137"/>
+      <Trace x0="249" y0="125" x1="254" y1="125"/>
+      <Trace x0="249" y0="116" x1="249" y1="125"/>
+      <Trace x0="247" y0="116" x1="249" y1="116"/>
+      <Trace x0="247" y0="103" x1="247" y1="116"/>
+      <Trace x0="229" y0="103" x1="247" y1="103"/>
+      <Trace x0="229" y0="78" x1="229" y1="103"/>
+      <Trace x0="239" y0="78" x1="229" y1="78"/>
+      <Trace x0="230" y0="82" x1="231" y1="82"/>
+      <Trace x0="230" y0="89" x1="230" y1="82"/>
+      <Trace x0="233" y0="89" x1="230" y1="89"/>
+      <Trace x0="233" y0="148" x1="233" y1="89"/>
+      <Trace x0="230" y0="148" x1="233" y1="148"/>
+      <Trace x0="230" y0="149" x1="230" y1="148"/>
+      <Trace x0="231" y0="149" x1="230" y1="149"/>
+      <Trace x0="257" y0="188" x1="256" y1="188"/>
+      <Trace x0="257" y0="174" x1="257" y1="188"/>
+      <Trace x0="261" y0="174" x1="257" y1="174"/>
+      <Trace x0="261" y0="166" x1="261" y1="174"/>
+      <Trace x0="274" y0="166" x1="261" y1="166"/>
+      <Trace x0="274" y0="137" x1="274" y1="166"/>
+      <Trace x0="257" y0="137" x1="274" y1="137"/>
+      <Trace x0="257" y0="121" x1="257" y1="137"/>
+      <Trace x0="256" y0="121" x1="257" y1="121"/>
+      <Trace x0="141" y0="81" x1="141" y1="66"/>
+      <Trace x0="143" y0="81" x1="141" y1="81"/>
+      <Trace x0="143" y0="134" x1="143" y1="81"/>
+      <Trace x0="139" y0="134" x1="143" y1="134"/>
+      <Trace x0="139" y0="135" x1="139" y1="134"/>
+      <Trace x0="140" y0="135" x1="139" y1="135"/>
+      <Trace x0="237" y0="68" x1="237" y1="78"/>
+      <Trace x0="269" y0="68" x1="237" y1="68"/>
+      <Trace x0="269" y0="33" x1="269" y1="68"/>
+      <Trace x0="250" y0="33" x1="269" y1="33"/>
+      <Trace x0="250" y0="17" x1="250" y1="33"/>
+      <Trace x0="255" y0="17" x1="250" y1="17"/>
+      <Trace x0="249" y0="19" x1="253" y1="19"/>
+      <Trace x0="249" y0="34" x1="249" y1="19"/>
+      <Trace x0="268" y0="34" x1="249" y1="34"/>
+      <Trace x0="268" y0="67" x1="268" y1="34"/>
+      <Trace x0="236" y0="67" x1="268" y1="67"/>
+      <Trace x0="236" y0="80" x1="236" y1="67"/>
+      <Trace x0="239" y0="80" x1="236" y1="80"/>
+      <Trace x0="151" y0="119" x1="153" y1="119"/>
+      <Trace x0="151" y0="112" x1="151" y1="119"/>
+      <Trace x0="156" y0="112" x1="151" y1="112"/>
+      <Trace x0="156" y0="90" x1="156" y1="112"/>
+      <Trace x0="199" y0="90" x1="156" y1="90"/>
+      <Trace x0="199" y0="74" x1="199" y1="90"/>
+      <Trace x0="201" y0="74" x1="199" y1="74"/>
+      <Trace x0="201" y0="72" x1="201" y1="74"/>
+      <Trace x0="193" y0="72" x1="201" y1="72"/>
+      <Trace x0="211" y0="182" x1="169" y1="182"/>
+      <Trace x0="211" y0="192" x1="211" y1="182"/>
+      <Trace x0="257" y0="192" x1="211" y1="192"/>
+      <Trace x0="257" y0="188" x1="257" y1="192"/>
+      <Trace x0="256" y0="188" x1="257" y1="188"/>
+      <Trace x0="203" y0="92" x1="143" y1="92"/>
+      <Trace x0="203" y0="82" x1="203" y1="92"/>
+      <Trace x0="231" y0="82" x1="203" y1="82"/>
+      <Trace x0="233" y0="33" x1="163" y1="33"/>
+      <Trace x0="233" y0="9" x1="233" y1="33"/>
+      <Trace x0="255" y0="9" x1="233" y1="9"/>
+      <Trace x0="212" y0="141" x1="239" y1="141"/>
+      <Trace x0="212" y0="78" x1="212" y1="141"/>
+      <Trace x0="193" y0="78" x1="212" y1="78"/>
+      <Trace x0="112" y0="96" x1="143" y1="96"/>
+      <Trace x0="113" y0="114" x1="112" y1="114"/>
+      <Trace x0="113" y0="115" x1="113" y1="114"/>
+      <Trace x0="112" y0="115" x1="113" y1="115"/>
+      <Trace x0="112" y0="186" x1="112" y1="115"/>
+      <Trace x0="170" y0="186" x1="112" y1="186"/>
+      <Trace x0="170" y0="182" x1="170" y1="186"/>
+      <Trace x0="169" y0="182" x1="170" y1="182"/>
+      <Trace x0="236" y0="147" x1="239" y1="147"/>
+      <Trace x0="236" y0="136" x1="236" y1="147"/>
+      <Trace x0="269" y0="136" x1="236" y1="136"/>
+      <Trace x0="269" y0="98" x1="269" y1="136"/>
+      <Trace x0="270" y0="98" x1="269" y1="98"/>
+      <Trace x0="270" y0="83" x1="270" y1="98"/>
+      <Trace x0="275" y0="83" x1="270" y1="83"/>
+      <Trace x0="275" y0="73" x1="275" y1="83"/>
+      <Trace x0="270" y0="73" x1="275" y1="73"/>
+      <Trace x0="270" y0="32" x1="270" y1="73"/>
+      <Trace x0="249" y0="32" x1="270" y1="32"/>
+      <Trace x0="249" y0="19" x1="249" y1="32"/>
+      <Trace x0="255" y0="19" x1="249" y1="19"/>
+      <Trace x0="276" y0="149" x1="269" y1="149"/>
+      <Trace x0="276" y0="134" x1="276" y1="149"/>
+      <Trace x0="200" y0="134" x1="276" y1="134"/>
+      <Trace x0="200" y0="75" x1="200" y1="134"/>
+      <Trace x0="204" y0="75" x1="200" y1="75"/>
+      <Trace x0="204" y0="70" x1="204" y1="75"/>
+      <Trace x0="200" y0="70" x1="204" y1="70"/>
+      <Trace x0="200" y0="37" x1="200" y1="70"/>
+      <Trace x0="153" y0="37" x1="200" y1="37"/>
+      <Trace x0="153" y0="27" x1="153" y1="37"/>
+      <Trace x0="158" y0="27" x1="153" y1="27"/>
+      <Trace x0="155" y0="17" x1="158" y1="17"/>
+      <Trace x0="155" y0="24" x1="155" y1="17"/>
+      <Trace x0="151" y0="24" x1="155" y1="24"/>
+      <Trace x0="151" y0="33" x1="151" y1="24"/>
+      <Trace x0="162" y0="33" x1="151" y1="33"/>
+      <Trace x0="162" y0="56" x1="162" y1="33"/>
+      <Trace x0="198" y0="56" x1="162" y1="56"/>
+      <Trace x0="198" y0="70" x1="198" y1="56"/>
+      <Trace x0="193" y0="70" x1="198" y1="70"/>
+      <Trace x0="228" y0="56" x1="198" y1="56"/>
+      <Trace x0="228" y0="13" x1="228" y1="56"/>
+      <Trace x0="255" y0="13" x1="228" y1="13"/>
+    </Circuit>
+    <Circuit type="UART RS232">
+      <Pin name="~{Reset}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="~{CS}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="~{RD}" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="true" clockNotch="false"/>
+      <Pin name="~{WD}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="true" clockNotch="false"/>
+      <Pin name="A2" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="A1" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="A0" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="5V" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="5V_17" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="D7" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="D6" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="D5" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="D4" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="D3" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="D2" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="D1" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="D0" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND_12" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="GND_21" x="0" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="GND_28" x="0" y="60" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="~{INT}" x="0" y="63" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <Pin name="RX_Ready" x="0" y="66" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="TX_Ready" x="0" y="69" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="~{Out2}" x="0" y="72" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="true" clockNotch="false"/>
+      <Pin name="~{Out1}" x="0" y="75" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="8" inverting="true" clockNotch="false"/>
+      <Pin name="~{ADS}" x="0" y="78" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="9" inverting="true" clockNotch="false"/>
+      <Pin name="1.8432Mhz" x="0" y="81" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="UART_Signals">
+      <Pin name="~{Device_Registers}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_Select}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="A3" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="~{A3}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="true" clockNotch="false"/>
+      <Pin name="~{INT1}" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <Pin name="~{INT2}" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="true" clockNotch="false"/>
+      <Pin name="5V" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="GND" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="~{UART1}_{SEL}" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="~{UART2}_{SEL}" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_Enable}" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_Interrupt}" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="UART TTL5V">
+      <Pin name="~{Reset}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="~{CS}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="~{RD}" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="true" clockNotch="false"/>
+      <Pin name="~{WD}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="true" clockNotch="false"/>
+      <Pin name="A2" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="A1" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="A0" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="5V" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="5V_17" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="D7" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="D6" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="D5" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="D4" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="D3" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="D2" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="D1" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="D0" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND_12" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="GND_21" x="0" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="GND_28" x="0" y="60" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="~{INT}" x="0" y="63" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <Pin name="RX_Ready" x="0" y="66" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="TX_Ready" x="0" y="69" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="~{Out2}" x="0" y="72" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="true" clockNotch="false"/>
+      <Pin name="~{Out1}" x="0" y="75" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="8" inverting="true" clockNotch="false"/>
+      <Pin name="~{ADS}" x="0" y="78" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="9" inverting="true" clockNotch="false"/>
+      <Pin name="1.8432Mhz" x="0" y="81" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="SST39VF010-70-4I-NHE">
+      <Pin name="GND" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
+      <Pin name="~{OE}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="~{WE}" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="~{CE}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="true" clockNotch="false"/>
+      <Pin name="A16" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="A15" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="A14" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="A13" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="A12" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="A11" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="A10" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="A9" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="A8" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
+      <Pin name="A7" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="12" inverting="false" clockNotch="false"/>
+      <Pin name="A6" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="A5" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
+      <Pin name="A4" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
+      <Pin name="A3" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
+      <Pin name="A2" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="17" inverting="false" clockNotch="false"/>
+      <Pin name="A1" x="0" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
+      <Pin name="A0" x="0" y="60" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
+      <Pin name="DQ7" x="0" y="63" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="DQ6" x="0" y="66" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="DQ5" x="0" y="69" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="DQ4" x="0" y="72" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="DQ3" x="0" y="75" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="DQ2" x="0" y="78" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="DQ1" x="0" y="81" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="DQ0" x="0" y="84" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="3V" x="0" y="87" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="Device_Decode_Stage_A">
+      <Pin name="GND" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="~{A3}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="8" inverting="true" clockNotch="false"/>
+      <Pin name="~{Reset}_{OUT}" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="Reset_{OUT}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="~{Device_Select}" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="A16" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="A15" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="A14" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="A13" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="A12" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="A11" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="A10" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="A4" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="A3" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="~{Reset}_{IN1}" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="true" clockNotch="false"/>
+      <Pin name="~{Reset}_{IN2}" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="true" clockNotch="false"/>
+      <Pin name="5V" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="12" inverting="false" clockNotch="false"/>
+      <Pin name="5V_17" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="GND_5" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND_12" x="0" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="GND_21" x="0" y="60" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="~{Device_ROM}" x="0" y="63" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_Registers}" x="0" y="66" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_RAM}" x="0" y="69" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="true" clockNotch="false"/>
+      <Pin name="~{A4}" x="0" y="72" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="true" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="Clock_Hold_Standard">
+      <Pin name="~{Device_Select}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_ROM}" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_Registers}" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="true" clockNotch="false"/>
+      <Pin name="~{Device_RAM}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="true" clockNotch="false"/>
+      <Pin name="~{RD}" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <Pin name="~{WD}" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="true" clockNotch="false"/>
+      <Pin name="H2_{REG}" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="H1_{REG}" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="H0_{REG}" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="5V" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="5V_13" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="GND" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND_9" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="GND_16" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="GND_21" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="H2_{OUT}" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="H1_{OUT}" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="H0_{OUT}" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="3.3V" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="Device_Buffer">
+      <Pin name="GND" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="A10" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
+      <Pin name="A9" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
+      <Pin name="Deivce_~{CS}_{IN}" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
+      <Pin name="~{RD}_{IN}" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="true" clockNotch="false"/>
+      <Pin name="~{WD}_{IN}" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="true" clockNotch="false"/>
+      <Pin name="S_{IN}" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="A16_{IN}" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="A15_{IN}" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="A14_{IN}" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="A13_{IN}" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="A12_{IN}" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="A11_{IN}" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="A10_{IN}" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="A9_{IN}" x="0" y="42" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
+      <Pin name="A8_{IN}" x="0" y="45" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="12" inverting="false" clockNotch="false"/>
+      <Pin name="A7_{IN}" x="0" y="48" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="A6_{IN}" x="0" y="51" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
+      <Pin name="A5_{IN}" x="0" y="54" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
+      <Pin name="A4_{IN}" x="0" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
+      <Pin name="A3_{IN}" x="0" y="60" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="17" inverting="false" clockNotch="false"/>
+      <Pin name="A2_{IN}" x="0" y="63" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
+      <Pin name="A1_{IN}" x="0" y="66" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
+      <Pin name="A0_{IN}" x="0" y="69" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
+      <Pin name="D0_{IN/OUT}" x="0" y="72" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="21" inverting="false" clockNotch="false"/>
+      <Pin name="D1_{IN/OUT}" x="0" y="75" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
+      <Pin name="D2_{IN/OUT}" x="0" y="78" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
+      <Pin name="D3_{IN/OUT}" x="0" y="81" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
+      <Pin name="D4_{IN/OUT}" x="0" y="84" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
+      <Pin name="D5_{IN/OUT}" x="0" y="87" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
+      <Pin name="D6_{IN/OUT}" x="0" y="90" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
+      <Pin name="D7_{IN/OUT}" x="0" y="93" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="28" inverting="false" clockNotch="false"/>
+      <Pin name="5V" x="0" y="96" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
+      <Pin name="5V_35" x="0" y="99" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
+      <Pin name="GND_10" x="0" y="102" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="GND_23" x="0" y="105" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="GND_55" x="0" y="108" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="Deivce_~{CS}" x="0" y="111" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <Pin name="~{RD}" x="0" y="114" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="true" clockNotch="false"/>
+      <Pin name="~{WD}" x="0" y="117" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="true" clockNotch="false"/>
+      <Pin name="S" x="0" y="120" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="A16" x="0" y="123" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="A15" x="0" y="126" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="A14" x="0" y="129" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="A13" x="0" y="132" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
+      <Pin name="A12" x="0" y="135" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="12" inverting="false" clockNotch="false"/>
+      <Pin name="A11" x="0" y="138" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="A8" x="0" y="141" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
+      <Pin name="A7" x="0" y="144" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="17" inverting="false" clockNotch="false"/>
+      <Pin name="A6" x="0" y="147" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
+      <Pin name="A5" x="0" y="150" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
+      <Pin name="A4" x="0" y="153" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
+      <Pin name="A3" x="0" y="156" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="21" inverting="false" clockNotch="false"/>
+      <Pin name="A2" x="0" y="159" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
+      <Pin name="A1" x="0" y="162" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
+      <Pin name="A0" x="0" y="165" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
+      <Pin name="D0" x="0" y="168" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
+      <Pin name="D1" x="0" y="171" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
+      <Pin name="D2" x="0" y="174" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
+      <Pin name="D3" x="0" y="177" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="28" inverting="false" clockNotch="false"/>
+      <Pin name="D4" x="0" y="180" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
+      <Pin name="D5" x="0" y="183" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
+      <Pin name="D6" x="0" y="186" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="31" inverting="false" clockNotch="false"/>
+      <Pin name="D7" x="0" y="189" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
+    </Circuit>
+  </Circuits>
+</Logicim>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="LSF0204">
+      <Subcircuit name="2.2KOhm?" x="42" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm?" x="98" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm?" x="54" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm?" x="33" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm" x="89" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm?" x="107" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm?" x="63" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="2.2KOhm?" x="116" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="IC?" x="62" y="61" rotation="East" type="LSF0204PW-Q100J" comment="LSF0204PW-Q100J" left="-11" top="-8" right="11" bottom="8" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Trace x0="55" y0="33" x1="55" y1="34"/>
+      <Trace x0="58" y0="33" x1="55" y1="33"/>
+      <Trace x0="58" y0="52" x1="58" y1="33"/>
+      <Trace x0="49" y0="52" x1="58" y1="52"/>
+      <Trace x0="49" y0="55" x1="49" y1="52"/>
+      <Trace x0="50" y0="55" x1="49" y1="55"/>
+      <Trace x0="55" y0="51" x1="55" y1="50"/>
+      <Trace x0="48" y0="51" x1="55" y1="51"/>
+      <Trace x0="48" y0="57" x1="48" y1="51"/>
+      <Trace x0="50" y0="57" x1="48" y1="57"/>
+      <Trace x0="90" y0="33" x1="90" y1="34"/>
+      <Trace x0="82" y0="33" x1="90" y1="33"/>
+      <Trace x0="82" y0="55" x1="82" y1="33"/>
+      <Trace x0="74" y0="55" x1="82" y1="55"/>
+      <Trace x0="90" y0="51" x1="90" y1="50"/>
+      <Trace x0="83" y0="51" x1="90" y1="51"/>
+      <Trace x0="83" y0="57" x1="83" y1="51"/>
+      <Trace x0="74" y0="57" x1="83" y1="57"/>
+      <Trace x0="43" y0="33" x1="43" y1="34"/>
+      <Trace x0="34" y0="33" x1="43" y1="33"/>
+      <Trace x0="34" y0="34" x1="34" y1="33"/>
+      <Trace x0="64" y0="33" x1="64" y1="34"/>
+      <Trace x0="55" y0="33" x1="64" y1="33"/>
+      <Trace x0="55" y0="34" x1="55" y1="33"/>
+      <Trace x0="99" y0="33" x1="99" y1="34"/>
+      <Trace x0="90" y0="33" x1="99" y1="33"/>
+      <Trace x0="90" y0="34" x1="90" y1="33"/>
+      <Trace x0="117" y0="33" x1="117" y1="34"/>
+      <Trace x0="108" y0="33" x1="117" y1="33"/>
+      <Trace x0="108" y0="34" x1="108" y1="33"/>
+      <Trace x0="76" y0="67" x1="76" y1="55"/>
+      <Trace x0="74" y0="67" x1="76" y1="67"/>
+      <Trace x0="117" y0="33" x1="99" y1="33"/>
+      <Trace x0="117" y0="34" x1="117" y1="33"/>
+      <Trace x0="43" y0="51" x1="43" y1="50"/>
+      <Trace x0="45" y0="51" x1="43" y1="51"/>
+      <Trace x0="45" y0="63" x1="45" y1="51"/>
+      <Trace x0="50" y0="63" x1="45" y1="63"/>
+      <Trace x0="64" y0="51" x1="64" y1="50"/>
+      <Trace x0="59" y0="51" x1="64" y1="51"/>
+      <Trace x0="59" y0="32" x1="59" y1="51"/>
+      <Trace x0="47" y0="32" x1="59" y1="32"/>
+      <Trace x0="47" y0="59" x1="47" y1="32"/>
+      <Trace x0="50" y0="59" x1="47" y1="59"/>
+      <Trace x0="34" y0="51" x1="34" y1="50"/>
+      <Trace x0="36" y0="51" x1="34" y1="51"/>
+      <Trace x0="36" y0="61" x1="36" y1="51"/>
+      <Trace x0="50" y0="61" x1="36" y1="61"/>
+      <Trace x0="64" y0="33" x1="43" y1="33"/>
+      <Trace x0="64" y0="34" x1="64" y1="33"/>
+      <Trace x0="99" y0="51" x1="99" y1="50"/>
+      <Trace x0="95" y0="51" x1="99" y1="51"/>
+      <Trace x0="95" y0="59" x1="95" y1="51"/>
+      <Trace x0="74" y0="59" x1="95" y1="59"/>
+      <Trace x0="108" y0="51" x1="108" y1="50"/>
+      <Trace x0="104" y0="51" x1="108" y1="51"/>
+      <Trace x0="104" y0="63" x1="104" y1="51"/>
+      <Trace x0="74" y0="63" x1="104" y1="63"/>
+      <Trace x0="117" y0="51" x1="117" y1="50"/>
+      <Trace x0="113" y0="51" x1="117" y1="51"/>
+      <Trace x0="113" y0="61" x1="113" y1="51"/>
+      <Trace x0="74" y0="61" x1="113" y1="61"/>
+    </Circuit>
+    <Circuit type="MFR-12FTF52-0R">
+      <Pin name="1" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="2" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+    </Circuit>
+    <Circuit type="LSF0204PW-Q100J">
+      <Pin name="REFA" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="B4" x="0" y="3" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="B3" x="0" y="6" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="B2" x="0" y="9" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="B1" x="0" y="12" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="REFB" x="0" y="15" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Pin name="A1" x="0" y="18" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="A2" x="0" y="21" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="A3" x="0" y="24" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="A4" x="0" y="27" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="N.C._1" x="0" y="30" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="GND" x="0" y="33" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="EN" x="0" y="36" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="N.C._2" x="0" y="39" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+    </Circuit>
+  </Circuits>
+</Logicim>

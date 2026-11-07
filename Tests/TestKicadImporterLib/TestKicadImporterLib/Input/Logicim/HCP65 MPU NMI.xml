@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="HCP65 MPU NMI">
+      <Logic74Unit name="IC6" x="246" y="128" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="02" unit="D" pinSpacing="2"/>
+      <Logic74Package name="IC8" x="172" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" pinSpacing="2"/>
+      <Logic74Unit name="IC1" x="144" y="115" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="08" unit="C" pinSpacing="2"/>
+      <Logic74Unit name="IC1" x="248" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="08" unit="D" pinSpacing="2"/>
+      <Logic74Unit name="IC6" x="285" y="183" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="02" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="135" y="56" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" unit="F" pinSpacing="2"/>
+      <Logic74Unit name="IC1" x="144" y="129" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="08" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="135" y="63" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" unit="D" pinSpacing="2"/>
+      <Logic74Package name="IC10" x="216" y="49" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="2G08" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="135" y="39" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="135" y="75" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" unit="E" pinSpacing="2"/>
+      <Logic74Unit name="IC2" x="281" y="52" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G32" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="235" y="115" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" unit="B" pinSpacing="2"/>
+      <Logic74Package name="IC11" x="144" y="181" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" pinSpacing="2"/>
+      <Logic74Package name="IC4" x="288" y="136" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" pinSpacing="2"/>
+      <Logic74Package name="IC9" x="146" y="153" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="541" pinSpacing="2"/>
+      <Logic74Package name="IC13" x="172" y="76" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" pinSpacing="2"/>
+      <Logic74Unit name="IC6" x="110" y="174" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="02" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC1" x="285" y="169" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="08" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="261" y="115" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" unit="C" pinSpacing="2"/>
+      <Logic74Unit name="IC6" x="246" y="142" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="02" unit="C" pinSpacing="2"/>
+      <Pin name="~{Reset}" x="25" y="94" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="~{RD}" x="25" y="99" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="~{WD}" x="25" y="104" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="MPU1" x="25" y="109" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="MPU0" x="25" y="114" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="D0" x="15" y="106" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="D1" x="35" y="108" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="D2" x="25" y="119" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="D3" x="15" y="112" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
+      <Pin name="D4" x="25" y="124" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="D5" x="16" y="119" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
+      <Pin name="D6" x="25" y="129" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
+      <Pin name="D7" x="34" y="122" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
+      <Pin name="~{NMI}" x="41" y="92" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
+      <Pin name="~{Set Break}_{3}" x="41" y="97" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="31" inverting="false" clockNotch="false"/>
+      <Pin name="~{Set Break}_{2}" x="41" y="102" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
+      <Pin name="~{Set Break}_{1}" x="41" y="87" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
+      <Pin name="Set Disable NMI" x="43" y="113" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
+      <Pin name="Set Enable NMI" x="51" y="107" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
+      <Pin name="~{Set Timer}" x="48" y="118" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
+      <Pin name="NMI Enabled" x="41" y="127" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
+      <Pin name="~{NMI State}" x="41" y="132" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
+      <Pin name="Break_{1}" x="60" y="112" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
+      <Pin name="Break_{2}" x="62" y="117" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
+      <Pin name="Break_{3}" x="11" y="118" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
+      <Tunnel name="Timer" x="177" y="44" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.9249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="Timer" x="141" y="143" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.9249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Set Break}_{1}" x="93" y="41" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Set Break}_{1}" x="41" y="87" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="NMI Enabled" x="93" y="151" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI Enabled" x="309" y="132" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="7.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI Enabled" x="41" y="127" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="7.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="Write Disable NMI" x="212" y="127" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="10.125" bottom="0.65000000000000002"/>
+      <Tunnel name="Write Disable NMI" x="190" y="115" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="10.125" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Clear Break}_{3}" x="190" y="187" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Clear Break}_{3}" x="166" y="84" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="D6" x="190" y="155" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D6" x="25" y="129" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D1" x="190" y="145" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D1" x="139" y="180" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D1" x="35" y="108" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{3}" x="34" y="118" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{3}" x="309" y="73" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{3}" x="177" y="80" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{3}" x="141" y="149" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Set Timer}" x="93" y="37" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Set Timer}" x="48" y="118" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="3.3V" x="166" y="42" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="167" y="44" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="166" y="52" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="167" y="54" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="282" y="138" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="166" y="68" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="167" y="70" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="166" y="78" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="167" y="80" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="MPU0" x="93" y="155" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.9249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="MPU0" x="25" y="114" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.9249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="D7" x="185" y="157" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D7" x="34" y="122" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="Set Enable NMI" x="212" y="143" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="8.8250000000000011" bottom="0.65000000000000002"/>
+      <Tunnel name="Set Enable NMI" x="51" y="107" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="8.8250000000000011" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{1}" x="63" y="112" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{1}" x="177" y="54" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{1}" x="141" y="145" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Reset}" x="212" y="115" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Reset}" x="25" y="94" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{WD}" x="109" y="175" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="2.9035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{WD}" x="25" y="104" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="2.9035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="D2" x="185" y="147" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D2" x="139" y="184" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D2" x="25" y="119" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D5" x="185" y="153" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D5" x="143" y="116" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D5" x="16" y="119" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D3" x="190" y="149" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D3" x="139" y="188" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D3" x="15" y="112" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="284" y="182" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="284" y="184" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="283" y="130" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="283" y="142" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="283" y="140" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="282" y="144" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="141" y="153" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="284" y="168" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="284" y="170" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Clear Timer}" x="190" y="175" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Clear Timer}" x="166" y="48" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="Break_{2}" x="177" y="70" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{2}" x="309" y="69" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{2}" x="65" y="116" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="Break_{2}" x="141" y="147" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.3250000000000002" bottom="0.65000000000000002"/>
+      <Tunnel name="~{NMI}" x="309" y="52" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="3.1035714285714282" bottom="0.82857142857142851"/>
+      <Tunnel name="~{NMI}" x="44" y="92" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="3.1035714285714282" bottom="0.82857142857142851"/>
+      <Tunnel name="NMI Mask" x="309" y="128" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.9250000000000007" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI Mask" x="280" y="51" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.9250000000000007" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Clear Break}_{2}" x="190" y="183" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Clear Break}_{2}" x="166" y="74" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{RD}" x="140" y="163" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="2.7035714285714287" bottom="0.82857142857142851"/>
+      <Tunnel name="~{RD}" x="25" y="99" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="2.7035714285714287" bottom="0.82857142857142851"/>
+      <Tunnel name="D4" x="195" y="151" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D4" x="143" y="130" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D4" x="25" y="124" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Clear Break}_{1}" x="190" y="179" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Clear Break}_{1}" x="166" y="58" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Set Break}_{3}" x="93" y="45" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Set Break}_{3}" x="41" y="97" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="D0" x="185" y="143" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D0" x="139" y="176" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D0" x="15" y="106" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI State·WD" x="139" y="174" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.7250000000000005" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI State·WD" x="143" y="114" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.7250000000000005" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI State·WD" x="143" y="128" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.7250000000000005" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI State·WD" x="139" y="178" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.7250000000000005" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI State·WD" x="139" y="182" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.7250000000000005" bottom="0.65000000000000002"/>
+      <Tunnel name="NMI State·WD" x="139" y="186" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="7.7250000000000005" bottom="0.65000000000000002"/>
+      <Tunnel name="Set Disable NMI" x="212" y="131" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="9.125" bottom="0.65000000000000002"/>
+      <Tunnel name="Set Disable NMI" x="43" y="113" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="9.125" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Set Break}_{2}" x="93" y="49" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Set Break}_{2}" x="41" y="102" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="MPU1" x="86" y="157" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.9249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="MPU1" x="25" y="109" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.9249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="~{NMI State}" x="93" y="173" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{NMI State}" x="140" y="161" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{NMI State}" x="41" y="132" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="Write Enable NMI" x="212" y="139" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="9.8250000000000011" bottom="0.65000000000000002"/>
+      <Tunnel name="Write Enable NMI" x="146" y="129" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="9.8250000000000011" bottom="0.65000000000000002"/>
+      <Trace x0="240" y0="49" x1="247" y1="49"/>
+      <Trace x0="240" y0="47" x1="240" y1="49"/>
+      <Trace x0="222" y0="47" x1="240" y1="47"/>
+      <Trace x0="222" y0="51" x1="247" y1="51"/>
+      <Trace x0="211" y0="46" x1="178" y1="46"/>
+      <Trace x0="192" y0="56" x1="178" y1="56"/>
+      <Trace x0="192" y0="48" x1="192" y1="56"/>
+      <Trace x0="211" y0="48" x1="192" y1="48"/>
+      <Trace x0="189" y0="50" x1="211" y1="50"/>
+      <Trace x0="189" y0="72" x1="189" y1="50"/>
+      <Trace x0="178" y0="72" x1="189" y1="72"/>
+      <Trace x0="190" y0="52" x1="211" y1="52"/>
+      <Trace x0="190" y0="82" x1="190" y1="52"/>
+      <Trace x0="178" y0="82" x1="190" y1="82"/>
+      <Trace x0="63" y0="112" x1="60" y1="112"/>
+      <Trace x0="44" y0="92" x1="41" y1="92"/>
+      <Trace x0="64" y0="117" x1="62" y1="117"/>
+      <Trace x0="64" y0="116" x1="64" y1="117"/>
+      <Trace x0="65" y0="116" x1="64" y1="116"/>
+      <Trace x0="309" y0="132" x1="294" y1="132"/>
+      <Trace x0="93" y0="173" x1="109" y1="173"/>
+      <Trace x0="302" y0="130" x1="293" y1="130"/>
+      <Trace x0="302" y0="128" x1="302" y1="130"/>
+      <Trace x0="309" y0="128" x1="302" y1="128"/>
+      <Trace x0="212" y0="115" x1="234" y1="115"/>
+      <Trace x0="15" y0="118" x1="11" y1="118"/>
+      <Trace x0="15" y0="117" x1="15" y1="118"/>
+      <Trace x0="29" y0="117" x1="15" y1="117"/>
+      <Trace x0="29" y0="118" x1="29" y1="117"/>
+      <Trace x0="34" y0="118" x1="29" y1="118"/>
+      <Trace x0="260" y0="115" x1="237" y1="115"/>
+      <Trace x0="309" y0="52" x1="283" y1="52"/>
+      <Trace x0="113" y0="174" x1="139" y1="174"/>
+      <Trace x0="137" y0="56" x1="167" y1="56"/>
+      <Trace x0="212" y0="127" x1="245" y1="127"/>
+      <Trace x0="282" y0="128" x1="249" y1="128"/>
+      <Trace x0="212" y0="143" x1="245" y1="143"/>
+      <Trace x0="265" y0="50" x1="250" y1="50"/>
+      <Trace x0="265" y0="53" x1="265" y1="50"/>
+      <Trace x0="280" y0="53" x1="265" y1="53"/>
+      <Trace x0="185" y0="157" x1="151" y1="157"/>
+      <Trace x0="185" y0="147" x1="151" y1="147"/>
+      <Trace x0="185" y0="153" x1="151" y1="153"/>
+      <Trace x0="185" y0="143" x1="151" y1="143"/>
+      <Trace x0="229" y0="129" x1="245" y1="129"/>
+      <Trace x0="229" y0="131" x1="229" y1="129"/>
+      <Trace x0="212" y0="131" x1="229" y1="131"/>
+      <Trace x0="229" y0="141" x1="245" y1="141"/>
+      <Trace x0="229" y0="139" x1="229" y1="141"/>
+      <Trace x0="212" y0="139" x1="229" y1="139"/>
+      <Trace x0="151" y0="46" x1="167" y1="46"/>
+      <Trace x0="151" y0="39" x1="151" y1="46"/>
+      <Trace x0="137" y0="39" x1="151" y1="39"/>
+      <Trace x0="151" y0="75" x1="137" y1="75"/>
+      <Trace x0="151" y0="82" x1="151" y1="75"/>
+      <Trace x0="167" y0="82" x1="151" y1="82"/>
+      <Trace x0="278" y0="132" x1="283" y1="132"/>
+      <Trace x0="278" y0="127" x1="278" y1="132"/>
+      <Trace x0="281" y0="127" x1="278" y1="127"/>
+      <Trace x0="281" y0="115" x1="281" y1="127"/>
+      <Trace x0="263" y0="115" x1="281" y1="115"/>
+      <Trace x0="151" y0="63" x1="137" y1="63"/>
+      <Trace x0="151" y0="72" x1="151" y1="63"/>
+      <Trace x0="167" y0="72" x1="151" y1="72"/>
+      <Trace x0="190" y0="155" x1="151" y1="155"/>
+      <Trace x0="190" y0="145" x1="151" y1="145"/>
+      <Trace x0="190" y0="149" x1="151" y1="149"/>
+      <Trace x0="190" y0="183" x1="150" y1="183"/>
+      <Trace x0="190" y0="179" x1="150" y1="179"/>
+      <Trace x0="190" y0="175" x1="150" y1="175"/>
+      <Trace x0="190" y0="187" x1="150" y1="187"/>
+      <Trace x0="267" y0="134" x1="282" y1="134"/>
+      <Trace x0="267" y0="142" x1="267" y1="134"/>
+      <Trace x0="249" y0="142" x1="267" y1="142"/>
+      <Trace x0="114" y0="39" x1="134" y1="39"/>
+      <Trace x0="114" y0="37" x1="114" y1="39"/>
+      <Trace x0="93" y0="37" x1="114" y1="37"/>
+      <Trace x0="195" y0="151" x1="151" y1="151"/>
+      <Trace x0="190" y0="115" x1="146" y1="115"/>
+      <Trace x0="93" y0="151" x1="141" y1="151"/>
+      <Trace x0="93" y0="155" x1="141" y1="155"/>
+      <Trace x0="125" y0="63" x1="134" y1="63"/>
+      <Trace x0="125" y0="49" x1="125" y1="63"/>
+      <Trace x0="93" y0="49" x1="125" y1="49"/>
+      <Trace x0="86" y0="157" x1="141" y1="157"/>
+      <Trace x0="126" y0="56" x1="134" y1="56"/>
+      <Trace x0="126" y0="41" x1="126" y1="56"/>
+      <Trace x0="93" y0="41" x1="126" y1="41"/>
+      <Trace x0="124" y0="75" x1="134" y1="75"/>
+      <Trace x0="124" y0="45" x1="124" y1="75"/>
+      <Trace x0="93" y0="45" x1="124" y1="45"/>
+      <Trace x0="244" y0="70" x1="177" y1="70"/>
+      <Trace x0="244" y0="69" x1="244" y1="70"/>
+      <Trace x0="309" y0="69" x1="244" y1="69"/>
+      <Trace x0="188" y0="80" x1="177" y1="80"/>
+      <Trace x0="188" y0="73" x1="188" y1="80"/>
+      <Trace x0="309" y0="73" x1="188" y1="73"/>
+    </Circuit>
+  </Circuits>
+</Logicim>
