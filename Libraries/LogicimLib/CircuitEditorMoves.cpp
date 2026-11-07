@@ -746,52 +746,28 @@ void CCircuitEditor::LiftLeads(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // Each lead with a port to go to added to the router, those to the same
-// net (pcNetPort) in one of its nets.  paiConnections gets each lead's
-// connection in the router, -1 for a lead that isn't routed.
+// net (pcNetPort) in one of its nets.  pauiConnections gets each lead's
+// connection in the router, ARRAY_ELEMENT_NOT_FOUND for a lead that isn't
+// routed.
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitEditor::AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayInt* paiConnections)
+void CCircuitEditor::AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiConnections)
 {
-	size					i;
-	size					uiNet;
-	size					uiNetIndex;
-	SMoveLead*				psLead;
-	CArrayPortViewPtr		apcNetPorts;
-	CArrayInt				aiNets;
+	size			i;
+	SMoveLead*		psLead;
 
-	apcNetPorts.Init();
-	aiNets.Init();
 	for (i = 0; i < masLeads.NumElements(); i++)
 	{
 		psLead = masLeads.Get(i);
 		if (psLead->pcTargetPort == NULL)
 		{
-			paiConnections->Add(-1);
-			continue;
-		}
-
-		uiNetIndex = apcNetPorts.Find(psLead->pcNetPort);
-		if (uiNetIndex == ARRAY_ELEMENT_NOT_FOUND)
-		{
-			uiNet = pcConnector->AddNet();
-			apcNetPorts.Add(psLead->pcNetPort);
-			aiNets.Add((int)uiNet);
+			pauiConnections->Add(ARRAY_ELEMENT_NOT_FOUND);
 		}
 		else
 		{
-			uiNet = (size)aiNets.GetValue(uiNetIndex);
-		}
-		if (pcConnector->AddConnection(uiNet, psLead->pcPort, psLead->pcTargetPort, TRACE_AUTO_CONNECT_NO_BEND))
-		{
-			paiConnections->Add((int)(pcConnector->NumConnections() - 1));
-		}
-		else
-		{
-			paiConnections->Add(-1);
+			pauiConnections->Add(pcConnector->AddConnection(pcConnector->FindOrAddNet(psLead->pcNetPort), psLead->pcPort, psLead->pcTargetPort, TRACE_AUTO_CONNECT_NO_BEND));
 		}
 	}
-	aiNets.Kill();
-	apcNetPorts.Kill();
 }
 
 
@@ -830,12 +806,10 @@ void CCircuitEditor::AddStraightLead(SMoveLead* psLead)
 //////////////////////////////////////////////////////////////////////////
 void CCircuitEditor::RouteLeads(void)
 {
-	size					i;
-	size					uiFirstRoute;
-	SMoveLead*				psLead;
-	CArrayInt				aiConnections;
-	CTraceAutoConnector		cConnector;
-	int						iConnection;
+	size							i;
+	size							uiFirstRoute;
+	CArrayTemplatePrimitive<size>	auiConnections;
+	CTraceAutoConnector				cConnector;
 
 	if (masLeads.NumElements() == 0)
 	{
@@ -850,26 +824,20 @@ void CCircuitEditor::RouteLeads(void)
 	//The router and AddTrace only add traces, after those already in the circuit.
 	uiFirstRoute = mpcCircuit->NumTraces();
 
-	aiConnections.Init();
+	auiConnections.Init();
 	cConnector.Init(mpcCircuit);
-	AddLeadConnections(&cConnector, &aiConnections);
+	AddLeadConnections(&cConnector, &auiConnections);
 	cConnector.Connect();
 	for (i = 0; i < masLeads.NumElements(); i++)
 	{
-		psLead = masLeads.Get(i);
-		iConnection = aiConnections.GetValue(i);
-		if ((iConnection == -1) || !cConnector.IsConnected((size)iConnection))
+		if (!cConnector.IsConnected(auiConnections.GetValue(i)))
 		{
-			AddStraightLead(psLead);
+			AddStraightLead(masLeads.Get(i));
 		}
 	}
 	cConnector.Kill();
-	aiConnections.Kill();
-
-	for (i = uiFirstRoute; i < mpcCircuit->NumTraces(); i++)
-	{
-		mapcLeadRoutes.Add(mpcCircuit->GetTrace(i));
-	}
+	auiConnections.Kill();
+	mpcCircuit->CollectTracesFrom(uiFirstRoute, &mapcLeadRoutes);
 }
 
 
@@ -1006,11 +974,10 @@ bool CCircuitEditor::RouteWire(SInt32Vec2 sFrom, SInt32Vec2 sTo)
 	CPortView*			pcFrom;
 	CPortView*			pcTo;
 	CTraceAutoConnector	cConnector;
-	CArrayTraceViewPtr	apcBefore;
 	CArrayTraceViewPtr	apcAdded;
 	CArrayTraceLine		asNoLines;
-	CTraceView*			pcTrace;
-	size				i;
+	size				uiFirstRoute;
+	size				uiConnection;
 	bool				bConnected;
 
 	pcFrom = mpcCircuit->GetPortViewAt(sFrom);
@@ -1020,28 +987,15 @@ bool CCircuitEditor::RouteWire(SInt32Vec2 sFrom, SInt32Vec2 sTo)
 		return false;
 	}
 
-	apcBefore.Init();
-	for (i = 0; i < mpcCircuit->NumTraces(); i++)
-	{
-		apcBefore.Add(mpcCircuit->GetTrace(i));
-	}
-
+	uiFirstRoute = mpcCircuit->NumTraces();
 	cConnector.Init(mpcCircuit);
-	cConnector.AddConnection(cConnector.AddNet(), pcFrom, pcTo, TRACE_AUTO_CONNECT_NO_BEND);
+	uiConnection = cConnector.AddConnection(cConnector.AddNet(), pcFrom, pcTo, TRACE_AUTO_CONNECT_NO_BEND);
 	cConnector.Connect();
-	bConnected = cConnector.IsConnected(0);
+	bConnected = cConnector.IsConnected(uiConnection);
 	cConnector.Kill();
 
 	apcAdded.Init();
-	for (i = 0; i < mpcCircuit->NumTraces(); i++)
-	{
-		pcTrace = mpcCircuit->GetTrace(i);
-		if (apcBefore.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND)
-		{
-			apcAdded.Add(pcTrace);
-		}
-	}
-	apcBefore.Kill();
+	mpcCircuit->CollectTracesFrom(uiFirstRoute, &apcAdded);
 
 	if (apcAdded.NumElements() > 0)
 	{

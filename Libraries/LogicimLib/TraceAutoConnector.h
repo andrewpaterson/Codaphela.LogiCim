@@ -22,6 +22,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __TRACE_AUTO_CONNECTOR_H__
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArrayTemplate.h"
+#include "BaseLib/MapBlock.h"
 #include "CircuitView.h"
 
 
@@ -80,6 +81,14 @@ struct STraceAutoConnection
 typedef CArrayTemplate<STraceAutoConnection>	CArrayTraceAutoConnection;
 
 
+//The pair of keys a caller names a run by (see CTraceAutoConnector::FindOrAddRun).
+struct STraceAutoConnectRunKey
+{
+	void*	pvFrom;
+	void*	pvTo;
+};
+
+
 struct STraceAutoConnectHeapNode
 {
 	int32	iCost;
@@ -133,6 +142,8 @@ protected:
 	CArrayComponentViewPtr			mapcBoxComponents;  //Components with a box of their own to keep clear (see SetComponentBox).
 	CArrayTemplate<SFloat64Vec2>	masBoxMinimums;
 	CArrayTemplate<SFloat64Vec2>	masBoxMaximums;
+	CMapBlock						mcNetKeys;      //A caller's key to its net (see FindOrAddNet).
+	CMapBlock						mcRunKeys;      //A caller's STraceAutoConnectRunKey to its run (see FindOrAddRun).
 
 	SInt32Vec2						msGridMinimum;
 	int32							miGridWidth;
@@ -175,8 +186,10 @@ public:
 	void			Kill(void);
 
 	size			AddNet(void);
+	size			FindOrAddNet(void* pvKey);
 	size			AddRun(void);
-	bool			AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun = -1);
+	size			FindOrAddRun(void* pvFrom, void* pvTo);
+	size			AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun = -1);
 
 	void			SetComponentBox(CComponentView* pcComponent, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum);
 	bool			Connect(void);
@@ -192,6 +205,7 @@ protected:
 	bool			GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
 	bool			AddPort(CPortView* pcPortView, size uiNet);
 	int				GetPortNet(CPortView* pcPortView);
+	void			DropLoneRuns(void);
 	void			InitNets(void);
 	void			InitSearch(void);
 	void			RipAndReroute(CArrayInt* paiOrder, CArrayInt* paiFailed);

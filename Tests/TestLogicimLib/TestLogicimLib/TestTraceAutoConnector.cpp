@@ -248,7 +248,7 @@ void TestTraceAutoConnectorBend(void)
 
 	cConnector.Init(&cCircuit);
 	uiNet = cConnector.AddNet();
-	AssertTrue(cConnector.AddConnection(uiNet, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5));
+	AssertSize(0, cConnector.AddConnection(uiNet, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5));
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
 	AssertTrue(AreAutoConnected(&cCircuit, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0)));
@@ -259,7 +259,7 @@ void TestTraceAutoConnectorBend(void)
 	AssertSize(0, cCircuit.NumTraces());
 	cConnector.Init(&cCircuit);
 	uiNet = cConnector.AddNet();
-	AssertTrue(cConnector.AddConnection(uiNet, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.25));
+	AssertSize(0, cConnector.AddConnection(uiNet, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.25));
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
 	AssertTrue(AreAutoConnected(&cCircuit, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0)));
@@ -290,7 +290,7 @@ void TestTraceAutoConnectorObstacle(void)
 
 	cConnector.Init(&cCircuit);
 	uiNet = cConnector.AddNet();
-	AssertTrue(cConnector.AddConnection(uiNet, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5));
+	AssertSize(0, cConnector.AddConnection(uiNet, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5));
 	AssertTrue(cConnector.Connect());
 	AssertSize(0, cConnector.NumUnconnected());
 	cConnector.Kill();
@@ -328,8 +328,8 @@ void TestTraceAutoConnectorCrossing(void)
 	cConnector.Init(&cCircuit);
 	uiNet1 = cConnector.AddNet();
 	uiNet2 = cConnector.AddNet();
-	AssertTrue(cConnector.AddConnection(uiNet1, pcTop->GetPortView((size)1), pcTopTo->GetPortView((size)0), 0.5));
-	AssertTrue(cConnector.AddConnection(uiNet2, pcBottom->GetPortView((size)1), pcBottomTo->GetPortView((size)0), 0.5));
+	AssertSize(0, cConnector.AddConnection(uiNet1, pcTop->GetPortView((size)1), pcTopTo->GetPortView((size)0), 0.5));
+	AssertSize(1, cConnector.AddConnection(uiNet2, pcBottom->GetPortView((size)1), pcBottomTo->GetPortView((size)0), 0.5));
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
 
@@ -371,7 +371,7 @@ void TestTraceAutoConnectorRun(void)
 	for (i = 0; i < 4; i++)
 	{
 		auiNets[i] = cConnector.AddNet();
-		AssertTrue(cConnector.AddConnection(auiNets[i], pcFrom->GetPortView(4 + i), pcTo->GetPortView(i), 0.5, (int)uiRun));
+		AssertSize(i, cConnector.AddConnection(auiNets[i], pcFrom->GetPortView(4 + i), pcTo->GetPortView(i), 0.5, (int)uiRun));
 	}
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
@@ -405,6 +405,95 @@ void TestTraceAutoConnectorRun(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Nets and runs found by the caller's keys: the same key is the same net
+// or run, a run named by the two buffers is stepped as a stair as one
+// added with AddRun is, and a run that gets only one connection still
+// routes it.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestTraceAutoConnectorKeys(void)
+{
+	CCircuitView			cCircuit;
+	CTraceAutoConnector		cConnector;
+	CBufferView*			pcFrom;
+	CBufferView*			pcTo;
+	CBufferView*			pcLone;
+	CBufferView*			pcLoneTo;
+	int						aiKeys[4];
+	size					auiNets[4];
+	size					uiRun;
+	size					uiLoneRun;
+	size					uiLone;
+	size					i;
+	size					j;
+	CArrayInt				aiBends;
+	CTraceView*				pcTrace;
+
+	cCircuit.Init();
+	pcFrom = AddAutoConnectBuffer(&cCircuit, 0, 0, 4);
+	pcTo = AddAutoConnectBuffer(&cCircuit, 24, 14, 4);
+	pcLone = AddAutoConnectBuffer(&cCircuit, 0, 30, 1);
+	pcLoneTo = AddAutoConnectBuffer(&cCircuit, 24, 30, 1);
+
+	cConnector.Init(&cCircuit);
+	for (i = 0; i < 4; i++)
+	{
+		auiNets[i] = cConnector.FindOrAddNet(&aiKeys[i]);
+		AssertSize(i, auiNets[i]);
+	}
+	for (i = 0; i < 4; i++)
+	{
+		AssertSize(auiNets[i], cConnector.FindOrAddNet(&aiKeys[i]));
+	}
+	uiRun = cConnector.FindOrAddRun(pcFrom, pcTo);
+	AssertSize(uiRun, cConnector.FindOrAddRun(pcFrom, pcTo));
+	uiLoneRun = cConnector.FindOrAddRun(pcLone, pcLoneTo);
+	AssertFalse(uiLoneRun == uiRun);
+	AssertFalse(uiLoneRun == cConnector.FindOrAddRun(pcLoneTo, pcLone));
+
+	for (i = 0; i < 4; i++)
+	{
+		AssertSize(i, cConnector.AddConnection(auiNets[i], pcFrom->GetPortView(4 + i), pcTo->GetPortView(i), 0.5, (int)cConnector.FindOrAddRun(pcFrom, pcTo)));
+	}
+	uiLone = cConnector.AddConnection(cConnector.FindOrAddNet(pcLone), pcLone->GetPortView((size)1), pcLoneTo->GetPortView((size)0), 0.5, (int)uiLoneRun);
+	AssertSize(4, uiLone);
+	AssertTrue(cConnector.Connect());
+	for (i = 0; i < 5; i++)
+	{
+		AssertTrue(cConnector.IsConnected(i));
+	}
+	AssertFalse(cConnector.IsConnected(ARRAY_ELEMENT_NOT_FOUND));
+	cConnector.Kill();
+
+	for (i = 0; i < 4; i++)
+	{
+		AssertTrue(AreAutoConnected(&cCircuit, pcFrom->GetPortView(4 + i), pcTo->GetPortView(i)));
+	}
+	AssertTrue(AreAutoConnected(&cCircuit, pcLone->GetPortView((size)1), pcLoneTo->GetPortView((size)0)));
+
+	//The run's vertical wires are stepped apart.
+	aiBends.Init();
+	for (i = 0; i < cCircuit.NumTraces(); i++)
+	{
+		pcTrace = cCircuit.GetTrace(i);
+		if ((pcTrace->GetStart().x == pcTrace->GetEnd().x) && (pcTrace->GetStart().y != pcTrace->GetEnd().y) && (pcTrace->GetStart().y < 20) && (pcTrace->GetEnd().y < 20))
+		{
+			for (j = 0; j < aiBends.NumElements(); j++)
+			{
+				AssertFalse(aiBends.GetValue(j) == pcTrace->GetStart().x);
+			}
+			aiBends.Add(pcTrace->GetStart().x);
+		}
+	}
+	AssertSize(4, aiBends.NumElements());
+	aiBends.Kill();
+
+	cCircuit.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // One output to three inputs: each input joins the wires already routed.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -427,7 +516,7 @@ void TestTraceAutoConnectorFanOut(void)
 	uiNet = cConnector.AddNet();
 	for (i = 0; i < 3; i++)
 	{
-		AssertTrue(cConnector.AddConnection(uiNet, apcTo[i]->GetPortView((size)0), pcFrom->GetPortView((size)1), 0.5));
+		AssertSize(i, cConnector.AddConnection(uiNet, apcTo[i]->GetPortView((size)0), pcFrom->GetPortView((size)1), 0.5));
 	}
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
@@ -467,8 +556,8 @@ void TestTraceAutoConnectorExisting(void)
 
 	cConnector.Init(&cCircuit);
 	uiNet = cConnector.AddNet();
-	AssertTrue(cConnector.AddConnection(uiNet, pcTo->GetPortView((size)0), pcFrom->GetPortView((size)1), TRACE_AUTO_CONNECT_NO_BEND));
-	AssertTrue(cConnector.AddConnection(uiNet, pcOther->GetPortView((size)1), pcTo->GetPortView((size)0), TRACE_AUTO_CONNECT_NO_BEND));
+	AssertSize(0, cConnector.AddConnection(uiNet, pcTo->GetPortView((size)0), pcFrom->GetPortView((size)1), TRACE_AUTO_CONNECT_NO_BEND));
+	AssertSize(1, cConnector.AddConnection(uiNet, pcOther->GetPortView((size)1), pcTo->GetPortView((size)0), TRACE_AUTO_CONNECT_NO_BEND));
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
 
@@ -496,8 +585,8 @@ void TestTraceAutoConnectorErrors(void)
 	size					uiNet2;
 	CLogToMemory			cMemoryLog;
 	char					szLogText[1024];
-	bool					bOtherNet;
-	bool					bNoNet;
+	size					uiOtherNet;
+	size					uiNoNet;
 
 	cCircuit.Init();
 	pcFrom = AddAutoConnectBuffer(&cCircuit, 0, 0, 1);
@@ -506,13 +595,13 @@ void TestTraceAutoConnectorErrors(void)
 	cConnector.Init(&cCircuit);
 	uiNet1 = cConnector.AddNet();
 	uiNet2 = cConnector.AddNet();
-	AssertTrue(cConnector.AddConnection(uiNet1, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5));
+	AssertSize(0, cConnector.AddConnection(uiNet1, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5));
 	cMemoryLog.Start(true);
-	bOtherNet = cConnector.AddConnection(uiNet2, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5);
-	bNoNet = cConnector.AddConnection(7, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5);
+	uiOtherNet = cConnector.AddConnection(uiNet2, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5);
+	uiNoNet = cConnector.AddConnection(7, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0), 0.5);
 	cMemoryLog.Stop(szLogText, 1024);
-	AssertFalse(bOtherNet);
-	AssertFalse(bNoNet);
+	AssertSize(ARRAY_ELEMENT_NOT_FOUND, uiOtherNet);
+	AssertSize(ARRAY_ELEMENT_NOT_FOUND, uiNoNet);
 	AssertTrue(strstr(szLogText, "is already on another net.") != NULL);
 	AssertTrue(strstr(szLogText, "There is no net [7].") != NULL);
 	AssertSize(1, cConnector.NumConnections());
@@ -534,6 +623,7 @@ void TestTraceAutoConnector(void)
 	TestTraceAutoConnectorObstacle();
 	TestTraceAutoConnectorCrossing();
 	TestTraceAutoConnectorRun();
+	TestTraceAutoConnectorKeys();
 	TestTraceAutoConnectorFanOut();
 	TestTraceAutoConnectorExisting();
 	TestTraceAutoConnectorErrors();

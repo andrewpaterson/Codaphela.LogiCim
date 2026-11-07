@@ -405,6 +405,23 @@ size CCircuitView::FindTraceIndex(CTraceView* pcTrace) { return mapcTraces.Find(
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The wires from index uiFirst on: those added since there were uiFirst
+// (wires are only ever added after the others).
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::CollectTracesFrom(size uiFirst, CArrayTraceViewPtr* papcTraces)
+{
+	size	i;
+
+	for (i = uiFirst; i < mapcTraces.NumElements(); i++)
+	{
+		papcTraces->Add(mapcTraces.GetPtr(i));
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void CCircuitView::CollectPortViews(CArrayPortViewPtr* papcPortViews)

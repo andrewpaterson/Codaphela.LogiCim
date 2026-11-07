@@ -86,6 +86,8 @@ void CTraceAutoConnector::Init(CCircuitView* pcCircuit)
 	mapcBoxComponents.Init();
 	masBoxMinimums.Init();
 	masBoxMaximums.Init();
+	mcNetKeys.Init();
+	mcRunKeys.Init();
 
 	msGridMinimum.Init(0, 0);
 	miGridWidth = 0;
@@ -147,6 +149,8 @@ void CTraceAutoConnector::Kill(void)
 	maiHorizontal.Kill();
 	maiOwners.Kill();
 
+	mcRunKeys.Kill();
+	mcNetKeys.Kill();
 	masBoxMaximums.Kill();
 	masBoxMinimums.Kill();
 	mapcBoxComponents.Kill();
@@ -159,6 +163,21 @@ void CTraceAutoConnector::Kill(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The index the map has for the key, ARRAY_ELEMENT_NOT_FOUND if none.
+//
+//////////////////////////////////////////////////////////////////////////
+static size GetTraceAutoConnectIndex(CMapBlock* pcMap, const void* pvKey, size uiKeySize)
+{
+	size*	puiIndex;
+
+	puiIndex = (size*)pcMap->Get(pvKey, uiKeySize);
+	return (puiIndex != NULL) ? *puiIndex : ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A new net.
 //
 //////////////////////////////////////////////////////////////////////////
 size CTraceAutoConnector::AddNet(void)
@@ -170,6 +189,28 @@ size CTraceAutoConnector::AddNet(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The net the caller names by pvKey (a subnet, a port), added the first
+// time it's asked for.
+//
+//////////////////////////////////////////////////////////////////////////
+size CTraceAutoConnector::FindOrAddNet(void* pvKey)
+{
+	size	uiNet;
+
+	uiNet = GetTraceAutoConnectIndex(&mcNetKeys, &pvKey, sizeof(pvKey));
+	if (uiNet == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		uiNet = AddNet();
+		mcNetKeys.Put(&pvKey, sizeof(pvKey), &uiNet, sizeof(uiNet));
+	}
+	return uiNet;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A new run.  A run that gets only one connection is no run: the
+// connection is routed alone (see DropLoneRuns).
 //
 //////////////////////////////////////////////////////////////////////////
 size CTraceAutoConnector::AddRun(void)
@@ -181,22 +222,47 @@ size CTraceAutoConnector::AddRun(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Fails if either port is already on another net.  fBend is from 0 (at
-// the from component) to 1 (at the to component) or
+// The run the caller names by a pair of keys (the components a bus runs
+// from and to), added the first time it's asked for.
+//
+//////////////////////////////////////////////////////////////////////////
+size CTraceAutoConnector::FindOrAddRun(void* pvFrom, void* pvTo)
+{
+	STraceAutoConnectRunKey		sKey;
+	size						uiRun;
+
+	sKey.pvFrom = pvFrom;
+	sKey.pvTo = pvTo;
+	uiRun = GetTraceAutoConnectIndex(&mcRunKeys, &sKey, sizeof(sKey));
+	if (uiRun == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		uiRun = AddRun();
+		mcRunKeys.Put(&sKey, sizeof(sKey), &uiRun, sizeof(uiRun));
+	}
+	return uiRun;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The new connection's index (see IsConnected), ARRAY_ELEMENT_NOT_FOUND
+// if either port is already on another net.  fBend is from 0 (at the
+// from component) to 1 (at the to component) or
 // TRACE_AUTO_CONNECT_NO_BEND.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun)
+size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun)
 {
 	STraceAutoConnection*	psConnection;
 
 	if (uiNet >= muiNumNets)
 	{
-		return gcLogger.Error2(__METHOD__, " There is no net [", IntToString((int)uiNet), "].", NULL);
+		gcLogger.Error2(__METHOD__, " There is no net [", IntToString((int)uiNet), "].", NULL);
+		return ARRAY_ELEMENT_NOT_FOUND;
 	}
 	if (!AddPort(pcFrom, uiNet) || !AddPort(pcTo, uiNet))
 	{
-		return false;
+		return ARRAY_ELEMENT_NOT_FOUND;
 	}
 
 	psConnection = masConnections.Add();
@@ -213,7 +279,7 @@ bool CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView
 	psConnection->bFailed = false;
 	psConnection->uiFailedRips = 0;
 	psConnection->iFailedNetWires = 0;
-	return true;
+	return masConnections.NumElements() - 1;
 }
 
 
@@ -308,6 +374,43 @@ int CTraceAutoConnector::GetPortNet(CPortView* pcPortView)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A run that got only one connection is no run: the connection is routed
+// alone, after the runs (see SortConnections).
+//
+//////////////////////////////////////////////////////////////////////////
+void CTraceAutoConnector::DropLoneRuns(void)
+{
+	CArrayInt				aiCounts;
+	size					i;
+	STraceAutoConnection*	psConnection;
+
+	aiCounts.Init();
+	for (i = 0; i < muiNumRuns; i++)
+	{
+		aiCounts.Add(0);
+	}
+	for (i = 0; i < masConnections.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(i);
+		if (IsInRun(psConnection))
+		{
+			aiCounts.SetValue(psConnection->iRun, aiCounts.GetValue(psConnection->iRun) + 1);
+		}
+	}
+	for (i = 0; i < masConnections.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(i);
+		if (IsInRun(psConnection) && (aiCounts.GetValue(psConnection->iRun) == 1))
+		{
+			psConnection->iRun = -1;
+		}
+	}
+	aiCounts.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Routes every connection and adds their wires to the circuit.  False if
 // any couldn't be routed.
 //
@@ -323,6 +426,7 @@ bool CTraceAutoConnector::Connect(void)
 		return true;
 	}
 
+	DropLoneRuns();
 	InitNets();
 	InitSearch();
 
@@ -1872,7 +1976,7 @@ bool CTraceAutoConnector::IsVisited(int iState)
 //
 //////////////////////////////////////////////////////////////////////////
 size CTraceAutoConnector::NumConnections(void) { return masConnections.NumElements(); }
-bool CTraceAutoConnector::IsConnected(size uiIndex) { return masConnections.Get(uiIndex)->bConnected; }
+bool CTraceAutoConnector::IsConnected(size uiIndex) { return (uiIndex < masConnections.NumElements()) && masConnections.Get(uiIndex)->bConnected; }
 
 
 //////////////////////////////////////////////////////////////////////////

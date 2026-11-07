@@ -279,7 +279,7 @@ protected:
 	CPortView*			FindNetPort(SInt32Vec2 sPoint, CArrayTraceViewPtr* papcExcluded, CArrayComponentViewPtr* papcComponents);
 	void				LiftLeads(void);
 	void				RouteLeads(void);
-	void				AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayInt* paiConnections);
+	void				AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiConnections);
 	void				AddStraightLead(SMoveLead* psLead);
 	void				KillLeadRoutes(void);
 	void				RestoreLeads(void);

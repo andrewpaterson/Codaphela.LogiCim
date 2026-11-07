@@ -521,66 +521,6 @@ void CKicadSchemLogicimConverter::AddSubnetConnections(CKicadSchemSubnet* pcSubn
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The run of connections from item iFromItem to item iToItem,
-// ARRAY_ELEMENT_NOT_FOUND if there isn't one yet.
-//
-//////////////////////////////////////////////////////////////////////////
-static size FindKicadSchemRun(CArrayKicadSchemLogicimRun* pasRuns, int iFromItem, int iToItem)
-{
-	size						i;
-	SKicadSchemLogicimRun*		psRun;
-
-	for (i = 0; i < pasRuns->NumElements(); i++)
-	{
-		psRun = pasRuns->Get(i);
-		if ((psRun->iFromItem == iFromItem) && (psRun->iToItem == iToItem))
-		{
-			return i;
-		}
-	}
-	return ARRAY_ELEMENT_NOT_FOUND;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The connections between each pair of items, counted in pasRuns.
-//
-//////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::CountRuns(CArrayKicadSchemLogicimRun* pasRuns)
-{
-	size							i;
-	size							uiRun;
-	SKicadSchemLogicimConnection*	psConnection;
-	SKicadSchemLogicimRun*			psRun;
-	int								iFromItem;
-	int								iToItem;
-
-	for (i = 0; i < masConnections.NumElements(); i++)
-	{
-		psConnection = masConnections.Get(i);
-		iFromItem = (int)masTerminals.Get(psConnection->uiFrom)->uiItem;
-		iToItem = (int)masTerminals.Get(psConnection->uiTo)->uiItem;
-		uiRun = FindKicadSchemRun(pasRuns, iFromItem, iToItem);
-		if (uiRun == ARRAY_ELEMENT_NOT_FOUND)
-		{
-			psRun = pasRuns->Add();
-			psRun->iFromItem = iFromItem;
-			psRun->iToItem = iToItem;
-			psRun->iCount = 0;
-			psRun->iRun = -1;
-		}
-		else
-		{
-			psRun = pasRuns->Get(uiRun);
-		}
-		psRun->iCount++;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // The box the router keeps each item's wires out of, where the item has
 // one.
 //
@@ -605,44 +545,29 @@ void CKicadSchemLogicimConverter::SetRouteBoxes(CTraceAutoConnector* pcConnector
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Each connection added to the router: in its subnet's net, and in its
-// run if the run has more than one.  paiConnectorIndices gets each one's
-// index in the router, -1 if the router wouldn't take it.
+// Each connection added to the router, in its subnet's net and in the
+// run of the connections between the same two items.  pauiRouted gets
+// each one's connection in the router.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcConnector, CArrayKicadSchemLogicimRun* pasRuns, CArrayInt* paiConnectorIndices)
+void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiRouted)
 {
-	CArrayInt						aiSubnetNets;
 	size							i;
-	size							uiRun;
 	SKicadSchemLogicimConnection*	psConnection;
 	SKicadSchemLogicimTerminal*		psFrom;
 	SKicadSchemLogicimTerminal*		psTo;
-	int								iNet;
-	int								iRun;
-
-	aiSubnetNets.Init();
-	for (i = 0; i < mpcNetlist->NumSubnets() + mpcNetlist->NumBuses(); i++)
-	{
-		aiSubnetNets.Add(-1);
-	}
+	size							uiNet;
+	size							uiRun;
 
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
-		iNet = aiSubnetNets.GetValue(psConnection->uiSubnet);
-		if (iNet == -1)
-		{
-			iNet = (int)pcConnector->AddNet();
-			aiSubnetNets.SetValue(psConnection->uiSubnet, iNet);
-		}
 		psFrom = masTerminals.Get(psConnection->uiFrom);
 		psTo = masTerminals.Get(psConnection->uiTo);
-		uiRun = FindKicadSchemRun(pasRuns, (int)psFrom->uiItem, (int)psTo->uiItem);
-		iRun = (uiRun != ARRAY_ELEMENT_NOT_FOUND) ? pasRuns->Get(uiRun)->iRun : -1;
-		paiConnectorIndices->Add(pcConnector->AddConnection(iNet, psFrom->pcPortView, psTo->pcPortView, psConnection->fBend, iRun) ? (int)(pcConnector->NumConnections() - 1) : -1);
+		uiNet = pcConnector->FindOrAddNet(psFrom->pcSubnet);
+		uiRun = pcConnector->FindOrAddRun(masItems.Get(psFrom->uiItem)->pcView, masItems.Get(psTo->uiItem)->pcView);
+		pauiRouted->Add(pcConnector->AddConnection(uiNet, psFrom->pcPortView, psTo->pcPortView, psConnection->fBend, (int)uiRun));
 	}
-	aiSubnetNets.Kill();
 }
 
 
@@ -656,44 +581,29 @@ void CKicadSchemLogicimConverter::AddRouteConnections(CTraceAutoConnector* pcCon
 size CKicadSchemLogicimConverter::Route(void)
 {
 	CTraceAutoConnector				cConnector;
-	CArrayKicadSchemLogicimRun		asRuns;
-	CArrayInt						aiConnectorIndices;
+	CArrayTemplatePrimitive<size>	auiRouted;
 	size							i;
 	SKicadSchemLogicimConnection*	psConnection;
-	SKicadSchemLogicimRun*			psRun;
 	size							uiUnconnected;
 
 	mpcCircuit->KillTraces();
-
-	asRuns.Init();
-	CountRuns(&asRuns);
-
 	cConnector.Init(mpcCircuit);
 	SetRouteBoxes(&cConnector);
-	for (i = 0; i < asRuns.NumElements(); i++)
-	{
-		psRun = asRuns.Get(i);
-		if (psRun->iCount > 1)
-		{
-			psRun->iRun = (int)cConnector.AddRun();
-		}
-	}
-
-	aiConnectorIndices.Init();
-	AddRouteConnections(&cConnector, &asRuns, &aiConnectorIndices);
+	auiRouted.Init();
+	AddRouteConnections(&cConnector, &auiRouted);
 	cConnector.Connect();
+
 	uiUnconnected = 0;
 	for (i = 0; i < masConnections.NumElements(); i++)
 	{
 		psConnection = masConnections.Get(i);
-		psConnection->bConnected = (aiConnectorIndices.GetValue(i) != -1) && cConnector.IsConnected(aiConnectorIndices.GetValue(i));
+		psConnection->bConnected = cConnector.IsConnected(auiRouted.GetValue(i));
 		if (!psConnection->bConnected)
 		{
 			uiUnconnected++;
 		}
 	}
-	aiConnectorIndices.Kill();
+	auiRouted.Kill();
 	cConnector.Kill();
-	asRuns.Kill();
 	return uiUnconnected;
 }
