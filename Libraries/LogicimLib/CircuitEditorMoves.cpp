@@ -716,30 +716,48 @@ void CCircuitEditor::LiftLeads(void)
 	size			i;
 	size			j;
 	size			k;
-	CTraceView*		pcTrace;
-	size			uiIndex;
+	SLiftedLead		sLifted;
 
 	for (i = 0; i < masLeads.NumElements(); i++)
 	{
 		for (j = 0; j < masLeads.Get(i)->apcTraces.NumElements(); j++)
 		{
-			pcTrace = masLeads.Get(i)->apcTraces.GetPtr(j);
-			uiIndex = mpcCircuit->FindTraceIndex(pcTrace);
-			if ((uiIndex != ARRAY_ELEMENT_NOT_FOUND) && (mapcLiftedLeads.Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
+			sLifted.pcTrace = masLeads.Get(i)->apcTraces.GetPtr(j);
+			sLifted.uiIndex = mpcCircuit->FindTraceIndex(sLifted.pcTrace);
+			if ((sLifted.uiIndex != ARRAY_ELEMENT_NOT_FOUND) && !IsLiftedLead(sLifted.pcTrace))
 			{
-				for (k = 0; (k < maiLiftedLeadIndices.NumElements()) && (maiLiftedLeadIndices.GetValue(k) < (int)uiIndex); k++)
+				for (k = 0; (k < masLiftedLeads.NumElements()) && (masLiftedLeads.Get(k)->uiIndex < sLifted.uiIndex); k++)
 				{
 				}
-				mapcLiftedLeads.InsertAt(&pcTrace, k);
-				maiLiftedLeadIndices.InsertAt((int)uiIndex, k);
+				masLiftedLeads.InsertAt(&sLifted, k);
 			}
 		}
 	}
-	for (i = 0; i < mapcLiftedLeads.NumElements(); i++)
+	for (i = 0; i < masLiftedLeads.NumElements(); i++)
 	{
-		mpcCircuit->RemoveTrace(mapcLiftedLeads.GetPtr(i));
+		mpcCircuit->RemoveTrace(masLiftedLeads.Get(i)->pcTrace);
 	}
 	mbLeadsLifted = true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the wire is one of the leads' taken out (see LiftLeads).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::IsLiftedLead(CTraceView* pcTrace)
+{
+	size	i;
+
+	for (i = 0; i < masLiftedLeads.NumElements(); i++)
+	{
+		if (masLiftedLeads.Get(i)->pcTrace == pcTrace)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 
@@ -873,13 +891,12 @@ void CCircuitEditor::RestoreLeads(void)
 	CTraceView*		pcTrace;
 
 	KillLeadRoutes();
-	for (i = 0; i < mapcLiftedLeads.NumElements(); i++)
+	for (i = 0; i < masLiftedLeads.NumElements(); i++)
 	{
-		pcTrace = mapcLiftedLeads.GetPtr(i);
-		mpcCircuit->InsertTrace(pcTrace, (size)maiLiftedLeadIndices.GetValue(i));
+		pcTrace = masLiftedLeads.Get(i)->pcTrace;
+		mpcCircuit->InsertTrace(pcTrace, masLiftedLeads.Get(i)->uiIndex);
 	}
-	mapcLiftedLeads.ReInit();
-	maiLiftedLeadIndices.ReInit();
+	masLiftedLeads.ReInit();
 	mbLeadsLifted = false;
 }
 
@@ -902,14 +919,13 @@ void CCircuitEditor::FinishLeads(CArrayTraceViewPtr* papcSeeds)
 		return;
 	}
 	RouteLeads();
-	for (i = 0; i < mapcLiftedLeads.NumElements(); i++)
+	for (i = 0; i < masLiftedLeads.NumElements(); i++)
 	{
-		pcTrace = mapcLiftedLeads.GetPtr(i);
+		pcTrace = masLiftedLeads.Get(i)->pcTrace;
 		mcSelection.Remove(pcTrace);
 		SafeKill(pcTrace);
 	}
-	mapcLiftedLeads.ReInit();
-	maiLiftedLeadIndices.ReInit();
+	masLiftedLeads.ReInit();
 	mbLeadsLifted = false;
 
 	for (i = 0; i < mapcLeadRoutes.NumElements(); i++)
@@ -949,13 +965,12 @@ void CCircuitEditor::KillLeads(void)
 		masLeads.Get(i)->apcTraces.Kill();
 	}
 	masLeads.ReInit();
-	for (i = 0; i < mapcLiftedLeads.NumElements(); i++)
+	for (i = 0; i < masLiftedLeads.NumElements(); i++)
 	{
-		pcTrace = mapcLiftedLeads.GetPtr(i);
+		pcTrace = masLiftedLeads.Get(i)->pcTrace;
 		SafeKill(pcTrace);
 	}
-	mapcLiftedLeads.ReInit();
-	maiLiftedLeadIndices.ReInit();
+	masLiftedLeads.ReInit();
 	mapcLeadRoutes.ReInit();
 	mbLeadsLifted = false;
 }

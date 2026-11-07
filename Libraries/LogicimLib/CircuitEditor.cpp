@@ -72,8 +72,7 @@ void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, Ptr<CCir
 	masAnchors.Init();
 	mbDetachedMove = false;
 	mbLeadsLifted = false;
-	mapcLiftedLeads.Init();
-	maiLiftedLeadIndices.Init();
+	masLiftedLeads.Init();
 	mapcLeadRoutes.Init();
 	msPointer.Init(0, 0);
 	mbPointer = false;
@@ -94,8 +93,7 @@ void CCircuitEditor::Free(void)
 	KillProject(true);
 	mcUndo.Kill();
 	mapcLeadRoutes.Kill();
-	maiLiftedLeadIndices.Kill();
-	mapcLiftedLeads.Kill();
+	masLiftedLeads.Kill();
 	masAnchors.Kill();
 	mapcFollowing.Kill();
 	masLeads.Kill();
@@ -131,8 +129,7 @@ void CCircuitEditor::Class(void)
 	U_Unknown(CArrayMoveAnchor, masAnchors);
 	U_Bool(mbDetachedMove);
 	U_Bool(mbLeadsLifted);
-	U_Unknown(CArrayTraceViewPtr, mapcLiftedLeads);
-	U_Unknown(CArrayInt, maiLiftedLeadIndices);
+	U_Unknown(CArrayLiftedLead, masLiftedLeads);
 	U_Unknown(CArrayTraceViewPtr, mapcLeadRoutes);
 	U_Data(SFloat64Vec2, msPointer);
 	U_Bool(mbPointer);

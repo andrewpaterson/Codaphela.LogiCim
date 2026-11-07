@@ -53,6 +53,17 @@ struct SMoveLead
 typedef CArrayTemplate<SMoveLead>	CArrayMoveLead;
 
 
+//A lead's wire taken out of the circuit (see CCircuitEditor::LiftLeads) and where it was in the circuit's wires.
+struct SLiftedLead
+{
+	CTraceView*	pcTrace;
+	size		uiIndex;
+};
+
+
+typedef CArrayTemplate<SLiftedLead>	CArrayLiftedLead;
+
+
 //An end of a wire being moved that was joined to something that isn't moving (a wire or a port), and where it was.
 //While the wire moves it's joined back there by a stretch of new wire, see CCircuitEditor::GetAnchorLines.
 struct SMoveAnchor
@@ -174,8 +185,7 @@ protected:
 	CArrayMoveAnchor					masAnchors;  //Of the wires being moved.
 	bool								mbDetachedMove;  //The views being moved are detached from their wires.
 	bool								mbLeadsLifted;  //The leads' wires are out of the circuit, routed live.
-	CArrayTraceViewPtr					mapcLiftedLeads;  //The leads' wires taken out, owned by the editor until put back.
-	CArrayInt							maiLiftedLeadIndices;  //Where each was in the circuit's wires.
+	CArrayLiftedLead				masLiftedLeads;  //The leads' wires taken out, in the order they were in, owned by the editor until put back.
 	CArrayTraceViewPtr					mapcLeadRoutes;  //The leads routed to where the moved ports are now, in the circuit.
 	SFloat64Vec2						msPointer;
 	bool								mbPointer;
@@ -278,6 +288,7 @@ protected:
 	CTraceView*			FindStillTraceAt(SInt32Vec2 sPoint, CTraceView* pcFrom, CArrayTraceViewPtr* papcMoving, CArrayTraceViewPtr* papcChain, size* puiStill, size* puiMoving);
 	CPortView*			FindNetPort(SInt32Vec2 sPoint, CArrayTraceViewPtr* papcExcluded, CArrayComponentViewPtr* papcComponents);
 	void				LiftLeads(void);
+	bool				IsLiftedLead(CTraceView* pcTrace);
 	void				RouteLeads(void);
 	void				AddLeadConnections(CTraceAutoConnector* pcConnector, CArrayTemplatePrimitive<size>* pauiConnections);
 	void				AddStraightLead(SMoveLead* psLead);
