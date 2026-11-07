@@ -77,17 +77,18 @@ static CComponentView* NewKicadSchemSpacedGateView(ERotation eRotation, const ch
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The layout of the pins of gate number iGroup (all the pins if -1): the
+// The layout of the pins of gate number uiGroup (all the pins if
+// ARRAY_ELEMENT_NOT_FOUND): the
 // inputs in letter order, the output (a gate's Y, a flip flop's Q) and
 // the centres of all of them, of the inputs and of the outputs.  The
 // layout's inputs must be killed.
 //
 //////////////////////////////////////////////////////////////////////////
-static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, EKicadSchemLogicFunction eFunction, SKicadSchemLogicLayout* psLayout)
+static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, size uiGroup, EKicadSchemLogicFunction eFunction, SKicadSchemLogicLayout* psLayout)
 {
 	size					i;
 	size					j;
-	SFloat64Vec2*			psPosition;
+	SKicadSchemLogicPin*	psPin;
 	SKicadSchemPointMean	sCentre;
 	SKicadSchemPointMean	sInputs;
 	SKicadSchemPointMean	sOutputs;
@@ -97,18 +98,18 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, E
 	sCentre.Init();
 	sInputs.Init();
 	sOutputs.Init();
-	for (i = 0; i < psPins->apcPins.NumElements(); i++)
+	for (i = 0; i < psPins->NumPins(); i++)
 	{
-		if ((iGroup != -1) && (psPins->aiGroups.GetValue(i) != iGroup))
+		psPin = psPins->GetPin(i);
+		if ((uiGroup != ARRAY_ELEMENT_NOT_FOUND) && (psPin->uiGroup != uiGroup))
 		{
 			continue;
 		}
-		psPosition = psPins->asPositions.Get(i);
-		sCentre.Add(psPosition);
-		if (IsKicadSchemLogicOutput(psPins, i, eFunction))
+		sCentre.Add(&psPin->sPosition);
+		if (IsKicadSchemLogicOutput(psPin, eFunction))
 		{
-			sOutputs.Add(psPosition);
-			if ((eFunction != KSLF_DFlipFlop) || (StringCompare(GetKicadSchemFlipFlopPortName(psPins->aszLetters.Get(i), psPins->aiNegated.GetValue(i) != 0), "Q") == 0))
+			sOutputs.Add(&psPin->sPosition);
+			if ((eFunction != KSLF_DFlipFlop) || (StringCompare(GetKicadSchemFlipFlopPortName(&psPin->szLetters, psPin->bNegated), "Q") == 0))
 			{
 				psLayout->iOutput = (int)i;
 			}
@@ -117,13 +118,13 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, E
 		{
 			for (j = 0; j < psLayout->aiInputs.NumElements(); j++)
 			{
-				if (strcmp(psPins->aszLetters.GetText(i), psPins->aszLetters.GetText(psLayout->aiInputs.GetValue(j))) < 0)
+				if (strcmp(psPin->szLetters.Text(), psPins->GetPin(psLayout->aiInputs.GetValue(j))->szLetters.Text()) < 0)
 				{
 					break;
 				}
 			}
 			psLayout->aiInputs.InsertAt((int)i, j);
-			sInputs.Add(psPosition);
+			sInputs.Add(&psPin->sPosition);
 		}
 	}
 	sCentre.Get(&psLayout->sCentre);
@@ -141,7 +142,6 @@ static void GetKicadSchemLogicLayout(SKicadSchemLogicPins* psPins, int iGroup, E
 void CKicadSchemLogicimConverter::CollectLogicPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, SKicadSchemLogicPins* psPins)
 {
 	size					i;
-	size					uiGroup;
 	CKicadSchemLibPin*		pcPin;
 	CChars					szIndex;
 	CChars					szLetters;
@@ -156,18 +156,8 @@ void CKicadSchemLogicimConverter::CollectLogicPins(CKicadSchemSymbol* pcSymbol, 
 			continue;
 		}
 		SplitKicadSchemLogicPinName(pcPin->GetName(), &szIndex, &szLetters, &bNegated);
-		uiGroup = psPins->aszIndices.GetIndex(szIndex.Text());
-		if (uiGroup == ARRAY_ELEMENT_NOT_FOUND)
-		{
-			psPins->aszIndices.Add(szIndex.Text());
-			uiGroup = psPins->aszIndices.NumElements() - 1;
-		}
-		psPins->apcPins.Add(pcPin);
-		psPins->aiGroups.Add((int)uiGroup);
-		psPins->aszLetters.Add(szLetters.Text());
-		psPins->aiNegated.Add(bNegated ? 1 : 0);
 		mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
-		psPins->asPositions.Add(&sPosition);
+		psPins->AddPin(pcPin, szIndex.Text(), szLetters.Text(), bNegated, &sPosition);
 		szLetters.Kill();
 		szIndex.Kill();
 	}
@@ -182,15 +172,16 @@ void CKicadSchemLogicimConverter::CollectLogicPins(CKicadSchemSymbol* pcSymbol, 
 //////////////////////////////////////////////////////////////////////////
 static bool IsKicadSchemLogicPartValid(SKicadSchemLogicPins* psPins, EKicadSchemLogicFunction eFunction)
 {
-	size			i;
-	size			uiGroup;
-	bool			bValid;
-	int				iOutput;
-	int				iInputs;
-	const char*		szPortName;
-	bool			bHasCP;
-	bool			bHasD;
-	bool			bHasQ;
+	size					i;
+	size					uiGroup;
+	bool					bValid;
+	int						iOutput;
+	int						iInputs;
+	const char*				szPortName;
+	bool					bHasCP;
+	bool					bHasD;
+	bool					bHasQ;
+	SKicadSchemLogicPin*	psPin;
 
 	bValid = psPins->aszIndices.NumElements() > 0;
 	for (uiGroup = 0; bValid && (uiGroup < psPins->aszIndices.NumElements()); uiGroup++)
@@ -200,15 +191,16 @@ static bool IsKicadSchemLogicPartValid(SKicadSchemLogicPins* psPins, EKicadSchem
 		bHasCP = false;
 		bHasD = false;
 		bHasQ = false;
-		for (i = 0; i < psPins->apcPins.NumElements(); i++)
+		for (i = 0; i < psPins->NumPins(); i++)
 		{
-			if (psPins->aiGroups.GetValue(i) != (int)uiGroup)
+			psPin = psPins->GetPin(i);
+			if (psPin->uiGroup != uiGroup)
 			{
 				continue;
 			}
 			if (eFunction == KSLF_DFlipFlop)
 			{
-				szPortName = GetKicadSchemFlipFlopPortName(psPins->aszLetters.Get(i), psPins->aiNegated.GetValue(i) != 0);
+				szPortName = GetKicadSchemFlipFlopPortName(&psPin->szLetters, psPin->bNegated);
 				if (szPortName == NULL)
 				{
 					bValid = false;
@@ -220,11 +212,11 @@ static bool IsKicadSchemLogicPartValid(SKicadSchemLogicPins* psPins, EKicadSchem
 					bHasQ |= StringCompare(szPortName, "Q") == 0;
 				}
 			}
-			else if (psPins->aszLetters.Get(i)->Equals("Y"))
+			else if (psPin->szLetters.Equals("Y"))
 			{
 				iOutput++;
 			}
-			else if (psPins->aszLetters.Get(i)->Length() == 1)
+			else if (psPin->szLetters.Length() == 1)
 			{
 				iInputs++;
 			}
@@ -369,9 +361,10 @@ void CKicadSchemLogicimConverter::AddLogicPart(CKicadSchemSymbol* pcSymbol, CKic
 	size					uiItem;
 	size					i;
 	const char*				szPortName;
+	SKicadSchemLogicPin*	psPin;
 
-	GetKicadSchemLogicLayout(psPins, (int)uiGroup, eFunction, &sLayout);
-	eRotation = GetKicadSchemFacing(&sLayout.sInputs, psPins->asPositions.Get(sLayout.iOutput));
+	GetKicadSchemLogicLayout(psPins, uiGroup, eFunction, &sLayout);
+	eRotation = GetKicadSchemFacing(&sLayout.sInputs, &psPins->GetPin(sLayout.iOutput)->sPosition);
 	GetKicadSchemLogicPartName(&szName, pcSymbol, pcLibSymbol, psPins->aszIndices.Get(uiGroup));
 	pcView = NewKicadSchemLogicPartView(eFunction, eRotation, szName.Text(), szFamily, (int)sLayout.aiInputs.NumElements());
 	szName.Kill();
@@ -379,12 +372,13 @@ void CKicadSchemLogicimConverter::AddLogicPart(CKicadSchemSymbol* pcSymbol, CKic
 	uiItem = mcModel.AddItem(pcView, KSLIK_Part, &sLayout.sCentre, NULL, pcSymbol);
 	if (eFunction == KSLF_DFlipFlop)
 	{
-		for (i = 0; i < psPins->apcPins.NumElements(); i++)
+		for (i = 0; i < psPins->NumPins(); i++)
 		{
-			if (psPins->aiGroups.GetValue(i) == (int)uiGroup)
+			psPin = psPins->GetPin(i);
+			if (psPin->uiGroup == uiGroup)
 			{
-				szPortName = GetKicadSchemFlipFlopPortName(psPins->aszLetters.Get(i), psPins->aiNegated.GetValue(i) != 0);
-				AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(i), pcView->GetPortView(szPortName), uiItem);
+				szPortName = GetKicadSchemFlipFlopPortName(&psPin->szLetters, psPin->bNegated);
+				AddPinTerminal(pcSymbol, psPin->pcPin, pcView->GetPortView(szPortName), uiItem);
 			}
 		}
 	}
@@ -392,9 +386,9 @@ void CKicadSchemLogicimConverter::AddLogicPart(CKicadSchemSymbol* pcSymbol, CKic
 	{
 		for (i = 0; i < sLayout.aiInputs.NumElements(); i++)
 		{
-			AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(sLayout.aiInputs.GetValue(i)), pcView->GetPortView(i), uiItem);
+			AddPinTerminal(pcSymbol, psPins->GetPin(sLayout.aiInputs.GetValue(i))->pcPin, pcView->GetPortView(i), uiItem);
 		}
-		AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(sLayout.iOutput), pcView->GetPortView(sLayout.aiInputs.NumElements()), uiItem);
+		AddPinTerminal(pcSymbol, psPins->GetPin(sLayout.iOutput)->pcPin, pcView->GetPortView(sLayout.aiInputs.NumElements()), uiItem);
 	}
 	sLayout.aiInputs.Kill();
 	msCounts.uiGates++;
@@ -450,9 +444,9 @@ static bool FindKicadSchemLogic74Gates(SLogic74PartType* psType, EKicadSchemLogi
 	for (i = 0; i < psPins->aszIndices.NumElements(); i++)
 	{
 		iInputs = 0;
-		for (j = 0; j < psPins->apcPins.NumElements(); j++)
+		for (j = 0; j < psPins->NumPins(); j++)
 		{
-			if ((psPins->aiGroups.GetValue(j) == (int)i) && !psPins->aszLetters.Get(j)->Equals("Y"))
+			if ((psPins->GetPin(j)->uiGroup == i) && !psPins->GetPin(j)->szLetters.Equals("Y"))
 			{
 				iInputs++;
 			}
@@ -498,7 +492,7 @@ bool CKicadSchemLogicimConverter::AddLogic74Part(CKicadSchemSymbol* pcSymbol, CK
 		return false;
 	}
 
-	GetKicadSchemLogicLayout(psPins, -1, eFunction, &sLayout);
+	GetKicadSchemLogicLayout(psPins, ARRAY_ELEMENT_NOT_FOUND, eFunction, &sLayout);
 	eRotation = GetKicadSchemFacing(&sLayout.sInputs, &sLayout.sOutputs);
 	if (bUnit)
 	{
@@ -533,10 +527,10 @@ void CKicadSchemLogicimConverter::AddLogic74Unit(CKicadSchemSymbol* pcSymbol, in
 	{
 		szPortName.Init();
 		CPins::CalculatePortName(&szPortName, "Input", i, psLayout->aiInputs.NumElements());
-		AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(psLayout->aiInputs.GetValue(i)), pcUnit->GetPortView(szPortName.Text()), uiItem);
+		AddPinTerminal(pcSymbol, psPins->GetPin(psLayout->aiInputs.GetValue(i))->pcPin, pcUnit->GetPortView(szPortName.Text()), uiItem);
 		szPortName.Kill();
 	}
-	AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(psLayout->iOutput), pcUnit->GetPortView("Output"), uiItem);
+	AddPinTerminal(pcSymbol, psPins->GetPin(psLayout->iOutput)->pcPin, pcUnit->GetPortView("Output"), uiItem);
 	msCounts.uiGates++;
 }
 
@@ -554,21 +548,23 @@ void CKicadSchemLogicimConverter::AddLogic74Package(CKicadSchemSymbol* pcSymbol,
 	CChars					szPortName;
 	CChars*					pszIndex;
 	CPortView*				pcPortView;
+	SKicadSchemLogicPin*	psPin;
 
 	pcPackage = NewMalloc<CLogic74PackageView>();
 	pcPackage->Init(0, 0, eRotation, pcSymbol->GetReference(), szFamily, false, szPartType, KICAD_SCHEM_LOGICIM_PIN_SPACING);
 	uiItem = mcModel.AddItem(pcPackage, KSLIK_Part, &psLayout->sCentre, NULL, pcSymbol);
-	for (i = 0; i < psPins->apcPins.NumElements(); i++)
+	for (i = 0; i < psPins->NumPins(); i++)
 	{
-		pszIndex = psPins->aszIndices.Get(psPins->aiGroups.GetValue(i));
+		psPin = psPins->GetPin(i);
+		pszIndex = psPins->aszIndices.Get(psPin->uiGroup);
 		szPortName.Init();
 		szPortName.Append(pszIndex->Empty() ? "1" : pszIndex->Text());
-		szPortName.Append(psPins->aszLetters.Get(i));
+		szPortName.Append(&psPin->szLetters);
 		pcPortView = pcPackage->GetPortView(szPortName.Text());
 		szPortName.Kill();
 		if (pcPortView != NULL)
 		{
-			AddPinTerminal(pcSymbol, psPins->apcPins.GetPtr(i), pcPortView, uiItem);
+			AddPinTerminal(pcSymbol, psPin->pcPin, pcPortView, uiItem);
 		}
 	}
 	msCounts.uiGates += psPins->aszIndices.NumElements();

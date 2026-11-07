@@ -22,27 +22,36 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #define __KICAD_SCHEM_LOGIC_PINS_H__
 #include "BaseLib/Chars.h"
 #include "BaseLib/ArrayChars.h"
-#include "BaseLib/ArrayInt.h"
-#include "BaseLib/ArrayTemplatePtr.h"
+#include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/Float64Vec2.h"
 #include "KicadLib/KicadSchemLibPin.h"
 #include "KicadLib/KicadSchemPinType.h"
 #include "KicadSchemLogicFunction.h"
 
 
-//A logic part's pins (not its power pins), each split into its gate number (an index into aszIndices) and letters,
+//One of a logic part's pins, split into its gate number (uiGroup, an index into the pins' aszIndices) and letters,
 //with whether it's negated and where KiCad has it.
+struct SKicadSchemLogicPin
+{
+	CKicadSchemLibPin*	pcPin;
+	size				uiGroup;
+	CChars				szLetters;
+	bool				bNegated;
+	SFloat64Vec2		sPosition;
+};
+
+
+//A logic part's pins (not its power pins) and its gate numbers.
 struct SKicadSchemLogicPins
 {
 	CArrayChars							aszIndices;
-	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
-	CArrayInt							aiGroups;
-	CArrayChars							aszLetters;
-	CArrayInt							aiNegated;
-	CArrayFloat64Vec2					asPositions;
+	CArrayTemplate<SKicadSchemLogicPin>	asPins;
 
-	void	Init(void);
-	void	Kill(void);
+	void					Init(void);
+	void					Kill(void);
+	void					AddPin(CKicadSchemLibPin* pcPin, const char* szIndex, const char* szLetters, bool bNegated, SFloat64Vec2* psPosition);
+	size					NumPins(void);
+	SKicadSchemLogicPin*	GetPin(size uiIndex);
 };
 
 
@@ -51,7 +60,7 @@ struct SKicadSchemLogicPins
 void		SplitKicadSchemLogicPinName(const char* szName, CChars* pszIndex, CChars* pszLetters, bool* pbNegated);
 bool		IsKicadSchemOutputPinType(EKicadSchemPinType eType);
 const char*	GetKicadSchemFlipFlopPortName(CChars* pszLetters, bool bNegated);
-bool		IsKicadSchemLogicOutput(SKicadSchemLogicPins* psPins, size uiPin, EKicadSchemLogicFunction eFunction);
+bool		IsKicadSchemLogicOutput(SKicadSchemLogicPin* psPin, EKicadSchemLogicFunction eFunction);
 void		NameUnnamedKicadSchemLogicPins(SKicadSchemLogicPins* psPins);
 void		GetKicadSchemPinLabel(const char* szName, CChars* pszLabel, bool* pbNegated);
 bool		GetKicadSchemPinLabelAlias(const char* szLabel, CChars* pszAlias);

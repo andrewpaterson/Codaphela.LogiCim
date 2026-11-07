@@ -128,11 +128,7 @@ const char* GetKicadSchemFlipFlopPortName(CChars* pszLetters, bool bNegated)
 void SKicadSchemLogicPins::Init(void)
 {
 	aszIndices.Init();
-	apcPins.Init();
-	aiGroups.Init();
-	aszLetters.Init();
-	aiNegated.Init();
-	asPositions.Init();
+	asPins.Init();
 }
 
 
@@ -142,12 +138,60 @@ void SKicadSchemLogicPins::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void SKicadSchemLogicPins::Kill(void)
 {
-	asPositions.Kill();
-	aiNegated.Kill();
-	aszLetters.Kill();
-	aiGroups.Kill();
-	apcPins.Kill();
+	size	i;
+
+	for (i = 0; i < asPins.NumElements(); i++)
+	{
+		asPins.Get(i)->szLetters.Kill();
+	}
+	asPins.Kill();
 	aszIndices.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The pin, in the gate number szIndex ("" for none), added if the part
+// hasn't had it yet.
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemLogicPins::AddPin(CKicadSchemLibPin* pcPin, const char* szIndex, const char* szLetters, bool bNegated, SFloat64Vec2* psPosition)
+{
+	SKicadSchemLogicPin*	psPin;
+	size					uiGroup;
+
+	uiGroup = aszIndices.GetIndex(szIndex);
+	if (uiGroup == ARRAY_ELEMENT_NOT_FOUND)
+	{
+		aszIndices.Add(szIndex);
+		uiGroup = aszIndices.NumElements() - 1;
+	}
+	psPin = asPins.Add();
+	psPin->pcPin = pcPin;
+	psPin->uiGroup = uiGroup;
+	psPin->szLetters.Init(szLetters);
+	psPin->bNegated = bNegated;
+	psPin->sPosition = *psPosition;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+size SKicadSchemLogicPins::NumPins(void)
+{
+	return asPins.NumElements();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+SKicadSchemLogicPin* SKicadSchemLogicPins::GetPin(size uiIndex)
+{
+	return asPins.Get(uiIndex);
 }
 
 
@@ -157,13 +201,13 @@ void SKicadSchemLogicPins::Kill(void)
 // QB).
 //
 //////////////////////////////////////////////////////////////////////////
-bool IsKicadSchemLogicOutput(SKicadSchemLogicPins* psPins, size uiPin, EKicadSchemLogicFunction eFunction)
+bool IsKicadSchemLogicOutput(SKicadSchemLogicPin* psPin, EKicadSchemLogicFunction eFunction)
 {
 	if (eFunction == KSLF_DFlipFlop)
 	{
-		return GetKicadSchemFlipFlopPortName(psPins->aszLetters.Get(uiPin), psPins->aiNegated.GetValue(uiPin) != 0)[0] == 'Q';
+		return GetKicadSchemFlipFlopPortName(&psPin->szLetters, psPin->bNegated)[0] == 'Q';
 	}
-	return psPins->aszLetters.Get(uiPin)->Equals("Y");
+	return psPin->szLetters.Equals("Y");
 }
 
 
@@ -179,44 +223,45 @@ void NameUnnamedKicadSchemLogicPins(SKicadSchemLogicPins* psPins)
 	size					i;
 	size					j;
 	size					k;
+	SKicadSchemLogicPin*	psPin;
 	CKicadSchemLibPin*		pcPin;
 	CKicadSchemLibPin*		pcOther;
-	CChars					szLetters;
 
-	if (psPins->apcPins.NumElements() == 0)
+	if (psPins->NumPins() == 0)
 	{
 		return;
 	}
-	for (i = 0; i < psPins->apcPins.NumElements(); i++)
+	for (i = 0; i < psPins->NumPins(); i++)
 	{
-		if (!psPins->aszLetters.Get(i)->Empty() && !psPins->aszLetters.Get(i)->Equals("~"))
+		psPin = psPins->GetPin(i);
+		if (!psPin->szLetters.Empty() && !psPin->szLetters.Equals("~"))
 		{
 			return;
 		}
 	}
 
-	for (i = 0; i < psPins->apcPins.NumElements(); i++)
+	for (i = 0; i < psPins->NumPins(); i++)
 	{
-		pcPin = psPins->apcPins.GetPtr(i);
+		psPin = psPins->GetPin(i);
+		pcPin = psPin->pcPin;
 		if (IsKicadSchemOutputPinType(pcPin->GetType()))
 		{
-			psPins->aszLetters.Get(i)->Set("Y");
+			psPin->szLetters.Set("Y");
 			continue;
 		}
 		k = 0;
-		for (j = 0; j < psPins->apcPins.NumElements(); j++)
+		for (j = 0; j < psPins->NumPins(); j++)
 		{
-			pcOther = psPins->apcPins.GetPtr(j);
+			pcOther = psPins->GetPin(j)->pcPin;
 			if ((j != i) && !IsKicadSchemOutputPinType(pcOther->GetType()) &&
 				((atoi(pcOther->GetNumber()) < atoi(pcPin->GetNumber())) || ((atoi(pcOther->GetNumber()) == atoi(pcPin->GetNumber())) && (j < i))))
 			{
 				k++;
 			}
 		}
-		szLetters.Init();
-		szLetters.Append((char)('A' + k));
-		psPins->aszLetters.Get(i)->Set(szLetters.Text());
-		szLetters.Kill();
+		psPin->szLetters.Kill();
+		psPin->szLetters.Init();
+		psPin->szLetters.Append((char)('A' + k));
 	}
 }
 
