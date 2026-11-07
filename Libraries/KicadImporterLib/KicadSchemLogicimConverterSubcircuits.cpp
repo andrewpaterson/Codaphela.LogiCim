@@ -113,10 +113,11 @@ static bool IsKicadSchemTerminalSubnet(CArrayKicadSchemLogicimTerminal* pasTermi
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The board pin named szName made already, NULL if there isn't one.
+// The item of the board pin named szName made already,
+// ARRAY_ELEMENT_NOT_FOUND if there isn't one.
 //
 //////////////////////////////////////////////////////////////////////////
-CPinView* CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
+size CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
@@ -126,10 +127,171 @@ CPinView* CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
 		psItem = masItems.Get(i);
 		if ((psItem->eKind == KSLIK_BoardPin) && (StringCompare(psItem->pcView->GetName(), szName) == 0))
 		{
-			return (CPinView*)psItem->pcView;
+			return i;
 		}
 	}
-	return NULL;
+	return ARRAY_ELEMENT_NOT_FOUND;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit pin's name for the connector's pin on the net: the net's
+// ("D0") or, on a net that's only the pin's, the connector's pin's
+// ("J1-5").  False, and szName empty, on a supply's net.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool GetKicadSchemBoardPinName(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemNet* pcNet, CChars* szName)
+{
+	if (pcNet->GetNameSource() == KSNNS_Pin)
+	{
+		szName->Append(pcSymbol->GetReference());
+		szName->Append('-');
+		szName->Append(pcPin->GetNumber());
+		return true;
+	}
+
+	szName->Append((pcNet->GetName()[0] == '/') ? &pcNet->GetName()[1] : pcNet->GetName());
+	if (IsKicadSchemPowerNetName(szName->Text()))
+	{
+		szName->Clear();
+		return false;
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The side of an instance a circuit pin facing eRotation is shown on.
+//
+//////////////////////////////////////////////////////////////////////////
+static EPinAlignment GetKicadSchemBoardPinAlignment(ERotation eRotation)
+{
+	switch (eRotation)
+	{
+	case ROT_West:	return PA_Left;
+	case ROT_North:	return PA_Top;
+	case ROT_South:	return PA_Bottom;
+	default:		return PA_Right;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where the connector's pin is wired, psOuter, and the way it faces out
+// of the connector's body, returned.
+//
+//////////////////////////////////////////////////////////////////////////
+ERotation CKicadSchemLogicimConverter::GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SKicadSchemPoint* psOuter)
+{
+	SKicadSchemPoint	sInner;
+	SKicadSchemPoint	sLibrary;
+	int					iAngle;
+	int					aiDX[4] = { 1, 0, -1, 0 };
+	int					aiDY[4] = { 0, 1, 0, -1 };
+
+	//The pin points into the connector's body from where it's wired (library Y is up).
+	mpcFile->GetPinPosition(psOuter, pcSymbol, pcPin);
+	iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
+	sLibrary.Init(pcPin->GetPosition()->fX + aiDX[iAngle] * pcPin->GetLength(), pcPin->GetPosition()->fY + aiDY[iAngle] * pcPin->GetLength());
+	pcSymbol->GetSheetPosition(&sInner, &sLibrary);
+	return GetKicadSchemFacing(&sInner, psOuter);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The board's record of the connector, with a place for each of its
+// unit's pins.  NULL if the sheet isn't a board's.
+//
+//////////////////////////////////////////////////////////////////////////
+CKicadSchemBoardConnector* CKicadSchemLogicimConverter::AddBoardConnector(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+{
+	size	i;
+	size	uiNumPins;
+
+	if (mpcBoard == NULL)
+	{
+		return NULL;
+	}
+
+	uiNumPins = 0;
+	for (i = 0; i < pcLibSymbol->NumPins(); i++)
+	{
+		if (pcLibSymbol->GetPin(i)->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+		{
+			uiNumPins++;
+		}
+	}
+	return mpcBoard->AddConnector(pcSymbol->GetReference(), uiNumPins);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit's pin for one of the connector's pins (see AddBoardPins),
+// made unless another of the connector's pins on the net made it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector)
+{
+	CKicadSchemSubnet*		pcSubnet;
+	CKicadSchemNet*			pcNet;
+	CChars					szName;
+	CPinView*				pcPinView;
+	SKicadSchemPoint		sOuter;
+	ERotation				eRotation;
+	size					uiItem;
+	char*					szNumber;
+
+	pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
+	pcNet = (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL;
+	if ((pcNet == NULL) || StrEmpty(pcNet->GetName()))
+	{
+		return;
+	}
+
+	szName.Init();
+	if (!GetKicadSchemBoardPinName(pcSymbol, pcPin, pcNet, &szName))
+	{
+		szName.Kill();
+		return;
+	}
+
+	szNumber = pcPin->GetNumber();
+	uiItem = FindBoardPin(szName.Text());
+	if (uiItem != ARRAY_ELEMENT_NOT_FOUND)
+	{
+		szName.Kill();
+		pcPinView = (CPinView*)masItems.Get(uiItem)->pcView;
+		if (pcConnector != NULL)
+		{
+			pcConnector->AddPin(szNumber, pcPinView);
+		}
+
+		//Another part of the net (joined by its labels) is already joined through its tunnels.
+		if (IsKicadSchemTerminalSubnet(&masTerminals, pcPinView->GetPortView((size)0), pcSubnet))
+		{
+			AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
+		}
+		return;
+	}
+
+	eRotation = GetBoardPinFacing(pcSymbol, pcPin, &sOuter);
+	pcPinView = NewMalloc<CPinView>();
+	pcPinView->Init(0, 0, eRotation, szName.Text(), "LVC", false, 1, RADIX_Binary, mpcFonts);
+	szName.Kill();
+	pcPinView->SetSubcircuitAppearance(GetKicadSchemBoardPinAlignment(eRotation), PAN_Negative, atoi(szNumber), false, false);
+	//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
+	uiItem = AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL);
+	muiBoardPins++;
+	if (pcConnector != NULL)
+	{
+		pcConnector->AddPin(szNumber, pcPinView);
+	}
+	AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
 }
 
 
@@ -151,23 +313,8 @@ CPinView* CKicadSchemLogicimConverter::FindBoardPin(const char* szName)
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
-	size					i;
-	CKicadSchemLibPin*		pcPin;
-	CKicadSchemSubnet*		pcSubnet;
-	CKicadSchemNet*			pcNet;
-	CChars					szName;
-	CPinView*				pcPinView;
-	SKicadSchemPoint		sOuter;
-	SKicadSchemPoint		sInner;
-	SKicadSchemPoint		sLibrary;
-	int						iAngle;
-	int						aiDX[4] = { 1, 0, -1, 0 };
-	int						aiDY[4] = { 0, 1, 0, -1 };
-	ERotation				eRotation;
-	EPinAlignment			eAlignment;
-	size					uiItem;
-	char*					szNumber;
-	size					uiNumPins;
+	size						i;
+	CKicadSchemLibPin*			pcPin;
 	CKicadSchemBoardConnector*	pcConnector;
 
 	if (!IsKicadSchemConnector(pcSymbol))
@@ -175,103 +322,14 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 		return false;
 	}
 
-	pcConnector = NULL;
-	if (mpcBoard != NULL)
-	{
-		uiNumPins = 0;
-		for (i = 0; i < pcLibSymbol->NumPins(); i++)
-		{
-			if (pcLibSymbol->GetPin(i)->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
-			{
-				uiNumPins++;
-			}
-		}
-		pcConnector = mpcBoard->AddConnector(pcSymbol->GetReference(), uiNumPins);
-	}
-
+	pcConnector = AddBoardConnector(pcSymbol, pcLibSymbol);
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) || (pcPin->GetType() == KSPT_NoConnect))
+		if (pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) && (pcPin->GetType() != KSPT_NoConnect))
 		{
-			continue;
+			AddBoardPin(pcSymbol, pcPin, pcConnector);
 		}
-		pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
-		pcNet = (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL;
-		if ((pcNet == NULL) || StrEmpty(pcNet->GetName()))
-		{
-			continue;
-		}
-
-		szName.Init();
-		szNumber = pcPin->GetNumber();
-		if (pcNet->GetNameSource() == KSNNS_Pin)
-		{
-			szName.Append(pcSymbol->GetReference());
-			szName.Append('-');
-			szName.Append(szNumber);
-		}
-		else
-		{
-			szName.Append((pcNet->GetName()[0] == '/') ? &pcNet->GetName()[1] : pcNet->GetName());
-			if (IsKicadSchemPowerNetName(szName.Text()))
-			{
-				szName.Kill();
-				continue;
-			}
-		}
-
-		//The pin points into the connector's body from where it's wired (library Y is up).
-		mpcFile->GetPinPosition(&sOuter, pcSymbol, pcPin);
-		iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
-		sLibrary.Init(pcPin->GetPosition()->fX + aiDX[iAngle] * pcPin->GetLength(), pcPin->GetPosition()->fY + aiDY[iAngle] * pcPin->GetLength());
-		pcSymbol->GetSheetPosition(&sInner, &sLibrary);
-		eRotation = GetKicadSchemFacing(&sInner, &sOuter);
-		switch (eRotation)
-		{
-		case ROT_West:	eAlignment = PA_Left;	break;
-		case ROT_North:	eAlignment = PA_Top;	break;
-		case ROT_South:	eAlignment = PA_Bottom;	break;
-		default:		eAlignment = PA_Right;	break;
-		}
-
-		pcPinView = FindBoardPin(szName.Text());
-		if (pcPinView == NULL)
-		{
-			pcPinView = NewMalloc<CPinView>();
-			pcPinView->Init(0, 0, eRotation, szName.Text(), "LVC", false, 1, RADIX_Binary, mpcFonts);
-			pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, atoi(szNumber), false, false);
-			//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
-			uiItem = AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL);
-			muiBoardPins++;
-			if (pcConnector != NULL)
-			{
-				pcConnector->AddPin(szNumber, pcPinView);
-			}
-		}
-		else
-		{
-			if (pcConnector != NULL)
-			{
-				pcConnector->AddPin(szNumber, pcPinView);
-			}
-
-			//Another part of the net (joined by its labels) is already joined through its tunnels.
-			if (!IsKicadSchemTerminalSubnet(&masTerminals, pcPinView->GetPortView((size)0), pcSubnet))
-			{
-				szName.Kill();
-				continue;
-			}
-			for (uiItem = 0; uiItem < masItems.NumElements(); uiItem++)
-			{
-				if (masItems.Get(uiItem)->pcView == pcPinView)
-				{
-					break;
-				}
-			}
-		}
-		AddPinTerminal(pcSymbol, pcPin, pcPinView->GetPortView((size)0), uiItem);
-		szName.Kill();
 	}
 	return true;
 }
