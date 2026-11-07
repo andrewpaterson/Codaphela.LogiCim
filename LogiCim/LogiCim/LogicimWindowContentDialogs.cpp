@@ -214,7 +214,7 @@ int CLogicimWindowContent::AddPropertyEditor(CComponentProperties* pcProperties,
 	switch (psProperty->eType)
 	{
 	case CPT_Boolean:
-		iEditor = (int)paCheckBoxes->Size();
+		iEditor = (int)paCheckBoxes->NumElements();
 		paCheckBoxes->Add(mpDialog->AddCheckBox(psProperty->szLabel.Text(), psProperty->szValue.Equals("true")));
 		return iEditor;
 	case CPT_Choice:
@@ -226,7 +226,7 @@ int CLogicimWindowContent::AddPropertyEditor(CComponentProperties* pcProperties,
 		pComboBox->Select((int32)pcProperties->GetChoice(psProperty->szName.Text(), 0));
 		pComboBox->SetAlignment(CSH_Stretch, CSV_Center);
 		mpDialog->AddEditor(psProperty->szLabel.Text(), pComboBox);
-		iEditor = (int)paComboBoxes->Size();
+		iEditor = (int)paComboBoxes->NumElements();
 		paComboBoxes->Add(pComboBox);
 		pComboBox = NULL;
 		return iEditor;
@@ -241,7 +241,7 @@ int CLogicimWindowContent::AddPropertyEditor(CComponentProperties* pcProperties,
 			sz.Append(psProperty->szUnit);
 			sz.Append(")");
 		}
-		iEditor = (int)paTextFields->Size();
+		iEditor = (int)paTextFields->NumElements();
 		paTextFields->Add(mpDialog->AddTextField(sz.Text(), psProperty->szValue.Text()));
 		sz.Kill();
 		return iEditor;

@@ -336,7 +336,7 @@ char* CLogicimWindowContent::GetListItemText(Ptr<CListContainer> pList, CArray<C
 	int32	iRow;
 
 	iRow = pList->GetSelected();
-	if ((iRow < 0) || ((size)iRow >= paLabels->Size()))
+	if ((iRow < 0) || ((size)iRow >= paLabels->NumElements()))
 	{
 		return "";
 	}

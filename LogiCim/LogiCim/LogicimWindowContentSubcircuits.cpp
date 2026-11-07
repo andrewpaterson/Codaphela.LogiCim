@@ -69,7 +69,7 @@ void CLogicimWindowContent::ListSubcircuits(void)
 		return;
 	}
 
-	bSame = (maSubcircuitLabels.Size() == pcCircuits->NumCircuits());
+	bSame = (maSubcircuitLabels.NumElements() == pcCircuits->NumCircuits());
 	for (i = 0; bSame && (i < pcCircuits->NumCircuits()); i++)
 	{
 		bSame = StringCompare(maSubcircuitLabels.Get(i)->GetText(), pcCircuits->Get(i)->GetTypeName()) == 0;
