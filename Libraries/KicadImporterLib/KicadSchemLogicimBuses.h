@@ -62,8 +62,9 @@ struct SKicadSchemLogicimSplitterPair
 
 
 //A run of a bus's taps being made into a splitter (see CKicadSchemLogicimBuses::AddBusSplitter): the component pins its
-//taps' members are wired to (by tap, NULL for a tap wired to none) and the way they face (a TRACE_DIRECTION, -1 if
-//none do), the order its ends go to the taps (indices into paiTaps) and its ends in order along the bus.
+//taps' members are wired to (by tap, NULL for a tap wired to none) and the way they face (a TRACE_DIRECTION,
+//TRACE_DIRECTION_NONE if none do), the order its ends go to the taps (indices into paiTaps) and its ends in order along
+//the bus.
 struct SKicadSchemLogicimBusRun
 {
 	CKicadSchemBus*					pcBus;

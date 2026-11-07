@@ -749,8 +749,9 @@ void CKicadSchemLogicimPlacer::PlaceSplitter(SKicadSchemLogicimSplitter* psSplit
 	int32			iAcross;
 	SInt32Vec2		sPosition;
 
-	bAcrossX = (psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_WEST);
-	iOut = ((psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_SOUTH)) ? 1 : -1;
+	//Out from the pins is up the grid (1) for pins facing East or South, down it (-1) for West or North.
+	bAcrossX = IsDirectionHorizontal(psSplitter->iFacing);
+	iOut = gaiDirectionX[psSplitter->iFacing] + gaiDirectionY[psSplitter->iFacing];
 	iAlong = MeasureSplitterPairs(psSplitter, bAcrossX, iOut, &iPinAcross, &iEndAcross);
 	iAcross = iPinAcross + iOut * (psSplitter->iGap + GetSplitterStep(psSplitter, bAcrossX, iAlong)) - iEndAcross;
 
@@ -880,7 +881,7 @@ static void TurnKicadSchemPortToward(CComponentView* pcView, CPortView* pcPort, 
 	eOriginal = pcView->GetRotation();
 	for (i = 0; i < 4; i++)
 	{
-		pcView->SetRotation(gaeKicadSchemLogicimRotations[i]);
+		pcView->SetRotation(DirectionToRotation((int)i));
 		if (CTraceAutoConnector::GetPortFacing(pcPort) == iWanted)
 		{
 			return;

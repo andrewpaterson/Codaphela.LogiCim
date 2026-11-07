@@ -85,23 +85,6 @@ static bool GetKicadSchemBoardPinName(CKicadSchemSymbol* pcSymbol, CKicadSchemLi
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The side of an instance a circuit pin facing eRotation is shown on.
-//
-//////////////////////////////////////////////////////////////////////////
-static EPinAlignment GetKicadSchemBoardPinAlignment(ERotation eRotation)
-{
-	switch (eRotation)
-	{
-	case ROT_West:	return PA_Left;
-	case ROT_North:	return PA_Top;
-	case ROT_South:	return PA_Bottom;
-	default:		return PA_Right;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Where the connector's pin is wired, psOuter, and the way it faces out
 // of the connector's body, returned.
 //
@@ -111,13 +94,12 @@ ERotation CKicadSchemLogicimConverter::GetBoardPinFacing(CKicadSchemSymbol* pcSy
 	SFloat64Vec2		sInner;
 	SFloat64Vec2		sLibrary;
 	int					iAngle;
-	int					aiDX[4] = { 1, 0, -1, 0 };
-	int					aiDY[4] = { 0, 1, 0, -1 };
 
-	//The pin points into the connector's body from where it's wired (library Y is up).
+	//The pin points into the connector's body from where it's wired.  Library Y is up, so KiCad's anticlockwise quarter
+	//turns step as the directions turning right do on the grid, whose Y is down.
 	mpcFile->GetPinPosition(psOuter, pcSymbol, pcPin);
 	iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
-	sLibrary = *pcPin->GetPosition() + SFloat64Vec2(aiDX[iAngle], aiDY[iAngle]) * pcPin->GetLength();
+	sLibrary = *pcPin->GetPosition() + SFloat64Vec2(gaiDirectionX[iAngle], gaiDirectionY[iAngle]) * pcPin->GetLength();
 	pcSymbol->GetSheetPosition(&sInner, &sLibrary);
 	return GetKicadSchemFacing(&sInner, psOuter);
 }
@@ -230,7 +212,7 @@ void CKicadSchemLogicimConverter::AddBoardPinView(CKicadSchemSymbol* pcSymbol, C
 	eRotation = GetBoardPinFacing(pcSymbol, pcPin, &sOuter);
 	pcPinView = NewMalloc<CPinView>();
 	pcPinView->Init(0, 0, eRotation, szName, "LVC", false, 1, RADIX_Binary, mpcFonts);
-	pcPinView->SetSubcircuitAppearance(GetKicadSchemBoardPinAlignment(eRotation), PAN_Negative, atoi(pcPin->GetNumber()), false, false);
+	pcPinView->SetSubcircuitAppearance(RotationToPinAlignment(eRotation), PAN_Negative, atoi(pcPin->GetNumber()), false, false);
 	//Placed as a part is (its port is its position), so a label KiCad has on the connector's pin is attached to it.
 	uiItem = mcModel.AddItem(pcPinView, KSLIK_BoardPin, &sOuter, NULL, pcSymbol);
 	msCounts.uiBoardPins++;
@@ -361,16 +343,10 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 	int32				iWeight;
 	bool				bBefore;
 
-	//A pin points into the body, so a pin pointing right (0) is on the left.
+	//A pin points into the body, so it faces out the other way: a pin pointing right (0) is on the left.
 	pcPin = papcPins->GetPtr(i);
 	iAngle = GetKicadSchemQuarterTurns(pcPin->GetAngle());
-	switch (iAngle)
-	{
-	case 1:		*peAlignment = PA_Bottom;	break;
-	case 2:		*peAlignment = PA_Right;	break;
-	case 3:		*peAlignment = PA_Top;		break;
-	default:	*peAlignment = PA_Left;		break;
-	}
+	*peAlignment = RotationToPinAlignment(OppositeRotation(GetKicadSchemRotation(ROT_East, pcPin->GetAngle())));
 
 	iWeight = 0;
 	for (j = 0; j < papcPins->NumElements(); j++)

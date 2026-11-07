@@ -354,7 +354,7 @@ void CKicadSchemLogicimBuses::AddRunSplitters(CKicadSchemBus* pcBus, CArrayInt* 
 //////////////////////////////////////////////////////////////////////////
 CPortView* CKicadSchemLogicimBuses::GetTapPin(SKicadSchemBusTap* psTap)
 {
-	return GetComponentPin(psTap->pcMember, NULL, -1);
+	return GetComponentPin(psTap->pcMember, NULL, TRACE_DIRECTION_NONE);
 }
 
 
@@ -381,7 +381,7 @@ bool CKicadSchemLogicimBuses::IsComponentPin(SKicadSchemLogicimTerminal* psTermi
 //
 // The first component pin (see IsComponentPin) the subnet is wired to, on
 // pcOwner and facing iFacing (a TRACE_DIRECTION) unless they're NULL and
-// -1.  NULL if none.
+// TRACE_DIRECTION_NONE.  NULL if none.
 //
 //////////////////////////////////////////////////////////////////////////
 CPortView* CKicadSchemLogicimBuses::GetComponentPin(CKicadSchemSubnet* pcSubnet, CComponentView* pcOwner, int iFacing)
@@ -394,7 +394,7 @@ CPortView* CKicadSchemLogicimBuses::GetComponentPin(CKicadSchemSubnet* pcSubnet,
 		psTerminal = mpcModel->GetTerminal(i);
 		if (IsComponentPin(psTerminal) &&
 			((pcOwner == NULL) || (psTerminal->pcPortView->GetOwner() == pcOwner)) &&
-			((iFacing == -1) || (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing)))
+			((iFacing == TRACE_DIRECTION_NONE) || (CTraceAutoConnector::GetPortFacing(psTerminal->pcPortView) == iFacing)))
 		{
 			return psTerminal->pcPortView;
 		}
@@ -455,7 +455,8 @@ void CKicadSchemLogicimBuses::GetTapPinTerminals(CKicadSchemBus* pcBus, CArrayIn
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The way most of the pins face, a TRACE_DIRECTION, -1 if there are none.
+// The way most of the pins face, a TRACE_DIRECTION, TRACE_DIRECTION_NONE
+// if there are none.
 //
 //////////////////////////////////////////////////////////////////////////
 static int GetKicadSchemMostFacing(CArrayTemplatePtr<SKicadSchemLogicimTerminal>* papsTerminals)
@@ -468,10 +469,10 @@ static int GetKicadSchemMostFacing(CArrayTemplatePtr<SKicadSchemLogicimTerminal>
 	{
 		aiFacings[CTraceAutoConnector::GetPortFacing(papsTerminals->GetPtr(i)->pcPortView)]++;
 	}
-	iFacing = -1;
+	iFacing = TRACE_DIRECTION_NONE;
 	for (i = 0; i < 4; i++)
 	{
-		if ((aiFacings[i] > 0) && ((iFacing == -1) || (aiFacings[i] > aiFacings[iFacing])))
+		if ((aiFacings[i] > 0) && ((iFacing == TRACE_DIRECTION_NONE) || (aiFacings[i] > aiFacings[iFacing])))
 		{
 			iFacing = (int)i;
 		}
@@ -526,8 +527,8 @@ CComponentView* CKicadSchemLogicimBuses::GetMostPinsOwner(CArrayTemplatePtr<SKic
 //
 // The component pins the run's taps' members are wired to, by tap (NULL
 // for a tap wired to none), and the way most of them face, a
-// TRACE_DIRECTION (-1 if none are).  Each tap's pin is the first facing
-// that way on the component most of them are on.
+// TRACE_DIRECTION (TRACE_DIRECTION_NONE if none are).  Each tap's pin is
+// the first facing that way on the component most of them are on.
 //
 //////////////////////////////////////////////////////////////////////////
 int CKicadSchemLogicimBuses::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTaps, CArrayTemplatePtr<CPortView>* papcPins)
@@ -540,14 +541,14 @@ int CKicadSchemLogicimBuses::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTap
 	apsTerminals.Init();
 	GetTapPinTerminals(pcBus, paiTaps, &apsTerminals);
 	iFacing = GetKicadSchemMostFacing(&apsTerminals);
-	pcOwner = (iFacing != -1) ? GetMostPinsOwner(&apsTerminals, iFacing) : NULL;
+	pcOwner = (iFacing != TRACE_DIRECTION_NONE) ? GetMostPinsOwner(&apsTerminals, iFacing) : NULL;
 	apsTerminals.Kill();
 
 	for (i = 0; i < paiTaps->NumElements(); i++)
 	{
 		papcPins->Add((pcOwner != NULL) ? GetComponentPin(pcBus->GetTap(paiTaps->GetValue(i))->pcMember, pcOwner, iFacing) : NULL);
 	}
-	return (pcOwner != NULL) ? iFacing : -1;
+	return (pcOwner != NULL) ? iFacing : TRACE_DIRECTION_NONE;
 }
 
 
@@ -555,8 +556,9 @@ int CKicadSchemLogicimBuses::GetBusPins(CKicadSchemBus* pcBus, CArrayInt* paiTap
 //
 // The order the splitter's ends go to the run's taps (indices into the
 // taps): the order of the taps' pins along the side (bAlongY when it's an
-// East or West side) if they're wired to pins (iPinFacing isn't -1), with
-// taps wired to none after them, otherwise the taps' order.
+// East or West side) if they're wired to pins (iPinFacing isn't
+// TRACE_DIRECTION_NONE), with taps wired to none after them, otherwise the
+// taps' order.
 //
 //////////////////////////////////////////////////////////////////////////
 static void OrderKicadSchemSplitterTaps(CArrayTemplatePtr<CPortView>* papcPins, int iPinFacing, bool bAlongY, CArrayInt* paiOrder)
@@ -572,7 +574,7 @@ static void OrderKicadSchemSplitterTaps(CArrayTemplatePtr<CPortView>* papcPins, 
 	{
 		j = paiOrder->NumElements();
 		pcPin = papcPins->GetPtr(i);
-		if ((iPinFacing != -1) && (pcPin != NULL))
+		if ((iPinFacing != TRACE_DIRECTION_NONE) && (pcPin != NULL))
 		{
 			iKey = bAlongY ? pcPin->GetGridPosition().y : pcPin->GetGridPosition().x;
 			for (j = 0; j < paiOrder->NumElements(); j++)
@@ -610,7 +612,7 @@ static int32 GetKicadSchemSplitterSpacing(CArrayTemplatePtr<CPortView>* papcPins
 	CPortView*	pcPin;
 
 	iSpacing = KICAD_SCHEM_LOGICIM_SPLITTER_SPACING;
-	for (i = 1; (i < paiOrder->NumElements()) && (iPinFacing != -1); i++)
+	for (i = 1; (i < paiOrder->NumElements()) && (iPinFacing != TRACE_DIRECTION_NONE); i++)
 	{
 		pcPrevious = papcPins->GetPtr(paiOrder->GetValue(i - 1));
 		pcPin = papcPins->GetPtr(paiOrder->GetValue(i));
@@ -648,11 +650,11 @@ static ERotation OrderKicadSchemSplitterEnds(int32 iBitWidth, int32 iFanOut, int
 	for (i = 0; i < 4; i++)
 	{
 		pcSplitter = NewMalloc<CSplitterView>();
-		pcSplitter->Init(0, 0, gaeKicadSchemLogicimRotations[i], "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0);
+		pcSplitter->Init(0, 0, DirectionToRotation((int)i), "", iBitWidth, iFanOut, iSpacing, SA_LeftHanded, 0);
 		pcEnd = pcSplitter->GetEndPortView(0);
 		if ((pcEnd != NULL) && (CTraceAutoConnector::GetPortFacing(pcEnd) == iSide))
 		{
-			eRotation = gaeKicadSchemLogicimRotations[i];
+			eRotation = DirectionToRotation((int)i);
 			for (iFan = 0; iFan < iFanOut; iFan++)
 			{
 				pcEnd = pcSplitter->GetEndPortView(iFan);
@@ -698,7 +700,7 @@ void SKicadSchemLogicimBusRun::Init(CKicadSchemBus* pcBus, CArrayInt* paiTaps)
 	this->pcBus = pcBus;
 	this->paiTaps = paiTaps;
 	apcPins.Init();
-	iPinFacing = -1;
+	iPinFacing = TRACE_DIRECTION_NONE;
 	aiOrder.Init();
 	aiFans.Init();
 }
@@ -800,11 +802,11 @@ void CKicadSchemLogicimBuses::AddBusSplitter(CKicadSchemBus* pcBus, CArrayInt* p
 	//The pins it goes to decide the way its ends face, and the order its ends go to the taps.
 	sRun.Init(pcBus, paiTaps);
 	sRun.iPinFacing = GetBusPins(pcBus, paiTaps, &sRun.apcPins);
-	if (sRun.iPinFacing != -1)
+	if (sRun.iPinFacing != TRACE_DIRECTION_NONE)
 	{
 		iSide = OppositeDirection(sRun.iPinFacing);
 	}
-	bAlongY = (iSide == TRACE_DIRECTION_EAST) || (iSide == TRACE_DIRECTION_WEST);
+	bAlongY = IsDirectionHorizontal(iSide);
 	OrderKicadSchemSplitterTaps(&sRun.apcPins, sRun.iPinFacing, bAlongY, &sRun.aiOrder);
 	iSpacing = GetKicadSchemSplitterSpacing(&sRun.apcPins, &sRun.aiOrder, sRun.iPinFacing, bAlongY);
 	eRotation = OrderKicadSchemSplitterEnds(iBitWidth, iFanOut, iSpacing, iSide, bAlongY, &sRun.aiFans);
@@ -860,7 +862,7 @@ void CKicadSchemLogicimBuses::AddBusSplitterTerminals(SKicadSchemLogicimBusRun* 
 		pcEnd = pcSplitter->GetEndPortView(psRun->aiFans.GetValue(i));
 		pcPin = psRun->apcPins.GetPtr(uiTap);
 		mpcModel->AddTerminal(psTap->pcMember, &psTap->sWirePoint, pcEnd, uiItem);
-		if ((psRun->iPinFacing != -1) && (pcPin != NULL) && (pcEnd != NULL))
+		if ((psRun->iPinFacing != TRACE_DIRECTION_NONE) && (pcPin != NULL) && (pcEnd != NULL))
 		{
 			psPair = masSplitterPairs.Add();
 			psPair->pcPin = pcPin;

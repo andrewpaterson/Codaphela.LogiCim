@@ -23,10 +23,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimModel.h"
 
 
-//The rotations, turning right from East, to try something in each of.
-ERotation gaeKicadSchemLogicimRotations[4] = { ROT_East, ROT_South, ROT_West, ROT_North };
-
-
 //////////////////////////////////////////////////////////////////////////
 //
 //

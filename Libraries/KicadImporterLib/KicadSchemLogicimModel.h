@@ -40,9 +40,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 int			GetKicadSchemQuarterTurns(float64 fAngle);
 ERotation	GetKicadSchemRotation(ERotation eUpright, float64 fAngle);
 
-//The rotations, turning right from East, to try something in each of.
-extern ERotation	gaeKicadSchemLogicimRotations[];
-
 
 //The middle of the points added to it.
 struct SKicadSchemPointMean
