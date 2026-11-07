@@ -34,6 +34,7 @@ class CKicadSchemBoardConnector;
 class CKicadSchemBoardSource;
 class CPinView;
 class CSplitterView;
+class CTraceAutoConnector;
 
 
 //KiCad's 2.54mm (100 mil) pin spacing, its grid.
@@ -148,6 +149,16 @@ struct SKicadSchemLogicimConnection
 };
 
 
+//The connections from one item to another, iCount of them, routed together as the router's run iRun (-1 for one alone).
+struct SKicadSchemLogicimRun
+{
+	int		iFromItem;
+	int		iToItem;
+	int		iCount;
+	int		iRun;
+};
+
+
 //Two components that are all of a subnet, wired by one straight wire in KiCad (their pins level or one above the
 //other): their ports are lined up when they're placed so the wire stays straight.
 struct SKicadSchemLogicimAlignment
@@ -215,6 +226,7 @@ typedef CArrayTemplate<SKicadSchemLogicimSplitter>		CArrayKicadSchemLogicimSplit
 typedef CArrayTemplate<SKicadSchemLogicimAlignment>		CArrayKicadSchemLogicimAlignment;
 typedef CArrayTemplate<SKicadSchemLogicimTerminal>		CArrayKicadSchemLogicimTerminal;
 typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConnection;
+typedef CArrayTemplate<SKicadSchemLogicimRun>			CArrayKicadSchemLogicimRun;
 
 
 //Makes a Logicim circuit from one KiCad sheet.
@@ -397,6 +409,9 @@ protected:
 	void							ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 	void							SeparateItems(void);
 	size							Route(void);
+	void							CountRuns(CArrayKicadSchemLogicimRun* pasRuns);
+	void							SetRouteBoxes(CTraceAutoConnector* pcConnector);
+	void							AddRouteConnections(CTraceAutoConnector* pcConnector, CArrayKicadSchemLogicimRun* pasRuns, CArrayInt* paiConnectorIndices);
 };
 
 
