@@ -243,38 +243,19 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 {
 	size							i;
-	size							j;
 	SKicadSchemLogicimTerminal*		psTerminal;
-	SKicadSchemLogicimTerminal*		psOther;
 	SKicadSchemLogicimItem*			psItem;
 	CArrayInt						aiRemoved;
-	bool							bDrawn;
 
 	aiRemoved.Init();
 	for (i = 0; i < mcModel.NumItems(); i++)
 	{
 		aiRemoved.Add(0);
 	}
-
-	//Which items go.
 	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
 		psTerminal = mcModel.GetTerminal(i);
-		if (psTerminal->bBus || (mcModel.GetItem(psTerminal->uiItem)->pcPort == NULL))
-		{
-			continue;
-		}
-		bDrawn = false;
-		for (j = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); j != ARRAY_ELEMENT_NOT_FOUND; j = mcModel.NextSubnetTerminal(j))
-		{
-			psOther = mcModel.GetTerminal(j);
-			if (psOther->bBus || (mcModel.GetItem(psOther->uiItem)->pcPort == NULL))
-			{
-				bDrawn = true;
-				break;
-			}
-		}
-		if (!bDrawn)
+		if (!IsDrawnTerminal(psTerminal) && !IsSubnetDrawn(psTerminal->pcSubnet))
 		{
 			aiRemoved.SetValue(psTerminal->uiItem, 1);
 		}
@@ -297,6 +278,38 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 	}
 	mcModel.RemoveItems(&aiRemoved);
 	aiRemoved.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the terminal is something drawn: a component's pin or a bus's,
+// not a tunnel's or a supply's.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsDrawnTerminal(SKicadSchemLogicimTerminal* psTerminal)
+{
+	return psTerminal->bBus || (mcModel.GetItem(psTerminal->uiItem)->pcPort == NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether one of the subnet's terminals is drawn (see IsDrawnTerminal).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsSubnetDrawn(CKicadSchemSubnet* pcSubnet)
+{
+	size	i;
+
+	for (i = mcModel.FirstSubnetTerminal(pcSubnet); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextSubnetTerminal(i))
+	{
+		if (IsDrawnTerminal(mcModel.GetTerminal(i)))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 

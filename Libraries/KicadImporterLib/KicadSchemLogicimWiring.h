@@ -27,6 +27,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 
 class CTraceAutoConnector;
+class CKicadSchemSubnetGraph;
 
 
 //Wires the model's terminals (see CKicadSchemLogicimConverter): each subnet's terminals as a tree in the order KiCad's
@@ -48,6 +49,7 @@ public:
 
 protected:
 	void	AddSubnetConnections(CKicadSchemSubnet* pcSubnet);
+	void	ConnectSubnetTerminals(CKicadSchemSubnet* pcSubnet, CKicadSchemSubnetGraph* pcGraph, CArrayInt* paiTerminals, CArrayInt* paiNodes);
 	void	JoinSplitterPins(void);
 	void	JoinSplitterEnd(size uiEnd, size uiPin);
 	bool	IsConnectionBetween(size uiTerminal1, size uiTerminal2);

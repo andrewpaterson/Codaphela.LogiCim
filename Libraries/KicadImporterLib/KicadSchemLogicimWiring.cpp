@@ -325,69 +325,78 @@ static float64 GetKicadSchemPathBend(CKicadSchemSubnetGraph* pcGraph, CArrayInt*
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The subnet's terminals as a tree: each next is the terminal fewest wire
-// pieces from those already in it, connected to the one it reaches.
+// The subnet's terminals as a tree (see ConnectSubnetTerminals), each a
+// node of a graph of its wires.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimWiring::AddSubnetConnections(CKicadSchemSubnet* pcSubnet)
 {
-	CArrayInt						aiTerminals;
-	CArrayInt						aiNodes;
+	CArrayInt					aiTerminals;
+	CArrayInt					aiNodes;
+	CKicadSchemSubnetGraph		cGraph;
+	size						i;
+
+	aiTerminals.Init();
+	mpcModel->GetSubnetTerminals(pcSubnet, &aiTerminals);
+	if (aiTerminals.NumElements() >= 2)
+	{
+		cGraph.Init(pcSubnet);
+		aiNodes.Init();
+		for (i = 0; i < aiTerminals.NumElements(); i++)
+		{
+			aiNodes.Add((int)cGraph.AddPoint(&mpcModel->GetTerminal(aiTerminals.GetValue(i))->sKicadPosition));
+		}
+		cGraph.Build();
+		ConnectSubnetTerminals(pcSubnet, &cGraph, &aiTerminals, &aiNodes);
+		aiNodes.Kill();
+		cGraph.Kill();
+	}
+	aiTerminals.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The subnet's terminals (paiTerminals, at the graph's nodes paiNodes) as
+// a tree: each next is the terminal fewest wire pieces from those already
+// in it, connected to the one it reaches.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimWiring::ConnectSubnetTerminals(CKicadSchemSubnet* pcSubnet, CKicadSchemSubnetGraph* pcGraph, CArrayInt* paiTerminals, CArrayInt* paiNodes)
+{
 	CArrayInt						aiConnected;
 	CArrayInt						aiBestPath;
-	CKicadSchemSubnetGraph			cGraph;
-	size							i;
 	int								iBest;
 	int								iTo;
 	SKicadSchemLogicimConnection*	psConnection;
 
-	aiTerminals.Init();
-	mpcModel->GetSubnetTerminals(pcSubnet, &aiTerminals);
-	if (aiTerminals.NumElements() < 2)
-	{
-		aiTerminals.Kill();
-		return;
-	}
-
-	cGraph.Init(pcSubnet);
-	aiNodes.Init();
-	for (i = 0; i < aiTerminals.NumElements(); i++)
-	{
-		aiNodes.Add((int)cGraph.AddPoint(&mpcModel->GetTerminal(aiTerminals.GetValue(i))->sKicadPosition));
-	}
-	cGraph.Build();
-
 	aiConnected.Init();
 	aiConnected.Add(0);
 	aiBestPath.Init();
-	while (aiConnected.NumElements() < aiTerminals.NumElements())
+	while (aiConnected.NumElements() < paiTerminals->NumElements())
 	{
-		iBest = FindKicadSchemNearestTerminal(&cGraph, &aiNodes, &aiConnected, &aiBestPath);
+		iBest = FindKicadSchemNearestTerminal(pcGraph, paiNodes, &aiConnected, &aiBestPath);
 		psConnection = mpcModel->AddConnection();
 		psConnection->pcSubnet = pcSubnet;
 		if (iBest == -1)
 		{
 			//Not joined by wires (only by being at the same place): straight to the first.
-			iBest = GetKicadSchemFirstUnconnected(aiTerminals.NumElements(), &aiConnected);
+			iBest = GetKicadSchemFirstUnconnected(paiTerminals->NumElements(), &aiConnected);
 			iTo = 0;
 			psConnection->fBend = 0.5;
 		}
 		else
 		{
-			iTo = GetKicadSchemConnectedAt(&aiNodes, &aiConnected, aiBestPath.GetValue(aiBestPath.NumElements() - 1));
-			psConnection->fBend = GetKicadSchemPathBend(&cGraph, &aiBestPath);
+			iTo = GetKicadSchemConnectedAt(paiNodes, &aiConnected, aiBestPath.GetValue(aiBestPath.NumElements() - 1));
+			psConnection->fBend = GetKicadSchemPathBend(pcGraph, &aiBestPath);
 		}
 		psConnection->bConnected = false;
-		psConnection->uiFrom = aiTerminals.GetValue(iBest);
-		psConnection->uiTo = aiTerminals.GetValue(iTo);
+		psConnection->uiFrom = paiTerminals->GetValue(iBest);
+		psConnection->uiTo = paiTerminals->GetValue(iTo);
 		aiConnected.Add(iBest);
 	}
-
 	aiBestPath.Kill();
 	aiConnected.Kill();
-	aiNodes.Kill();
-	cGraph.Kill();
-	aiTerminals.Kill();
 }
 
 

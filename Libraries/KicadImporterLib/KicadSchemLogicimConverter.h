@@ -192,6 +192,8 @@ protected:
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);
 	float32							GetNetRegulatedVoltage(CKicadSchemNet* pcNet);
 	void							RemoveUnconnectedItems(void);
+	bool							IsDrawnTerminal(SKicadSchemLogicimTerminal* psTerminal);
+	bool							IsSubnetDrawn(CKicadSchemSubnet* pcSubnet);
 	void							PlaceAndRoute(void);
 
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
