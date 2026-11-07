@@ -80,13 +80,11 @@ struct SWiringTest
 CConstantView* AddWiringConstant(CCircuitView* pcCircuit, int32 x, int32 y, ERotation eRotation, int32 iBitWidth, ERadix eRadix)
 {
 	CConstantView*	pcConstant;
-	SInt32Vec2		sMinimum;
-	SInt32Vec2		sMaximum;
+	SInt32Bounds	sBox;
 
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcConstant = NewMalloc<CConstantView>();
-	pcConstant->Init(x, y, eRotation, "", "LVC", false, iBitWidth, eRadix, sMinimum, sMaximum);
+	pcConstant->Init(x, y, eRotation, "", "LVC", false, iBitWidth, eRadix, &sBox);
 	pcCircuit->Add(pcConstant);
 	return pcConstant;
 }
@@ -99,13 +97,11 @@ CConstantView* AddWiringConstant(CCircuitView* pcCircuit, int32 x, int32 y, ERot
 CProbeView* AddWiringProbe(CCircuitView* pcCircuit, int32 x, int32 y, ERotation eRotation, int32 iBitWidth, ERadix eRadix)
 {
 	CProbeView*		pcProbe;
-	SInt32Vec2		sMinimum;
-	SInt32Vec2		sMaximum;
+	SInt32Bounds	sBox;
 
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcProbe = NewMalloc<CProbeView>();
-	pcProbe->Init(x, y, eRotation, "", "LVC", false, iBitWidth, eRadix, sMinimum, sMaximum);
+	pcProbe->Init(x, y, eRotation, "", "LVC", false, iBitWidth, eRadix, &sBox);
 	pcCircuit->Add(pcProbe);
 	return pcProbe;
 }
@@ -118,13 +114,11 @@ CProbeView* AddWiringProbe(CCircuitView* pcCircuit, int32 x, int32 y, ERotation 
 CTunnelView* AddWiringTunnel(CCircuitView* pcCircuit, int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, float64 fLength)
 {
 	CTunnelView*	pcTunnel;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 
-	sMinimum.Init(0, -0.65);
-	sMaximum.Init(fLength, 0.65);
+	sBox.Init(SFloat64Vec2(0, -0.65), SFloat64Vec2(fLength, 0.65));
 	pcTunnel = NewMalloc<CTunnelView>();
-	pcTunnel->Init(x, y, eRotation, szName, bDoubleSided, sMinimum, sMaximum);
+	pcTunnel->Init(x, y, eRotation, szName, bDoubleSided, &sBox);
 	pcCircuit->Add(pcTunnel);
 	return pcTunnel;
 }
@@ -377,23 +371,19 @@ void TestWiringPinAndLabel(void)
 	CConstantView*	pcConstant;
 	CPinView*		pcPin;
 	CLabelView*		pcLabel;
-	SInt32Vec2		sMinimum;
-	SInt32Vec2		sMaximum;
-	SFloat64Vec2	sFloatMinimum;
-	SFloat64Vec2	sFloatMaximum;
+	SInt32Bounds	sBox;
+	SFloat64Bounds	sFloatBox;
 
 	sTest.Init();
 	pcConstant = AddWiringConstant(&sTest.cCircuit, 0, 0, ROT_East, 4, RADIX_Hexadecimal);
 	sTest.cCircuit.AddTrace(0, 0, 6, 0);
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcPin = NewMalloc<CPinView>();
-	pcPin->Init(6, 0, ROT_West, "D", "LVC", false, 4, RADIX_Hexadecimal, sMinimum, sMaximum);
+	pcPin->Init(6, 0, ROT_West, "D", "LVC", false, 4, RADIX_Hexadecimal, &sBox);
 	sTest.cCircuit.Add(pcPin);
-	sFloatMinimum.Init(-0.25, -0.5);
-	sFloatMaximum.Init(3, 0.5);
+	sFloatBox.Init(SFloat64Vec2(-0.25, -0.5), SFloat64Vec2(3, 0.5));
 	pcLabel = NewMalloc<CLabelView>();
-	pcLabel->Init(0, 6, ROT_East, "Note", TA_Left, false, true, true, sFloatMinimum, sFloatMaximum);
+	pcLabel->Init(0, 6, ROT_East, "Note", TA_Left, false, true, true, &sFloatBox);
 	sTest.cCircuit.Add(pcLabel);
 
 	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));

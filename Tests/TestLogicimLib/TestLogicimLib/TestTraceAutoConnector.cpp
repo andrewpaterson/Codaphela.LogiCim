@@ -168,8 +168,7 @@ size NumAutoConnectedPorts(CCircuitView* pcCircuit, CPortView* pcPort)
 //////////////////////////////////////////////////////////////////////////
 bool IsAutoConnectThroughBox(CCircuitView* pcCircuit, CComponentView* pcComponent)
 {
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 	size			i;
 	CTraceView*		pcTrace;
 	SInt32Vec2		sStart;
@@ -178,7 +177,7 @@ bool IsAutoConnectThroughBox(CCircuitView* pcCircuit, CComponentView* pcComponen
 	int32			iSteps;
 	int32			j;
 
-	pcComponent->GetBoundingBox(&sMinimum, &sMaximum);
+	pcComponent->GetBoundingBox(&sBox);
 	for (i = 0; i < pcCircuit->NumTraces(); i++)
 	{
 		pcTrace = pcCircuit->GetTrace(i);
@@ -189,7 +188,7 @@ bool IsAutoConnectThroughBox(CCircuitView* pcCircuit, CComponentView* pcComponen
 		{
 			sPoint.x = sStart.x + ((sEnd.x > sStart.x) ? j : ((sEnd.x < sStart.x) ? -j : 0));
 			sPoint.y = sStart.y + ((sEnd.y > sStart.y) ? j : ((sEnd.y < sStart.y) ? -j : 0));
-			if ((sPoint.x >= ceil(sMinimum.x)) && (sPoint.x <= floor(sMaximum.x)) && (sPoint.y >= ceil(sMinimum.y)) && (sPoint.y <= floor(sMaximum.y)))
+			if ((sPoint.x >= ceil(sBox.sMinimum.x)) && (sPoint.x <= floor(sBox.sMaximum.x)) && (sPoint.y >= ceil(sBox.sMinimum.y)) && (sPoint.y <= floor(sBox.sMaximum.y)))
 			{
 				return true;
 			}
@@ -234,17 +233,15 @@ void TestTraceAutoConnectorBend(void)
 	CTraceAutoConnector		cConnector;
 	CBufferView*			pcFrom;
 	CBufferView*			pcTo;
-	SFloat64Vec2			sFromMinimum;
-	SFloat64Vec2			sFromMaximum;
-	SFloat64Vec2			sToMinimum;
-	SFloat64Vec2			sToMaximum;
+	SFloat64Bounds			sFromBox;
+	SFloat64Bounds			sToBox;
 	size					uiNet;
 
 	cCircuit.Init();
 	pcFrom = AddAutoConnectBuffer(&cCircuit, 0, 0, 1);
 	pcTo = AddAutoConnectBuffer(&cCircuit, 20, 8, 1);
-	pcFrom->GetBoundingBox(&sFromMinimum, &sFromMaximum);
-	pcTo->GetBoundingBox(&sToMinimum, &sToMaximum);
+	pcFrom->GetBoundingBox(&sFromBox);
+	pcTo->GetBoundingBox(&sToBox);
 
 	cConnector.Init(&cCircuit);
 	uiNet = cConnector.AddNet();
@@ -253,7 +250,7 @@ void TestTraceAutoConnectorBend(void)
 	cConnector.Kill();
 	AssertTrue(AreAutoConnected(&cCircuit, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0)));
 	AssertSize(3, cCircuit.NumTraces());
-	AssertInt((int32)floor(sFromMaximum.x + 0.5 * (sToMinimum.x - sFromMaximum.x) + 0.5), GetAutoConnectVerticalX(&cCircuit, 0));
+	AssertInt((int32)floor(sFromBox.sMaximum.x + 0.5 * (sToBox.sMinimum.x - sFromBox.sMaximum.x) + 0.5), GetAutoConnectVerticalX(&cCircuit, 0));
 
 	cCircuit.KillTraces();
 	AssertSize(0, cCircuit.NumTraces());
@@ -263,7 +260,7 @@ void TestTraceAutoConnectorBend(void)
 	AssertTrue(cConnector.Connect());
 	cConnector.Kill();
 	AssertTrue(AreAutoConnected(&cCircuit, pcFrom->GetPortView((size)1), pcTo->GetPortView((size)0)));
-	AssertInt((int32)floor(sFromMaximum.x + 0.25 * (sToMinimum.x - sFromMaximum.x) + 0.5), GetAutoConnectVerticalX(&cCircuit, 0));
+	AssertInt((int32)floor(sFromBox.sMaximum.x + 0.25 * (sToBox.sMinimum.x - sFromBox.sMaximum.x) + 0.5), GetAutoConnectVerticalX(&cCircuit, 0));
 
 	cCircuit.Kill();
 }

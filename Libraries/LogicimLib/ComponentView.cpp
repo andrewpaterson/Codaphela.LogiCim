@@ -213,37 +213,39 @@ static bool GetBoxAttribute(CMarkupTag* pcTag, const char* szName, float64* pfVa
 
 //////////////////////////////////////////////////////////////////////////
 //
-// SaveXMLBox for either vector.
+// SaveXMLBox for either box.
 //
 //////////////////////////////////////////////////////////////////////////
-template<class V>
-static void SaveBox(CXMLWriter* pcWriter, V sBoxMinimum, V sBoxMaximum)
+template<class B>
+static void SaveBox(CXMLWriter* pcWriter, B* psBox)
 {
-	pcWriter->Attribute("left", sBoxMinimum.x);
-	pcWriter->Attribute("top", sBoxMinimum.y);
-	pcWriter->Attribute("right", sBoxMaximum.x);
-	pcWriter->Attribute("bottom", sBoxMaximum.y);
+	pcWriter->Attribute("left", psBox->sMinimum.x);
+	pcWriter->Attribute("top", psBox->sMinimum.y);
+	pcWriter->Attribute("right", psBox->sMaximum.x);
+	pcWriter->Attribute("bottom", psBox->sMaximum.y);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// LoadXMLBox for either vector.  szNeeds says what the attributes must be
+// LoadXMLBox for either box.  szNeeds says what the attributes must be
 // ("whole number "), for the error.
 //
 //////////////////////////////////////////////////////////////////////////
-template<class V>
-static bool LoadBox(CMarkupTag* pcTag, V* psBoxMinimum, V* psBoxMaximum, const char* szMethod, const char* szNeeds)
+template<class B>
+static bool LoadBox(CMarkupTag* pcTag, B* psBox, const char* szMethod, const char* szNeeds)
 {
-	if (!GetBoxAttribute(pcTag, "left", &psBoxMinimum->x) || !GetBoxAttribute(pcTag, "top", &psBoxMinimum->y) ||
-		!GetBoxAttribute(pcTag, "right", &psBoxMaximum->x) || !GetBoxAttribute(pcTag, "bottom", &psBoxMaximum->y))
+	psBox->Init();
+	if (!GetBoxAttribute(pcTag, "left", &psBox->sMinimum.x) || !GetBoxAttribute(pcTag, "top", &psBox->sMinimum.y) ||
+		!GetBoxAttribute(pcTag, "right", &psBox->sMaximum.x) || !GetBoxAttribute(pcTag, "bottom", &psBox->sMaximum.y))
 	{
 		return gcLogger.Error2(szMethod, " [", pcTag->GetName(), "] needs ", szNeeds, "left, top, right and bottom attributes.", NULL);
 	}
-	if ((psBoxMaximum->x <= psBoxMinimum->x) || (psBoxMaximum->y <= psBoxMinimum->y))
+	if ((psBox->sMaximum.x <= psBox->sMinimum.x) || (psBox->sMaximum.y <= psBox->sMinimum.y))
 	{
 		return gcLogger.Error2(szMethod, " [", pcTag->GetName(), "] right and bottom must be past left and top.", NULL);
 	}
+	psBox->bHasBounds = true;
 	return true;
 }
 
@@ -254,9 +256,9 @@ static bool LoadBox(CMarkupTag* pcTag, V* psBoxMinimum, V* psBoxMaximum, const c
 // left, top, right and bottom attributes.
 //
 //////////////////////////////////////////////////////////////////////////
-void CComponentView::SaveXMLBox(CXMLWriter* pcWriter, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum)
+void CComponentView::SaveXMLBox(CXMLWriter* pcWriter, SInt32Bounds* psBox)
 {
-	SaveBox(pcWriter, sBoxMinimum, sBoxMaximum);
+	SaveBox(pcWriter, psBox);
 }
 
 
@@ -265,9 +267,9 @@ void CComponentView::SaveXMLBox(CXMLWriter* pcWriter, SInt32Vec2 sBoxMinimum, SI
 // The box SaveXMLBox writes.  It must have some width and height.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::LoadXMLBox(CMarkupTag* pcTag, SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum)
+bool CComponentView::LoadXMLBox(CMarkupTag* pcTag, SInt32Bounds* psBox)
 {
-	return LoadBox(pcTag, psBoxMinimum, psBoxMaximum, __METHOD__, "whole number ");
+	return LoadBox(pcTag, psBox, __METHOD__, "whole number ");
 }
 
 
@@ -276,9 +278,9 @@ bool CComponentView::LoadXMLBox(CMarkupTag* pcTag, SInt32Vec2* psBoxMinimum, SIn
 // A box in fractions of a grid unit, as SaveXMLBox's whole one.
 //
 //////////////////////////////////////////////////////////////////////////
-void CComponentView::SaveXMLBox(CXMLWriter* pcWriter, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum)
+void CComponentView::SaveXMLBox(CXMLWriter* pcWriter, SFloat64Bounds* psBox)
 {
-	SaveBox(pcWriter, sBoxMinimum, sBoxMaximum);
+	SaveBox(pcWriter, psBox);
 }
 
 
@@ -286,9 +288,9 @@ void CComponentView::SaveXMLBox(CXMLWriter* pcWriter, SFloat64Vec2 sBoxMinimum, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::LoadXMLBox(CMarkupTag* pcTag, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum)
+bool CComponentView::LoadXMLBox(CMarkupTag* pcTag, SFloat64Bounds* psBox)
 {
-	return LoadBox(pcTag, psBoxMinimum, psBoxMaximum, __METHOD__, "");
+	return LoadBox(pcTag, psBox, __METHOD__, "");
 }
 
 
@@ -776,7 +778,7 @@ void CComponentView::CalculateBounds(void)
 // other components and wires out of it, so the text stays readable.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Bounds* psBox)
 {
 	Ptr<CGeometryMap>	pMap;
 	Ptr<CSpriteMap>		pSprites;
@@ -784,10 +786,8 @@ bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* 
 	CCircuitColours		cColours;
 	CCircuitPainter		cPainter;
 	CInt32Rect			cPixels;
-	SFloat64Bounds		sBounds;
 
-	sBounds.Init();
-	sBounds.bHasBounds = GetBoundingBox(&sBounds.sMinimum, &sBounds.sMaximum);
+	GetBoundingBox(psBox);
 
 	pMap = OMalloc<CGeometryMap>();
 	pSprites = OMalloc<CSpriteMap>();
@@ -800,20 +800,18 @@ bool CComponentView::GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* 
 
 	if (pMap->GetBounds(&cPixels))
 	{
-		IncludePixelBounds(&cViewport, &cPixels, &sBounds);
+		IncludePixelBounds(&cViewport, &cPixels, psBox);
 	}
 	if (pSprites->GetFullDestBounds(&cPixels))
 	{
-		IncludePixelBounds(&cViewport, &cPixels, &sBounds);
+		IncludePixelBounds(&cViewport, &cPixels, psBox);
 	}
 
 	cColours.Kill();
 	cViewport.Kill();
 	pSprites = NULL;
 	pMap = NULL;
-	*psMinimum = sBounds.sMinimum;
-	*psMaximum = sBounds.sMaximum;
-	return sBounds.bHasBounds;
+	return psBox->bHasBounds;
 }
 
 
@@ -850,38 +848,35 @@ void CComponentView::IncludeExtraBounds(SFloat64Bounds* psBounds)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::GetLocalBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CComponentView::GetLocalBounds(SFloat64Bounds* psBox)
 {
-	*psMinimum = msBounds.sMinimum;
-	*psMaximum = msBounds.sMaximum;
+	*psBox = msBounds;
 	return msBounds.bHasBounds;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// In the circuit's grid space, mirrored, turned and moved.
+// In the circuit's grid space, mirrored, turned and moved.  False, and
+// psBox holding nothing, if the view has no bounds.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CComponentView::GetBoundingBox(SFloat64Bounds* psBox)
 {
 	SFloat64Vec2	sCorner;
-	SFloat64Bounds	sBounds;
 
+	psBox->Init();
 	if (!msBounds.bHasBounds)
 	{
 		return false;
 	}
 
-	sBounds.Init();
 	sCorner = msBounds.sMinimum;
 	TransformPoint(meRotation, mbMirrored, &sCorner);
-	sBounds.Include(sCorner.x + msPosition.x, sCorner.y + msPosition.y);
+	psBox->Include(sCorner.x + msPosition.x, sCorner.y + msPosition.y);
 	sCorner = msBounds.sMaximum;
 	TransformPoint(meRotation, mbMirrored, &sCorner);
-	sBounds.Include(sCorner.x + msPosition.x, sCorner.y + msPosition.y);
-	*psMinimum = sBounds.sMinimum;
-	*psMaximum = sBounds.sMaximum;
+	psBox->Include(sCorner.x + msPosition.x, sCorner.y + msPosition.y);
 	return true;
 }
 

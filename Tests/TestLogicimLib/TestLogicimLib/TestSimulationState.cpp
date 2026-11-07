@@ -515,10 +515,8 @@ CW65C816View* AddNOPProcessorViews(CCircuitView* pcCircuit)
 	CPositivePowerView*	pcPower;
 	CTunnelView*		pcTunnel;
 	SInt32Vec2			sPosition;
-	SInt32Vec2			sMinimum;
-	SInt32Vec2			sMaximum;
-	SFloat64Vec2		sTunnelMinimum;
-	SFloat64Vec2		sTunnelMaximum;
+	SInt32Bounds		sBox;
+	SFloat64Bounds		sTunnelBox;
 	const char*			aszHigh[] = { "RESB", "NMIB", "IRQB", "ABORTB", "RDY", "BE" };
 	size				i;
 
@@ -533,25 +531,23 @@ CW65C816View* AddNOPProcessorViews(CCircuitView* pcCircuit)
 	pcCircuit->AddTrace(sPosition.x - 4, sPosition.y, sPosition.x, sPosition.y);
 
 	sPosition = pcMPU->GetPortView("Data 0")->GetGridPosition();
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcData = NewMalloc<CConstantView>();
-	pcData->Init(sPosition.x, sPosition.y, ROT_West, "Data", "LVC", false, 8, RADIX_Hexadecimal, sMinimum, sMaximum);
+	pcData->Init(sPosition.x, sPosition.y, ROT_West, "Data", "LVC", false, 8, RADIX_Hexadecimal, &sBox);
 	pcCircuit->Add(pcData);
 
-	sTunnelMinimum.Init(0, -0.65);
-	sTunnelMaximum.Init(3, 0.65);
+	sTunnelBox.Init(SFloat64Vec2(0, -0.65), SFloat64Vec2(3, 0.65));
 	pcPower = NewMalloc<CPositivePowerView>();
 	pcPower->Init(-30, -20, ROT_South, "High", 3.3f);
 	pcCircuit->Add(pcPower);
 	pcTunnel = NewMalloc<CTunnelView>();
-	pcTunnel->Init(-30, -19, ROT_South, "high", false, sTunnelMinimum, sTunnelMaximum);
+	pcTunnel->Init(-30, -19, ROT_South, "high", false, &sTunnelBox);
 	pcCircuit->Add(pcTunnel);
 	for (i = 0; i < sizeof(aszHigh) / sizeof(const char*); i++)
 	{
 		sPosition = pcMPU->GetPortView(aszHigh[i])->GetGridPosition();
 		pcTunnel = NewMalloc<CTunnelView>();
-		pcTunnel->Init(sPosition.x, sPosition.y, ROT_West, "high", false, sTunnelMinimum, sTunnelMaximum);
+		pcTunnel->Init(sPosition.x, sPosition.y, ROT_West, "high", false, &sTunnelBox);
 		pcCircuit->Add(pcTunnel);
 	}
 	return pcMPU;

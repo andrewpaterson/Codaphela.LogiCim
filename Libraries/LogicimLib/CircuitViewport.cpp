@@ -151,15 +151,16 @@ void CCircuitViewport::ZoomAround(float64 fScreenX, float64 fScreenY, float64 fZ
 // middle of it.
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitViewport::ZoomToFit(SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum, float64 fBorder, float64 fMaximumZoom)
+void CCircuitViewport::ZoomToFit(SFloat64Bounds* psBox, float64 fBorder, float64 fMaximumZoom)
 {
-	float64		fZoomX;
-	float64		fZoomY;
-	float64		fZoom;
-	float64		fPixelsPerGrid;
+	float64			fZoomX;
+	float64			fZoomY;
+	float64			fZoom;
+	float64			fPixelsPerGrid;
+	SFloat64Vec2	sCentre;
 
-	fZoomX = msSize.x / ((sMaximum.x - sMinimum.x + fBorder * 2) * CIRCUIT_GRID_SCALE);
-	fZoomY = msSize.y / ((sMaximum.y - sMinimum.y + fBorder * 2) * CIRCUIT_GRID_SCALE);
+	fZoomX = msSize.x / ((psBox->sMaximum.x - psBox->sMinimum.x + fBorder * 2) * CIRCUIT_GRID_SCALE);
+	fZoomY = msSize.y / ((psBox->sMaximum.y - psBox->sMinimum.y + fBorder * 2) * CIRCUIT_GRID_SCALE);
 	fZoom = (fZoomX < fZoomY) ? fZoomX : fZoomY;
 	if (fZoom > fMaximumZoom)
 	{
@@ -167,7 +168,8 @@ void CCircuitViewport::ZoomToFit(SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum, f
 	}
 	SetZoom(fZoom);
 	fPixelsPerGrid = GetPixelsPerGrid();
-	msPosition.Init(-(sMinimum.x + sMaximum.x) / 2 * fPixelsPerGrid, -(sMinimum.y + sMaximum.y) / 2 * fPixelsPerGrid);
+	sCentre = psBox->GetCentre();
+	msPosition.Init(-sCentre.x * fPixelsPerGrid, -sCentre.y * fPixelsPerGrid);
 }
 
 

@@ -646,8 +646,7 @@ void CSubcircuitInstanceView::MeasureLayout(CCircuitFonts* pcFonts, CCircuitView
 	psLayout->iPinSpacing = (iPinSpacing >= 1) ? iPinSpacing : 1;
 	FitSubcircuitPins(pcFonts, pcInstanceCircuitView, psLayout->iPinSpacing, &sBox);
 
-	psLayout->sBoxMinimum.Init(-sBox.iRight, sBox.iTop);
-	psLayout->sBoxMaximum.Init(-sBox.iLeft, sBox.iBottom);
+	psLayout->sBox.Init(SInt32Vec2(-sBox.iRight, sBox.iTop), SInt32Vec2(-sBox.iLeft, sBox.iBottom));
 }
 
 
@@ -674,12 +673,12 @@ void CSubcircuitInstanceView::LayOut(void)
 	int					iBottom;
 	size				uiShape;
 
-	iLeftR = -msLayout.sBoxMaximum.x;
-	iRightR = -msLayout.sBoxMinimum.x;
-	iTopR = msLayout.sBoxMinimum.y;
-	iBottomR = msLayout.sBoxMaximum.y;
+	iLeftR = -msLayout.sBox.sMaximum.x;
+	iRightR = -msLayout.sBox.sMinimum.x;
+	iTopR = msLayout.sBox.sMinimum.y;
+	iBottomR = msLayout.sBox.sMaximum.y;
 
-	mcShapes.AddRectangle(msLayout.sBoxMinimum.x, msLayout.sBoxMinimum.y, msLayout.sBoxMaximum.x, msLayout.sBoxMaximum.y, true, true);
+	mcShapes.AddRectangle(msLayout.sBox.sMinimum.x, msLayout.sBox.sMinimum.y, msLayout.sBox.sMaximum.x, msLayout.sBox.sMaximum.y, true, true);
 
 	sTop.Init(mpcInstanceCircuitView, PA_Top, msLayout.iPinSpacing);
 	sBottom.Init(mpcInstanceCircuitView, PA_Bottom, msLayout.iPinSpacing);
@@ -851,7 +850,7 @@ void CSubcircuitInstanceView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	{
 		pcWriter->Attribute("comment", mszComment.Text());
 	}
-	SaveXMLBox(pcWriter, msLayout.sBoxMinimum, msLayout.sBoxMaximum);
+	SaveXMLBox(pcWriter, &msLayout.sBox);
 	pcWriter->Attribute("typeY", msLayout.fTypeY);
 	if (!mszComment.Empty())
 	{
@@ -897,7 +896,7 @@ bool CSubcircuitInstanceView::LoadXML(CMarkupTag* pcTag)
 	{
 		szComment = (char*)"";
 	}
-	if (!LoadXMLBox(pcTag, &sLayout.sBoxMinimum, &sLayout.sBoxMaximum))
+	if (!LoadXMLBox(pcTag, &sLayout.sBox))
 	{
 		return false;
 	}

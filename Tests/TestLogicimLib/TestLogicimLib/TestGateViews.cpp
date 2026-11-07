@@ -24,12 +24,12 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void AssertBounds(float64 fLeft, float64 fTop, float64 fRight, float64 fBottom, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+void AssertBounds(float64 fLeft, float64 fTop, float64 fRight, float64 fBottom, SFloat64Bounds* psBox)
 {
-	AssertDouble(fLeft, psMinimum->x, 3);
-	AssertDouble(fTop, psMinimum->y, 3);
-	AssertDouble(fRight, psMaximum->x, 3);
-	AssertDouble(fBottom, psMaximum->y, 3);
+	AssertDouble(fLeft, psBox->sMinimum.x, 3);
+	AssertDouble(fTop, psBox->sMinimum.y, 3);
+	AssertDouble(fRight, psBox->sMaximum.x, 3);
+	AssertDouble(fBottom, psBox->sMaximum.y, 3);
 }
 
 
@@ -227,8 +227,7 @@ void TestLogicGateViewGeometry(void)
 	CNandGateView*	pcNand;
 	CXorGateView*	pcXor;
 	CInverterView*	pcInverter;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 
 	pcAnd = NewMalloc<CAndGateView>();
 	pcAnd->Init(10, 20, ROT_North, "U1", "LVC", false, 2, 1);
@@ -237,15 +236,15 @@ void TestLogicGateViewGeometry(void)
 	AssertGridPosition(9, 21, pcAnd->GetPortView("Input 0"));
 	AssertGridPosition(11, 21, pcAnd->GetPortView("Input 1"));
 	AssertGridPosition(10, 18, pcAnd->GetPortView("Output"));
-	AssertTrue(pcAnd->GetLocalBounds(&sMinimum, &sMaximum));
-	AssertBounds(-1, -1.5, 2, 1.5, &sMinimum, &sMaximum);
+	AssertTrue(pcAnd->GetLocalBounds(&sBox));
+	AssertBounds(-1, -1.5, 2, 1.5, &sBox);
 
 	pcAnd->SetRotation(ROT_East);
 	AssertGridPosition(9, 19, pcAnd->GetPortView("Input 0"));
 	AssertGridPosition(9, 21, pcAnd->GetPortView("Input 1"));
 	AssertGridPosition(12, 20, pcAnd->GetPortView("Output"));
-	AssertTrue(pcAnd->GetBoundingBox(&sMinimum, &sMaximum));
-	AssertBounds(9, 18.5, 12, 21.5, &sMinimum, &sMaximum);
+	AssertTrue(pcAnd->GetBoundingBox(&sBox));
+	AssertBounds(9, 18.5, 12, 21.5, &sBox);
 	SafeKill(pcAnd);
 
 	//The bubble pushes the output out a grid unit.
@@ -258,8 +257,8 @@ void TestLogicGateViewGeometry(void)
 	AssertGridPosition(1, 1, pcNand->GetPortView("Input 2"));
 	AssertGridPosition(0, -3, pcNand->GetPortView("Output"));
 	AssertTrue(pcNand->GetPortView("Output")->IsInverting());
-	AssertTrue(pcNand->GetLocalBounds(&sMinimum, &sMaximum));
-	AssertBounds(-1, -1.5, 3, 1.5, &sMinimum, &sMaximum);
+	AssertTrue(pcNand->GetLocalBounds(&sBox));
+	AssertBounds(-1, -1.5, 3, 1.5, &sBox);
 	SafeKill(pcNand);
 
 	//Exclusive OR inputs are a grid unit further back for the second curve; four inputs widen the gate.
@@ -273,9 +272,9 @@ void TestLogicGateViewGeometry(void)
 	AssertString("Input 1", pcXor->GetPortView((size)0)->GetPortName(1));
 	AssertGridPosition(2, -2, pcXor->GetPortView((size)0));
 	AssertGridPosition(0, 2, pcXor->GetPortView("Output"));
-	AssertTrue(pcXor->GetLocalBounds(&sMinimum, &sMaximum));
-	AssertDouble(-2.5, sMinimum.y, 1);
-	AssertDouble(-2, sMinimum.x, 3);
+	AssertTrue(pcXor->GetLocalBounds(&sBox));
+	AssertDouble(-2.5, sBox.sMinimum.y, 1);
+	AssertDouble(-2, sBox.sMinimum.x, 3);
 	SafeKill(pcXor);
 
 	pcInverter = NewMalloc<CInverterView>();
@@ -300,10 +299,8 @@ void TestMirroredViewGeometry(void)
 {
 	CAndGateView*	pcAnd;
 	CSplitterView*	pcSplitter;
-	SFloat64Vec2	sLocalMinimum;
-	SFloat64Vec2	sLocalMaximum;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sLocalBox;
+	SFloat64Bounds	sBox;
 
 	pcAnd = NewMalloc<CAndGateView>();
 	pcAnd->Init(10, 20, ROT_East, "U1", "LVC", false, 2, 1);
@@ -322,15 +319,15 @@ void TestMirroredViewGeometry(void)
 
 	pcSplitter = NewMalloc<CSplitterView>();
 	pcSplitter->Init(5, 7, ROT_East, "", 8, 2, 2, SA_LeftHanded, -1);
-	AssertTrue(pcSplitter->GetLocalBounds(&sLocalMinimum, &sLocalMaximum));
-	AssertTrue(sLocalMinimum.y != -sLocalMaximum.y);
+	AssertTrue(pcSplitter->GetLocalBounds(&sLocalBox));
+	AssertTrue(sLocalBox.sMinimum.y != -sLocalBox.sMaximum.y);
 	pcSplitter->SetMirrored(true);
-	AssertTrue(pcSplitter->GetBoundingBox(&sMinimum, &sMaximum));
-	AssertBounds(5 + sLocalMinimum.x, 7 - sLocalMaximum.y, 5 + sLocalMaximum.x, 7 - sLocalMinimum.y, &sMinimum, &sMaximum);
+	AssertTrue(pcSplitter->GetBoundingBox(&sBox));
+	AssertBounds(5 + sLocalBox.sMinimum.x, 7 - sLocalBox.sMaximum.y, 5 + sLocalBox.sMaximum.x, 7 - sLocalBox.sMinimum.y, &sBox);
 
 	pcSplitter->SetRotation(ROT_South);
-	AssertTrue(pcSplitter->GetBoundingBox(&sMinimum, &sMaximum));
-	AssertBounds(5 + sLocalMinimum.y, 7 + sLocalMinimum.x, 5 + sLocalMaximum.y, 7 + sLocalMaximum.x, &sMinimum, &sMaximum);
+	AssertTrue(pcSplitter->GetBoundingBox(&sBox));
+	AssertBounds(5 + sLocalBox.sMinimum.y, 7 + sLocalBox.sMinimum.x, 5 + sLocalBox.sMaximum.y, 7 + sLocalBox.sMaximum.x, &sBox);
 	SafeKill(pcSplitter);
 }
 
@@ -615,8 +612,7 @@ void TestCircuitViewGroundDrivesInverters(void)
 	CTraceView*							pcOut1;
 	CTraceView*							pcOut2;
 	float32								fVcc;
-	SFloat64Vec2						sMinimum;
-	SFloat64Vec2						sMaximum;
+	SFloat64Bounds						sBox;
 
 	ObjectsInit();
 	CEvent::ResetNextID();
@@ -636,8 +632,8 @@ void TestCircuitViewGroundDrivesInverters(void)
 	pcGround->Init(-8, -3, ROT_North, "");
 	cCircuit.Add(pcGround);
 	AssertString("Ground", pcGround->GetType());
-	AssertTrue(pcGround->GetLocalBounds(&sMinimum, &sMaximum));
-	AssertBounds(-1.166, -0.9, 0, 0.9, &sMinimum, &sMaximum);
+	AssertTrue(pcGround->GetLocalBounds(&sBox));
+	AssertBounds(-1.166, -0.9, 0, 0.9, &sBox);
 	cCircuit.AddTraces(-8, -3, -4, -2);
 	pcInverter = NewMalloc<CInverterView>();
 	pcInverter->Init(-3, -2, ROT_East, "", "LVC", false, 1, 1);

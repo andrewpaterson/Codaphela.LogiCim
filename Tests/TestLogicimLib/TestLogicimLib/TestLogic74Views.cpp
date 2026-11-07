@@ -87,8 +87,7 @@ void TestLogic74PackageViewGeometry(void)
 {
 	CLogic74PackageView*	pcPackage;
 	CChars					sz;
-	SFloat64Vec2			sMinimum;
-	SFloat64Vec2			sMaximum;
+	SFloat64Bounds			sBox;
 
 	pcPackage = NewMalloc<CLogic74PackageView>();
 	pcPackage->Init(0, 0, ROT_East, "U5", "LVC", false, "00");
@@ -110,11 +109,11 @@ void TestLogic74PackageViewGeometry(void)
 	AssertGridPosition(-5, 7, pcPackage->GetPortView("4B"));
 	AssertGridPosition(6, 6, pcPackage->GetPortView("4Y"));
 	AssertNull(pcPackage->GetPortView("5A"));
-	AssertTrue(pcPackage->GetLocalBounds(&sMinimum, &sMaximum));
-	AssertDouble(-5, sMinimum.x, 6);
-	AssertDouble(-10, sMinimum.y, 6);
-	AssertDouble(6, sMaximum.x, 6);
-	AssertDouble(10, sMaximum.y, 6);
+	AssertTrue(pcPackage->GetLocalBounds(&sBox));
+	AssertDouble(-5, sBox.sMinimum.x, 6);
+	AssertDouble(-10, sBox.sMinimum.y, 6);
+	AssertDouble(6, sBox.sMaximum.x, 6);
+	AssertDouble(10, sBox.sMaximum.y, 6);
 	SafeKill(pcPackage);
 
 	pcPackage = NewMalloc<CLogic74PackageView>();
@@ -123,9 +122,9 @@ void TestLogic74PackageViewGeometry(void)
 	AssertGridPosition(-5, -5, pcPackage->GetPortView("1A"));
 	AssertGridPosition(6, -5, pcPackage->GetPortView("1Y"));
 	AssertGridPosition(-5, 5, pcPackage->GetPortView("6A"));
-	AssertTrue(pcPackage->GetLocalBounds(&sMinimum, &sMaximum));
-	AssertDouble(-8, sMinimum.y, 6);
-	AssertDouble(8, sMaximum.y, 6);
+	AssertTrue(pcPackage->GetLocalBounds(&sBox));
+	AssertDouble(-8, sBox.sMinimum.y, 6);
+	AssertDouble(8, sBox.sMaximum.y, 6);
 	SafeKill(pcPackage);
 
 	pcPackage = NewMalloc<CLogic74PackageView>();

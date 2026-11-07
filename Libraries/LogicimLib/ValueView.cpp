@@ -42,14 +42,13 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 // CalculateBounds.
 //
 //////////////////////////////////////////////////////////////////////////
-void CValueView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum)
+void CValueView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox)
 {
 	CIntegratedCircuitView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts);
 	miBitWidth = iBitWidth;
 	meRadix = eRadix;
 	miMaxDigits = CalculateMaxDigits(eRadix, iBitWidth);
-	msBoxMinimum = sBoxMinimum;
-	msBoxMaximum = sBoxMaximum;
+	msBox = *psBox;
 	muiValueText = 0;
 }
 
@@ -60,7 +59,7 @@ void CValueView::Init(int32 x, int32 y, ERotation eRotation, const char* szName,
 // the width of that many monospaced Xs and half a grid unit, rounded up.
 //
 //////////////////////////////////////////////////////////////////////////
-void CValueView::MeasureBox(CCircuitFonts* pcFonts, int32 iBitWidth, ERadix eRadix, SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum)
+void CValueView::MeasureBox(CCircuitFonts* pcFonts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox)
 {
 	CChars				szWidest;
 	SCircuitTextSize	sSize;
@@ -72,8 +71,7 @@ void CValueView::MeasureBox(CCircuitFonts* pcFonts, int32 iBitWidth, ERadix eRad
 	szWidest.Kill();
 
 	iLength = (int32)ceil(sSize.fWidth + 0.5);
-	psBoxMinimum->Init(-iLength, -1);
-	psBoxMaximum->Init(0, 1);
+	psBox->Init(SInt32Vec2(-iLength, -1), SInt32Vec2(0, 1));
 }
 
 
@@ -103,8 +101,8 @@ void CValueView::CreateValuePortViews(const char* szPortName)
 
 	if (mbExplicitPowerPorts)
 	{
-		AddPortView(POWER_PIN_VCC, msBoxMaximum.x - 1, msBoxMinimum.y);
-		AddPortView(POWER_PIN_GND, msBoxMaximum.x - 1, msBoxMaximum.y);
+		AddPortView(POWER_PIN_VCC, msBox.sMaximum.x - 1, msBox.sMinimum.y);
+		AddPortView(POWER_PIN_GND, msBox.sMaximum.x - 1, msBox.sMaximum.y);
 	}
 }
 
@@ -133,7 +131,7 @@ SFloat64Vec2 CValueView::GetBoxCentre(void)
 {
 	SFloat64Vec2	sCentre;
 
-	sCentre.Init((msBoxMinimum.x + msBoxMaximum.x) / 2.0, (msBoxMinimum.y + msBoxMaximum.y) / 2.0);
+	sCentre.Init((msBox.sMinimum.x + msBox.sMaximum.x) / 2.0, (msBox.sMinimum.y + msBox.sMaximum.y) / 2.0);
 	return sCentre;
 }
 
@@ -213,7 +211,7 @@ void CValueView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	CIntegratedCircuitView::SaveXMLAttributes(pcWriter);
 	pcWriter->Attribute("bitWidth", miBitWidth);
 	pcWriter->Attribute("radix", RadixToString(meRadix));
-	SaveXMLBox(pcWriter, msBoxMinimum, msBoxMaximum);
+	SaveXMLBox(pcWriter, &msBox);
 }
 
 
@@ -248,8 +246,7 @@ bool CValueView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComp
 	GetIntegratedCircuitProperties(x, y, eRotation, pcProperties, &sValue.sIntegratedCircuit);
 	sValue.iBitWidth = (int32)pcProperties->GetInteger("bitWidth", miBitWidth);
 	sValue.eRadix = GetRadixProperty(pcProperties, meRadix);
-	sValue.sBoxMinimum.Init(0, 0);
-	sValue.sBoxMaximum.Init(0, 0);
+	sValue.sBox.Init();
 	return InitValue(&sValue, psContext->pcFonts);
 }
 
@@ -291,7 +288,7 @@ bool CValueView::LoadValueXML(CMarkupTag* pcTag, SValueViewXML* psValue)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has no radix or an unknown one [", (szRadix != NULL) ? szRadix : "", "].", NULL);
 	}
-	return LoadXMLBox(pcTag, &psValue->sBoxMinimum, &psValue->sBoxMaximum);
+	return LoadXMLBox(pcTag, &psValue->sBox);
 }
 
 
@@ -301,7 +298,7 @@ bool CValueView::LoadValueXML(CMarkupTag* pcTag, SValueViewXML* psValue)
 //////////////////////////////////////////////////////////////////////////
 int32 CValueView::GetBitWidth(void) { return miBitWidth; }
 ERadix CValueView::GetRadix(void) { return meRadix; }
-void CValueView::GetBox(SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum) { *psBoxMinimum = msBoxMinimum; *psBoxMaximum = msBoxMaximum; }
+void CValueView::GetBox(SInt32Bounds* psBox) { *psBox = msBox; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -311,11 +308,10 @@ void CValueView::GetBox(SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum) { *p
 //////////////////////////////////////////////////////////////////////////
 void CConstantView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, CCircuitFonts* pcFonts)
 {
-	SInt32Vec2	sBoxMinimum;
-	SInt32Vec2	sBoxMaximum;
+	SInt32Bounds	sBox;
 
-	MeasureBox(pcFonts, iBitWidth, eRadix, &sBoxMinimum, &sBoxMaximum);
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, sBoxMinimum, sBoxMaximum);
+	MeasureBox(pcFonts, iBitWidth, eRadix, &sBox);
+	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, &sBox);
 }
 
 
@@ -323,10 +319,10 @@ void CConstantView::Init(int32 x, int32 y, ERotation eRotation, const char* szNa
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CConstantView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum)
+void CConstantView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox)
 {
-	CValueView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, sBoxMinimum, sBoxMaximum);
-	mcShapes.AddRectangle(msBoxMinimum.x, msBoxMinimum.y, msBoxMaximum.x, msBoxMaximum.y, true, true);
+	CValueView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, psBox);
+	mcShapes.AddRectangle(msBox.sMinimum.x, msBox.sMinimum.y, msBox.sMaximum.x, msBox.sMaximum.y, true, true);
 	CreateValuePortViews("Output");
 	AddValueText();
 	CalculateBounds();
@@ -376,7 +372,7 @@ bool CConstantView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
 	}
 	else
 	{
-		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, psValue->sBoxMinimum, psValue->sBoxMaximum);
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, &psValue->sBox);
 	}
 	return true;
 }
@@ -403,11 +399,10 @@ CIntegratedCircuit* CConstantView::CreateIntegratedCircuit(CSubcircuitSimulation
 //////////////////////////////////////////////////////////////////////////
 void CProbeView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, CCircuitFonts* pcFonts)
 {
-	SInt32Vec2	sBoxMinimum;
-	SInt32Vec2	sBoxMaximum;
+	SInt32Bounds	sBox;
 
-	MeasureBox(pcFonts, iBitWidth, eRadix, &sBoxMinimum, &sBoxMaximum);
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, sBoxMinimum, sBoxMaximum);
+	MeasureBox(pcFonts, iBitWidth, eRadix, &sBox);
+	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, &sBox);
 }
 
 
@@ -417,19 +412,19 @@ void CProbeView::Init(int32 x, int32 y, ERotation eRotation, const char* szName,
 // corners rounded by one.
 //
 //////////////////////////////////////////////////////////////////////////
-void CProbeView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum)
+void CProbeView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox)
 {
 	SFloat64Vec2	sCentre;
 
-	CValueView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, sBoxMinimum, sBoxMaximum);
+	CValueView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, psBox);
 	if (miMaxDigits == 1)
 	{
 		sCentre = GetBoxCentre();
-		mcShapes.AddCircle(sCentre.x, sCentre.y, (msBoxMaximum.y - msBoxMinimum.y) / 2.0, true, true);
+		mcShapes.AddCircle(sCentre.x, sCentre.y, (msBox.sMaximum.y - msBox.sMinimum.y) / 2.0, true, true);
 	}
 	else
 	{
-		mcShapes.AddRoundedRectangle(msBoxMinimum.x, msBoxMinimum.y, msBoxMaximum.x, msBoxMaximum.y, 1, true, true);
+		mcShapes.AddRoundedRectangle(msBox.sMinimum.x, msBox.sMinimum.y, msBox.sMaximum.x, msBox.sMaximum.y, 1, true, true);
 	}
 	CreateValuePortViews("Input");
 	AddValueText();
@@ -480,7 +475,7 @@ bool CProbeView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
 	}
 	else
 	{
-		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, psValue->sBoxMinimum, psValue->sBoxMaximum);
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, &psValue->sBox);
 	}
 	return true;
 }
@@ -507,11 +502,10 @@ CIntegratedCircuit* CProbeView::CreateIntegratedCircuit(CSubcircuitSimulation* p
 //////////////////////////////////////////////////////////////////////////
 void CPinView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, CCircuitFonts* pcFonts)
 {
-	SInt32Vec2	sBoxMinimum;
-	SInt32Vec2	sBoxMaximum;
+	SInt32Bounds	sBox;
 
-	MeasureBox(pcFonts, iBitWidth, eRadix, &sBoxMinimum, &sBoxMaximum);
-	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, sBoxMinimum, sBoxMaximum);
+	MeasureBox(pcFonts, iBitWidth, eRadix, &sBox);
+	Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, &sBox);
 }
 
 
@@ -521,11 +515,11 @@ void CPinView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, c
 // with the value, as big as a tunnel's name.
 //
 //////////////////////////////////////////////////////////////////////////
-void CPinView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum)
+void CPinView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox)
 {
 	SFloat64Vec2	sCentre;
 
-	CValueView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, sBoxMinimum, sBoxMaximum);
+	CValueView::Init(x, y, eRotation, szName, szFamily, bExplicitPowerPorts, iBitWidth, eRadix, psBox);
 	meAlignment = PA_Left;
 	meAnchour = PAN_Centre;
 	miWeight = 0;
@@ -536,15 +530,15 @@ void CPinView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, c
 	if (miMaxDigits == 1)
 	{
 		sCentre = GetBoxCentre();
-		mcShapes.AddCircle(sCentre.x, sCentre.y, (msBoxMaximum.y - msBoxMinimum.y) / 2.0, true, true);
+		mcShapes.AddCircle(sCentre.x, sCentre.y, (msBox.sMaximum.y - msBox.sMinimum.y) / 2.0, true, true);
 	}
 	else
 	{
-		mcShapes.AddRoundedRectangle(msBoxMinimum.x, msBoxMinimum.y, msBoxMaximum.x, msBoxMaximum.y, 1, true, true);
+		mcShapes.AddRoundedRectangle(msBox.sMinimum.x, msBox.sMinimum.y, msBox.sMaximum.x, msBox.sMaximum.y, 1, true, true);
 	}
 	CreateValuePortViews("Port");
 	AddValueText();
-	mcShapes.AddText(msBoxMinimum.x - 0.25, 0, szName, CF_SansSerifBold, PIN_NAME_FONT_SIZE, TA_Left, 2);
+	mcShapes.AddText(msBox.sMinimum.x - 0.25, 0, szName, CF_SansSerifBold, PIN_NAME_FONT_SIZE, TA_Left, 2);
 	CalculateBounds();
 }
 
@@ -609,7 +603,7 @@ bool CPinView::InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts)
 	}
 	else
 	{
-		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, psValue->sBoxMinimum, psValue->sBoxMaximum);
+		Init(psValue->sIntegratedCircuit.x, psValue->sIntegratedCircuit.y, psValue->sIntegratedCircuit.eRotation, psValue->sIntegratedCircuit.szName, psValue->sIntegratedCircuit.szFamily, psValue->sIntegratedCircuit.bExplicitPowerPorts, psValue->iBitWidth, psValue->eRadix, &psValue->sBox);
 	}
 	return true;
 }

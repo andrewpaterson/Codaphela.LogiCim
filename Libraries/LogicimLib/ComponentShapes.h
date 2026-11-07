@@ -23,6 +23,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/Float64Vec2.h"
 #include "BaseLib/Int32Vec2.h"
+#include "Bounds.h"
 #include "BaseLib/ArrayChars.h"
 #include "CircuitFonts.h"
 #include "CircuitPainter.h"
@@ -92,84 +93,6 @@ struct SComponentShape
 
 typedef CArrayTemplate<SComponentShape>	CArrayComponentShape;
 typedef CArrayTemplate<SFloat64Vec2>	CArrayShapePoint;
-
-
-//A box grown to hold points, as the box around everything a view draws.  It holds nothing (and has no corners) until
-//it's given its first point.
-template<class V, class T>
-struct SBoundsTemplate
-{
-	V		sMinimum;
-	V		sMaximum;
-	bool	bHasBounds;
-
-	void	Init(void);
-	void	Include(T x, T y);
-	void	Include(V sBoxMinimum, V sBoxMaximum);
-};
-
-
-typedef SBoundsTemplate<SFloat64Vec2, float64>	SFloat64Bounds;
-typedef SBoundsTemplate<SInt32Vec2, int32>		SInt32Bounds;
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-template<class V, class T>
-void SBoundsTemplate<V, T>::Init(void)
-{
-	sMinimum.Init(0, 0);
-	sMaximum.Init(0, 0);
-	bHasBounds = false;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The first point is the whole box.
-//
-//////////////////////////////////////////////////////////////////////////
-template<class V, class T>
-void SBoundsTemplate<V, T>::Include(T x, T y)
-{
-	if (!bHasBounds)
-	{
-		sMinimum.Init(x, y);
-		sMaximum.Init(x, y);
-		bHasBounds = true;
-		return;
-	}
-	if (x < sMinimum.x)
-	{
-		sMinimum.x = x;
-	}
-	if (y < sMinimum.y)
-	{
-		sMinimum.y = y;
-	}
-	if (x > sMaximum.x)
-	{
-		sMaximum.x = x;
-	}
-	if (y > sMaximum.y)
-	{
-		sMaximum.y = y;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-template<class V, class T>
-void SBoundsTemplate<V, T>::Include(V sBoxMinimum, V sBoxMaximum)
-{
-	Include(sBoxMinimum.x, sBoxMinimum.y);
-	Include(sBoxMaximum.x, sBoxMaximum.y);
-}
 
 
 //The shapes a component is drawn with, in the order they're drawn.  With a sprite cache every shape but text is

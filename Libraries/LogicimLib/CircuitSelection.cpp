@@ -319,9 +319,9 @@ bool CCircuitSelection::GetCentre(SInt32Vec2* psCentre)
 // if nothing's selected.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitSelection::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CCircuitSelection::GetBoundingBox(SFloat64Bounds* psBox)
 {
-	return GetViewsBoundingBox(&mapcComponents, &mapcTraces, psMinimum, psMaximum);
+	return GetViewsBoundingBox(&mapcComponents, &mapcTraces, psBox);
 }
 
 
@@ -334,13 +334,12 @@ bool CCircuitSelection::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* ps
 bool CCircuitSelection::IsOn(SFloat64Vec2 sPosition)
 {
 	size			i;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 	SInt32Vec2		sPoint;
 
 	for (i = 0; i < mapcComponents.NumElements(); i++)
 	{
-		if (mapcComponents.GetPtr(i)->GetBoundingBox(&sMinimum, &sMaximum) && IsInBox(sPosition, sMinimum, sMaximum))
+		if (mapcComponents.GetPtr(i)->GetBoundingBox(&sBox) && sBox.Contains(sPosition))
 		{
 			return true;
 		}
@@ -413,16 +412,15 @@ ESelectionMode CalculateSelectionMode(bool bControl, bool bShift)
 //////////////////////////////////////////////////////////////////////////
 void PaintSelectionMarkers(CCircuitPainter* pcPainter, CComponentView* pcComponent, ARGB32 sColour)
 {
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 
-	if (pcComponent->GetBoundingBox(&sMinimum, &sMaximum))
+	if (pcComponent->GetBoundingBox(&sBox))
 	{
 		pcPainter->ClearTransform();
-		PaintSelectionMarker(pcPainter, sMinimum.x, sMinimum.y, sColour);
-		PaintSelectionMarker(pcPainter, sMaximum.x, sMinimum.y, sColour);
-		PaintSelectionMarker(pcPainter, sMinimum.x, sMaximum.y, sColour);
-		PaintSelectionMarker(pcPainter, sMaximum.x, sMaximum.y, sColour);
+		PaintSelectionMarker(pcPainter, sBox.sMinimum.x, sBox.sMinimum.y, sColour);
+		PaintSelectionMarker(pcPainter, sBox.sMaximum.x, sBox.sMinimum.y, sColour);
+		PaintSelectionMarker(pcPainter, sBox.sMinimum.x, sBox.sMaximum.y, sColour);
+		PaintSelectionMarker(pcPainter, sBox.sMaximum.x, sBox.sMaximum.y, sColour);
 	}
 }
 

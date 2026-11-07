@@ -31,11 +31,10 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CLabelView::Init(int32 x, int32 y, ERotation eRotation, const char* szText, ETextAlignment eAlignment, bool bBold, bool bFill, bool bBorder, CCircuitFonts* pcFonts)
 {
-	SFloat64Vec2	sBoxMinimum;
-	SFloat64Vec2	sBoxMaximum;
+	SFloat64Bounds	sBox;
 
-	MeasureBox(pcFonts, szText, eAlignment, bBold, &sBoxMinimum, &sBoxMaximum);
-	Init(x, y, eRotation, szText, eAlignment, bBold, bFill, bBorder, sBoxMinimum, sBoxMaximum);
+	MeasureBox(pcFonts, szText, eAlignment, bBold, &sBox);
+	Init(x, y, eRotation, szText, eAlignment, bBold, bFill, bBorder, &sBox);
 }
 
 
@@ -43,19 +42,18 @@ void CLabelView::Init(int32 x, int32 y, ERotation eRotation, const char* szText,
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CLabelView::Init(int32 x, int32 y, ERotation eRotation, const char* szText, ETextAlignment eAlignment, bool bBold, bool bFill, bool bBorder, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum)
+void CLabelView::Init(int32 x, int32 y, ERotation eRotation, const char* szText, ETextAlignment eAlignment, bool bBold, bool bFill, bool bBorder, SFloat64Bounds* psBox)
 {
 	CComponentView::Init(x, y, eRotation, szText);
 	meAlignment = eAlignment;
 	mbBold = bBold;
 	mbFill = bFill;
 	mbBorder = bBorder;
-	msBoxMinimum = sBoxMinimum;
-	msBoxMaximum = sBoxMaximum;
+	msBox = *psBox;
 
 	if (mbFill || mbBorder)
 	{
-		mcShapes.AddRectangle(msBoxMinimum.x, msBoxMinimum.y, msBoxMaximum.x, msBoxMaximum.y, mbFill, mbBorder);
+		mcShapes.AddRectangle(msBox.sMinimum.x, msBox.sMinimum.y, msBox.sMaximum.x, msBox.sMaximum.y, mbFill, mbBorder);
 	}
 	mcShapes.AddText(0, 0, szText, mbBold ? CF_SansSerifBold : CF_SansSerif, LABEL_FONT_SIZE, meAlignment);
 	CalculateBounds();
@@ -68,7 +66,7 @@ void CLabelView::Init(int32 x, int32 y, ERotation eRotation, const char* szText,
 // text's box, a quarter of its height longer at each end.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLabelView::MeasureBox(CCircuitFonts* pcFonts, const char* szText, ETextAlignment eAlignment, bool bBold, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum)
+void CLabelView::MeasureBox(CCircuitFonts* pcFonts, const char* szText, ETextAlignment eAlignment, bool bBold, SFloat64Bounds* psBox)
 {
 	SCircuitTextSize	sSize;
 	float64				fAdjust;
@@ -87,15 +85,14 @@ void CLabelView::MeasureBox(CCircuitFonts* pcFonts, const char* szText, ETextAli
 	{
 		fAdjust = 0;
 	}
-	psBoxMinimum->Init(fAdjust - sSize.fHeight / 4, -sSize.fHeight / 2);
-	psBoxMaximum->Init(sSize.fWidth + fAdjust + sSize.fHeight / 4, sSize.fHeight / 2);
+	psBox->Init(SFloat64Vec2(fAdjust - sSize.fHeight / 4, -sSize.fHeight / 2), SFloat64Vec2(sSize.fWidth + fAdjust + sSize.fHeight / 4, sSize.fHeight / 2));
 
 	//Overlines are over the glyphs, which nearly reach the top of the box, so the box is taken up to clear them by a
 	//border's width.  The baseline is a 3.5th of the height below the label's position (see CCircuitPainter::Text).
 	fTop = sSize.fHeight / 3.5 - sSize.fOverlineTop - SHAPE_LINE_WIDTH / CIRCUIT_TEXT_SCALE;
-	if ((sSize.fOverlineTop > 0) && (fTop < psBoxMinimum->y))
+	if ((sSize.fOverlineTop > 0) && (fTop < psBox->sMinimum.y))
 	{
-		psBoxMinimum->y = fTop;
+		psBox->sMinimum.y = fTop;
 	}
 }
 
@@ -151,7 +148,7 @@ void CLabelView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	pcWriter->Attribute("bold", mbBold);
 	pcWriter->Attribute("fill", mbFill);
 	pcWriter->Attribute("border", mbBorder);
-	SaveXMLBox(pcWriter, msBoxMinimum, msBoxMaximum);
+	SaveXMLBox(pcWriter, &msBox);
 }
 
 
@@ -170,8 +167,7 @@ bool CLabelView::LoadXML(CMarkupTag* pcTag)
 	bool			bBold;
 	bool			bFill;
 	bool			bBorder;
-	SFloat64Vec2	sBoxMinimum;
-	SFloat64Vec2	sBoxMaximum;
+	SFloat64Bounds	sBox;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szText))
 	{
@@ -186,11 +182,11 @@ bool CLabelView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs bold, fill and border to be true or false.", NULL);
 	}
-	if (!LoadXMLBox(pcTag, &sBoxMinimum, &sBoxMaximum))
+	if (!LoadXMLBox(pcTag, &sBox))
 	{
 		return false;
 	}
-	Init(x, y, eRotation, szText, eAlignment, bBold, bFill, bBorder, sBoxMinimum, sBoxMaximum);
+	Init(x, y, eRotation, szText, eAlignment, bBold, bFill, bBorder, &sBox);
 	return true;
 }
 
@@ -201,7 +197,7 @@ bool CLabelView::LoadXML(CMarkupTag* pcTag)
 //////////////////////////////////////////////////////////////////////////
 ETextAlignment CLabelView::GetAlignment(void) { return meAlignment; }
 bool CLabelView::IsBold(void) { return mbBold; }
-void CLabelView::GetBox(SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum) { *psBoxMinimum = msBoxMinimum; *psBoxMaximum = msBoxMaximum; }
+void CLabelView::GetBox(SFloat64Bounds* psBox) { *psBox = msBox; }
 
 
 //////////////////////////////////////////////////////////////////////////

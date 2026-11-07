@@ -170,14 +170,13 @@ void TestRadix(void)
 //////////////////////////////////////////////////////////////////////////
 void AssertValueBox(int32 iLeft, int32 iTop, int32 iRight, int32 iBottom, CValueView* pcView)
 {
-	SInt32Vec2	sMinimum;
-	SInt32Vec2	sMaximum;
+	SInt32Bounds	sBox;
 
-	pcView->GetBox(&sMinimum, &sMaximum);
-	AssertInt(iLeft, sMinimum.x);
-	AssertInt(iTop, sMinimum.y);
-	AssertInt(iRight, sMaximum.x);
-	AssertInt(iBottom, sMaximum.y);
+	pcView->GetBox(&sBox);
+	AssertInt(iLeft, sBox.sMinimum.x);
+	AssertInt(iTop, sBox.sMinimum.y);
+	AssertInt(iRight, sBox.sMaximum.x);
+	AssertInt(iBottom, sBox.sMaximum.y);
 }
 
 
@@ -190,10 +189,9 @@ void AssertValueBox(int32 iLeft, int32 iTop, int32 iRight, int32 iBottom, CValue
 void TestValueViewMeasuredBox(void)
 {
 	Ptr<CCircuitFonts>	pFonts;
-	CConstantView	cConstant;
-	CProbeView		cProbe;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	CConstantView		cConstant;
+	CProbeView			cProbe;
+	SFloat64Bounds		sBox;
 
 	ObjectsInit();
 	pFonts = LoadTestCircuitFonts();
@@ -201,11 +199,11 @@ void TestValueViewMeasuredBox(void)
 	//One hexadecimal digit: 0.6 + 0.5 is 2.
 	cConstant.Init(0, 0, ROT_North, "", "LVC", false, 1, RADIX_Hexadecimal, &pFonts);
 	AssertValueBox(-2, -1, 0, 1, &cConstant);
-	AssertTrue(cConstant.GetLocalBounds(&sMinimum, &sMaximum));
-	AssertDouble(-2.0, sMinimum.x, 9);
-	AssertDouble(-1.0, sMinimum.y, 9);
-	AssertDouble(0.0, sMaximum.x, 9);
-	AssertDouble(1.0, sMaximum.y, 9);
+	AssertTrue(cConstant.GetLocalBounds(&sBox));
+	AssertDouble(-2.0, sBox.sMinimum.x, 9);
+	AssertDouble(-1.0, sBox.sMinimum.y, 9);
+	AssertDouble(0.0, sBox.sMaximum.x, 9);
+	AssertDouble(1.0, sBox.sMaximum.y, 9);
 	cConstant.Kill();
 
 	//Eight digits: 4.8 + 0.5 is 6.

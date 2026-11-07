@@ -104,6 +104,7 @@
     <ClInclude Include="CircuitTextMarkupParser.h" />
     <ClInclude Include="CircuitView.h" />
     <ClInclude Include="CircuitViewport.h" />
+    <ClInclude Include="Bounds.h" />
     <ClInclude Include="ComponentShapes.h" />
     <ClInclude Include="ComponentSpriteCache.h" />
     <ClInclude Include="ComponentStateXML.h" />

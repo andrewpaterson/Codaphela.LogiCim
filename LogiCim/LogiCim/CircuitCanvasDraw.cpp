@@ -172,16 +172,14 @@ void CCircuitCanvasDraw::SetPreview(CComponentView* pcPreview) { mpcPreview = pc
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvasDraw::FitPreview(SInt32Vec2 sSize)
 {
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 
-	if (!mpcPreview->GetBoundingBox(&sMinimum, &sMaximum))
+	if (!mpcPreview->GetBoundingBox(&sBox))
 	{
-		sMinimum.Init(-1, -1);
-		sMaximum.Init(1, 1);
+		sBox.Init(SFloat64Vec2(-1, -1), SFloat64Vec2(1, 1));
 	}
 	mcViewport.SetSize(sSize.x, sSize.y);
-	mcViewport.ZoomToFit(sMinimum, sMaximum, 2, 4);
+	mcViewport.ZoomToFit(&sBox, 2, 4);
 }
 
 
@@ -205,8 +203,8 @@ void CCircuitCanvasDraw::ZoomAroundCentre(float32 fZoom)
 // grid unit bigger each way, fills the canvas.
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitCanvasDraw::ZoomToFit(SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum)
+void CCircuitCanvasDraw::ZoomToFit(SFloat64Bounds* psBox)
 {
-	mcViewport.ZoomToFit(sMinimum, sMaximum, 1, CIRCUIT_MAXIMUM_ZOOM);
+	mcViewport.ZoomToFit(psBox, 1, CIRCUIT_MAXIMUM_ZOOM);
 }
 

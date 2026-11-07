@@ -580,8 +580,7 @@ CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymb
 	EPinAlignment							eAlignment;
 	int32									iWeight;
 	CPinView*								pcPinView;
-	SInt32Vec2								sBoxMinimum;
-	SInt32Vec2								sBoxMaximum;
+	SInt32Bounds							sBox;
 
 	szLibName = pcLibSymbol->GetName();
 	szColon = strrchr(szLibName, ':');
@@ -608,14 +607,13 @@ CCircuitView* CKicadSchemLogicimConverter::GetPlaceholderCircuit(CKicadSchemSymb
 	apcPins.Init();
 	aszNames.Init();
 	GetPlaceholderPins(pcSymbol, pcLibSymbol, &apcPins, &aszNames);
-	sBoxMinimum.Init(-2, -1);
-	sBoxMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	for (i = 0; i < apcPins.NumElements(); i++)
 	{
 		pcPin = apcPins.GetPtr(i);
 		iWeight = GetKicadSchemLibPinPlace(&apcPins, i, &eAlignment);
 		pcPinView = NewMalloc<CPinView>();
-		pcPinView->Init(0, (int32)(3 * i), ROT_East, aszNames.GetText(i), "LVC", false, 1, RADIX_Hexadecimal, sBoxMinimum, sBoxMaximum);
+		pcPinView->Init(0, (int32)(3 * i), ROT_East, aszNames.GetText(i), "LVC", false, 1, RADIX_Hexadecimal, &sBox);
 		pcPinView->SetSubcircuitAppearance(eAlignment, PAN_Negative, iWeight, strstr(pcPin->GetGraphicStyle(), "inverted") != NULL, strstr(pcPin->GetGraphicStyle(), "clock") != NULL);
 		pcPlaceholder->Add(pcPinView);
 	}

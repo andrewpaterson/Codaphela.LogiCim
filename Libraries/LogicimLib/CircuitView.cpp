@@ -847,9 +847,9 @@ void CCircuitView::Paint(CCircuitPainter* pcPainter)
 // In grid units.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitView::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CCircuitView::GetBoundingBox(SFloat64Bounds* psBox)
 {
-	return GetViewsBoundingBox(&mapcComponents, &mapcTraces, psMinimum, psMaximum);
+	return GetViewsBoundingBox(&mapcComponents, &mapcTraces, psBox);
 }
 
 
@@ -859,34 +859,25 @@ bool CCircuitView::GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaxim
 // False if there's nothing in it.
 //
 //////////////////////////////////////////////////////////////////////////
-bool GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, SFloat64Bounds* psBox)
 {
 	size			i;
-	SFloat64Bounds	sBounds;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 	CTraceView*		pcTrace;
 
-	sBounds.Init();
+	psBox->Init();
 	for (i = 0; i < papcComponents->NumElements(); i++)
 	{
-		if (papcComponents->GetPtr(i)->GetBoundingBox(&sMinimum, &sMaximum))
-		{
-			sBounds.Include(sMinimum, sMaximum);
-		}
+		papcComponents->GetPtr(i)->GetBoundingBox(&sBox);
+		psBox->Include(&sBox);
 	}
 	for (i = 0; i < papcTraces->NumElements(); i++)
 	{
 		pcTrace = papcTraces->GetPtr(i);
-		sBounds.Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
-		sBounds.Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
+		psBox->Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
+		psBox->Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
 	}
-	if (sBounds.bHasBounds)
-	{
-		*psMinimum = sBounds.sMinimum;
-		*psMaximum = sBounds.sMaximum;
-	}
-	return sBounds.bHasBounds;
+	return psBox->bHasBounds;
 }
 
 
@@ -928,17 +919,18 @@ CComponentView* CCircuitView::GetComponentAt(SFloat64Vec2 sPosition)
 {
 	size							i;
 	CComponentView*					pcComponent;
-	SFloat64Vec2					sMinimum;
-	SFloat64Vec2					sMaximum;
+	SFloat64Bounds					sBox;
+	SFloat64Vec2					sCentre;
 	SNearestHit<CComponentView>		sHit;
 
 	sHit.Init();
 	for (i = 0; i < mapcComponents.NumElements(); i++)
 	{
 		pcComponent = mapcComponents.GetPtr(i);
-		if (pcComponent->GetBoundingBox(&sMinimum, &sMaximum) && IsInBox(sPosition, sMinimum, sMaximum))
+		if (pcComponent->GetBoundingBox(&sBox) && sBox.Contains(sPosition))
 		{
-			sHit.Include(pcComponent, sPosition.x, sPosition.y, (sMinimum.x + sMaximum.x) / 2, (sMinimum.y + sMaximum.y) / 2);
+			sCentre = sBox.GetCentre();
+			sHit.Include(pcComponent, sPosition.x, sPosition.y, sCentre.x, sCentre.y);
 		}
 	}
 	return sHit.pcNearest;
@@ -1025,6 +1017,19 @@ CPortView* CCircuitView::GetPortViewAt(SInt32Vec2 sPoint)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Whether the box is wholly in the rectangle or, if bIntersections,
+// touches it, as Logicim's BoundingBox.containsBox: a rectangle dragged
+// right to left takes what it touches.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool IsBoxInRectangle(SFloat64Bounds* psRectangle, SFloat64Bounds* psBox, bool bIntersections)
+{
+	return bIntersections ? psRectangle->Overlaps(psBox) : psRectangle->Contains(psBox);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The views a selection rectangle from sStart to sEnd (grid positions)
 // picks, as Logicim's getSelectionFromRectangle.  If the corners round to
 // the same grid point it's a click there: components whose boxes hold the
@@ -1037,27 +1042,29 @@ void CCircuitView::GetViewsInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, C
 	size				i;
 	CComponentView*		pcComponent;
 	CTraceView*			pcTrace;
-	SFloat64Vec2		sMinimum;
-	SFloat64Vec2		sMaximum;
+	SFloat64Bounds		sBox;
 	SInt32Vec2			sPoint;
 	SInt32Vec2			sEndPoint;
 	SFloat64Vec2		sPointPosition;
 	bool				bPoint;
 	bool				bIntersections;
-	SFloat64Bounds		sBounds;
+	SFloat64Bounds		sRectangle;
 
 	sPoint.Init(RoundToGrid(sStart.x), RoundToGrid(sStart.y));
 	sEndPoint.Init(RoundToGrid(sEnd.x), RoundToGrid(sEnd.y));
 	sPointPosition.Init(sPoint.x, sPoint.y);
 	bPoint = sPoint == sEndPoint;
 	bIntersections = sStart.x > sEnd.x;
+	sRectangle.Init();
+	sRectangle.Include(sStart);
+	sRectangle.Include(sEnd);
 
 	for (i = 0; i < mapcComponents.NumElements(); i++)
 	{
 		pcComponent = mapcComponents.GetPtr(i);
-		if (pcComponent->GetBoundingBox(&sMinimum, &sMaximum))
+		if (pcComponent->GetBoundingBox(&sBox))
 		{
-			if (bPoint ? IsInBox(sPointPosition, sMinimum, sMaximum) : IsBoxInRectangle(sStart, sEnd, sMinimum, sMaximum, bIntersections))
+			if (bPoint ? sBox.Contains(sPointPosition) : IsBoxInRectangle(&sRectangle, &sBox, bIntersections))
 			{
 				papcComponents->Add(pcComponent);
 			}
@@ -1076,10 +1083,10 @@ void CCircuitView::GetViewsInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, C
 		}
 		else
 		{
-			sBounds.Init();
-			sBounds.Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
-			sBounds.Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
-			if (IsBoxInRectangle(sStart, sEnd, sBounds.sMinimum, sBounds.sMaximum, bIntersections))
+			sBox.Init();
+			sBox.Include(pcTrace->GetStart().x, pcTrace->GetStart().y);
+			sBox.Include(pcTrace->GetEnd().x, pcTrace->GetEnd().y);
+			if (IsBoxInRectangle(&sRectangle, &sBox, bIntersections))
 			{
 				papcTraces->Add(pcTrace);
 			}
@@ -1096,43 +1103,6 @@ void CCircuitView::GetViewsInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, C
 int32 RoundToGrid(float64 f)
 {
 	return (int32)floor(f + 0.5);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Edges count as in, as Logicim's BoundingBox.containsPoint.
-//
-//////////////////////////////////////////////////////////////////////////
-bool IsInBox(SFloat64Vec2 sPosition, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum)
-{
-	return (sPosition.x >= sMinimum.x) && (sPosition.x <= sMaximum.x) && (sPosition.y >= sMinimum.y) && (sPosition.y <= sMaximum.y);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Whether the box is wholly in the rectangle with corners sStart and sEnd
-// or, if bIntersections, touches it, as Logicim's BoundingBox.containsBox.
-//
-//////////////////////////////////////////////////////////////////////////
-bool IsBoxInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum, bool bIntersections)
-{
-	float64		fLeft;
-	float64		fTop;
-	float64		fRight;
-	float64		fBottom;
-
-	fLeft = (sStart.x < sEnd.x) ? sStart.x : sEnd.x;
-	fRight = (sStart.x < sEnd.x) ? sEnd.x : sStart.x;
-	fTop = (sStart.y < sEnd.y) ? sStart.y : sEnd.y;
-	fBottom = (sStart.y < sEnd.y) ? sEnd.y : sStart.y;
-
-	if (bIntersections)
-	{
-		return (fLeft <= sMaximum.x) && (fTop <= sMaximum.y) && (fRight >= sMinimum.x) && (fBottom >= sMinimum.y);
-	}
-	return (fLeft <= sMinimum.x) && (fTop <= sMinimum.y) && (fRight >= sMaximum.x) && (fBottom >= sMaximum.y);
 }
 
 

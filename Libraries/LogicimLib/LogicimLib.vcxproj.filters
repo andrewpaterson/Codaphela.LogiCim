@@ -254,6 +254,9 @@
     <ClInclude Include="CircuitViewport.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
+    <ClInclude Include="Bounds.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
     <ClInclude Include="ComponentShapes.h">
       <Filter>Source\Common</Filter>
     </ClInclude>

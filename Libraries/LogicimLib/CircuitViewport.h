@@ -22,6 +22,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __CIRCUIT_VIEWPORT_H__
 #include "BaseLib/Float64Vec2.h"
 #include "BaseLib/Int32Vec2.h"
+#include "Bounds.h"
 
 
 #define CIRCUIT_GRID_SCALE		10.0
@@ -51,7 +52,7 @@ public:
 	void			SetZoom(float64 fZoom);
 	float64			GetZoom(void);
 	void			ZoomAround(float64 fScreenX, float64 fScreenY, float64 fZoom);
-	void			ZoomToFit(SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum, float64 fBorder, float64 fMaximumZoom);
+	void			ZoomToFit(SFloat64Bounds* psBox, float64 fBorder, float64 fMaximumZoom);
 
 	void			GridToScreen(SFloat64Vec2* psScreen, SFloat64Vec2* psGrid);
 	void			ScreenToGrid(SFloat64Vec2* psGrid, SFloat64Vec2* psScreen);

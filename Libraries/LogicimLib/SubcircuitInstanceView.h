@@ -55,12 +55,11 @@ typedef CArrayTemplate<SSubcircuitPinView>	CArraySubcircuitPinView;
 //iPinSpacing grid units apart along each side: 1 as Logicim's, 2 for a KiCad import, whose grid is two of Logicim's.
 struct SSubcircuitInstanceLayout
 {
-	SInt32Vec2	sBoxMinimum;
-	SInt32Vec2	sBoxMaximum;
-	float64		fTypeY;
-	float64		fCommentY;
-	float64		fNameY;
-	int32		iPinSpacing;
+	SInt32Bounds	sBox;
+	float64			fTypeY;
+	float64			fCommentY;
+	float64			fNameY;
+	int32			iPinSpacing;
 };
 
 

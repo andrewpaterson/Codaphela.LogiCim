@@ -32,11 +32,10 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CTunnelView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, CCircuitFonts* pcFonts)
 {
-	SFloat64Vec2	sBoxMinimum;
-	SFloat64Vec2	sBoxMaximum;
+	SFloat64Bounds	sBox;
 
-	MeasureBox(pcFonts, szName, bDoubleSided, &sBoxMinimum, &sBoxMaximum);
-	Init(x, y, eRotation, szName, bDoubleSided, sBoxMinimum, sBoxMaximum);
+	MeasureBox(pcFonts, szName, bDoubleSided, &sBox);
+	Init(x, y, eRotation, szName, bDoubleSided, &sBox);
 }
 
 
@@ -47,7 +46,7 @@ void CTunnelView::Init(int32 x, int32 y, ERotation eRotation, const char* szName
 // at the far end too.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTunnelView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum)
+void CTunnelView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, SFloat64Bounds* psBox)
 {
 	SFloat64Vec2	asPoints[6];
 	float64			fHalf;
@@ -58,14 +57,13 @@ void CTunnelView::Init(int32 x, int32 y, ERotation eRotation, const char* szName
 
 	CComponentView::Init(x, y, eRotation, szName);
 	mbDoubleSided = bDoubleSided;
-	msBoxMinimum = sBoxMinimum;
-	msBoxMaximum = sBoxMaximum;
+	msBox = *psBox;
 	mszConnectionName.Init(szName);
 	mszConnectionName.StripWhitespace();
 
-	fHalf = (msBoxMaximum.y - msBoxMinimum.y) / 2;
+	fHalf = (msBox.sMaximum.y - msBox.sMinimum.y) / 2;
 	fPoint = fHalf - 0.125;
-	fFar = msBoxMaximum.x;
+	fFar = msBox.sMaximum.x;
 	asPoints[0].Init(0, 0);
 	asPoints[1].Init(fPoint, -fHalf);
 	if (!mbDoubleSided)
@@ -118,7 +116,7 @@ void CTunnelView::Kill(void)
 // whole grid unit.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTunnelView::MeasureBox(CCircuitFonts* pcFonts, const char* szName, bool bDoubleSided, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum)
+void CTunnelView::MeasureBox(CCircuitFonts* pcFonts, const char* szName, bool bDoubleSided, SFloat64Bounds* psBox)
 {
 	SCircuitTextSize	sSize;
 	float64				fPoint;
@@ -144,8 +142,7 @@ void CTunnelView::MeasureBox(CCircuitFonts* pcFonts, const char* szName, bool bD
 	{
 		fLength = floor(sSize.fWidth + fPoint + fPoint + 0.5 + 0.5);
 	}
-	psBoxMinimum->Init(0, -sSize.fHeight / 2);
-	psBoxMaximum->Init(fLength, sSize.fHeight / 2);
+	psBox->Init(SFloat64Vec2(0, -sSize.fHeight / 2), SFloat64Vec2(fLength, sSize.fHeight / 2));
 }
 
 
@@ -208,7 +205,7 @@ void CTunnelView::SaveXMLAttributes(CXMLWriter* pcWriter)
 {
 	CComponentView::SaveXMLAttributes(pcWriter);
 	pcWriter->Attribute("doubleSided", mbDoubleSided);
-	SaveXMLBox(pcWriter, msBoxMinimum, msBoxMaximum);
+	SaveXMLBox(pcWriter, &msBox);
 }
 
 
@@ -223,8 +220,7 @@ bool CTunnelView::LoadXML(CMarkupTag* pcTag)
 	ERotation		eRotation;
 	char*			szName;
 	bool			bDoubleSided;
-	SFloat64Vec2	sBoxMinimum;
-	SFloat64Vec2	sBoxMaximum;
+	SFloat64Bounds	sBox;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName))
 	{
@@ -234,11 +230,11 @@ bool CTunnelView::LoadXML(CMarkupTag* pcTag)
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] doubleSided must be true or false.", NULL);
 	}
-	if (!LoadXMLBox(pcTag, &sBoxMinimum, &sBoxMaximum))
+	if (!LoadXMLBox(pcTag, &sBox))
 	{
 		return false;
 	}
-	Init(x, y, eRotation, szName, bDoubleSided, sBoxMinimum, sBoxMaximum);
+	Init(x, y, eRotation, szName, bDoubleSided, &sBox);
 	return true;
 }
 
@@ -248,7 +244,7 @@ bool CTunnelView::LoadXML(CMarkupTag* pcTag)
 //
 //////////////////////////////////////////////////////////////////////////
 bool CTunnelView::IsDoubleSided(void) { return mbDoubleSided; }
-void CTunnelView::GetBox(SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum) { *psBoxMinimum = msBoxMinimum; *psBoxMaximum = msBoxMaximum; }
+void CTunnelView::GetBox(SFloat64Bounds* psBox) { *psBox = msBox; }
 
 
 //////////////////////////////////////////////////////////////////////////

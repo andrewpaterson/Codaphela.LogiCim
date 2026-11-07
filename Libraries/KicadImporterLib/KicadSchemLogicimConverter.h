@@ -109,19 +109,18 @@ enum EKicadSchemLogicimItemKind
 //(Logicim joins ports in the same place), pointing away, and moves with it.
 struct SKicadSchemLogicimItem
 {
-	CComponentView*		pcView;
+	CComponentView*				pcView;
 	EKicadSchemLogicimItemKind	eKind;
-	bool				bPlacedSplitter;  //A splitter PlaceSplitters puts beside its component.
-	SFloat64Vec2		sKicadPosition;
-	SInt32Vec2			sAnchor;
-	SInt32Vec2			sOffset;
-	CPortView*			pcPort;
-	CPortView*			pcAttachedTo;
-	EKicadSchemLogicimAlign	eAlign;
-	CKicadSchemSymbol*	pcSymbol;  //The symbol it was made for.  NULL for tunnels and splitters.
-	SFloat64Vec2		sImportMinimum;  //Its import box (see CComponentView::GetImportBoundingBox), from its position.
-	SFloat64Vec2		sImportMaximum;
-	bool				bImportBox;
+	bool						bPlacedSplitter;  //A splitter PlaceSplitters puts beside its component.
+	SFloat64Vec2				sKicadPosition;
+	SInt32Vec2					sAnchor;
+	SInt32Vec2					sOffset;
+	CPortView*					pcPort;
+	CPortView*					pcAttachedTo;
+	EKicadSchemLogicimAlign		eAlign;
+	CKicadSchemSymbol*			pcSymbol;  //The symbol it was made for.  NULL for tunnels and splitters.
+	SFloat64Bounds				sImportBox;  //Its import box (see CComponentView::GetImportBoundingBox), from its position.
+	bool						bImportBox;
 };
 
 
@@ -400,9 +399,9 @@ protected:
 	CPortView*						GetComponentPin(CKicadSchemSubnet* pcSubnet, CComponentView* pcOwner, int iFacing);
 	bool							HasTunnel(CKicadSchemSubnet* pcSubnet);
 	size							FindBoardPin(const char* szName);
-	bool							GetItemBox(size uiItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	void							MeasureImportBoxes(void);
-	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+	bool							GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Bounds* psBox);
 	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
 

@@ -92,14 +92,6 @@ struct STraceAutoConnectPort
 typedef CArrayTemplate<STraceAutoConnectPort>	CArrayTraceAutoConnectPort;
 
 
-//A component's own box to keep clear (see CTraceAutoConnector::SetComponentBox).
-struct STraceAutoConnectBox
-{
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
-};
-
-
 //The pair of keys a caller names a run by (see CTraceAutoConnector::FindOrAddRun).
 struct STraceAutoConnectRunKey
 {
@@ -158,7 +150,7 @@ protected:
 	size							muiNumRuns;
 	CArrayTraceAutoConnectPort		masPorts;
 	CMapBlock						mcPortIndices;  //A port to its index in masPorts.
-	CMapBlock						mcBoxes;        //A component to its STraceAutoConnectBox (see SetComponentBox).
+	CMapBlock						mcBoxes;        //A component to the SFloat64Bounds of its own it keeps clear (see SetComponentBox).
 	CMapBlock						mcNetKeys;      //A caller's key to its net (see FindOrAddNet).
 	CMapBlock						mcRunKeys;      //A caller's STraceAutoConnectRunKey to its run (see FindOrAddRun).
 
@@ -208,7 +200,7 @@ public:
 	size			FindOrAddRun(void* pvFrom, void* pvTo);
 	size			AddConnection(size uiNet, CPortView* pcFrom, CPortView* pcTo, float64 fBend, int iRun = -1);
 
-	void			SetComponentBox(CComponentView* pcComponent, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum);
+	void			SetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox);
 	bool			Connect(void);
 
 	size			NumConnections(void);
@@ -219,7 +211,7 @@ public:
 	static int		OppositeDirection(int iDirection);
 
 protected:
-	bool			GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+	bool			GetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox);
 	bool			AddPort(CPortView* pcPortView, size uiNet);
 	int				GetPortNet(CPortView* pcPortView);
 	void			DropLoneRuns(void);

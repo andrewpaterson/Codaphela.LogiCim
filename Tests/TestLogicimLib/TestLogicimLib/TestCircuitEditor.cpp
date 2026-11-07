@@ -176,12 +176,11 @@ struct SEditorTest
 //////////////////////////////////////////////////////////////////////////
 static SFloat64Vec2 GetCentre(CComponentView* pcComponent)
 {
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 	SFloat64Vec2	sCentre;
 
-	AssertTrue(pcComponent->GetBoundingBox(&sMinimum, &sMaximum));
-	sCentre.Init((sMinimum.x + sMaximum.x) / 2, (sMinimum.y + sMaximum.y) / 2);
+	AssertTrue(pcComponent->GetBoundingBox(&sBox));
+	sCentre.Init((sBox.sMinimum.x + sBox.sMaximum.x) / 2, (sBox.sMinimum.y + sBox.sMaximum.y) / 2);
 	return sCentre;
 }
 
@@ -1612,8 +1611,7 @@ void TestCircuitEditorRouteWire(void)
 	CCircuitView*		pcMain;
 	CGroundView*		pcGround;
 	CLabelView*			pcLabel;
-	SFloat64Vec2		sMinimum;
-	SFloat64Vec2		sMaximum;
+	SFloat64Bounds		sBox;
 	SInt32Vec2			sPoint;
 	size				i;
 	int32				x;
@@ -1625,10 +1623,9 @@ void TestCircuitEditorRouteWire(void)
 	pcMain->Add(pcGround);
 	AddTestInverter(pcMain, -3, -2);
 	pcMain->AddTrace(-1, -2, 6, -2);
-	sMinimum.Init(-1, -1);
-	sMaximum.Init(1, 1);
+	sBox.Init(SFloat64Vec2(-1, -1), SFloat64Vec2(1, 1));
 	pcLabel = NewMalloc<CLabelView>();
-	pcLabel->Init(-6, -3, ROT_East, "", TA_Left, false, true, true, sMinimum, sMaximum);
+	pcLabel->Init(-6, -3, ROT_East, "", TA_Left, false, true, true, &sBox);
 	pcMain->Add(pcLabel);
 	AssertTrue(sTest.pEditor->Simulate("Main"));
 
@@ -1955,7 +1952,7 @@ static void PointAtPixel(SEditorTest* psTest, CCircuitViewport* pcViewport, int3
 // if there are none.
 //
 //////////////////////////////////////////////////////////////////////////
-static bool GetPaintedHoverBox(CCircuitEditor* pcEditor, CCircuitViewport* pcViewport, CCircuitColours* pcColours, SInt32Vec2* psMinimum, SInt32Vec2* psMaximum)
+static bool GetPaintedHoverBox(CCircuitEditor* pcEditor, CCircuitViewport* pcViewport, CCircuitColours* pcColours, SInt32Bounds* psBox)
 {
 	Ptr<CImage>			pImage;
 	Ptr<CGeometryMap>	pMap;
@@ -1968,7 +1965,6 @@ static bool GetPaintedHoverBox(CCircuitEditor* pcEditor, CCircuitViewport* pcVie
 	uint8				uiBlue;
 	int32				x;
 	int32				y;
-	bool				bFound;
 
 	sSize = pcViewport->GetSize();
 	pImage = OMalloc<CImage>(sSize.x, sSize.y, PT_uint8, IMAGE_DIFFUSE_RED, IMAGE_DIFFUSE_GREEN, IMAGE_DIFFUSE_BLUE, CHANNEL_STOP);
@@ -1983,7 +1979,7 @@ static bool GetPaintedHoverBox(CCircuitEditor* pcEditor, CCircuitViewport* pcVie
 	uiRed = (uint8)Get8BitRedColour(pcColours->msPortHover);
 	uiGreen = (uint8)Get8BitGreenColour(pcColours->msPortHover);
 	uiBlue = (uint8)Get8BitBlueColour(pcColours->msPortHover);
-	bFound = false;
+	psBox->Init();
 	for (y = 0; y < sSize.y; y++)
 	{
 		for (x = 0; x < sSize.x; x++)
@@ -1991,23 +1987,11 @@ static bool GetPaintedHoverBox(CCircuitEditor* pcEditor, CCircuitViewport* pcVie
 			puiPixel = &((uint8*)pImage->GetData())[(x + y * sSize.x) * 3];
 			if ((puiPixel[0] == uiRed) && (puiPixel[1] == uiGreen) && (puiPixel[2] == uiBlue))
 			{
-				if (!bFound)
-				{
-					psMinimum->Init(x, y);
-					psMaximum->Init(x, y);
-					bFound = true;
-				}
-				else
-				{
-					if (x < psMinimum->x) psMinimum->x = x;
-					if (y < psMinimum->y) psMinimum->y = y;
-					if (x > psMaximum->x) psMaximum->x = x;
-					if (y > psMaximum->y) psMaximum->y = y;
-				}
+				psBox->Include(x, y);
 			}
 		}
 	}
-	return bFound;
+	return psBox->bHasBounds;
 }
 
 
@@ -2031,8 +2015,7 @@ void TestCircuitEditorPortHover(void)
 	SInt32Vec2			sHover;
 	SFloat64Vec2		sGrid;
 	SFloat64Vec2		sScreen;
-	SInt32Vec2			sMinimum;
-	SInt32Vec2			sMaximum;
+	SInt32Bounds		sBox;
 	float64				fNear;
 	size				i;
 	int					iDX;
@@ -2069,9 +2052,9 @@ void TestCircuitEditorPortHover(void)
 		}
 
 		PointAtPixel(&sTest, &cViewport, (int32)floor(sScreen.x + 0.5), (int32)floor(sScreen.y + 0.5));
-		AssertTrue(GetPaintedHoverBox(&sTest.pEditor, &cViewport, &cColours, &sMinimum, &sMaximum));
-		AssertDouble(sScreen.x, (sMinimum.x + sMaximum.x) / 2.0, 0);
-		AssertDouble(sScreen.y, (sMinimum.y + sMaximum.y) / 2.0, 0);
+		AssertTrue(GetPaintedHoverBox(&sTest.pEditor, &cViewport, &cColours, &sBox));
+		AssertDouble(sScreen.x, (sBox.sMinimum.x + sBox.sMaximum.x) / 2.0, 0);
+		AssertDouble(sScreen.y, (sBox.sMinimum.y + sBox.sMaximum.y) / 2.0, 0);
 	}
 
 	cViewport.Kill();
@@ -2289,8 +2272,7 @@ void TestCircuitEditorDrawClockDivider(void)
 	SInt32Vec2			asOutAndDown[3];
 	SInt32Vec2			asUnderAndUp[3];
 	SInt32Vec2			asIn[2];
-	SFloat64Vec2		sMinimum;
-	SFloat64Vec2		sMaximum;
+	SFloat64Bounds		sBox;
 	SRisingEdges		sClockEdges;
 	SRisingEdges		sQEdges;
 	int64				iClockPeriod;
@@ -2325,10 +2307,10 @@ void TestCircuitEditorDrawClockDivider(void)
 
 	//Paused: from the inverted output out, down, under the flip flop, up past its left side and into D, two grid
 	//units clear of its box all the way round.
-	AssertTrue(pcFlipFlop->GetBoundingBox(&sMinimum, &sMaximum));
-	iLeft = (int32)floor(sMinimum.x) - 2;
-	iRight = (int32)ceil(sMaximum.x) + 2;
-	iBottom = (int32)ceil(sMaximum.y) + 2;
+	AssertTrue(pcFlipFlop->GetBoundingBox(&sBox));
+	iLeft = (int32)floor(sBox.sMinimum.x) - 2;
+	iRight = (int32)ceil(sBox.sMaximum.x) + 2;
+	iBottom = (int32)ceil(sBox.sMaximum.y) + 2;
 	asOutAndDown[0] = sInverted;
 	asOutAndDown[1].Init(iRight, sInverted.y);
 	asOutAndDown[2].Init(iRight, iBottom);
@@ -2472,16 +2454,14 @@ void TestCircuitEditorPropertiesListed(void)
 	CComponentProperties	cProperties;
 	SComponentProperty*		psProperty;
 	CPinView*				pcPin;
-	SInt32Vec2				sMinimum;
-	SInt32Vec2				sMaximum;
+	SInt32Bounds			sBox;
 
 	sTest.Init();
 	pcMain = sTest.pEditor->AddCircuit("Main");
 	AddTestInverter(pcMain, 0, 0);
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcPin = NewMalloc<CPinView>();
-	pcPin->Init(10, 0, ROT_East, "In", "LVC", false, 1, RADIX_Binary, sMinimum, sMaximum);
+	pcPin->Init(10, 0, ROT_East, "In", "LVC", false, 1, RADIX_Binary, &sBox);
 	pcMain->Add(pcPin);
 	AssertTrue(sTest.pEditor->Simulate("Main"));
 

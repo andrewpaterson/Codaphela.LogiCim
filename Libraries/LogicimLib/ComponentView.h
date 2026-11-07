@@ -158,9 +158,9 @@ public:
 			CPortView*				GetPortView(const char* szPortName);
 
 			void					CalculateBounds(void);
-			bool					GetLocalBounds(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
-			bool					GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
-			bool					GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+			bool					GetLocalBounds(SFloat64Bounds* psBox);
+			bool					GetBoundingBox(SFloat64Bounds* psBox);
+			bool					GetImportBoundingBox(CCircuitFonts* pcFonts, SFloat64Bounds* psBox);
 
 protected:
 			CSubcircuitSimulation*	CanCreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
@@ -168,10 +168,10 @@ protected:
 			SViewPathComponent*		FindComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size* puiIndex);
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
 	static	bool					LoadXMLPlacement(CMarkupTag* pcTag, int32* px, int32* py, ERotation* peRotation, char** pszName);
-	static	void					SaveXMLBox(CXMLWriter* pcWriter, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum);
-	static	bool					LoadXMLBox(CMarkupTag* pcTag, SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum);
-	static	void					SaveXMLBox(CXMLWriter* pcWriter, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum);
-	static	bool					LoadXMLBox(CMarkupTag* pcTag, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum);
+	static	void					SaveXMLBox(CXMLWriter* pcWriter, SInt32Bounds* psBox);
+	static	bool					LoadXMLBox(CMarkupTag* pcTag, SInt32Bounds* psBox);
+	static	void					SaveXMLBox(CXMLWriter* pcWriter, SFloat64Bounds* psBox);
+	static	bool					LoadXMLBox(CMarkupTag* pcTag, SFloat64Bounds* psBox);
 	virtual	void					IncludeExtraBounds(SFloat64Bounds* psBounds);
 	static	void					IncludePixelBounds(CCircuitViewport* pcViewport, CInt32Rect* pcPixels, SFloat64Bounds* psBounds);
 			void					PaintShapes(CCircuitPainter* pcPainter);

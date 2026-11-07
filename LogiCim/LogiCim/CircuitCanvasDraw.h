@@ -65,7 +65,7 @@ public:
 	void				SetZoom(float32 fZoom);
 	float32				GetZoom(void);
 	void				ZoomAroundCentre(float32 fZoom);
-	void				ZoomToFit(SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum);
+	void				ZoomToFit(SFloat64Bounds* psBox);
 	void				SetGrid(bool bGrid);
 	bool				IsGrid(void);
 	float32				GetGridSpacing(void);

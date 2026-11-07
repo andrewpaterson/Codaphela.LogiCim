@@ -95,7 +95,7 @@ public:
 	bool				LoadXML(CMarkupTag* pcCircuitTag);
 
 	void				Paint(CCircuitPainter* pcPainter);
-	bool				GetBoundingBox(SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+	bool				GetBoundingBox(SFloat64Bounds* psBox);
 	CComponentView*		GetComponentAt(SFloat64Vec2 sPosition);
 	CTraceView*			GetTraceAt(SInt32Vec2 sPoint);
 	bool				IsConnectionAt(SInt32Vec2 sPoint);
@@ -113,9 +113,7 @@ protected:
 
 void	PaintCircuitGrid(CCircuitPainter* pcPainter);
 int32	RoundToGrid(float64 f);
-bool	IsInBox(SFloat64Vec2 sPosition, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum);
-bool	IsBoxInRectangle(SFloat64Vec2 sStart, SFloat64Vec2 sEnd, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum, bool bIntersections);
-bool	GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum);
+bool	GetViewsBoundingBox(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, SFloat64Bounds* psBox);
 
 
 #endif // __CIRCUIT_VIEW_H__

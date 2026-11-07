@@ -38,12 +38,11 @@ CONSTRUCTABLE(CTunnelView);
 protected:
 	bool			mbDoubleSided;
 	CChars			mszConnectionName;
-	SFloat64Vec2	msBoxMinimum;
-	SFloat64Vec2	msBoxMaximum;
+	SFloat64Bounds	msBox;
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, CCircuitFonts* pcFonts);
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, SFloat64Vec2 sBoxMinimum, SFloat64Vec2 sBoxMaximum);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, bool bDoubleSided, SFloat64Bounds* psBox);
 	virtual void					Kill(void);
 
 	virtual const char*				GetType(void);
@@ -57,9 +56,9 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 
 			bool					IsDoubleSided(void);
-			void					GetBox(SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum);
+			void					GetBox(SFloat64Bounds* psBox);
 
-	static	void					MeasureBox(CCircuitFonts* pcFonts, const char* szName, bool bDoubleSided, SFloat64Vec2* psBoxMinimum, SFloat64Vec2* psBoxMaximum);
+	static	void					MeasureBox(CCircuitFonts* pcFonts, const char* szName, bool bDoubleSided, SFloat64Bounds* psBox);
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);

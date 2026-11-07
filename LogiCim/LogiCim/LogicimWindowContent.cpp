@@ -405,23 +405,22 @@ void CLogicimWindowContent::Zoom(float32 fZoom)
 void CLogicimWindowContent::ZoomToFit(bool bSelection)
 {
 	CCircuitEditor*		pcEditor;
-	SFloat64Vec2		sMinimum;
-	SFloat64Vec2		sMaximum;
+	SFloat64Bounds		sBox;
 	bool				bHasBounds;
 
 	pcEditor = mpLogicimCircuit->GetEditor();
 	if (bSelection)
 	{
-		bHasBounds = pcEditor->GetSelection()->GetBoundingBox(&sMinimum, &sMaximum);
+		bHasBounds = pcEditor->GetSelection()->GetBoundingBox(&sBox);
 	}
 	else
 	{
-		bHasBounds = (pcEditor->GetCircuit() != NULL) && pcEditor->GetCircuit()->GetBoundingBox(&sMinimum, &sMaximum);
+		bHasBounds = (pcEditor->GetCircuit() != NULL) && pcEditor->GetCircuit()->GetBoundingBox(&sBox);
 	}
 
 	if (bHasBounds)
 	{
-		mpCircuit->GetCircuitDraw()->ZoomToFit(sMinimum, sMaximum);
+		mpCircuit->GetCircuitDraw()->ZoomToFit(&sBox);
 		ShowZoom();
 	}
 }
@@ -623,8 +622,7 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 {
 	CChars			szImport;
 	SFloat64Vec2	sCentre;
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 	float64			fSize;
 
 	//Once the window is laid out, so the import is zoomed to fit the canvas.
@@ -638,9 +636,8 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 		//LOGICIM_VIEW="x,y,size" shows the square of grid units about x, y instead, for scripted checks.
 		if ((getenv("LOGICIM_VIEW") != NULL) && (sscanf(getenv("LOGICIM_VIEW"), "%lf,%lf,%lf", &sCentre.x, &sCentre.y, &fSize) == 3))
 		{
-			sMinimum.Init(sCentre.x - fSize / 2, sCentre.y - fSize / 2);
-			sMaximum.Init(sCentre.x + fSize / 2, sCentre.y + fSize / 2);
-			mpCircuit->GetCircuitDraw()->ZoomToFit(sMinimum, sMaximum);
+			sBox.Init(SFloat64Vec2(sCentre.x - fSize / 2, sCentre.y - fSize / 2), SFloat64Vec2(sCentre.x + fSize / 2, sCentre.y + fSize / 2));
+			mpCircuit->GetCircuitDraw()->ZoomToFit(&sBox);
 			ShowZoom();
 		}
 	}

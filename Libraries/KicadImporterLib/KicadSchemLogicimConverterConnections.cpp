@@ -529,15 +529,14 @@ void CKicadSchemLogicimConverter::SetRouteBoxes(CTraceAutoConnector* pcConnector
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
-	SFloat64Vec2				sBoxMinimum;
-	SFloat64Vec2				sBoxMaximum;
+	SFloat64Bounds				sBox;
 
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
 		psItem = masItems.Get(i);
-		if (psItem->bImportBox && GetItemImportBox(psItem, &sBoxMinimum, &sBoxMaximum))
+		if (psItem->bImportBox && GetItemImportBox(psItem, &sBox))
 		{
-			pcConnector->SetComponentBox(psItem->pcView, sBoxMinimum, sBoxMaximum);
+			pcConnector->SetComponentBox(psItem->pcView, &sBox);
 		}
 	}
 }

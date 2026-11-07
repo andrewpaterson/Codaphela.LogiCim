@@ -57,10 +57,9 @@ enum EPinAnchour
 struct SValueViewXML
 {
 	SIntegratedCircuitXML	sIntegratedCircuit;
-	int32		iBitWidth;
-	ERadix		eRadix;
-	SInt32Vec2	sBoxMinimum;
-	SInt32Vec2	sBoxMaximum;
+	int32					iBitWidth;
+	ERadix					eRadix;
+	SInt32Bounds			sBox;
 };
 
 
@@ -76,24 +75,23 @@ protected:
 	int32			miBitWidth;
 	ERadix			meRadix;
 	int				miMaxDigits;
-	SInt32Vec2		msBoxMinimum;
-	SInt32Vec2		msBoxMaximum;
+	SInt32Bounds	msBox;
 	size			muiValueText;
 
 public:
-			void			Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum);
+			void			Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 
 	virtual void			Paint(CCircuitPainter* pcPainter);
 
 			int32			GetBitWidth(void);
 	virtual void			GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 			ERadix			GetRadix(void);
-			void			GetBox(SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum);
+			void			GetBox(SInt32Bounds* psBox);
 			void			GetValueText(CChars* psz, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 
 	virtual	STraceValue		ReadPortValue(CCircuitComponent* pcComponent, CPort* pcPort, int64 iTime);
 
-	static	void			MeasureBox(CCircuitFonts* pcFonts, int32 iBitWidth, ERadix eRadix, SInt32Vec2* psBoxMinimum, SInt32Vec2* psBoxMaximum);
+	static	void			MeasureBox(CCircuitFonts* pcFonts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 	static	bool			LoadValueXML(CMarkupTag* pcTag, SValueViewXML* psValue);
 
 	virtual bool			LoadXML(CMarkupTag* pcTag);
@@ -114,7 +112,7 @@ class CConstantView : public CValueView
 CONSTRUCTABLE(CConstantView);
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, CCircuitFonts* pcFonts);
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
@@ -131,7 +129,7 @@ class CProbeView : public CValueView
 CONSTRUCTABLE(CProbeView);
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, CCircuitFonts* pcFonts);
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 
 	virtual const char*				GetType(void);
 	virtual const char*				GetXMLName(void);
@@ -158,7 +156,7 @@ protected:
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, CCircuitFonts* pcFonts);
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Vec2 sBoxMinimum, SInt32Vec2 sBoxMaximum);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 			void					SetSubcircuitAppearance(EPinAlignment eAlignment, EPinAnchour eAnchour, int32 iWeight, bool bInverting, bool bClockNotch);
 
 	virtual const char*				GetType(void);

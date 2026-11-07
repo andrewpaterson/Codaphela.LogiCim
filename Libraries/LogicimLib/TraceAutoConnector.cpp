@@ -288,13 +288,9 @@ size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView
 // out.
 //
 //////////////////////////////////////////////////////////////////////////
-void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64Vec2 sMinimum, SFloat64Vec2 sMaximum)
+void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox)
 {
-	STraceAutoConnectBox	sBox;
-
-	sBox.sMinimum = sMinimum;
-	sBox.sMaximum = sMaximum;
-	mcBoxes.Put(&pcComponent, sizeof(pcComponent), &sBox, sizeof(sBox));
+	mcBoxes.Put(&pcComponent, sizeof(pcComponent), psBox, sizeof(SFloat64Bounds));
 }
 
 
@@ -303,18 +299,17 @@ void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64V
 // The box given for the component, otherwise its bounding box.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CTraceAutoConnector::GetComponentBox(CComponentView* pcComponent, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CTraceAutoConnector::GetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox)
 {
-	STraceAutoConnectBox*	psBox;
+	SFloat64Bounds*	psOwn;
 
-	psBox = (STraceAutoConnectBox*)mcBoxes.Get(&pcComponent, sizeof(pcComponent));
-	if (psBox != NULL)
+	psOwn = (SFloat64Bounds*)mcBoxes.Get(&pcComponent, sizeof(pcComponent));
+	if (psOwn != NULL)
 	{
-		*psMinimum = psBox->sMinimum;
-		*psMaximum = psBox->sMaximum;
+		*psBox = *psOwn;
 		return true;
 	}
-	return pcComponent->GetBoundingBox(psMinimum, psMaximum);
+	return pcComponent->GetBoundingBox(psBox);
 }
 
 
@@ -607,8 +602,7 @@ void CTraceAutoConnector::CreateGrid(void)
 	size				i;
 	size				j;
 	CComponentView*		pcComponent;
-	SFloat64Vec2		sBoxMinimum;
-	SFloat64Vec2		sBoxMaximum;
+	SFloat64Bounds		sBox;
 	SInt32Vec2			sPosition;
 	CTraceView*			pcTrace;
 	size				uiCells;
@@ -617,10 +611,10 @@ void CTraceAutoConnector::CreateGrid(void)
 	for (i = 0; i < mpcCircuit->NumComponents(); i++)
 	{
 		pcComponent = mpcCircuit->GetComponent(i);
-		if (GetComponentBox(pcComponent, &sBoxMinimum, &sBoxMaximum))
+		if (GetComponentBox(pcComponent, &sBox))
 		{
-			sBounds.Include((int32)floor(sBoxMinimum.x), (int32)floor(sBoxMinimum.y));
-			sBounds.Include((int32)ceil(sBoxMaximum.x), (int32)ceil(sBoxMaximum.y));
+			sBounds.Include((int32)floor(sBox.sMinimum.x), (int32)floor(sBox.sMinimum.y));
+			sBounds.Include((int32)ceil(sBox.sMaximum.x), (int32)ceil(sBox.sMaximum.y));
 		}
 		for (j = 0; j < pcComponent->NumPortViews(); j++)
 		{
@@ -669,8 +663,7 @@ void CTraceAutoConnector::MarkComponents(void)
 {
 	size				i;
 	CComponentView*		pcComponent;
-	SFloat64Vec2		sBoxMinimum;
-	SFloat64Vec2		sBoxMaximum;
+	SFloat64Bounds		sBox;
 	int32				x;
 	int32				y;
 	int32				iMinimumX;
@@ -683,14 +676,14 @@ void CTraceAutoConnector::MarkComponents(void)
 	for (i = 0; i < mpcCircuit->NumComponents(); i++)
 	{
 		pcComponent = mpcCircuit->GetComponent(i);
-		if (!GetComponentBox(pcComponent, &sBoxMinimum, &sBoxMaximum))
+		if (!GetComponentBox(pcComponent, &sBox))
 		{
 			continue;
 		}
-		iMinimumX = (int32)ceil(sBoxMinimum.x);
-		iMinimumY = (int32)ceil(sBoxMinimum.y);
-		iMaximumX = (int32)floor(sBoxMaximum.x);
-		iMaximumY = (int32)floor(sBoxMaximum.y);
+		iMinimumX = (int32)ceil(sBox.sMinimum.x);
+		iMinimumY = (int32)ceil(sBox.sMinimum.y);
+		iMaximumX = (int32)floor(sBox.sMaximum.x);
+		iMaximumY = (int32)floor(sBox.sMaximum.y);
 		for (y = iMinimumY; y <= iMaximumY; y++)
 		{
 			for (x = iMinimumX; x <= iMaximumX; x++)
@@ -920,10 +913,8 @@ void CTraceAutoConnector::CalculateBends(void)
 {
 	size					i;
 	STraceAutoConnection*	psConnection;
-	SFloat64Vec2			sFromMinimum;
-	SFloat64Vec2			sFromMaximum;
-	SFloat64Vec2			sToMinimum;
-	SFloat64Vec2			sToMaximum;
+	SFloat64Bounds			sFromBox;
+	SFloat64Bounds			sToBox;
 	SInt32Vec2				sFrom;
 	SInt32Vec2				sTo;
 	float64					fFromEdge;
@@ -943,35 +934,35 @@ void CTraceAutoConnector::CalculateBends(void)
 		{
 			continue;
 		}
-		if (!psConnection->pcFrom->GetOwner()->GetBoundingBox(&sFromMinimum, &sFromMaximum) || !psConnection->pcTo->GetOwner()->GetBoundingBox(&sToMinimum, &sToMaximum))
+		if (!psConnection->pcFrom->GetOwner()->GetBoundingBox(&sFromBox) || !psConnection->pcTo->GetOwner()->GetBoundingBox(&sToBox))
 		{
 			continue;
 		}
 
 		if (psConnection->bHorizontal)
 		{
-			if (sToMinimum.x + sToMaximum.x >= sFromMinimum.x + sFromMaximum.x)
+			if (sToBox.sMinimum.x + sToBox.sMaximum.x >= sFromBox.sMinimum.x + sFromBox.sMaximum.x)
 			{
-				fFromEdge = sFromMaximum.x;
-				fToEdge = sToMinimum.x;
+				fFromEdge = sFromBox.sMaximum.x;
+				fToEdge = sToBox.sMinimum.x;
 			}
 			else
 			{
-				fFromEdge = sFromMinimum.x;
-				fToEdge = sToMaximum.x;
+				fFromEdge = sFromBox.sMinimum.x;
+				fToEdge = sToBox.sMaximum.x;
 			}
 		}
 		else
 		{
-			if (sToMinimum.y + sToMaximum.y >= sFromMinimum.y + sFromMaximum.y)
+			if (sToBox.sMinimum.y + sToBox.sMaximum.y >= sFromBox.sMinimum.y + sFromBox.sMaximum.y)
 			{
-				fFromEdge = sFromMaximum.y;
-				fToEdge = sToMinimum.y;
+				fFromEdge = sFromBox.sMaximum.y;
+				fToEdge = sToBox.sMinimum.y;
 			}
 			else
 			{
-				fFromEdge = sFromMinimum.y;
-				fToEdge = sToMaximum.y;
+				fFromEdge = sFromBox.sMinimum.y;
+				fToEdge = sToBox.sMaximum.y;
 			}
 		}
 		psConnection->iBend = (int32)floor(fFromEdge + psConnection->fBend * (fToEdge - fFromEdge) + 0.5);
@@ -1579,22 +1570,21 @@ bool CTraceAutoConnector::CanNodeRipping(int iCell, int iNet)
 //////////////////////////////////////////////////////////////////////////
 int CTraceAutoConnector::GetPortFacing(CPortView* pcPortView)
 {
-	SFloat64Vec2	sMinimum;
-	SFloat64Vec2	sMaximum;
+	SFloat64Bounds	sBox;
 	SInt32Vec2		sPosition;
 	float64			afDistances[4];
 	int				iDirection;
 	int				iBest;
 
-	if (!pcPortView->GetOwner()->GetBoundingBox(&sMinimum, &sMaximum))
+	if (!pcPortView->GetOwner()->GetBoundingBox(&sBox))
 	{
 		return TRACE_DIRECTION_EAST;
 	}
 	sPosition = pcPortView->GetGridPosition();
-	afDistances[TRACE_DIRECTION_EAST] = sMaximum.x - sPosition.x;
-	afDistances[TRACE_DIRECTION_SOUTH] = sMaximum.y - sPosition.y;
-	afDistances[TRACE_DIRECTION_WEST] = sPosition.x - sMinimum.x;
-	afDistances[TRACE_DIRECTION_NORTH] = sPosition.y - sMinimum.y;
+	afDistances[TRACE_DIRECTION_EAST] = sBox.sMaximum.x - sPosition.x;
+	afDistances[TRACE_DIRECTION_SOUTH] = sBox.sMaximum.y - sPosition.y;
+	afDistances[TRACE_DIRECTION_WEST] = sPosition.x - sBox.sMinimum.x;
+	afDistances[TRACE_DIRECTION_NORTH] = sPosition.y - sBox.sMinimum.y;
 
 	iBest = TRACE_DIRECTION_WEST;
 	if (afDistances[TRACE_DIRECTION_EAST] < afDistances[iBest])

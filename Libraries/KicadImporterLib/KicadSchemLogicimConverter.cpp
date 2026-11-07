@@ -360,8 +360,7 @@ size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLog
 	psItem->eAlign = KSLA_None;
 	psItem->pcSymbol = mpcAddingSymbol;
 	psItem->sOffset.Init(0, 0);
-	psItem->sImportMinimum.Init(0, 0);
-	psItem->sImportMaximum.Init(0, 0);
+	psItem->sImportBox.Init();
 	psItem->bImportBox = false;
 	if (pcAnchor != NULL)
 	{

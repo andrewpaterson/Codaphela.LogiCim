@@ -849,12 +849,11 @@ void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
 		psItem = masItems.Get(i);
-		psItem->bImportBox = psItem->pcView->GetImportBoundingBox(mpcFonts, &psItem->sImportMinimum, &psItem->sImportMaximum);
+		psItem->bImportBox = psItem->pcView->GetImportBoundingBox(mpcFonts, &psItem->sImportBox);
 		if (psItem->bImportBox)
 		{
 			sPosition = psItem->pcView->GetPosition();
-			psItem->sImportMinimum.Init(psItem->sImportMinimum.x - sPosition.x, psItem->sImportMinimum.y - sPosition.y);
-			psItem->sImportMaximum.Init(psItem->sImportMaximum.x - sPosition.x, psItem->sImportMaximum.y - sPosition.y);
+			psItem->sImportBox.Move(SFloat64Vec2(-sPosition.x, -sPosition.y));
 		}
 	}
 }
@@ -866,17 +865,17 @@ void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
 // been measured.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CKicadSchemLogicimConverter::GetItemImportBox(SKicadSchemLogicimItem* psItem, SFloat64Bounds* psBox)
 {
 	SInt32Vec2	sPosition;
 
 	if (!psItem->bImportBox)
 	{
-		return psItem->pcView->GetBoundingBox(psMinimum, psMaximum);
+		return psItem->pcView->GetBoundingBox(psBox);
 	}
 	sPosition = psItem->pcView->GetPosition();
-	psMinimum->Init(psItem->sImportMinimum.x + sPosition.x, psItem->sImportMinimum.y + sPosition.y);
-	psMaximum->Init(psItem->sImportMaximum.x + sPosition.x, psItem->sImportMaximum.y + sPosition.y);
+	*psBox = psItem->sImportBox;
+	psBox->Move(SFloat64Vec2(sPosition.x, sPosition.y));
 	return true;
 }
 
@@ -886,32 +885,26 @@ bool CKicadSchemLogicimConverter::GetItemImportBox(SKicadSchemLogicimItem* psIte
 // The item's import box and the import boxes of the items attached to it.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Vec2* psMinimum, SFloat64Vec2* psMaximum)
+bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Bounds* psBox)
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 	SKicadSchemLogicimItem*		psOther;
-	SFloat64Vec2				sMinimum;
-	SFloat64Vec2				sMaximum;
-	SFloat64Bounds				sBounds;
+	SFloat64Bounds				sOther;
 
 	psItem = masItems.Get(uiItem);
-	if (!GetItemImportBox(psItem, psMinimum, psMaximum))
+	if (!GetItemImportBox(psItem, psBox))
 	{
 		return false;
 	}
-	sBounds.Init();
-	sBounds.Include(*psMinimum, *psMaximum);
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
 		psOther = masItems.Get(i);
-		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && GetItemImportBox(psOther, &sMinimum, &sMaximum))
+		if ((psOther->pcAttachedTo != NULL) && (psOther->pcAttachedTo->GetOwner() == psItem->pcView) && GetItemImportBox(psOther, &sOther))
 		{
-			sBounds.Include(sMinimum, sMaximum);
+			psBox->Include(&sOther);
 		}
 	}
-	*psMinimum = sBounds.sMinimum;
-	*psMaximum = sBounds.sMaximum;
 	return true;
 }
 
@@ -1107,8 +1100,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 	{
 		i = (size)aiOrder.GetValue(uiOrder);
 		psItem = masItems.Get(i);
-		sBox.Init();
-		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox.sMinimum, &sBox.sMaximum))
+		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox))
 		{
 			continue;
 		}
@@ -1119,10 +1111,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 		}
 		sPosition = psItem->pcView->GetPosition();
 		psItem->pcView->SetPosition(sPosition.x + sMove.x, sPosition.y + sMove.y);
-		sBox.sMinimum.x += sMove.x;
-		sBox.sMaximum.x += sMove.x;
-		sBox.sMinimum.y += sMove.y;
-		sBox.sMaximum.y += sMove.y;
+		sBox.Move(SFloat64Vec2(sMove.x, sMove.y));
 		asPlaced.Add(&sBox);
 	}
 	aiOrder.Kill();

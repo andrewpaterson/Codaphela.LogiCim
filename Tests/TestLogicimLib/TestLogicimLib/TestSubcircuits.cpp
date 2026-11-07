@@ -71,13 +71,11 @@ struct SSubcircuitTest
 static CPinView* AddTestPin(CCircuitView* pcCircuit, int32 x, int32 y, const char* szName, EPinAlignment eAlignment, EPinAnchour eAnchour)
 {
 	CPinView*		pcPin;
-	SInt32Vec2		sMinimum;
-	SInt32Vec2		sMaximum;
+	SInt32Bounds	sBox;
 
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcPin = NewMalloc<CPinView>();
-	pcPin->Init(x, y, ROT_North, szName, "LVC", false, 1, RADIX_Binary, sMinimum, sMaximum);
+	pcPin->Init(x, y, ROT_North, szName, "LVC", false, 1, RADIX_Binary, &sBox);
 	pcPin->SetSubcircuitAppearance(eAlignment, eAnchour, 0, false, false);
 	pcCircuit->Add(pcPin);
 	return pcPin;
@@ -119,8 +117,7 @@ static CSubcircuitInstanceView* AddTestInstance(CCircuitView* pcCircuit, int32 x
 	CSubcircuitInstanceView*	pcInstance;
 	SSubcircuitInstanceLayout	sLayout;
 
-	sLayout.sBoxMinimum.Init(-2, -1);
-	sLayout.sBoxMaximum.Init(2, 1);
+	sLayout.sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(2, 1));
 	sLayout.fTypeY = 0;
 	sLayout.fCommentY = 0;
 	sLayout.fNameY = 0;
@@ -141,13 +138,11 @@ static CSubcircuitInstanceView* AddTestInstance(CCircuitView* pcCircuit, int32 x
 static CConstantView* AddTestConstant(CCircuitView* pcCircuit, SInt32Vec2 sPosition)
 {
 	CConstantView*	pcConstant;
-	SInt32Vec2		sMinimum;
-	SInt32Vec2		sMaximum;
+	SInt32Bounds	sBox;
 
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcConstant = NewMalloc<CConstantView>();
-	pcConstant->Init(sPosition.x, sPosition.y, ROT_South, "", "LVC", false, 1, RADIX_Binary, sMinimum, sMaximum);
+	pcConstant->Init(sPosition.x, sPosition.y, ROT_South, "", "LVC", false, 1, RADIX_Binary, &sBox);
 	pcCircuit->Add(pcConstant);
 	return pcConstant;
 }
@@ -160,13 +155,11 @@ static CConstantView* AddTestConstant(CCircuitView* pcCircuit, SInt32Vec2 sPosit
 static CProbeView* AddTestProbe(CCircuitView* pcCircuit, SInt32Vec2 sPosition)
 {
 	CProbeView*		pcProbe;
-	SInt32Vec2		sMinimum;
-	SInt32Vec2		sMaximum;
+	SInt32Bounds	sBox;
 
-	sMinimum.Init(-2, -1);
-	sMaximum.Init(0, 1);
+	sBox.Init(SInt32Vec2(-2, -1), SInt32Vec2(0, 1));
 	pcProbe = NewMalloc<CProbeView>();
-	pcProbe->Init(sPosition.x, sPosition.y, ROT_North, "", "LVC", false, 1, RADIX_Binary, sMinimum, sMaximum);
+	pcProbe->Init(sPosition.x, sPosition.y, ROT_North, "", "LVC", false, 1, RADIX_Binary, &sBox);
 	pcCircuit->Add(pcProbe);
 	return pcProbe;
 }
@@ -1399,7 +1392,7 @@ void TestSubcircuitPinSpacing(void)
 	}
 	AssertInt(2, abs(GetPinPosition(pcTwo, "Y1").y - GetPinPosition(pcTwo, "Y0").y));
 	AssertInt(1, abs(GetPinPosition(pcOne, "Y1").y - GetPinPosition(pcOne, "Y0").y));
-	AssertTrue((pcTwo->GetLayout()->sBoxMaximum.y - pcTwo->GetLayout()->sBoxMinimum.y) > (pcOne->GetLayout()->sBoxMaximum.y - pcOne->GetLayout()->sBoxMinimum.y));
+	AssertTrue((pcTwo->GetLayout()->sBox.sMaximum.y - pcTwo->GetLayout()->sBox.sMinimum.y) > (pcOne->GetLayout()->sBox.sMaximum.y - pcOne->GetLayout()->sBox.sMinimum.y));
 
 	cText.Init();
 	SaveCircuitsXML(&sTest.cCircuits, pcTop, NULL, &cText);
@@ -1437,10 +1430,8 @@ void TestComponentImportBoundingBox(void)
 	Ptr<CCircuitFonts>	pFonts;
 	CCircuitView*		pcCircuit;
 	CPinView*			pcPin;
-	SFloat64Vec2		sMinimum;
-	SFloat64Vec2		sMaximum;
-	SFloat64Vec2		sImportMinimum;
-	SFloat64Vec2		sImportMaximum;
+	SFloat64Bounds		sBox;
+	SFloat64Bounds		sImportBox;
 
 	sTest.Init();
 	pFonts = LoadTestCircuitFonts();
@@ -1449,13 +1440,13 @@ void TestComponentImportBoundingBox(void)
 	pcPin->Init(5, 7, ROT_East, "A Long Pin Name", "LVC", false, 1, RADIX_Binary, &pFonts);
 	pcCircuit->Add(pcPin);
 
-	AssertTrue(pcPin->GetBoundingBox(&sMinimum, &sMaximum));
-	AssertTrue(pcPin->GetImportBoundingBox(&pFonts, &sImportMinimum, &sImportMaximum));
-	AssertTrue(sImportMinimum.x <= sMinimum.x);
-	AssertTrue(sImportMinimum.y <= sMinimum.y);
-	AssertTrue(sImportMaximum.x >= sMaximum.x);
-	AssertTrue(sImportMaximum.y >= sMaximum.y);
-	AssertTrue(((sMinimum.x - sImportMinimum.x) + (sImportMaximum.x - sMaximum.x)) > 3);
+	AssertTrue(pcPin->GetBoundingBox(&sBox));
+	AssertTrue(pcPin->GetImportBoundingBox(&pFonts, &sImportBox));
+	AssertTrue(sImportBox.sMinimum.x <= sBox.sMinimum.x);
+	AssertTrue(sImportBox.sMinimum.y <= sBox.sMinimum.y);
+	AssertTrue(sImportBox.sMaximum.x >= sBox.sMaximum.x);
+	AssertTrue(sImportBox.sMaximum.y >= sBox.sMaximum.y);
+	AssertTrue(((sBox.sMinimum.x - sImportBox.sMinimum.x) + (sImportBox.sMaximum.x - sBox.sMaximum.x)) > 3);
 
 	KillTestCircuitFonts(&pFonts);
 	pFonts = NULL;
