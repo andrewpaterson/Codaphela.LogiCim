@@ -80,13 +80,6 @@ struct SKicadSchemLogicimItem
 	CKicadSchemSymbol*			pcSymbol;  //The symbol it was made for.  NULL for tunnels and splitters.
 	SFloat64Bounds				sImportBox;  //Its import box (see CComponentView::GetImportBoundingBox), from its position.
 	bool						bImportBox;
-
-	//The model's: its terminals, and the items attached to it and the next attached to the same item, by index.
-	size						uiFirstTerminal;
-	size						uiLastTerminal;
-	size						uiFirstAttached;
-	size						uiLastAttached;
-	size						uiNextAttached;
 };
 
 
@@ -99,8 +92,6 @@ struct SKicadSchemLogicimTerminal
 	CPortView*			pcPortView;
 	size				uiItem;
 	bool				bBus;
-	size				uiNextOnSubnet;  //The model's: the next of the subnet's terminals, ARRAY_ELEMENT_NOT_FOUND after the last.
-	size				uiNextOfItem;	 //The model's: the next of the item's terminals.
 };
 
 
@@ -116,9 +107,27 @@ struct SKicadSchemLogicimConnection
 };
 
 
-typedef CArrayTemplate<SKicadSchemLogicimItem>			CArrayKicadSchemLogicimItem;
-typedef CArrayTemplate<SKicadSchemLogicimTerminal>		CArrayKicadSchemLogicimTerminal;
-typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConnection;
+//The model's item: the item, and its terminals, the items attached to it and the next attached to the same item, by
+//index (ARRAY_ELEMENT_NOT_FOUND for none).
+struct SKicadSchemLogicimModelItem
+{
+	SKicadSchemLogicimItem	sItem;
+	size					uiFirstTerminal;
+	size					uiLastTerminal;
+	size					uiFirstAttached;
+	size					uiLastAttached;
+	size					uiNextAttached;
+};
+
+
+//The model's terminal: the terminal, and the next of its subnet's terminals and of its item's
+//(ARRAY_ELEMENT_NOT_FOUND after the last).
+struct SKicadSchemLogicimModelTerminal
+{
+	SKicadSchemLogicimTerminal	sTerminal;
+	size						uiNextOnSubnet;
+	size						uiNextOfItem;
+};
 
 
 //The first and last of a subnet's terminals (see CKicadSchemLogicimModel::FirstSubnetTerminal).
@@ -129,19 +138,24 @@ struct SKicadSchemLogicimSubnetTerminals
 };
 
 
+typedef CArrayTemplate<SKicadSchemLogicimModelItem>		CArrayKicadSchemLogicimModelItem;
+typedef CArrayTemplate<SKicadSchemLogicimModelTerminal>	CArrayKicadSchemLogicimModelTerminal;
+typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConnection;
+
+
 //What the converter has made so far: the circuit, its items (the Logicim components), their terminals (the ports
 //standing for KiCad's pins, labels and supplies on each subnet) and the connections to be wired between terminals.
 class CKicadSchemLogicimModel
 {
 protected:
-	CCircuitView*						mpcCircuit;
-	CArrayKicadSchemLogicimItem			masItems;
-	CArrayKicadSchemLogicimTerminal		masTerminals;
-	CArrayKicadSchemLogicimConnection	masConnections;
-	CMapBlock							mcSubnetTerminals;  //A subnet to its SKicadSchemLogicimSubnetTerminals.
-	CMapBlock							mcPortTerminals;    //A port to its first terminal.
-	CMapBlock							mcViewItems;        //A view to its item.
-	CMapStringTemplate<size>			mcBoardPins;        //A board pin's name to its item.
+	CCircuitView*							mpcCircuit;
+	CArrayKicadSchemLogicimModelItem		masItems;
+	CArrayKicadSchemLogicimModelTerminal	masTerminals;
+	CArrayKicadSchemLogicimConnection		masConnections;
+	CMapBlock								mcSubnetTerminals;  //A subnet to its SKicadSchemLogicimSubnetTerminals.
+	CMapBlock								mcPortTerminals;    //A port to its first terminal.
+	CMapBlock								mcViewItems;        //A view to its item.
+	CMapStringTemplate<size>				mcBoardPins;        //A board pin's name to its item.
 
 	void							LinkItem(size uiItem);
 	void							LinkTerminal(size uiTerminal);

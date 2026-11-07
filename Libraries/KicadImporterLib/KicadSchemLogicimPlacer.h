@@ -82,25 +82,24 @@ protected:
 	float64								mfSpread;
 
 public:
-	void		Init(CCircuitFonts* pcFonts, CKicadSchemLogicimModel* pcModel, CKicadSchemLogicimBuses* pcBuses, CKicadSchemLogicimWiring* pcWiring, SKicadSchemLogicimCounts* psCounts);
-	void		Kill(void);
+	void	Init(CCircuitFonts* pcFonts, CKicadSchemLogicimModel* pcModel, CKicadSchemLogicimBuses* pcBuses, CKicadSchemLogicimWiring* pcWiring, SKicadSchemLogicimCounts* psCounts);
+	void	Kill(void);
 
-	void		AttachItems(void);
-	void		MeasureImportBoxes(void);
-	void		FindAlignments(void);
-	void		Place(float64 fSpread);
-	void		Explode(void);
-	float64		GetSpread(void);
+	void	AttachItems(void);
+	void	MeasureImportBoxes(void);
+	void	FindAlignments(void);
+	void	Place(float64 fSpread);
+	void	Explode(void);
 
 protected:
-	void		PlaceSplitters(void);
-	void		PlaceAttachedItems(void);
-	void		AlignItems(void);
-	void		SeparateItems(void);
-	void		GetSeparateOrder(CArrayInt* paiOrder);
-	bool		GetItemBox(size uiItem, SFloat64Bounds* psBox);
-	size		FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
-	void		ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
+	void	PlaceSplitters(void);
+	void	PlaceAttachedItems(void);
+	void	AlignItems(void);
+	void	SeparateItems(void);
+	void	GetSeparateOrder(CArrayInt* paiOrder);
+	bool	GetItemBox(size uiItem, SFloat64Bounds* psBox);
+	size	FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
+	void	ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
 };
 
 

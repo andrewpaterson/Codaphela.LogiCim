@@ -519,6 +519,5 @@ float32 CKicadSchemLogicimConverter::GetSupplyVoltage(const char* szName)
 //
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mcModel.GetCircuit(); }
-float64 CKicadSchemLogicimConverter::GetSpread(void) { return mcPlacer.GetSpread(); }
 SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
 CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }

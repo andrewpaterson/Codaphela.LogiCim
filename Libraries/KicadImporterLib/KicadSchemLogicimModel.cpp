@@ -83,7 +83,7 @@ size CKicadSchemLogicimModel::AddItem(CComponentView* pcView, EKicadSchemLogicim
 	SKicadSchemLogicimItem*		psItem;
 
 	mpcCircuit->Add(pcView);
-	psItem = masItems.Add();
+	psItem = &masItems.Add()->sItem;
 	psItem->pcView = pcView;
 	psItem->eKind = eKind;
 	psItem->bPlacedSplitter = false;
@@ -116,14 +116,16 @@ size CKicadSchemLogicimModel::AddItem(CComponentView* pcView, EKicadSchemLogicim
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::LinkItem(size uiItem)
 {
-	SKicadSchemLogicimItem*		psItem;
+	SKicadSchemLogicimModelItem*	psModelItem;
+	SKicadSchemLogicimItem*			psItem;
 
-	psItem = masItems.Get(uiItem);
-	psItem->uiFirstTerminal = ARRAY_ELEMENT_NOT_FOUND;
-	psItem->uiLastTerminal = ARRAY_ELEMENT_NOT_FOUND;
-	psItem->uiFirstAttached = ARRAY_ELEMENT_NOT_FOUND;
-	psItem->uiLastAttached = ARRAY_ELEMENT_NOT_FOUND;
-	psItem->uiNextAttached = ARRAY_ELEMENT_NOT_FOUND;
+	psModelItem = masItems.Get(uiItem);
+	psModelItem->uiFirstTerminal = ARRAY_ELEMENT_NOT_FOUND;
+	psModelItem->uiLastTerminal = ARRAY_ELEMENT_NOT_FOUND;
+	psModelItem->uiFirstAttached = ARRAY_ELEMENT_NOT_FOUND;
+	psModelItem->uiLastAttached = ARRAY_ELEMENT_NOT_FOUND;
+	psModelItem->uiNextAttached = ARRAY_ELEMENT_NOT_FOUND;
+	psItem = &psModelItem->sItem;
 	mcViewItems.Put(&psItem->pcView, sizeof(psItem->pcView), &uiItem, sizeof(uiItem));
 	if ((psItem->eKind == KSLIK_BoardPin) && (mcBoardPins.Get(psItem->pcView->GetName()) == NULL))
 	{
@@ -145,7 +147,7 @@ void CKicadSchemLogicimModel::AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64V
 	{
 		return;
 	}
-	psTerminal = masTerminals.Add();
+	psTerminal = &masTerminals.Add()->sTerminal;
 	psTerminal->pcSubnet = pcSubnet;
 	psTerminal->sKicadPosition = *psKicadPosition;
 	psTerminal->pcPortView = pcPortView;
@@ -163,14 +165,16 @@ void CKicadSchemLogicimModel::AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64V
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
 {
+	SKicadSchemLogicimModelTerminal*		psModelTerminal;
 	SKicadSchemLogicimTerminal*				psTerminal;
 	SKicadSchemLogicimSubnetTerminals*		psSubnet;
 	SKicadSchemLogicimSubnetTerminals		sSubnet;
-	SKicadSchemLogicimItem*					psItem;
+	SKicadSchemLogicimModelItem*			psItem;
 
-	psTerminal = masTerminals.Get(uiTerminal);
-	psTerminal->uiNextOnSubnet = ARRAY_ELEMENT_NOT_FOUND;
-	psTerminal->uiNextOfItem = ARRAY_ELEMENT_NOT_FOUND;
+	psModelTerminal = masTerminals.Get(uiTerminal);
+	psModelTerminal->uiNextOnSubnet = ARRAY_ELEMENT_NOT_FOUND;
+	psModelTerminal->uiNextOfItem = ARRAY_ELEMENT_NOT_FOUND;
+	psTerminal = &psModelTerminal->sTerminal;
 
 	psItem = masItems.Get(psTerminal->uiItem);
 	if (psItem->uiFirstTerminal == ARRAY_ELEMENT_NOT_FOUND)
@@ -209,12 +213,10 @@ void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::LinkAttached(size uiItem)
 {
-	SKicadSchemLogicimItem*		psItem;
-	SKicadSchemLogicimItem*		psOwner;
-	size						uiOwner;
+	SKicadSchemLogicimModelItem*	psOwner;
+	size							uiOwner;
 
-	psItem = masItems.Get(uiItem);
-	uiOwner = FindItem(psItem->pcAttachedTo->GetOwner());
+	uiOwner = FindItem(masItems.Get(uiItem)->sItem.pcAttachedTo->GetOwner());
 	if (uiOwner == ARRAY_ELEMENT_NOT_FOUND)
 	{
 		return;
@@ -259,7 +261,7 @@ void CKicadSchemLogicimModel::Index(void)
 	}
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
-		if (masItems.Get(i)->pcAttachedTo != NULL)
+		if (masItems.Get(i)->sItem.pcAttachedTo != NULL)
 		{
 			LinkAttached(i);
 		}
@@ -274,7 +276,7 @@ void CKicadSchemLogicimModel::Index(void)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::AttachItem(size uiItem, CPortView* pcTo)
 {
-	masItems.Get(uiItem)->pcAttachedTo = pcTo;
+	masItems.Get(uiItem)->sItem.pcAttachedTo = pcTo;
 	LinkAttached(uiItem);
 }
 
@@ -298,11 +300,11 @@ SKicadSchemLogicimConnection* CKicadSchemLogicimModel::AddConnection(void)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 {
-	size							i;
-	size							uiKept;
-	CArrayInt						aiNewIndices;
-	SKicadSchemLogicimTerminal*		psTerminal;
-	CComponentView*					pcView;
+	size								i;
+	size								uiKept;
+	CArrayInt							aiNewIndices;
+	SKicadSchemLogicimModelTerminal*	psTerminal;
+	CComponentView*						pcView;
 
 	aiNewIndices.Init();
 	uiKept = 0;
@@ -310,7 +312,7 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	{
 		if (paiRemoved->GetValue(i) != 0)
 		{
-			pcView = masItems.Get(i)->pcView;
+			pcView = masItems.Get(i)->sItem.pcView;
 			mpcCircuit->Remove(pcView);
 			SafeKill(pcView);
 			aiNewIndices.Add(-1);
@@ -329,11 +331,11 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 	for (i = 0; i < masTerminals.NumElements(); i++)
 	{
 		psTerminal = masTerminals.Get(i);
-		if (aiNewIndices.GetValue(psTerminal->uiItem) == -1)
+		if (aiNewIndices.GetValue(psTerminal->sTerminal.uiItem) == -1)
 		{
 			continue;
 		}
-		psTerminal->uiItem = (size)aiNewIndices.GetValue(psTerminal->uiItem);
+		psTerminal->sTerminal.uiItem = (size)aiNewIndices.GetValue(psTerminal->sTerminal.uiItem);
 		if (uiKept != i)
 		{
 			*masTerminals.Get(uiKept) = *psTerminal;
@@ -352,11 +354,36 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimModel::GetCircuit(void) { return mpcCircuit; }
 size CKicadSchemLogicimModel::NumItems(void) { return masItems.NumElements(); }
-SKicadSchemLogicimItem* CKicadSchemLogicimModel::GetItem(size uiIndex) { return masItems.SafeGet(uiIndex); }
 size CKicadSchemLogicimModel::NumTerminals(void) { return masTerminals.NumElements(); }
-SKicadSchemLogicimTerminal* CKicadSchemLogicimModel::GetTerminal(size uiIndex) { return masTerminals.SafeGet(uiIndex); }
 size CKicadSchemLogicimModel::NumConnections(void) { return masConnections.NumElements(); }
 SKicadSchemLogicimConnection* CKicadSchemLogicimModel::GetConnection(size uiIndex) { return masConnections.SafeGet(uiIndex); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The item and the terminal at the index, NULL if there's none.
+//
+//////////////////////////////////////////////////////////////////////////
+SKicadSchemLogicimItem* CKicadSchemLogicimModel::GetItem(size uiIndex)
+{
+	SKicadSchemLogicimModelItem*	psItem;
+
+	psItem = masItems.SafeGet(uiIndex);
+	return (psItem != NULL) ? &psItem->sItem : NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+SKicadSchemLogicimTerminal* CKicadSchemLogicimModel::GetTerminal(size uiIndex)
+{
+	SKicadSchemLogicimModelTerminal*	psTerminal;
+
+	psTerminal = masTerminals.SafeGet(uiIndex);
+	return (psTerminal != NULL) ? &psTerminal->sTerminal : NULL;
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -465,7 +492,7 @@ bool CKicadSchemLogicimModel::GetItemImportBox(size uiItem, SFloat64Bounds* psBo
 	SKicadSchemLogicimItem*		psItem;
 	SInt32Vec2					sPosition;
 
-	psItem = masItems.Get(uiItem);
+	psItem = &masItems.Get(uiItem)->sItem;
 	if (!psItem->bImportBox)
 	{
 		return psItem->pcView->GetBoundingBox(psBox);

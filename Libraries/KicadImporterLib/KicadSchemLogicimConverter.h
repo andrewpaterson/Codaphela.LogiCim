@@ -155,15 +155,14 @@ public:
 	bool							Convert(const char* szTypeName);
 
 	CCircuitView*					GetCircuit(void);
-	float64							GetSpread(void);
 	SKicadSchemLogicimCounts*		GetCounts(void);
 	CKicadSchemLogicimModel*		GetModel(void);
 
-	static bool						IsSkippedSymbol(CKicadSchemSymbol* pcSymbol);
 	static bool						IsGroundName(const char* szName);
 	static float32					GetSupplyVoltage(const char* szName);
 
 protected:
+	static bool						IsSkippedSymbol(CKicadSchemSymbol* pcSymbol);
 	bool							AddSymbol(CKicadSchemSymbol* pcSymbol);
 	bool							AddPower(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	bool							AddBoardPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
