@@ -482,59 +482,28 @@ size CKicadSchemLogicimPlacer::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasC
 //////////////////////////////////////////////////////////////////////////
 //
 // The pairs of items that are all of a subnet, wired by one straight wire
-// in KiCad: their pins are level (a horizontal wire) or one above the
-// other.  Items attached to a pin already sit on it, so aren't paired.
+// in KiCad (see IsAlignable).
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimPlacer::FindAlignments(void)
 {
 	size							i;
-	size							uiCount;
 	SKicadSchemLogicimConnection*	psConnection;
-	SKicadSchemLogicimConnection*	psOther;
 	SKicadSchemLogicimTerminal*		psFrom;
 	SKicadSchemLogicimTerminal*		psTo;
 	SKicadSchemLogicimAlignment*	psAlignment;
-	size							j;
 	bool							bHorizontal;
-	bool							bVertical;
 
 	masAlignments.ReInit();
 	for (i = 0; i < mpcModel->NumConnections(); i++)
 	{
 		psConnection = mpcModel->GetConnection(i);
-		uiCount = 0;
-		for (j = 0; j < mpcModel->NumConnections(); j++)
-		{
-			psOther = mpcModel->GetConnection(j);
-			if (psOther->pcSubnet == psConnection->pcSubnet)
-			{
-				uiCount++;
-			}
-		}
-		if (uiCount != 1)
+		if (!IsOnlySubnetConnection(psConnection) || !IsAlignable(psConnection, &bHorizontal))
 		{
 			continue;
 		}
-
 		psFrom = mpcModel->GetTerminal(psConnection->uiFrom);
 		psTo = mpcModel->GetTerminal(psConnection->uiTo);
-		if (psFrom->bBus || psTo->bBus || (psFrom->uiItem == psTo->uiItem) || (mpcModel->GetItem(psFrom->uiItem)->pcAttachedTo != NULL) || (mpcModel->GetItem(psTo->uiItem)->pcAttachedTo != NULL))
-		{
-			continue;
-		}
-		//A splitter beside its component is put there, not lined up.
-		if (mpcModel->GetItem(psFrom->uiItem)->bPlacedSplitter || mpcModel->GetItem(psTo->uiItem)->bPlacedSplitter)
-		{
-			continue;
-		}
-		bHorizontal = fabs(psFrom->sKicadPosition.y - psTo->sKicadPosition.y) < 0.001;
-		bVertical = fabs(psFrom->sKicadPosition.x - psTo->sKicadPosition.x) < 0.001;
-		if (bHorizontal == bVertical)
-		{
-			continue;
-		}
-
 		psAlignment = masAlignments.Add();
 		psAlignment->uiFromItem = psFrom->uiItem;
 		psAlignment->uiToItem = psTo->uiItem;
@@ -542,6 +511,62 @@ void CKicadSchemLogicimPlacer::FindAlignments(void)
 		psAlignment->pcToPort = psTo->pcPortView;
 		psAlignment->bHorizontal = bHorizontal;
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the connection is its subnet's only one.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimPlacer::IsOnlySubnetConnection(SKicadSchemLogicimConnection* psConnection)
+{
+	size	i;
+	size	uiCount;
+
+	uiCount = 0;
+	for (i = 0; i < mpcModel->NumConnections(); i++)
+	{
+		if (mpcModel->GetConnection(i)->pcSubnet == psConnection->pcSubnet)
+		{
+			uiCount++;
+		}
+	}
+	return uiCount == 1;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the connection's items can be lined up: their pins are level in
+// KiCad (pbHorizontal) or one above the other.  Not a bus's, not two pins
+// of one item, not an item attached to a pin (it already sits on it) and
+// not a splitter beside its component (it's put there).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimPlacer::IsAlignable(SKicadSchemLogicimConnection* psConnection, bool* pbHorizontal)
+{
+	SKicadSchemLogicimTerminal*		psFrom;
+	SKicadSchemLogicimTerminal*		psTo;
+	SKicadSchemLogicimItem*			psFromItem;
+	SKicadSchemLogicimItem*			psToItem;
+	bool							bVertical;
+
+	psFrom = mpcModel->GetTerminal(psConnection->uiFrom);
+	psTo = mpcModel->GetTerminal(psConnection->uiTo);
+	if (psFrom->bBus || psTo->bBus || (psFrom->uiItem == psTo->uiItem))
+	{
+		return false;
+	}
+	psFromItem = mpcModel->GetItem(psFrom->uiItem);
+	psToItem = mpcModel->GetItem(psTo->uiItem);
+	if ((psFromItem->pcAttachedTo != NULL) || (psToItem->pcAttachedTo != NULL) || psFromItem->bPlacedSplitter || psToItem->bPlacedSplitter)
+	{
+		return false;
+	}
+	*pbHorizontal = fabs(psFrom->sKicadPosition.y - psTo->sKicadPosition.y) < 0.001;
+	bVertical = fabs(psFrom->sKicadPosition.x - psTo->sKicadPosition.x) < 0.001;
+	return *pbHorizontal != bVertical;
 }
 
 
@@ -841,22 +866,43 @@ void CKicadSchemLogicimPlacer::PlaceAttachedItems(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Turns the view so its port faces the target port, port to port.  It's
+// left as it was if no turn does.
+//
+//////////////////////////////////////////////////////////////////////////
+static void TurnKicadSchemPortToward(CComponentView* pcView, CPortView* pcPort, CPortView* pcTarget)
+{
+	int			iWanted;
+	ERotation	eOriginal;
+	size		i;
+
+	iWanted = CTraceAutoConnector::OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
+	eOriginal = pcView->GetRotation();
+	for (i = 0; i < 4; i++)
+	{
+		pcView->SetRotation(gaeKicadSchemLogicimRotations[i]);
+		if (CTraceAutoConnector::GetPortFacing(pcPort) == iWanted)
+		{
+			return;
+		}
+	}
+	pcView->SetRotation(eOriginal);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A tunnel or supply that KiCad has on a pin (of a gate, flip flop or
 // placeholder) is attached to its port, turned so its port faces the
-// pin's.
+// pin's.  A pin wired to a splitter beside it keeps its way out for that
+// wire; its tunnel stands on its own, wired too.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimPlacer::AttachItems(void)
 {
-	size							i;
-	size							j;
-	size							k;
-	SKicadSchemLogicimItem*			psItem;
-	SKicadSchemLogicimTerminal*		psTerminal;
-	SKicadSchemLogicimTerminal*		psOther;
-	CPortView*						pcTarget;
-	int								iWanted;
-	ERotation						eOriginal;
+	size						i;
+	SKicadSchemLogicimItem*		psItem;
+	CPortView*					pcTarget;
 
 	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
@@ -865,43 +911,43 @@ void CKicadSchemLogicimPlacer::AttachItems(void)
 		{
 			continue;
 		}
-
-		pcTarget = NULL;
-		for (j = mpcModel->FirstItemTerminal(i); (j != ARRAY_ELEMENT_NOT_FOUND) && (pcTarget == NULL); j = mpcModel->NextItemTerminal(j))
+		pcTarget = FindAttachTarget(i);
+		if ((pcTarget != NULL) && !mpcBuses->IsSplitterPin(pcTarget))
 		{
-			psTerminal = mpcModel->GetTerminal(j);
-			for (k = mpcModel->FirstSubnetTerminal(psTerminal->pcSubnet); k != ARRAY_ELEMENT_NOT_FOUND; k = mpcModel->NextSubnetTerminal(k))
-			{
-				psOther = mpcModel->GetTerminal(k);
-				if ((mpcModel->GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
-				{
-					pcTarget = psOther->pcPortView;
-					break;
-				}
-			}
-		}
-		//A pin wired to a splitter beside it keeps its way out for that wire; its tunnel stands on its own, wired too.
-		if ((pcTarget == NULL) || mpcBuses->IsSplitterPin(pcTarget))
-		{
-			continue;
-		}
-
-		mpcModel->AttachItem(i, pcTarget);
-		iWanted = CTraceAutoConnector::OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
-		eOriginal = psItem->pcView->GetRotation();
-		for (k = 0; k < 4; k++)
-		{
-			psItem->pcView->SetRotation(gaeKicadSchemLogicimRotations[k]);
-			if (CTraceAutoConnector::GetPortFacing(psItem->pcPort) == iWanted)
-			{
-				break;
-			}
-		}
-		if (k == 4)
-		{
-			psItem->pcView->SetRotation(eOriginal);
+			mpcModel->AttachItem(i, pcTarget);
+			TurnKicadSchemPortToward(psItem->pcView, psItem->pcPort, pcTarget);
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The pin the item's terminals are on in KiCad: the port of the first
+// terminal of a component (not a tunnel or supply) at the same place on
+// the same subnet.  NULL if there's none.
+//
+//////////////////////////////////////////////////////////////////////////
+CPortView* CKicadSchemLogicimPlacer::FindAttachTarget(size uiItem)
+{
+	size							i;
+	size							j;
+	SKicadSchemLogicimTerminal*		psTerminal;
+	SKicadSchemLogicimTerminal*		psOther;
+
+	for (i = mpcModel->FirstItemTerminal(uiItem); i != ARRAY_ELEMENT_NOT_FOUND; i = mpcModel->NextItemTerminal(i))
+	{
+		psTerminal = mpcModel->GetTerminal(i);
+		for (j = mpcModel->FirstSubnetTerminal(psTerminal->pcSubnet); j != ARRAY_ELEMENT_NOT_FOUND; j = mpcModel->NextSubnetTerminal(j))
+		{
+			psOther = mpcModel->GetTerminal(j);
+			if ((mpcModel->GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
+			{
+				return psOther->pcPortView;
+			}
+		}
+	}
+	return NULL;
 }
 
 
