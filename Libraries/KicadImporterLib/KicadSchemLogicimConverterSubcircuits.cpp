@@ -220,7 +220,7 @@ CKicadSchemBoardConnector* CKicadSchemLogicimConverter::AddBoardConnector(CKicad
 	uiNumPins = 0;
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
-		if (pcLibSymbol->GetPin(i)->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+		if (pcSymbol->IsUnitPin(pcLibSymbol->GetPin(i)))
 		{
 			uiNumPins++;
 		}
@@ -326,7 +326,7 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) && (pcPin->GetType() != KSPT_NoConnect))
+		if (pcSymbol->IsUnitPin(pcPin) && (pcPin->GetType() != KSPT_NoConnect))
 		{
 			AddBoardPin(pcSymbol, pcPin, pcConnector);
 		}
@@ -639,7 +639,7 @@ void CKicadSchemLogicimConverter::GetPlaceholderPins(CKicadSchemSymbol* pcSymbol
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) || pcPin->IsHidden())
+		if (!pcSymbol->IsUnitPin(pcPin) || pcPin->IsHidden())
 		{
 			continue;
 		}

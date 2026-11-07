@@ -68,7 +68,7 @@ bool IsKicadSchemPointConnected(CKicadSchemFile* pcFile, SFloat64Vec2* psPoint, 
 		for (k = 0; k < pcLibSymbol->NumPins(); k++)
 		{
 			pcPin = pcLibSymbol->GetPin(k);
-			if (((pcSymbol == pcPinSymbol) && (pcPin == pcPinLibPin)) || !pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+			if (((pcSymbol == pcPinSymbol) && (pcPin == pcPinLibPin)) || !pcSymbol->IsUnitPin(pcPin))
 			{
 				continue;
 			}
@@ -113,7 +113,7 @@ void AssertKicadSchemPinsConnected(CKicadSchemFile* pcFile)
 		for (k = 0; k < pcLibSymbol->NumPins(); k++)
 		{
 			pcPin = pcLibSymbol->GetPin(k);
-			if (pcPin->IsHidden() || !pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+			if (pcPin->IsHidden() || !pcSymbol->IsUnitPin(pcPin))
 			{
 				continue;
 			}

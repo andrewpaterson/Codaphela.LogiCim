@@ -61,7 +61,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	pcPin = NULL;
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
-		if (pcLibSymbol->GetPin(i)->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+		if (pcSymbol->IsUnitPin(pcLibSymbol->GetPin(i)))
 		{
 			pcPin = pcLibSymbol->GetPin(i);
 			break;
@@ -178,7 +178,7 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()))
+		if (!pcSymbol->IsUnitPin(pcPin))
 		{
 			continue;
 		}
@@ -219,7 +219,7 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) && IsKicadSchemRegulatorPinName(pcPin->GetName(), "OUT"))
+		if (pcSymbol->IsUnitPin(pcPin) && IsKicadSchemRegulatorPinName(pcPin->GetName(), "OUT"))
 		{
 			pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
 			pcNet = (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL;
@@ -280,7 +280,7 @@ float32 CKicadSchemLogicimConverter::GetRegulatedVoltage(CKicadSchemSymbol* pcSy
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) || IsGroundName(pcPin->GetName()))
+		if (!pcSymbol->IsUnitPin(pcPin) || IsGroundName(pcPin->GetName()))
 		{
 			continue;
 		}

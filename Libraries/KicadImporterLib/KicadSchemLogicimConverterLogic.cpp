@@ -317,7 +317,7 @@ void CKicadSchemLogicimConverter::CollectLogicPins(CKicadSchemSymbol* pcSymbol, 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) || (pcPin->GetType() == KSPT_PowerIn) || IsKicadSchemPowerPinName(pcPin->GetName()))
+		if (!pcSymbol->IsUnitPin(pcPin) || (pcPin->GetType() == KSPT_PowerIn) || IsKicadSchemPowerPinName(pcPin->GetName()))
 		{
 			continue;
 		}
@@ -1106,7 +1106,7 @@ void CKicadSchemLogicimConverter::CollectLogic74Pins(CKicadSchemSymbol* pcSymbol
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcPin->IsOn(pcSymbol->GetUnit(), pcSymbol->GetBodyStyle()) || (pcPin->GetType() == KSPT_PowerIn) || (pcPin->GetType() == KSPT_NoConnect) || IsKicadSchemPowerPinName(pcPin->GetName()))
+		if (!pcSymbol->IsUnitPin(pcPin) || (pcPin->GetType() == KSPT_PowerIn) || (pcPin->GetType() == KSPT_NoConnect) || IsKicadSchemPowerPinName(pcPin->GetName()))
 		{
 			continue;
 		}
