@@ -37,8 +37,7 @@ void CKicadSchemBoardConnector::Init(const char* szReference, size uiNumPins)
 {
 	mszReference.Init(szReference);
 	muiNumPins = uiNumPins;
-	maszNumbers.Init();
-	mapcPins.Init();
+	mcPins.Init();
 }
 
 
@@ -48,22 +47,22 @@ void CKicadSchemBoardConnector::Init(const char* szReference, size uiNumPins)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemBoardConnector::Kill(void)
 {
-	mapcPins.Kill();
-	maszNumbers.Kill();
+	mcPins.Kill();
 	mszReference.Kill();
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The connector's pin szNumber became the circuit pin, unless it already
+// has one.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemBoardConnector::AddPin(const char* szNumber, CPinView* pcPin)
 {
-	if (maszNumbers.GetIndex(szNumber) == ARRAY_ELEMENT_NOT_FOUND)
+	if (mcPins.Get(szNumber) == NULL)
 	{
-		maszNumbers.Add(szNumber);
-		mapcPins.Add(pcPin);
+		mcPins.Put(szNumber, &pcPin);
 	}
 }
 
@@ -75,14 +74,10 @@ void CKicadSchemBoardConnector::AddPin(const char* szNumber, CPinView* pcPin)
 //////////////////////////////////////////////////////////////////////////
 CPinView* CKicadSchemBoardConnector::GetPin(const char* szNumber)
 {
-	size	uiIndex;
+	CPinView**	ppcPin;
 
-	uiIndex = maszNumbers.GetIndex(szNumber);
-	if (uiIndex == ARRAY_ELEMENT_NOT_FOUND)
-	{
-		return NULL;
-	}
-	return mapcPins.GetPtr(uiIndex);
+	ppcPin = mcPins.Get(szNumber);
+	return (ppcPin != NULL) ? *ppcPin : NULL;
 }
 
 
@@ -92,7 +87,7 @@ CPinView* CKicadSchemBoardConnector::GetPin(const char* szNumber)
 //////////////////////////////////////////////////////////////////////////
 char* CKicadSchemBoardConnector::GetReference(void) { return mszReference.Text(); }
 size CKicadSchemBoardConnector::NumPins(void) { return muiNumPins; }
-size CKicadSchemBoardConnector::NumCircuitPins(void) { return maszNumbers.NumElements(); }
+size CKicadSchemBoardConnector::NumCircuitPins(void) { return mcPins.NumElements(); }
 
 
 //////////////////////////////////////////////////////////////////////////

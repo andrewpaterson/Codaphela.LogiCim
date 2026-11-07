@@ -23,6 +23,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/Chars.h"
 #include "BaseLib/ArrayChars.h"
 #include "BaseLib/ArrayTemplatePtr.h"
+#include "BaseLib/MapStringTemplate.h"
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "LogicimLib/ValueView.h"
@@ -42,8 +43,7 @@ class CKicadSchemBoardConnector
 protected:
 	CChars						mszReference;
 	size						muiNumPins;
-	CArrayChars					maszNumbers;
-	CArrayTemplatePtr<CPinView>	mapcPins;
+	CMapStringTemplate<CPinView*>	mcPins;  //By the connector's pin number.
 
 public:
 	void		Init(const char* szReference, size uiNumPins);
