@@ -401,6 +401,9 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 
 	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mpLogicimCircuit), this, mpLogicimCircuit->GetEditor());
 	mpCircuit->SetAlignment(CSH_Stretch, CSV_Stretch);
+
+	//The circuit's draw reads the circuit, which its edits, the simulation and the view change without telling the canvas.
+	mpCircuit->SetDrawnEveryPaint(true);
 	mpCanvasMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
 	mpCanvasMenu->GetItemClickEvent()->Add(this, &CLogicimWindowContent::CanvasMenuItemClicked);
 	mpCircuit->SetContextMenu(mpCanvasMenu);

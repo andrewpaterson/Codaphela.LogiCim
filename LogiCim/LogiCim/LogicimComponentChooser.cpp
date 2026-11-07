@@ -101,6 +101,7 @@ void CLogicimComponentChooser::Class(void)
 	M_Pointer(mpFilter);
 	M_Pointer(mpList);
 	M_Pointer(mpPreviewDraw);
+	M_Pointer(mpPreview);
 	M_Pointer(mpName);
 	M_Pointer(mpDescription);
 	M_Pointer(mpLibrary);
@@ -175,7 +176,6 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	Ptr<CGridContainer>		pBody;
 	Ptr<CGridContainer>		pDetails;
 	Ptr<CScrollPane>		pScrollPane;
-	Ptr<CCanvas>			pPreview;
 	Ptr<CFillContainer>		pGap;
 	SInsets					sInsets;
 	int						aiInsets[4] = { 0, 6, 0, 6 };
@@ -210,9 +210,9 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 
 	mpPreviewDraw = OMalloc<CCircuitCanvasDraw>(mpcCircuit);
 	mpPreviewDraw->SetGrid(false);
-	pPreview = OMalloc<CCanvas>(pWindow, mpPreviewDraw);
-	pPreview->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pBody->AddComponent(pPreview, 2, 2, 1, 1, 1, 1);
+	mpPreview = OMalloc<CCanvas>(pWindow, mpPreviewDraw);
+	mpPreview->SetAlignment(CSH_Stretch, CSV_Stretch);
+	pBody->AddComponent(mpPreview, 2, 2, 1, 1, 1, 1);
 
 	pGap = OMalloc<CFillContainer>(pWindow);
 	pGap->SetDesiredSize(CHOOSER_GAP, CHOOSER_GAP);
@@ -595,6 +595,7 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 	SLogicimChooserRow*		psRow;
 
 	mpPreviewDraw->SetPreview(NULL);
+	mpPreview->Invalidate();
 	KillPreview();
 
 	psRow = GetRow(iRow);
@@ -632,6 +633,7 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 	mpLibrary->SetText(sz.Text());
 	sz.Kill();
 	mpPreviewDraw->SetPreview(mpcPreview);
+	mpPreview->Invalidate();
 }
 
 

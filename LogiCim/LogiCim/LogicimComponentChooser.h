@@ -65,6 +65,7 @@ protected:
 	Ptr<CTextField>			mpFilter;
 	Ptr<CListContainer>		mpList;
 	Ptr<CCircuitCanvasDraw>	mpPreviewDraw;
+	Ptr<CCanvas>			mpPreview;  //Drawn again when its preview changes, which its draw can't tell it.
 	Ptr<CLabel>				mpName;
 	Ptr<CLabel>				mpDescription;
 	Ptr<CLabel>				mpLibrary;

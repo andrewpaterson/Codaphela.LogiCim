@@ -70,6 +70,11 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 	pBackground = OMalloc<CClearCanvasDraw>(0);  //Coloured once the content has made the theme.
 	mpWindow = OMalloc<CWindow>("LogiCim", pcNativeFactory, pTick, pBackground, CFT_RGBX, CCO_BGR, CRGB_24bit, ARGB_8bit);
 
+	//Only what changed is drawn.  LOGICIM_VERIFY_REDRAW checks every partial paint against drawing all of the window and
+	//logs where they differ, for finding a component that changes without being invalidated.
+	mpWindow->SetPartialRedraw(true);
+	mpWindow->SetVerifyRedraw(getenv("LOGICIM_VERIFY_REDRAW") != NULL);
+
 	mpContent = OMalloc<CLogicimWindowContent>();
 	mbValid = mpContent->Setup(mpWindow, &msData, "Resources/InterVariable.ttf", "Resources/Icons", "Resources/PropagationTimes.csv", "Resources/Fonts");
 	if (mbValid)

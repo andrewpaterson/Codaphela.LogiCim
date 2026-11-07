@@ -636,7 +636,8 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 	{
 		if (mbRanLastTick && mpLogicimCircuit->Run(NanosecondsToTime(iUpdateTimeInMilliseconds * mfNanosecondsPerMillisecond)))
 		{
-			mpWindow->Invalidate();
+			//The circuit canvas is drawn every paint.
+			mpWindow->RequestPaint();
 		}
 		mpWindow->RequestTick(LOGICIM_SIMULATION_TICK_MILLISECONDS);
 	}
