@@ -63,6 +63,23 @@ struct SKicadSchemLogicLayout
 };
 
 
+//A symbol's logic part as its name says: a real 74 series part (see Parse74Part) or the function of its gates or flip
+//flops (KSLF_None if it isn't parsed as one), with its family ("LVC") and part type ("74LVC00").
+struct SKicadSchemLogicPart
+{
+	CKicadSchemSymbol*			pcSymbol;
+	CKicadSchemLibSymbol*		pcLibSymbol;
+	EKicadSchemLogicFunction	eFunction;
+	CChars						szFamily;
+	CChars						szPartType;
+
+	void	Init(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
+	void	Kill(void);
+	bool	Parse74Part(void);
+	bool	ParseFunction(void);
+};
+
+
 //A voltage regulator's output: the net it drives and its voltage.
 struct SKicadSchemLogicimRegulated
 {
@@ -151,14 +168,14 @@ protected:
 	void							AddBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector);
 	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
-	bool							AddLogicParts(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, const char* szFamily, const char* szPartType);
-	bool							AddLogic74Block(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, const char* szFamily, const char* szPartType);
-	void							CollectLogic74Pins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions);
-	void							CollectLogicPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, SKicadSchemLogicPins* psPins);
-	void							AddLogicPart(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, SKicadSchemLogicPins* psPins, size uiGroup, const char* szFamily);
-	bool							AddLogic74Part(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, EKicadSchemLogicFunction eFunction, SKicadSchemLogicPins* psPins, const char* szFamily, const char* szPartType);
-	void							AddLogic74Unit(CKicadSchemSymbol* pcSymbol, int iUnit, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation, const char* szFamily, const char* szPartType);
-	void							AddLogic74Package(CKicadSchemSymbol* pcSymbol, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation, const char* szFamily, const char* szPartType);
+	bool							AddLogicParts(SKicadSchemLogicPart* psPart);
+	bool							AddLogic74Block(SKicadSchemLogicPart* psPart);
+	void							CollectLogic74Pins(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions);
+	void							CollectLogicPins(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins);
+	void							AddLogicPart(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins, size uiGroup);
+	bool							AddLogic74Part(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins);
+	void							AddLogic74Unit(SKicadSchemLogicPart* psPart, int iUnit, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation);
+	void							AddLogic74Package(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation);
 	bool							AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							LayOutBoardPins(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector);
 	bool							AddPlaceholder(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);

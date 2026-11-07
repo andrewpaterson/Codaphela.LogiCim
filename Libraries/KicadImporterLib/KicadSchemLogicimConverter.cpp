@@ -197,9 +197,7 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 {
 	CKicadSchemLibSymbol*		pcLibSymbol;
-	EKicadSchemLogicFunction	eFunction;
-	CChars						szFamily;
-	CChars						szPartType;
+	SKicadSchemLogicPart		sPart;
 	bool						bAdded;
 
 	pcLibSymbol = mpcFile->GetLibSymbol(pcSymbol);
@@ -221,35 +219,10 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 		return true;
 	}
 
-	//A real 74 series part that isn't gates.
-	szFamily.Init();
-	szPartType.Init();
-	if (ParseKicadSchemLogic74Part(pcLibSymbol->GetName(), &szFamily, &szPartType) || ParseKicadSchemLogic74Part(pcSymbol->GetValue(), &szFamily, &szPartType))
-	{
-		if (AddLogic74Block(pcSymbol, pcLibSymbol, szFamily.Text(), szPartType.Text()))
-		{
-			szPartType.Kill();
-			szFamily.Kill();
-			return true;
-		}
-	}
-	szPartType.Kill();
-	szFamily.Kill();
-
-	szFamily.Init();
-	szPartType.Init();
-	eFunction = ParseKicadSchemLogicFunction(pcLibSymbol->GetName(), &szFamily, &szPartType);
-	if (eFunction == KSLF_None)
-	{
-		eFunction = ParseKicadSchemLogicFunction(pcSymbol->GetValue(), &szFamily, &szPartType);
-	}
-	bAdded = false;
-	if (eFunction != KSLF_None)
-	{
-		bAdded = AddLogicParts(pcSymbol, pcLibSymbol, eFunction, szFamily.Text(), szPartType.Text());
-	}
-	szPartType.Kill();
-	szFamily.Kill();
+	//A real 74 series part that isn't gates, or gates or flip flops.
+	sPart.Init(pcSymbol, pcLibSymbol);
+	bAdded = (sPart.Parse74Part() && AddLogic74Block(&sPart)) || (sPart.ParseFunction() && AddLogicParts(&sPart));
+	sPart.Kill();
 	if (bAdded)
 	{
 		return true;
