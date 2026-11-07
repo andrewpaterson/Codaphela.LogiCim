@@ -23,6 +23,21 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "IntegratedCircuitView.h"
 
 
+//An oscilloscope's traces (see COscilloscopeView): how many inputs, how many divisions wide, the samples in a division
+//and the divisions' height, and how often it samples.  Init gives a placed oscilloscope's others: 32 divisions of 30
+//samples, 4 high, at 6GHz.
+struct SOscilloscopeParams
+{
+	int32		iInputCount;
+	int32		iNumberOfDivsWide;
+	int32		iSamplesPerDiv;
+	int32		iDivHeight;
+	float64		fSampleFrequency;
+
+	void	Init(int32 iInputCount);
+};
+
+
 //An oscilloscope, as Logicim's OscilloscopeView: a cyan frame round a white screen with an input per trace down its
 //left edge, iDivHeight grid units apart.  Each trace is drawn from its input across iNumberOfDivsWide grid units, a
 //sample bar from the lowest to the highest voltage seen in each sample (8V is iDivHeight up), with the tick line where
@@ -41,7 +56,7 @@ protected:
 	float64		mfSampleFrequency;
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, int32 iInputCount, int32 iNumberOfDivsWide, int32 iSamplesPerDiv, int32 iDivHeight, float64 fSampleFrequency);
+			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, SOscilloscopeParams* psParams);
 
 	virtual void					Paint(CCircuitPainter* pcPainter);
 

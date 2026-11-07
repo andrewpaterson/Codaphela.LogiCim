@@ -62,6 +62,7 @@ void AddEveryCircuitFileView(CCircuitView* pcCircuit)
 	CLabelView*			pcLabel;
 	C65C64View*			pc65C64;
 	SSplitterParams		sSplitter;
+	SOscilloscopeParams	sScope;
 
 	pcAnd = NewMalloc<CAndGateView>();
 	pcAnd->Init(-30, -5, ROT_East, "U1", "LVC", false, 2, 1);
@@ -121,7 +122,12 @@ void AddEveryCircuitFileView(CCircuitView* pcCircuit)
 	pcMPU->Init(0, 30, ROT_East, "MPU", "LVC", false);
 	pcCircuit->Add(pcMPU);
 	pcScope = NewMalloc<COscilloscopeView>();
-	pcScope->Init(30, 20, ROT_East, "Scope", "LVC", 2, 8, 4, 3, 1000000000);
+	sScope.Init(2);
+	sScope.iNumberOfDivsWide = 8;
+	sScope.iSamplesPerDiv = 4;
+	sScope.iDivHeight = 3;
+	sScope.fSampleFrequency = 1000000000;
+	pcScope->Init(30, 20, ROT_East, "Scope", "LVC", &sScope);
 	pcCircuit->Add(pcScope);
 	pcSplitter = NewMalloc<CSplitterView>();
 	sSplitter.Init(8, 2);

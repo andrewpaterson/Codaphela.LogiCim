@@ -34,10 +34,26 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
+// iInputCount traces, 32 divisions of 30 samples wide, 4 grid units high,
+// sampled at 6GHz.
+//
+//////////////////////////////////////////////////////////////////////////
+void SOscilloscopeParams::Init(int32 iInputCount)
+{
+	this->iInputCount = iInputCount;
+	iNumberOfDivsWide = 32;
+	iSamplesPerDiv = 30;
+	iDivHeight = 4;
+	fSampleFrequency = 6000000000.0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Logicim's power ports are never explicit on an oscilloscope.
 //
 //////////////////////////////////////////////////////////////////////////
-void COscilloscopeView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, int32 iInputCount, int32 iNumberOfDivsWide, int32 iSamplesPerDiv, int32 iDivHeight, float64 fSampleFrequency)
+void COscilloscopeView::Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, SOscilloscopeParams* psParams)
 {
 	SComponentShape*	psShape;
 	float64				fBottom;
@@ -45,11 +61,11 @@ void COscilloscopeView::Init(int32 x, int32 y, ERotation eRotation, const char* 
 	CChars				szPortName;
 
 	CIntegratedCircuitView::Init(x, y, eRotation, szName, szFamily, false);
-	miInputCount = iInputCount;
-	miNumberOfDivsWide = iNumberOfDivsWide;
-	miSamplesPerDiv = iSamplesPerDiv;
-	miDivHeight = iDivHeight;
-	mfSampleFrequency = fSampleFrequency;
+	miInputCount = psParams->iInputCount;
+	miNumberOfDivsWide = psParams->iNumberOfDivsWide;
+	miSamplesPerDiv = psParams->iSamplesPerDiv;
+	miDivHeight = psParams->iDivHeight;
+	mfSampleFrequency = psParams->fSampleFrequency;
 
 	fBottom = (miInputCount - 1) * miDivHeight;
 	psShape = mcShapes.AddRoundedRectangle(0, -4, miNumberOfDivsWide + 2, fBottom + 2, 1, true, true);
@@ -203,28 +219,24 @@ void COscilloscopeView::SaveXMLAttributes(CXMLWriter* pcWriter)
 bool COscilloscopeView::LoadXML(CMarkupTag* pcTag)
 {
 	SIntegratedCircuitXML	sIntegratedCircuit;
-	int32		iInputCount;
-	int32		iNumberOfDivsWide;
-	int32		iSamplesPerDiv;
-	int32		iDivHeight;
-	float64		fSampleFrequency;
+	SOscilloscopeParams		sParams;
 
 	if (!LoadIntegratedCircuitXML(pcTag, &sIntegratedCircuit))
 	{
 		return false;
 	}
-	if (!pcTag->GetInt32Attribute("inputCount", &iInputCount) || !pcTag->GetInt32Attribute("numberOfDivsWide", &iNumberOfDivsWide) ||
-		!pcTag->GetInt32Attribute("samplesPerDiv", &iSamplesPerDiv) || !pcTag->GetInt32Attribute("divHeight", &iDivHeight) ||
-		!pcTag->GetFloat64Attribute("sampleFrequency", &fSampleFrequency))
+	if (!pcTag->GetInt32Attribute("inputCount", &sParams.iInputCount) || !pcTag->GetInt32Attribute("numberOfDivsWide", &sParams.iNumberOfDivsWide) ||
+		!pcTag->GetInt32Attribute("samplesPerDiv", &sParams.iSamplesPerDiv) || !pcTag->GetInt32Attribute("divHeight", &sParams.iDivHeight) ||
+		!pcTag->GetFloat64Attribute("sampleFrequency", &sParams.fSampleFrequency))
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs whole number inputCount, numberOfDivsWide, samplesPerDiv and divHeight and a sampleFrequency.", NULL);
 	}
-	if ((iInputCount < 1) || (iInputCount > 24) || (iNumberOfDivsWide < 4) || (iNumberOfDivsWide > 128) ||
-		(iSamplesPerDiv < 4) || (iSamplesPerDiv > 64) || (iDivHeight < 2) || (iDivHeight > 6) || !(fSampleFrequency > 0))
+	if ((sParams.iInputCount < 1) || (sParams.iInputCount > 24) || (sParams.iNumberOfDivsWide < 4) || (sParams.iNumberOfDivsWide > 128) ||
+		(sParams.iSamplesPerDiv < 4) || (sParams.iSamplesPerDiv > 64) || (sParams.iDivHeight < 2) || (sParams.iDivHeight > 6) || !(sParams.fSampleFrequency > 0))
 	{
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has a property out of range.", NULL);
 	}
-	Init(sIntegratedCircuit.x, sIntegratedCircuit.y, sIntegratedCircuit.eRotation, sIntegratedCircuit.szName, sIntegratedCircuit.szFamily, iInputCount, iNumberOfDivsWide, iSamplesPerDiv, iDivHeight, fSampleFrequency);
+	Init(sIntegratedCircuit.x, sIntegratedCircuit.y, sIntegratedCircuit.eRotation, sIntegratedCircuit.szName, sIntegratedCircuit.szFamily, &sParams);
 	return true;
 }
 
@@ -279,7 +291,10 @@ void COscilloscopeView::GetProperties(CComponentProperties* pcProperties, SCompo
 //////////////////////////////////////////////////////////////////////////
 bool COscilloscopeView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts)
 {
-	Init(x, y, eRotation, "", PLACED_FAMILY, 2, 32, 30, 4, 6000000000.0);
+	SOscilloscopeParams		sParams;
+
+	sParams.Init(2);
+	Init(x, y, eRotation, "", PLACED_FAMILY, &sParams);
 	return true;
 }
 
@@ -290,6 +305,13 @@ bool COscilloscopeView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCircu
 //////////////////////////////////////////////////////////////////////////
 bool COscilloscopeView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), (int32)pcProperties->GetInteger("inputCount", miInputCount), (int32)pcProperties->GetInteger("numberOfDivsWide", miNumberOfDivsWide), (int32)pcProperties->GetInteger("samplesPerDiv", miSamplesPerDiv), (int32)pcProperties->GetInteger("divHeightInGrids", miDivHeight), pcProperties->GetFloat("samplingFrequency", mfSampleFrequency / 1000000000.0) * 1000000000.0);
+	SOscilloscopeParams		sParams;
+
+	sParams.iInputCount = (int32)pcProperties->GetInteger("inputCount", miInputCount);
+	sParams.iNumberOfDivsWide = (int32)pcProperties->GetInteger("numberOfDivsWide", miNumberOfDivsWide);
+	sParams.iSamplesPerDiv = (int32)pcProperties->GetInteger("samplesPerDiv", miSamplesPerDiv);
+	sParams.iDivHeight = (int32)pcProperties->GetInteger("divHeightInGrids", miDivHeight);
+	sParams.fSampleFrequency = pcProperties->GetFloat("samplingFrequency", mfSampleFrequency / 1000000000.0) * 1000000000.0;
+	Init(x, y, eRotation, pcProperties->GetText("name", ""), pcProperties->GetText("family", ""), &sParams);
 	return true;
 }

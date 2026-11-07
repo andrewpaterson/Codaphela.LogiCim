@@ -424,6 +424,7 @@ void TestWiringClockAndOscilloscope(void)
 	size				uiLow;
 	CChars				szFirst;
 	CChars				szSecond;
+	SOscilloscopeParams	sScope;
 
 	sTest.Init();
 	pcClock = NewMalloc<CClockView>();
@@ -436,7 +437,12 @@ void TestWiringClockAndOscilloscope(void)
 	pcProbe = AddWiringProbe(&sTest.cCircuit, 6, -4, ROT_West, 1, RADIX_Binary);
 	sTest.cCircuit.AddTrace(0, -4, 0, -10);
 	pcScope = NewMalloc<COscilloscopeView>();
-	pcScope->Init(0, -10, ROT_East, "Scope", "LVC", 1, 4, 8, 2, 100000000);
+	sScope.Init(1);
+	sScope.iNumberOfDivsWide = 4;
+	sScope.iSamplesPerDiv = 8;
+	sScope.iDivHeight = 2;
+	sScope.fSampleFrequency = 100000000;
+	pcScope->Init(0, -10, ROT_East, "Scope", "LVC", &sScope);
 	sTest.cCircuit.Add(pcScope);
 
 	AssertTrue(sTest.cCircuit.CreateSimulation(sTest.pcPath, &sTest.pSimulation, &sTest.cFamilies));
@@ -592,6 +598,7 @@ void TestWiringRenderViews(void)
 	CLabelView*			pcLabel;
 	COscilloscopeView*	pcScope;
 	SSplitterParams		sSplitter;
+	SOscilloscopeParams	sScope;
 
 	ObjectsInit();
 	pFonts = LoadTestCircuitFonts();
@@ -618,7 +625,8 @@ void TestWiringRenderViews(void)
 	pcLabel->Init(-8, -6, ROT_North, "  ", TA_Left, false, true, true, &pFonts);
 	cCircuit.Add(pcLabel);
 	pcScope = NewMalloc<COscilloscopeView>();
-	pcScope->Init(0, -8, ROT_East, "", "LVC", 2, 32, 30, 4, 6000000000.0);
+	sScope.Init(2);
+	pcScope->Init(0, -8, ROT_East, "", "LVC", &sScope);
 	cCircuit.Add(pcScope);
 
 	pcClock = NewMalloc<CClockView>();
