@@ -27,7 +27,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/RoundedBoxCanvasDraw.h"
 #include "WindowLib/IconComponent.h"
 #include "WindowLib/JewelImageGenerator.h"
-#include "WindowLib/JewelColours.h"
 #include "LogicimLib/ComponentLibraries.h"
 #include "LogicimLib/ComponentPlacement.h"
 #include "LogicimLib/CircuitEditor.h"
@@ -72,8 +71,6 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 
 	mpDialog = OMalloc<CDialog>(pOwner, psLook, "Choose Component");
 	mpDialog->GetWindow()->GetColourFormat(&cFormat);
-	mpCollapsedChevron = CJewelImageGenerator::CreateChevron(JEWEL_ICON, &cFormat);
-	mpExpandedChevron = CJewelImageGenerator::CreateDownChevron(JEWEL_ICON, &cFormat);
 	pBody = CreateBody();
 	mpDialog->SetBody(pBody, mpFilter);
 
@@ -107,8 +104,6 @@ void CLogicimComponentChooser::Class(void)
 	M_Pointer(mpName);
 	M_Pointer(mpDescription);
 	M_Pointer(mpLibrary);
-	M_Pointer(mpCollapsedChevron);
-	M_Pointer(mpExpandedChevron);
 	U_Unknown(CArrayInt, maiExpanded);
 	U_Unknown(CArrayLogicimChooserRow, masRows);
 	U_Unknown(CArrayChars, maszSubcircuits);
@@ -499,7 +494,7 @@ void CLogicimComponentChooser::AddLibraryRow(int iLibrary)
 	iRow = mpList->AddRow(true);
 	pGap = OMalloc<CFillContainer>(pWindow);
 	pGap->SetDesiredSize(CHOOSER_INDENT, CHOOSER_ROW_HEIGHT);
-	pChevron = OMalloc<CIconComponent>(pWindow, maiExpanded.GetValue(iLibrary) ? mpExpandedChevron : mpCollapsedChevron, CHOOSER_CHEVRON_WIDTH, CHOOSER_ROW_HEIGHT);
+	pChevron = OMalloc<CIconComponent>(pWindow, mpDialog->GetLook()->pcTheme->GetImage(maiExpanded.GetValue(iLibrary) ? TI_DownChevron : TI_Chevron), CHOOSER_CHEVRON_WIDTH, CHOOSER_ROW_HEIGHT);
 	pChevron->SetCelAlignment(CSH_Left, CSV_Center);
 	pLabel = OMalloc<CLabel>(pWindow, mpDialog->GetLook()->pcTheme->GetFont(), GetLibraryName(iLibrary));
 	pLabel->SetAlignment(CSH_Left, CSV_Center);

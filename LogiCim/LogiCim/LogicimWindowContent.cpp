@@ -31,7 +31,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "SupportLib/ImageReader.h"
 #include "SupportLib/TrueTypeFont.h"
 #include "SupportLib/TrueTypeFontFactory.h"
-#include "WindowLib/JewelColours.h"
 #include "WindowLib/JewelTheme.h"
 #include "WindowLib/ClearCanvasDraw.h"
 #include "WindowLib/FillContainer.h"
@@ -224,7 +223,6 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	}
 	//The content holds the font colours and the theme; the widgets only hold their parts.
 	mpFontColours = OMalloc<CFontColours>(pWhite);
-	mpFont = mpFontColours->GetFont(JEWEL_TEXT);
 	mpDimFont = mpFontColours->GetFont(LOGICIM_DIM_TEXT);
 
 	if (!LoadIcons(szIconDirectory))
@@ -239,9 +237,9 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	pWindow->SetContainer(pGrid);
 	pGrid->AddComponent(CreateMenuBar(), 0, 0, 1, 1, 1, 0);
 	pGrid->AddComponent(CreateToolbar(), 0, 1, 1, 1, 1, 0);
-	pGrid->AddComponent(CreateLine(-1, 1, JEWEL_EDITOR), 0, 2, 1, 1, 1, 0);
+	pGrid->AddComponent(CreateLine(-1, 1, mpTheme->GetColour(TC_Editor)), 0, 2, 1, 1, 1, 0);
 	pGrid->AddComponent(CreateEditor(), 0, 3, 1, 1, 1, 1);
-	pGrid->AddComponent(CreateLine(-1, 1, JEWEL_EDITOR), 0, 4, 1, 1, 1, 0);
+	pGrid->AddComponent(CreateLine(-1, 1, mpTheme->GetColour(TC_Editor)), 0, 4, 1, 1, 1, 0);
 	pGrid->AddComponent(CreateStatusBar(), 0, 5, 1, 1, 1, 0);
 
 	//Like Logicim the project starts with a top level subcircuit and a simulation of it.  The subcircuits are listed
@@ -670,3 +668,10 @@ void CLogicimWindowContent::Redo(bool bStep)
 	mpLogicimCircuit->GetEditor()->Redo(bStep);
 	UpdateInfo();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) { return mpTheme; }

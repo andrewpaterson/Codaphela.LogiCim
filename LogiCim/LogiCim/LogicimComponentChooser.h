@@ -68,8 +68,6 @@ protected:
 	Ptr<CLabel>				mpName;
 	Ptr<CLabel>				mpDescription;
 	Ptr<CLabel>				mpLibrary;
-	Ptr<CImageCel>			mpCollapsedChevron;
-	Ptr<CImageCel>			mpExpandedChevron;
 	CArrayInt				maiExpanded;  //1 for each library that's open, the subcircuits last.
 	CArrayLogicimChooserRow	masRows;
 	CArrayChars				maszSubcircuits;

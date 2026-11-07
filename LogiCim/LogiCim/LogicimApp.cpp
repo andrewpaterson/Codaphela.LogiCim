@@ -26,7 +26,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "StandardLib/Objects.h"
 #include "WindowLib/ClearCanvasDraw.h"
-#include "WindowLib/JewelColours.h"
 #include "LogicimWindowTick.h"
 #include "LogicimApp.h"
 
@@ -60,18 +59,21 @@ void CLogicimApp::Init(void)
 bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcNativeInput, const char* szInputDirectory)
 {
 	Ptr<CLogicimWindowTick>	pTick;
+	Ptr<CClearCanvasDraw>	pBackground;
 
 	pTick = OMalloc<CLogicimWindowTick>(&msData);
 	if (getenv("LOGICIM_SNAPSHOT") != NULL)
 	{
 		pTick->SetSnapshot(getenv("LOGICIM_SNAPSHOT"), (getenv("LOGICIM_SNAPSHOT_TICKS") != NULL) ? atoi(getenv("LOGICIM_SNAPSHOT_TICKS")) : 60);
 	}
-	mpWindow = OMalloc<CWindow>("LogiCim", pcNativeFactory, pTick, OMalloc<CClearCanvasDraw>(JEWEL_PANEL), CFT_RGBX, CCO_BGR, CRGB_24bit, ARGB_8bit);
+	pBackground = OMalloc<CClearCanvasDraw>(0);  //Coloured once the content has made the theme.
+	mpWindow = OMalloc<CWindow>("LogiCim", pcNativeFactory, pTick, pBackground, CFT_RGBX, CCO_BGR, CRGB_24bit, ARGB_8bit);
 
 	mpContent = OMalloc<CLogicimWindowContent>();
 	mbValid = mpContent->Setup(mpWindow, &msData, "Resources/InterVariable.ttf", "Resources/Icons", "Resources/PropagationTimes.csv", "Resources/Fonts");
 	if (mbValid)
 	{
+		pBackground->SetColour(mpContent->GetTheme()->GetColour(TC_Panel));
 		mpInput = OMalloc<CInput>((CNativeInput*)NULL);
 		mbValid = mpInput->Read((char*)szInputDirectory);
 		mpInput->AddNativeInput(pcNativeInput);

@@ -31,7 +31,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "SupportLib/ImageReader.h"
 #include "SupportLib/TrueTypeFont.h"
 #include "SupportLib/TrueTypeFontFactory.h"
-#include "WindowLib/JewelColours.h"
 #include "WindowLib/JewelTheme.h"
 #include "WindowLib/ClearCanvasDraw.h"
 #include "WindowLib/FillContainer.h"
@@ -117,7 +116,8 @@ Ptr<CImageCel> CLogicimWindowContent::ReadIcon(const char* szIconDirectory, cons
 void CLogicimWindowContent::CreateLooks(void)
 {
 	//The dialogs share the window's theme, they have the same colour format.
-	mpTheme = CJewelTheme::CreateDarkTheme(mpWindow, mpFont);
+	mpTheme = CJewelTheme::CreateDarkTheme(mpWindow, mpFontColours);
+	mpFont = mpTheme->GetFont();
 	msDialogLook.pcTheme = &mpTheme;
 	msDialogLook.pcDimFont = &mpDimFont;
 }
@@ -252,7 +252,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateToolStrip(ELogicimAction* aeActions
 	{
 		if (aeActions[i] == LA_Separator)
 		{
-			pLine = CreateLine(bVertical ? 22 : 1, bVertical ? 1 : 22, JEWEL_SEPARATOR);
+			pLine = CreateLine(bVertical ? 22 : 1, bVertical ? 1 : 22, mpTheme->GetColour(TC_Separator));
 			pFiller = OMalloc<CFillContainer>(mpWindow);
 			pFiller->SetDesiredSize(bVertical ? 22 : 13, bVertical ? 13 : 22);
 			pFiller->AddComponent(pLine);
@@ -411,15 +411,15 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	pCentre = OMalloc<CGridContainer>(mpWindow);
 	pCentre->SetAlignment(CSH_Stretch, CSV_Stretch);
 	pCentre->AddComponent(mpCircuit, 0, 0, 1, 1, 1, 1);
-	pCentre->AddComponent(CreateLine(-1, 1, JEWEL_EDITOR), 0, 1, 1, 1, 1, 0);
+	pCentre->AddComponent(CreateLine(-1, 1, mpTheme->GetColour(TC_Editor)), 0, 1, 1, 1, 1, 0);
 	pCentre->AddComponent(pSimulations, 0, 2, 1, 1, 1, 0);
 
 	pEditor->AddComponent(CreateToolStrip(aeDisplay, sizeof(aeDisplay) / sizeof(ELogicimAction), true), 0, 0, 1, 1, 0, 1);
-	pEditor->AddComponent(CreateLine(1, -1, JEWEL_EDITOR), 1, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(CreateLine(1, -1, mpTheme->GetColour(TC_Editor)), 1, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(pSubcircuits, 2, 0, 1, 1, 0, 1);
-	pEditor->AddComponent(CreateLine(1, -1, JEWEL_EDITOR), 3, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(CreateLine(1, -1, mpTheme->GetColour(TC_Editor)), 3, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(pCentre, 4, 0, 1, 1, 1, 1);
-	pEditor->AddComponent(CreateLine(1, -1, JEWEL_EDITOR), 5, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(CreateLine(1, -1, mpTheme->GetColour(TC_Editor)), 5, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(CreateToolStrip(aeCreation, sizeof(aeCreation) / sizeof(ELogicimAction), true), 6, 0, 1, 1, 0, 1);
 	return pEditor;
 }
@@ -446,7 +446,7 @@ Ptr<CLabel> CLogicimWindowContent::AddStatusLabel(Ptr<CGridContainer> pBar, int*
 	pBar->AddComponent(pLabel, *piColumn, 0);
 	(*piColumn)++;
 
-	pBar->AddComponent(CreateLine(1, 16, JEWEL_SEPARATOR), *piColumn, 0);
+	pBar->AddComponent(CreateLine(1, 16, mpTheme->GetColour(TC_Separator)), *piColumn, 0);
 	(*piColumn)++;
 	return pLabel;
 }

@@ -131,19 +131,19 @@ protected:
 	Ptr<CLabel>				mpMouseYInfo;
 	Ptr<CLabel>				mpZoomInfo;
 
-	Ptr<CLogicimCircuit>	mpLogicimCircuit;
+	Ptr<CLogicimCircuit>			mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
 	Ptr<CMessageDialog>				mpMessageDialog;  //The message being shown, NULL when none is.
 	Ptr<CLogicimComponentChooser>	mpComponentChooser;
 	Ptr<CFileChooser>				mpFileChooser;
-	CChars					mszProjectFilename;  //The project last loaded or saved.
-	CChars					mszKicadFilename;  //The KiCad schematic last imported.
-	CChars					mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
-	CChars					mszChooserSelected;  //The component last chosen.
-	int						miSimulationCount;
-	bool					mbRunning;
-	bool					mbRanLastTick;  //The simulation ran in the last tick, so the time since it is simulated.
-	float64					mfNanosecondsPerMillisecond;  //How fast the simulation runs.
+	CChars							mszProjectFilename;  //The project last loaded or saved.
+	CChars							mszKicadFilename;  //The KiCad schematic last imported.
+	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
+	CChars							mszChooserSelected;  //The component last chosen.
+	int								miSimulationCount;
+	bool							mbRunning;
+	bool							mbRanLastTick;  //The simulation ran in the last tick, so the time since it is simulated.
+	float64							mfNanosecondsPerMillisecond;  //How fast the simulation runs.
 
 public:
 	void			Init(void);
@@ -155,26 +155,27 @@ public:
 
 	bool			Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psData, const char* szFontFilename, const char* szIconDirectory, const char* szPropagationTimes, const char* szCircuitFontDirectory);
 
-	void			PointerOverCircuit(int x, int y);
-	void			Zoom(float32 fZoom);
-	void			ZoomToFit(bool bSelection);
-	void			EditProperties(void);
-	void			Undo(bool bStep);
-	void			Redo(bool bStep);
-	void			StepUndo(void);
-	void			StepRedo(void);
-	bool			CanUndo(void);
-	bool			CanRedo(void);
-	void			ShowDialog(ELogicimDialog eDialog);
-	void			Tick(int64 iUpdateTimeInMilliseconds);
-	bool			ImportKicadSchematic(const char* szFilename);
-	void			SetStartupImport(const char* szFilename);
-	void			SubcircuitSelected(void);
-	void			EnterSubcircuit(CComponentView* pcInstance);
-	void			LeaveSubcircuit(void);
-	void			PrepareCanvasMenu(SFloat64Vec2 sGrid);
-	void			CanvasMenuItemClicked(CMenuItem* pcItem);
-	void			ListSubcircuits(void);
+	void				PointerOverCircuit(int x, int y);
+	void				Zoom(float32 fZoom);
+	void				ZoomToFit(bool bSelection);
+	void				EditProperties(void);
+	void				Undo(bool bStep);
+	void				Redo(bool bStep);
+	void				StepUndo(void);
+	void				StepRedo(void);
+	bool				CanUndo(void);
+	bool				CanRedo(void);
+	void				ShowDialog(ELogicimDialog eDialog);
+	void				Tick(int64 iUpdateTimeInMilliseconds);
+	bool				ImportKicadSchematic(const char* szFilename);
+	void				SetStartupImport(const char* szFilename);
+	Ptr<CWindowTheme>	GetTheme(void);
+	void				SubcircuitSelected(void);
+	void				EnterSubcircuit(CComponentView* pcInstance);
+	void				LeaveSubcircuit(void);
+	void				PrepareCanvasMenu(SFloat64Vec2 sGrid);
+	void				CanvasMenuItemClicked(CMenuItem* pcItem);
+	void				ListSubcircuits(void);
 
 protected:
 	Ptr<CFont>				GenerateFont(const char* szFontFilename, const char* szName, float32 fPixelSize, EColourOrder eOrder);
