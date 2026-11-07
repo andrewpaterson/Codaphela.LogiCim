@@ -66,6 +66,9 @@
     <ClCompile Include="KicadSchemSupplyNames.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
+    <ClCompile Include="KicadSchemLogicPins.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KicadSchemBoards.h">
@@ -96,6 +99,9 @@
       <Filter>Source\Logicim</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemSupplyNames.h">
+      <Filter>Source\Logicim</Filter>
+    </ClInclude>
+    <ClInclude Include="KicadSchemLogicPins.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>
   </ItemGroup>

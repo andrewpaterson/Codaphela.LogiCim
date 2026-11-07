@@ -26,6 +26,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/CircuitFonts.h"
 #include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicFunction.h"
+#include "KicadSchemLogicPins.h"
 #include "KicadSchemLogicimModel.h"
 #include "KicadSchemLogicimCounts.h"
 #include "KicadSchemLogicimBuses.h"
@@ -48,22 +49,6 @@ class CPinView;
 #define KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM	1.5
 #define KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM	1.0
 #define KICAD_SCHEM_LOGICIM_SPREAD_HALVINGS	3
-
-
-//A logic part's pins (not its power pins), each split into its gate number (an index into aszIndices) and letters,
-//with whether it's negated and where KiCad has it.
-struct SKicadSchemLogicPins
-{
-	CArrayChars							aszIndices;
-	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
-	CArrayInt							aiGroups;
-	CArrayChars							aszLetters;
-	CArrayInt							aiNegated;
-	CArrayFloat64Vec2					asPositions;
-
-	void	Init(void);
-	void	Kill(void);
-};
 
 
 //How a gate's pins lie: its inputs (indices into the pins) in letter order, its output, and the centres of all its
