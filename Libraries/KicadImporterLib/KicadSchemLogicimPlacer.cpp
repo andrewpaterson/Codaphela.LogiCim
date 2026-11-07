@@ -19,26 +19,43 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 ** ------------------------------------------------------------------------ **/
 #include <math.h>
-#include "BaseLib/ConstructorCall.h"
-#include "BaseLib/StringHelper.h"
-#include "BaseLib/Logger.h"
-#include "BaseLib/PointerFunctions.h"
-#include "LogicimLib/AndGateView.h"
-#include "LogicimLib/OrGateView.h"
-#include "LogicimLib/BufferView.h"
-#include "LogicimLib/Logic74View.h"
-#include "LogicimLib/FlipFlopView.h"
-#include "LogicimLib/PowerSourceView.h"
-#include "LogicimLib/TunnelView.h"
-#include "LogicimLib/CircuitTextMarkupParser.h"
-#include "LogicimLib/SplitterView.h"
-#include "LogicimLib/ValueView.h"
-#include "LogicimLib/SubcircuitInstanceView.h"
 #include "LogicimLib/TraceAutoConnector.h"
-#include "LogicimLib/ComponentShapes.h"
-#include "KicadSchemLogicimConverter.h"
-#include "KicadSchemBoards.h"
+#include "KicadSchemLogicimPlacer.h"
 #include "KicadSchemLogicimConverterInternal.h"
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Places pcModel's items, the splitters beside their components as
+// pcBuses has them, rewiring with pcWiring as it explodes dense areas.
+// What it can't place clear and what it explodes are counted in psCounts.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::Init(CCircuitFonts* pcFonts, CKicadSchemLogicimModel* pcModel, CKicadSchemLogicimBuses* pcBuses, CKicadSchemLogicimWiring* pcWiring, SKicadSchemLogicimCounts* psCounts)
+{
+	mpcFonts = pcFonts;
+	mpcModel = pcModel;
+	mpcBuses = pcBuses;
+	mpcWiring = pcWiring;
+	mpsCounts = psCounts;
+	masAlignments.Init();
+	mfSpread = 1.0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::Kill(void)
+{
+	masAlignments.Kill();
+	mpsCounts = NULL;
+	mpcWiring = NULL;
+	mpcBuses = NULL;
+	mpcModel = NULL;
+	mpcFonts = NULL;
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,7 +66,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 // exploding just the densest is tried before giving up.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::Explode(void)
+void CKicadSchemLogicimPlacer::Explode(void)
 {
 	CArrayTemplate<SFloat64Vec2>	asCentres;
 	CArrayTemplate<SInt32Vec2>		asOffsets;
@@ -63,14 +80,14 @@ void CKicadSchemLogicimConverter::Explode(void)
 	asCentres.Init();
 	asOffsets.Init();
 	uiExcess = FindDenseAreas(&asCentres);
-	msCounts.uiExcessKnotsBefore = uiExcess;
+	mpsCounts->uiExcessKnotsBefore = uiExcess;
 	bOnlyDensest = false;
 	for (uiPass = 0; (uiPass < KICAD_SCHEM_LOGICIM_EXPLODE_PASSES) && (asCentres.NumElements() > 0); uiPass++)
 	{
 		asOffsets.ReInit();
-		for (i = 0; i < mcModel.NumItems(); i++)
+		for (i = 0; i < mpcModel->NumItems(); i++)
 		{
-			asOffsets.Add(&mcModel.GetItem(i)->sOffset);
+			asOffsets.Add(&mpcModel->GetItem(i)->sOffset);
 		}
 
 		if (bOnlyDensest)
@@ -82,18 +99,18 @@ void CKicadSchemLogicimConverter::Explode(void)
 		}
 		ExplodeAreas(&asCentres);
 		Place(mfSpread);
-		uiUnconnected = mcWiring.Route();
+		uiUnconnected = mpcWiring->Route();
 		asCentres.ReInit();
 		uiNewExcess = FindDenseAreas(&asCentres);
-		if ((uiUnconnected > msCounts.uiUnconnected) || (uiNewExcess >= uiExcess))
+		if ((uiUnconnected > mpsCounts->uiUnconnected) || (uiNewExcess >= uiExcess))
 		{
 			//Worse: back to how it was.
-			for (i = 0; i < mcModel.NumItems(); i++)
+			for (i = 0; i < mpcModel->NumItems(); i++)
 			{
-				mcModel.GetItem(i)->sOffset = *asOffsets.Get(i);
+				mpcModel->GetItem(i)->sOffset = *asOffsets.Get(i);
 			}
 			Place(mfSpread);
-			msCounts.uiUnconnected = mcWiring.Route();
+			mpsCounts->uiUnconnected = mpcWiring->Route();
 			if (bOnlyDensest)
 			{
 				break;
@@ -103,12 +120,12 @@ void CKicadSchemLogicimConverter::Explode(void)
 			FindDenseAreas(&asCentres);
 			continue;
 		}
-		msCounts.uiUnconnected = uiUnconnected;
+		mpsCounts->uiUnconnected = uiUnconnected;
 		uiExcess = uiNewExcess;
-		msCounts.uiExplosions++;
+		mpsCounts->uiExplosions++;
 		bOnlyDensest = false;
 	}
-	msCounts.uiExcessKnotsAfter = uiExcess;
+	mpsCounts->uiExcessKnotsAfter = uiExcess;
 	asOffsets.Kill();
 	asCentres.Kill();
 }
@@ -124,7 +141,7 @@ void CKicadSchemLogicimConverter::Explode(void)
 // items move with their pins.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres)
+void CKicadSchemLogicimPlacer::ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres)
 {
 	size						i;
 	size						j;
@@ -132,9 +149,9 @@ void CKicadSchemLogicimConverter::ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pas
 	SInt32Vec2					sPosition;
 	SFloat64Vec2*				psCentre;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		psItem = mcModel.GetItem(i);
+		psItem = mpcModel->GetItem(i);
 		if (psItem->pcAttachedTo != NULL)
 		{
 			continue;
@@ -391,7 +408,7 @@ static void UseKicadSchemWindow(SKicadSchemKnotSums* psSums, CArrayInt* paiUsed,
 // where a wire turns or ends (but not on a port) or where two wires cross.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres)
+size CKicadSchemLogicimPlacer::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres)
 {
 	CArrayTemplate<SInt32Vec2>	asKnots;
 	SKicadSchemKnotSums			sSums;
@@ -405,7 +422,7 @@ size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* p
 	SFloat64Vec2				sCentre;
 
 	asKnots.Init();
-	CollectKicadSchemKnots(mcModel.GetCircuit(), &asKnots);
+	CollectKicadSchemKnots(mpcModel->GetCircuit(), &asKnots);
 	if (asKnots.NumElements() == 0)
 	{
 		asKnots.Kill();
@@ -448,7 +465,7 @@ size CKicadSchemLogicimConverter::FindDenseAreas(CArrayTemplate<SFloat64Vec2>* p
 // other.  Items attached to a pin already sit on it, so aren't paired.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::FindAlignments(void)
+void CKicadSchemLogicimPlacer::FindAlignments(void)
 {
 	size							i;
 	size							uiCount;
@@ -462,13 +479,13 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 	bool							bVertical;
 
 	masAlignments.ReInit();
-	for (i = 0; i < mcModel.NumConnections(); i++)
+	for (i = 0; i < mpcModel->NumConnections(); i++)
 	{
-		psConnection = mcModel.GetConnection(i);
+		psConnection = mpcModel->GetConnection(i);
 		uiCount = 0;
-		for (j = 0; j < mcModel.NumConnections(); j++)
+		for (j = 0; j < mpcModel->NumConnections(); j++)
 		{
-			psOther = mcModel.GetConnection(j);
+			psOther = mpcModel->GetConnection(j);
 			if (psOther->pcSubnet == psConnection->pcSubnet)
 			{
 				uiCount++;
@@ -479,14 +496,14 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 			continue;
 		}
 
-		psFrom = mcModel.GetTerminal(psConnection->uiFrom);
-		psTo = mcModel.GetTerminal(psConnection->uiTo);
-		if (psFrom->bBus || psTo->bBus || (psFrom->uiItem == psTo->uiItem) || (mcModel.GetItem(psFrom->uiItem)->pcAttachedTo != NULL) || (mcModel.GetItem(psTo->uiItem)->pcAttachedTo != NULL))
+		psFrom = mpcModel->GetTerminal(psConnection->uiFrom);
+		psTo = mpcModel->GetTerminal(psConnection->uiTo);
+		if (psFrom->bBus || psTo->bBus || (psFrom->uiItem == psTo->uiItem) || (mpcModel->GetItem(psFrom->uiItem)->pcAttachedTo != NULL) || (mpcModel->GetItem(psTo->uiItem)->pcAttachedTo != NULL))
 		{
 			continue;
 		}
 		//A splitter beside its component is put there, not lined up.
-		if (mcModel.GetItem(psFrom->uiItem)->bPlacedSplitter || mcModel.GetItem(psTo->uiItem)->bPlacedSplitter)
+		if (mpcModel->GetItem(psFrom->uiItem)->bPlacedSplitter || mpcModel->GetItem(psTo->uiItem)->bPlacedSplitter)
 		{
 			continue;
 		}
@@ -516,7 +533,7 @@ void CKicadSchemLogicimConverter::FindAlignments(void)
 // only once.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AlignItems(void)
+void CKicadSchemLogicimPlacer::AlignItems(void)
 {
 	size							i;
 	size							j;
@@ -533,9 +550,9 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 	SInt32Vec2						sPosition;
 	bool							bFromMoves;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		mcModel.GetItem(i)->eAlign = KSLA_None;
+		mpcModel->GetItem(i)->eAlign = KSLA_None;
 	}
 	if (masAlignments.NumElements() == 0)
 	{
@@ -544,14 +561,14 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 
 	aiTerminals.Init();
 	aiFixed.Init();
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
 		aiTerminals.Add(0);
 		aiFixed.Add(0);
 	}
-	for (j = 0; j < mcModel.NumTerminals(); j++)
+	for (j = 0; j < mpcModel->NumTerminals(); j++)
 	{
-		i = mcModel.GetTerminal(j)->uiItem;
+		i = mpcModel->GetTerminal(j)->uiItem;
 		aiTerminals.SetValue(i, aiTerminals.GetValue(i) + 1);
 	}
 
@@ -575,8 +592,8 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 			bFromMoves = aiTerminals.GetValue(psAlignment->uiFromItem) <= aiTerminals.GetValue(psAlignment->uiToItem);
 		}
 
-		psFrom = mcModel.GetItem(psAlignment->uiFromItem);
-		psTo = mcModel.GetItem(psAlignment->uiToItem);
+		psFrom = mpcModel->GetItem(psAlignment->uiFromItem);
+		psTo = mpcModel->GetItem(psAlignment->uiToItem);
 		psMover = bFromMoves ? psFrom : psTo;
 		pcMoverPort = bFromMoves ? psAlignment->pcFromPort : psAlignment->pcToPort;
 		pcStillPort = bFromMoves ? psAlignment->pcToPort : psAlignment->pcFromPort;
@@ -607,16 +624,18 @@ void CKicadSchemLogicimConverter::AlignItems(void)
 // Each item at its KiCad place spread out from the origin, lined up with
 // the item a straight wire joins it to (see FindAlignments), and then
 // moved apart where they overlap.  Attached items go with their pins.
+// The spread is kept: Explode places at it again.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::Place(float64 fSpread)
+void CKicadSchemLogicimPlacer::Place(float64 fSpread)
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	mfSpread = fSpread;
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		psItem = mcModel.GetItem(i);
+		psItem = mpcModel->GetItem(i);
 		if (psItem->pcAttachedTo == NULL)
 		{
 			psItem->pcView->SetPosition((int32)floor(psItem->sKicadPosition.x * fSpread + 0.5) - psItem->sAnchor.x + psItem->sOffset.x, (int32)floor(psItem->sKicadPosition.y * fSpread + 0.5) - psItem->sAnchor.y + psItem->sOffset.y);
@@ -639,7 +658,7 @@ void CKicadSchemLogicimConverter::Place(float64 fSpread)
 // out again, so the wires have room to step across.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::PlaceSplitters(void)
+void CKicadSchemLogicimPlacer::PlaceSplitters(void)
 {
 	size							i;
 	size							j;
@@ -658,9 +677,9 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 	int32							iStep;
 	int32							iOffset;
 
-	for (i = 0; i < mcBuses.NumSplitters(); i++)
+	for (i = 0; i < mpcBuses->NumSplitters(); i++)
 	{
-		psSplitter = mcBuses.GetSplitter(i);
+		psSplitter = mpcBuses->GetSplitter(i);
 		if (psSplitter->uiNumPairs == 0)
 		{
 			continue;
@@ -673,7 +692,7 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 		fAlong = 0;
 		for (j = 0; j < psSplitter->uiNumPairs; j++)
 		{
-			psPair = mcBuses.GetSplitterPair(psSplitter->uiFirstPair + j);
+			psPair = mpcBuses->GetSplitterPair(psSplitter->uiFirstPair + j);
 			sPin = psPair->pcPin->GetGridPosition();
 			sEnd = psPair->pcEnd->GetGridPosition();
 			iAcross = bAcrossX ? sPin.x : sPin.y;
@@ -690,7 +709,7 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 		iStep = 0;
 		for (j = 0; j < psSplitter->uiNumPairs; j++)
 		{
-			psPair = mcBuses.GetSplitterPair(psSplitter->uiFirstPair + j);
+			psPair = mpcBuses->GetSplitterPair(psSplitter->uiFirstPair + j);
 			sPin = psPair->pcPin->GetGridPosition();
 			sEnd = psPair->pcEnd->GetGridPosition();
 			iOffset = bAcrossX ? (sPin.y - sEnd.y - iAlong) : (sPin.x - sEnd.x - iAlong);
@@ -720,7 +739,7 @@ void CKicadSchemLogicimConverter::PlaceSplitters(void)
 // Each attached item with its port on the port it's attached to.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::PlaceAttachedItems(void)
+void CKicadSchemLogicimPlacer::PlaceAttachedItems(void)
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
@@ -728,9 +747,9 @@ void CKicadSchemLogicimConverter::PlaceAttachedItems(void)
 	SInt32Vec2					sTarget;
 	SInt32Vec2					sPosition;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		psItem = mcModel.GetItem(i);
+		psItem = mpcModel->GetItem(i);
 		if (psItem->pcAttachedTo != NULL)
 		{
 			sPort = psItem->pcPort->GetGridPosition();
@@ -749,7 +768,7 @@ void CKicadSchemLogicimConverter::PlaceAttachedItems(void)
 // pin's.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AttachItems(void)
+void CKicadSchemLogicimPlacer::AttachItems(void)
 {
 	size							i;
 	size							j;
@@ -761,22 +780,22 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 	int								iWanted;
 	ERotation						eOriginal;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		psItem = mcModel.GetItem(i);
+		psItem = mpcModel->GetItem(i);
 		if (psItem->pcPort == NULL)
 		{
 			continue;
 		}
 
 		pcTarget = NULL;
-		for (j = mcModel.FirstItemTerminal(i); (j != ARRAY_ELEMENT_NOT_FOUND) && (pcTarget == NULL); j = mcModel.NextItemTerminal(j))
+		for (j = mpcModel->FirstItemTerminal(i); (j != ARRAY_ELEMENT_NOT_FOUND) && (pcTarget == NULL); j = mpcModel->NextItemTerminal(j))
 		{
-			psTerminal = mcModel.GetTerminal(j);
-			for (k = mcModel.FirstSubnetTerminal(psTerminal->pcSubnet); k != ARRAY_ELEMENT_NOT_FOUND; k = mcModel.NextSubnetTerminal(k))
+			psTerminal = mpcModel->GetTerminal(j);
+			for (k = mpcModel->FirstSubnetTerminal(psTerminal->pcSubnet); k != ARRAY_ELEMENT_NOT_FOUND; k = mpcModel->NextSubnetTerminal(k))
 			{
-				psOther = mcModel.GetTerminal(k);
-				if ((mcModel.GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
+				psOther = mpcModel->GetTerminal(k);
+				if ((mpcModel->GetItem(psOther->uiItem)->pcPort == NULL) && psOther->sKicadPosition.CloselyEqual(&psTerminal->sKicadPosition, KICAD_SCHEM_POINT_TOLERANCE))
 				{
 					pcTarget = psOther->pcPortView;
 					break;
@@ -784,12 +803,12 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 			}
 		}
 		//A pin wired to a splitter beside it keeps its way out for that wire; its tunnel stands on its own, wired too.
-		if ((pcTarget == NULL) || mcBuses.IsSplitterPin(pcTarget))
+		if ((pcTarget == NULL) || mpcBuses->IsSplitterPin(pcTarget))
 		{
 			continue;
 		}
 
-		mcModel.AttachItem(i, pcTarget);
+		mpcModel->AttachItem(i, pcTarget);
 		iWanted = CTraceAutoConnector::OppositeDirection(CTraceAutoConnector::GetPortFacing(pcTarget));
 		eOriginal = psItem->pcView->GetRotation();
 		for (k = 0; k < 4; k++)
@@ -815,15 +834,15 @@ void CKicadSchemLogicimConverter::AttachItems(void)
 // position, once the attached items are turned.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
+void CKicadSchemLogicimPlacer::MeasureImportBoxes(void)
 {
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 	SInt32Vec2					sPosition;
 
-	for (i = 0; i < mcModel.NumItems(); i++)
+	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		psItem = mcModel.GetItem(i);
+		psItem = mpcModel->GetItem(i);
 		psItem->bImportBox = psItem->pcView->GetImportBoundingBox(mpcFonts, &psItem->sImportBox);
 		if (psItem->bImportBox)
 		{
@@ -839,18 +858,18 @@ void CKicadSchemLogicimConverter::MeasureImportBoxes(void)
 // The item's import box and the import boxes of the items attached to it.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CKicadSchemLogicimConverter::GetItemBox(size uiItem, SFloat64Bounds* psBox)
+bool CKicadSchemLogicimPlacer::GetItemBox(size uiItem, SFloat64Bounds* psBox)
 {
 	size				i;
 	SFloat64Bounds		sOther;
 
-	if (!mcModel.GetItemImportBox(uiItem, psBox))
+	if (!mpcModel->GetItemImportBox(uiItem, psBox))
 	{
 		return false;
 	}
-	for (i = mcModel.FirstAttached(uiItem); i != ARRAY_ELEMENT_NOT_FOUND; i = mcModel.NextAttached(i))
+	for (i = mpcModel->FirstAttached(uiItem); i != ARRAY_ELEMENT_NOT_FOUND; i = mpcModel->NextAttached(i))
 	{
-		if (mcModel.GetItemImportBox(i, &sOther))
+		if (mpcModel->GetItemImportBox(i, &sOther))
 		{
 			psBox->Include(&sOther);
 		}
@@ -923,6 +942,10 @@ struct SKicadSchemLogicimBestMove
 };
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void SKicadSchemLogicimBestMove::Init(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced)
 {
 	this->psBox = psBox;
@@ -934,12 +957,20 @@ void SKicadSchemLogicimBestMove::Init(SFloat64Bounds* psBox, EKicadSchemLogicimA
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 bool SKicadSchemLogicimBestMove::IsNearer(int32 iDistance)
 {
 	return (this->iDistance == -1) || (iDistance < this->iDistance);
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void SKicadSchemLogicimBestMove::Try(int32 iMoveX, int32 iMoveY)
 {
 	int32	iMoveDistance;
@@ -1002,16 +1033,16 @@ static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* psBox, EKicadSchemLogi
 // small and move aside.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::GetSeparateOrder(CArrayInt* paiOrder)
+void CKicadSchemLogicimPlacer::GetSeparateOrder(CArrayInt* paiOrder)
 {
 	size	i;
 	size	uiPass;
 
 	for (uiPass = 0; uiPass < 2; uiPass++)
 	{
-		for (i = 0; i < mcModel.NumItems(); i++)
+		for (i = 0; i < mpcModel->NumItems(); i++)
 		{
-			if ((mcModel.GetItem(i)->pcPort == NULL) == (uiPass == 0))
+			if ((mpcModel->GetItem(i)->pcPort == NULL) == (uiPass == 0))
 			{
 				paiOrder->Add((int)i);
 			}
@@ -1029,7 +1060,7 @@ void CKicadSchemLogicimConverter::GetSeparateOrder(CArrayInt* paiOrder)
 // counted as overlaps.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::SeparateItems(void)
+void CKicadSchemLogicimPlacer::SeparateItems(void)
 {
 	CArrayTemplate<SFloat64Bounds>	asPlaced;
 	CArrayInt						aiOrder;
@@ -1042,14 +1073,14 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 
 	PlaceAttachedItems();
 	asPlaced.Init();
-	msCounts.uiOverlaps = 0;
+	mpsCounts->uiOverlaps = 0;
 
 	aiOrder.Init();
 	GetSeparateOrder(&aiOrder);
 	for (uiOrder = 0; uiOrder < aiOrder.NumElements(); uiOrder++)
 	{
 		i = (size)aiOrder.GetValue(uiOrder);
-		psItem = mcModel.GetItem(i);
+		psItem = mpcModel->GetItem(i);
 		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox))
 		{
 			continue;
@@ -1057,7 +1088,7 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 
 		if (!FindKicadSchemLogicimFreeMove(&sBox, psItem->eAlign, &asPlaced, &sMove))
 		{
-			msCounts.uiOverlaps++;
+			mpsCounts->uiOverlaps++;
 		}
 		sPosition = psItem->pcView->GetPosition();
 		psItem->pcView->SetPosition(sPosition.x + sMove.x, sPosition.y + sMove.y);
@@ -1068,3 +1099,12 @@ void CKicadSchemLogicimConverter::SeparateItems(void)
 	PlaceAttachedItems();
 	asPlaced.Kill();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The spread the items were last placed at.
+//
+//////////////////////////////////////////////////////////////////////////
+float64 CKicadSchemLogicimPlacer::GetSpread(void) { return mfSpread; }
+

@@ -39,7 +39,7 @@
     <ClCompile Include="KicadSchemLogicimConverter.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
-    <ClCompile Include="KicadSchemLogicimConverterPlacement.cpp">
+    <ClCompile Include="KicadSchemLogicimPlacer.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
     <ClCompile Include="KicadSchemLogicimModel.cpp">
@@ -87,6 +87,9 @@
       <Filter>Source\Logicim</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemLogicimWiring.h">
+      <Filter>Source\Logicim</Filter>
+    </ClInclude>
+    <ClInclude Include="KicadSchemLogicimPlacer.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>
   </ItemGroup>

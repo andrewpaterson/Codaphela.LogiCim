@@ -9,6 +9,7 @@
 #include "LogicimLib/CircuitFonts.h"
 #include "LogicimLib/TunnelView.h"
 #include "LogicimLib/SubcircuitInstanceView.h"
+#include "KicadLib/KicadSchemSubnetGraph.h"
 #include "KicadImporterLib/KicadSchemLogicimConverter.h"
 #include "KicadImporterLib/KicadSchemBoards.h"
 #include "TestLib/Assert.h"

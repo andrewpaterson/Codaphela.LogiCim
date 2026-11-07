@@ -30,7 +30,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimCounts.h"
 #include "KicadSchemLogicimBuses.h"
 #include "KicadSchemLogicimWiring.h"
-#include "KicadLib/KicadSchemSubnetGraph.h"
+#include "KicadSchemLogicimPlacer.h"
 
 
 class CKicadSchemBoard;
@@ -48,40 +48,6 @@ class CPinView;
 #define KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM	1.5
 #define KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM	1.0
 #define KICAD_SCHEM_LOGICIM_SPREAD_HALVINGS	3
-
-//The gap kept between components' boxes.
-#define KICAD_SCHEM_LOGICIM_SPACING			2
-
-
-//How much more a component lined up with another (see SKicadSchemLogicimAlignment) would rather be moved along the
-//line than off it when it's moved clear of the others.
-#define KICAD_SCHEM_LOGICIM_ALIGN_WEIGHT	4
-
-
-//Knots are wire turns and crossings.  An area of DENSE_WINDOW grid units square with more than DENSE_KNOTS is dense,
-//and is exploded: EXPLODE_SPACE grid units are put in across it each way.
-#define KICAD_SCHEM_LOGICIM_DENSE_WINDOW	12
-#define KICAD_SCHEM_LOGICIM_DENSE_KNOTS		24
-#define KICAD_SCHEM_LOGICIM_DENSE_AREAS		3
-#define KICAD_SCHEM_LOGICIM_DENSE_SCAN		12
-#define KICAD_SCHEM_LOGICIM_EXPLODE_SPACE	4
-#define KICAD_SCHEM_LOGICIM_EXPLODE_PASSES	4
-
-
-//How far a component is moved to keep it clear of the others before giving up.
-#define KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS	400
-
-
-//Two components that are all of a subnet, wired by one straight wire in KiCad (their pins level or one above the
-//other): their ports are lined up when they're placed so the wire stays straight.
-struct SKicadSchemLogicimAlignment
-{
-	size		uiFromItem;
-	size		uiToItem;
-	CPortView*	pcFromPort;
-	CPortView*	pcToPort;
-	bool		bHorizontal;
-};
 
 
 //A logic part's pins (not its power pins), each split into its gate number (an index into aszIndices) and letters,
@@ -121,7 +87,6 @@ struct SKicadSchemLogicimRegulated
 
 
 typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegulated;
-typedef CArrayTemplate<SKicadSchemLogicimAlignment>		CArrayKicadSchemLogicimAlignment;
 
 
 //Makes a Logicim circuit from one KiCad sheet.
@@ -174,13 +139,12 @@ protected:
 	CCircuitViews*						mpcCircuits;
 	CCircuitFonts*						mpcFonts;
 	CKicadSchemLogicimModel				mcModel;
-	CArrayKicadSchemLogicimAlignment	masAlignments;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
 	CKicadSchemLogicimBuses				mcBuses;
 	CKicadSchemLogicimWiring			mcWiring;
+	CKicadSchemLogicimPlacer			mcPlacer;
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
-	float64								mfSpread;
 	SKicadSchemLogicimCounts			msCounts;
 
 public:
@@ -224,22 +188,9 @@ protected:
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);
 	float32							GetNetRegulatedVoltage(CKicadSchemNet* pcNet);
 	void							RemoveUnconnectedItems(void);
-	void							FindAlignments(void);
-	void							AlignItems(void);
+	void							PlaceAndRoute(void);
 
-	void							AttachItems(void);
-	void							PlaceAttachedItems(void);
-	void							PlaceSplitters(void);
-	bool							GetItemBox(size uiItem, SFloat64Bounds* psBox);
-	void							MeasureImportBoxes(void);
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
-
-	void							Place(float64 fSpread);
-	void							Explode(void);
-	size							FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
-	void							ExplodeAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
-	void							SeparateItems(void);
-	void							GetSeparateOrder(CArrayInt* paiOrder);
 };
 
 

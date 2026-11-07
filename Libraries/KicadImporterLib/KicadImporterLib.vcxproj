@@ -22,7 +22,7 @@
     <ClCompile Include="KicadSchemBoards.cpp" />
     <ClCompile Include="KicadSchemLogicFunction.cpp" />
     <ClCompile Include="KicadSchemLogicimConverter.cpp" />
-    <ClCompile Include="KicadSchemLogicimConverterPlacement.cpp" />
+    <ClCompile Include="KicadSchemLogicimPlacer.cpp" />
     <ClCompile Include="KicadSchemLogicimModel.cpp" />
     <ClCompile Include="KicadSchemLogicimWiring.cpp" />
     <ClCompile Include="KicadSchemLogicimBuses.cpp" />
@@ -40,6 +40,7 @@
     <ClInclude Include="KicadSchemLogicimCounts.h" />
     <ClInclude Include="KicadSchemLogicimBuses.h" />
     <ClInclude Include="KicadSchemLogicimWiring.h" />
+    <ClInclude Include="KicadSchemLogicimPlacer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B4FBD661-3262-4471-814B-429C08722CF2}</ProjectGuid>

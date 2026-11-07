@@ -61,14 +61,13 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcCircuits = pcCircuits;
 	mpcFonts = pcFonts;
 	mcModel.Init();
-	masAlignments.Init();
 	masRegulated.Init();
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
-	mfSpread = 1.0;
 	msCounts.Init();
 	mcBuses.Init(pcNetlist, pcFonts, &mcModel, &msCounts);
 	mcWiring.Init(pcNetlist, &mcModel, &mcBuses);
+	mcPlacer.Init(pcFonts, &mcModel, &mcBuses, &mcWiring, &msCounts);
 }
 
 
@@ -79,10 +78,10 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::Kill(void)
 {
+	mcPlacer.Kill();
 	mcWiring.Kill();
 	mcBuses.Kill();
 	masRegulated.Kill();
-	masAlignments.Kill();
 	mcModel.Kill();
 	mpcBoardSource = NULL;
 	mpcBoard = NULL;
@@ -117,10 +116,6 @@ void CKicadSchemLogicimConverter::SetBoards(CKicadSchemBoard* pcBoard, CKicadSch
 bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 {
 	size			i;
-	size			uiFirstUnconnected;
-	float64			fWorse;
-	float64			fSpread;
-	bool			bRouted;
 	CCircuitView*	pcCircuit;
 
 	pcCircuit = mpcCircuits->Add(szTypeName);
@@ -141,51 +136,66 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	mcBuses.AddTunnels();
 	mcBuses.AddBuses();
 	RemoveUnconnectedItems();
-	AttachItems();
-	MeasureImportBoxes();
+	mcPlacer.AttachItems();
+	mcPlacer.MeasureImportBoxes();
 	mcWiring.AddConnections();
-	FindAlignments();
+	mcPlacer.FindAlignments();
+	PlaceAndRoute();
+	mcPlacer.Explode();
+	return true;
+}
 
-	//Wired spread out, then as close as it wires as well: the least spread if that does, otherwise halfway between
-	//the closest that does and the widest that doesn't, a few times.  The circuit is left wired at the chosen spread.
-	Place(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM);
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed and wired spread out, then as close as it wires as well: the
+// least spread if that does, otherwise halfway between the closest that
+// does and the widest that doesn't, a few times.  The circuit is left
+// placed and wired at the chosen spread.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::PlaceAndRoute(void)
+{
+	size	i;
+	size	uiFirstUnconnected;
+	float64	fClosest;
+	float64	fWorse;
+	float64	fSpread;
+	bool	bRouted;
+
+	mcPlacer.Place(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM);
 	uiFirstUnconnected = mcWiring.Route();
-	mfSpread = KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM;
-	Place(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM);
+	fClosest = KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM;
+	mcPlacer.Place(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM);
 	msCounts.uiUnconnected = mcWiring.Route();
-	bRouted = true;
 	if (msCounts.uiUnconnected <= uiFirstUnconnected)
 	{
-		mfSpread = KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM;
+		return;
 	}
-	else
+
+	fWorse = KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM;
+	bRouted = false;
+	for (i = 0; i < KICAD_SCHEM_LOGICIM_SPREAD_HALVINGS; i++)
 	{
-		fWorse = KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM;
-		bRouted = false;
-		for (i = 0; i < KICAD_SCHEM_LOGICIM_SPREAD_HALVINGS; i++)
+		fSpread = (fClosest + fWorse) / 2;
+		mcPlacer.Place(fSpread);
+		msCounts.uiUnconnected = mcWiring.Route();
+		if (msCounts.uiUnconnected > uiFirstUnconnected)
 		{
-			fSpread = (mfSpread + fWorse) / 2;
-			Place(fSpread);
-			msCounts.uiUnconnected = mcWiring.Route();
-			if (msCounts.uiUnconnected > uiFirstUnconnected)
-			{
-				fWorse = fSpread;
-				bRouted = false;
-			}
-			else
-			{
-				mfSpread = fSpread;
-				bRouted = true;
-			}
+			fWorse = fSpread;
+			bRouted = false;
+		}
+		else
+		{
+			fClosest = fSpread;
+			bRouted = true;
 		}
 	}
 	if (!bRouted)
 	{
-		Place(mfSpread);
+		mcPlacer.Place(fClosest);
 		msCounts.uiUnconnected = mcWiring.Route();
 	}
-	Explode();
-	return true;
 }
 
 
@@ -509,6 +519,6 @@ float32 CKicadSchemLogicimConverter::GetSupplyVoltage(const char* szName)
 //
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mcModel.GetCircuit(); }
-float64 CKicadSchemLogicimConverter::GetSpread(void) { return mfSpread; }
+float64 CKicadSchemLogicimConverter::GetSpread(void) { return mcPlacer.GetSpread(); }
 SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
 CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }
