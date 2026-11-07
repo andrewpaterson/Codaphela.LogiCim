@@ -201,6 +201,7 @@ public:
 	size							NextSubnetTerminal(size uiTerminal);
 	size							FirstItemTerminal(size uiItem);
 	size							NextItemTerminal(size uiTerminal);
+	size							NumItemTerminals(size uiItem);
 	size							FirstAttached(size uiItem);
 	size							NextAttached(size uiItem);
 	size							FindPortTerminal(CPortView* pcPortView);

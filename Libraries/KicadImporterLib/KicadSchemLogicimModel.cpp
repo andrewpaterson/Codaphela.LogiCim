@@ -430,6 +430,25 @@ size CKicadSchemLogicimModel::NextAttached(size uiItem) { return masItems.Get(ui
 
 //////////////////////////////////////////////////////////////////////////
 //
+// How many terminals the item has.
+//
+//////////////////////////////////////////////////////////////////////////
+size CKicadSchemLogicimModel::NumItemTerminals(size uiItem)
+{
+	size	i;
+	size	uiCount;
+
+	uiCount = 0;
+	for (i = FirstItemTerminal(uiItem); i != ARRAY_ELEMENT_NOT_FOUND; i = NextItemTerminal(i))
+	{
+		uiCount++;
+	}
+	return uiCount;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The port's first terminal, the view's item and the item of the board
 // pin named szName; ARRAY_ELEMENT_NOT_FOUND if there's none.
 //

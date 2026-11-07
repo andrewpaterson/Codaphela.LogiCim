@@ -70,7 +70,6 @@ void CKicadSchemLogicimPlacer::Explode(void)
 	CArrayTemplate<SFloat64Vec2>	asCentres;
 	CArrayTemplate<SInt32Vec2>		asOffsets;
 	size							uiPass;
-	size							i;
 	size							uiExcess;
 	size							uiNewExcess;
 	size							uiUnconnected;
@@ -83,18 +82,10 @@ void CKicadSchemLogicimPlacer::Explode(void)
 	bOnlyDensest = false;
 	for (uiPass = 0; (uiPass < KICAD_SCHEM_LOGICIM_EXPLODE_PASSES) && (asCentres.NumElements() > 0); uiPass++)
 	{
-		asOffsets.ReInit();
-		for (i = 0; i < mpcModel->NumItems(); i++)
+		GetOffsets(&asOffsets);
+		while (bOnlyDensest && (asCentres.NumElements() > 1))
 		{
-			asOffsets.Add(&mpcModel->GetItem(i)->sOffset);
-		}
-
-		if (bOnlyDensest)
-		{
-			while (asCentres.NumElements() > 1)
-			{
-				asCentres.RemoveTail();
-			}
+			asCentres.RemoveTail();
 		}
 		ExplodeAreas(&asCentres);
 		Place(mfSpread);
@@ -103,13 +94,8 @@ void CKicadSchemLogicimPlacer::Explode(void)
 		uiNewExcess = FindDenseAreas(&asCentres);
 		if ((uiUnconnected > mpsCounts->uiUnconnected) || (uiNewExcess >= uiExcess))
 		{
-			//Worse: back to how it was.
-			for (i = 0; i < mpcModel->NumItems(); i++)
-			{
-				mpcModel->GetItem(i)->sOffset = *asOffsets.Get(i);
-			}
-			Place(mfSpread);
-			mpsCounts->uiUnconnected = mpcWiring->Route();
+			//Worse: back to how it was, and then only the densest, once.
+			RestoreOffsets(&asOffsets);
 			if (bOnlyDensest)
 			{
 				break;
@@ -127,6 +113,42 @@ void CKicadSchemLogicimPlacer::Explode(void)
 	mpsCounts->uiExcessKnotsAfter = uiExcess;
 	asOffsets.Kill();
 	asCentres.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Every item's offset (see ExplodeAreas), in place of what pasOffsets had.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::GetOffsets(CArrayTemplate<SInt32Vec2>* pasOffsets)
+{
+	size	i;
+
+	pasOffsets->ReInit();
+	for (i = 0; i < mpcModel->NumItems(); i++)
+	{
+		pasOffsets->Add(&mpcModel->GetItem(i)->sOffset);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The items' offsets put back as GetOffsets had them, and the circuit
+// placed and wired again.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::RestoreOffsets(CArrayTemplate<SInt32Vec2>* pasOffsets)
+{
+	size	i;
+
+	for (i = 0; i < mpcModel->NumItems(); i++)
+	{
+		mpcModel->GetItem(i)->sOffset = *pasOffsets->Get(i);
+	}
+	Place(mfSpread);
+	mpsCounts->uiUnconnected = mpcWiring->Route();
 }
 
 
@@ -525,29 +547,15 @@ void CKicadSchemLogicimPlacer::FindAlignments(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Lines up the ports of each pair of items found by FindAlignments by
-// moving the item with fewer terminals across the wire (the other if
-// that's already been lined up with something), and marks both to keep
-// to the line when they're moved clear of the others.  An item is moved
-// only once.
+// Lines up the ports of each pair of items found by FindAlignments (see
+// AlignItem), and marks both to keep to the line when they're moved clear
+// of the others.  An item is moved only once.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimPlacer::AlignItems(void)
 {
-	size							i;
-	size							j;
-	SKicadSchemLogicimAlignment*	psAlignment;
-	SKicadSchemLogicimItem*			psMover;
-	SKicadSchemLogicimItem*			psFrom;
-	SKicadSchemLogicimItem*			psTo;
-	CPortView*						pcMoverPort;
-	CPortView*						pcStillPort;
-	CArrayInt						aiTerminals;
-	CArrayInt						aiFixed;
-	SInt32Vec2						sMover;
-	SInt32Vec2						sStill;
-	SInt32Vec2						sPosition;
-	bool							bFromMoves;
+	size		i;
+	CArrayInt	aiFixed;
 
 	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
@@ -558,63 +566,91 @@ void CKicadSchemLogicimPlacer::AlignItems(void)
 		return;
 	}
 
-	aiTerminals.Init();
 	aiFixed.Init();
 	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		aiTerminals.Add(0);
 		aiFixed.Add(0);
 	}
-	for (j = 0; j < mpcModel->NumTerminals(); j++)
-	{
-		i = mpcModel->GetTerminal(j)->uiItem;
-		aiTerminals.SetValue(i, aiTerminals.GetValue(i) + 1);
-	}
-
 	for (i = 0; i < masAlignments.NumElements(); i++)
 	{
-		psAlignment = masAlignments.Get(i);
-		if (aiFixed.GetValue(psAlignment->uiFromItem) && aiFixed.GetValue(psAlignment->uiToItem))
-		{
-			continue;
-		}
-		if (aiFixed.GetValue(psAlignment->uiFromItem))
-		{
-			bFromMoves = false;
-		}
-		else if (aiFixed.GetValue(psAlignment->uiToItem))
-		{
-			bFromMoves = true;
-		}
-		else
-		{
-			bFromMoves = aiTerminals.GetValue(psAlignment->uiFromItem) <= aiTerminals.GetValue(psAlignment->uiToItem);
-		}
-
-		psFrom = mpcModel->GetItem(psAlignment->uiFromItem);
-		psTo = mpcModel->GetItem(psAlignment->uiToItem);
-		psMover = bFromMoves ? psFrom : psTo;
-		pcMoverPort = bFromMoves ? psAlignment->pcFromPort : psAlignment->pcToPort;
-		pcStillPort = bFromMoves ? psAlignment->pcToPort : psAlignment->pcFromPort;
-		sMover = pcMoverPort->GetGridPosition();
-		sStill = pcStillPort->GetGridPosition();
-		sPosition = psMover->pcView->GetPosition();
-		if (psAlignment->bHorizontal)
-		{
-			psMover->pcView->SetPosition(sPosition.x, sPosition.y + sStill.y - sMover.y);
-		}
-		else
-		{
-			psMover->pcView->SetPosition(sPosition.x + sStill.x - sMover.x, sPosition.y);
-		}
-		psFrom->eAlign = psAlignment->bHorizontal ? KSLA_KeepY : KSLA_KeepX;
-		psTo->eAlign = psFrom->eAlign;
-		aiFixed.SetValue(psAlignment->uiFromItem, 1);
-		aiFixed.SetValue(psAlignment->uiToItem, 1);
+		AlignItem(masAlignments.Get(i), &aiFixed);
 	}
 	aiFixed.Kill();
-	aiTerminals.Kill();
 	PlaceAttachedItems();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Moves the view across a straight wire (bHorizontal: up or down) so its
+// port is lined up with the other's.
+//
+//////////////////////////////////////////////////////////////////////////
+static void LineUpKicadSchemPort(CComponentView* pcView, CPortView* pcPort, CPortView* pcStill, bool bHorizontal)
+{
+	SInt32Vec2	sPort;
+	SInt32Vec2	sStill;
+	SInt32Vec2	sPosition;
+
+	sPort = pcPort->GetGridPosition();
+	sStill = pcStill->GetGridPosition();
+	sPosition = pcView->GetPosition();
+	if (bHorizontal)
+	{
+		pcView->SetPosition(sPosition.x, sPosition.y + sStill.y - sPort.y);
+	}
+	else
+	{
+		pcView->SetPosition(sPosition.x + sStill.x - sPort.x, sPosition.y);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Lines up the alignment's ports by moving the item with fewer terminals
+// across the wire (the other if that's already been lined up with
+// something, paiFixed), unless both have.  Both are marked to keep to the
+// line and fixed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::AlignItem(SKicadSchemLogicimAlignment* psAlignment, CArrayInt* paiFixed)
+{
+	SKicadSchemLogicimItem*		psFrom;
+	SKicadSchemLogicimItem*		psTo;
+	bool						bFromFixed;
+	bool						bToFixed;
+	bool						bFromMoves;
+
+	bFromFixed = paiFixed->GetValue(psAlignment->uiFromItem) != 0;
+	bToFixed = paiFixed->GetValue(psAlignment->uiToItem) != 0;
+	if (bFromFixed && bToFixed)
+	{
+		return;
+	}
+	if (bFromFixed || bToFixed)
+	{
+		bFromMoves = bToFixed;
+	}
+	else
+	{
+		bFromMoves = mpcModel->NumItemTerminals(psAlignment->uiFromItem) <= mpcModel->NumItemTerminals(psAlignment->uiToItem);
+	}
+
+	psFrom = mpcModel->GetItem(psAlignment->uiFromItem);
+	psTo = mpcModel->GetItem(psAlignment->uiToItem);
+	if (bFromMoves)
+	{
+		LineUpKicadSchemPort(psFrom->pcView, psAlignment->pcFromPort, psAlignment->pcToPort, psAlignment->bHorizontal);
+	}
+	else
+	{
+		LineUpKicadSchemPort(psTo->pcView, psAlignment->pcToPort, psAlignment->pcFromPort, psAlignment->bHorizontal);
+	}
+	psFrom->eAlign = psAlignment->bHorizontal ? KSLA_KeepY : KSLA_KeepX;
+	psTo->eAlign = psFrom->eAlign;
+	paiFixed->SetValue(psAlignment->uiFromItem, 1);
+	paiFixed->SetValue(psAlignment->uiToItem, 1);
 }
 
 
@@ -649,7 +685,28 @@ void CKicadSchemLogicimPlacer::Place(float64 fSpread)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Each splitter beside the component its ends go to: its ends
+// Each splitter beside the component its ends go to (see PlaceSplitter).
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::PlaceSplitters(void)
+{
+	size							i;
+	SKicadSchemLogicimSplitter*		psSplitter;
+
+	for (i = 0; i < mpcBuses->NumSplitters(); i++)
+	{
+		psSplitter = mpcBuses->GetSplitter(i);
+		if (psSplitter->uiNumPairs != 0)
+		{
+			PlaceSplitter(psSplitter);
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The splitter beside the component its ends go to: its ends
 // KICAD_SCHEM_LOGICIM_SPLITTER_GAP grid units out from the outermost of
 // their pins (KICAD_SCHEM_LOGICIM_SPLITTER_TUNNEL_GAP if a member has a
 // tunnel too), and along the side as near as they can be to their pins.
@@ -657,79 +714,101 @@ void CKicadSchemLogicimPlacer::Place(float64 fSpread)
 // out again, so the wires have room to step across.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimPlacer::PlaceSplitters(void)
+void CKicadSchemLogicimPlacer::PlaceSplitter(SKicadSchemLogicimSplitter* psSplitter)
+{
+	bool			bAcrossX;
+	int				iOut;
+	int32			iPinAcross;
+	int32			iEndAcross;
+	int32			iAlong;
+	int32			iAcross;
+	SInt32Vec2		sPosition;
+
+	bAcrossX = (psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_WEST);
+	iOut = ((psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_SOUTH)) ? 1 : -1;
+	iAlong = MeasureSplitterPairs(psSplitter, bAcrossX, iOut, &iPinAcross, &iEndAcross);
+	iAcross = iPinAcross + iOut * (psSplitter->iGap + GetSplitterStep(psSplitter, bAcrossX, iAlong)) - iEndAcross;
+
+	sPosition = psSplitter->pcSplitter->GetPosition();
+	if (bAcrossX)
+	{
+		psSplitter->pcSplitter->SetPosition(sPosition.x + iAcross, sPosition.y + iAlong);
+	}
+	else
+	{
+		psSplitter->pcSplitter->SetPosition(sPosition.x + iAlong, sPosition.y + iAcross);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where the splitter's pins and ends are across the side (bAcrossX: in x):
+// the outermost pin (out, iOut, is 1 or -1) and the last end.  Returned,
+// how far the ends must move along the side to be as near as they can be
+// to their pins, on average.
+//
+//////////////////////////////////////////////////////////////////////////
+int32 CKicadSchemLogicimPlacer::MeasureSplitterPairs(SKicadSchemLogicimSplitter* psSplitter, bool bAcrossX, int iOut, int32* piPinAcross, int32* piEndAcross)
 {
 	size							i;
-	size							j;
-	SKicadSchemLogicimSplitter*		psSplitter;
 	SKicadSchemLogicimSplitterPair*	psPair;
 	SInt32Vec2						sPin;
 	SInt32Vec2						sEnd;
-	SInt32Vec2						sPosition;
-	bool							bAcrossX;
-	int								iOut;
-	int32							iPinAcross;
-	int32							iEndAcross;
 	int32							iAcross;
 	float64							fAlong;
-	int32							iAlong;
-	int32							iStep;
-	int32							iOffset;
 
-	for (i = 0; i < mpcBuses->NumSplitters(); i++)
+	*piPinAcross = 0;
+	*piEndAcross = 0;
+	fAlong = 0;
+	for (i = 0; i < psSplitter->uiNumPairs; i++)
 	{
-		psSplitter = mpcBuses->GetSplitter(i);
-		if (psSplitter->uiNumPairs == 0)
+		psPair = mpcBuses->GetSplitterPair(psSplitter->uiFirstPair + i);
+		sPin = psPair->pcPin->GetGridPosition();
+		sEnd = psPair->pcEnd->GetGridPosition();
+		iAcross = bAcrossX ? sPin.x : sPin.y;
+		if ((i == 0) || (iAcross * iOut > *piPinAcross * iOut))
 		{
-			continue;
+			*piPinAcross = iAcross;
 		}
-		bAcrossX = (psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_WEST);
-		iOut = ((psSplitter->iFacing == TRACE_DIRECTION_EAST) || (psSplitter->iFacing == TRACE_DIRECTION_SOUTH)) ? 1 : -1;
+		*piEndAcross = bAcrossX ? sEnd.x : sEnd.y;
+		fAlong += bAcrossX ? (sPin.y - sEnd.y) : (sPin.x - sEnd.x);
+	}
+	return (int32)floor(fAlong / (float64)psSplitter->uiNumPairs + 0.5);
+}
 
-		iPinAcross = 0;
-		iEndAcross = 0;
-		fAlong = 0;
-		for (j = 0; j < psSplitter->uiNumPairs; j++)
-		{
-			psPair = mpcBuses->GetSplitterPair(psSplitter->uiFirstPair + j);
-			sPin = psPair->pcPin->GetGridPosition();
-			sEnd = psPair->pcEnd->GetGridPosition();
-			iAcross = bAcrossX ? sPin.x : sPin.y;
-			if ((j == 0) || (iAcross * iOut > iPinAcross * iOut))
-			{
-				iPinAcross = iAcross;
-			}
-			iEndAcross = bAcrossX ? sEnd.x : sEnd.y;
-			fAlong += bAcrossX ? (sPin.y - sEnd.y) : (sPin.x - sEnd.x);
-		}
-		iAlong = (int32)floor(fAlong / (float64)psSplitter->uiNumPairs + 0.5);
 
-		//Ends further apart than their pins (a 74 part's pins are a grid unit apart) need room for the wires to step in.
-		iStep = 0;
-		for (j = 0; j < psSplitter->uiNumPairs; j++)
-		{
-			psPair = mpcBuses->GetSplitterPair(psSplitter->uiFirstPair + j);
-			sPin = psPair->pcPin->GetGridPosition();
-			sEnd = psPair->pcEnd->GetGridPosition();
-			iOffset = bAcrossX ? (sPin.y - sEnd.y - iAlong) : (sPin.x - sEnd.x - iAlong);
-			iOffset = (iOffset < 0) ? -iOffset : iOffset;
-			if (iOffset > iStep)
-			{
-				iStep = iOffset;
-			}
-		}
-		iAcross = iPinAcross + iOut * (psSplitter->iGap + iStep) - iEndAcross;
+//////////////////////////////////////////////////////////////////////////
+//
+// How far the splitter's ends, moved iAlong along the side, are from
+// lining up with their pins at most: ends further apart than their pins
+// (a 74 part's pins are a grid unit apart) need room for the wires to
+// step in.
+//
+//////////////////////////////////////////////////////////////////////////
+int32 CKicadSchemLogicimPlacer::GetSplitterStep(SKicadSchemLogicimSplitter* psSplitter, bool bAcrossX, int32 iAlong)
+{
+	size							i;
+	SKicadSchemLogicimSplitterPair*	psPair;
+	SInt32Vec2						sPin;
+	SInt32Vec2						sEnd;
+	int32							iOffset;
+	int32							iStep;
 
-		sPosition = psSplitter->pcSplitter->GetPosition();
-		if (bAcrossX)
+	iStep = 0;
+	for (i = 0; i < psSplitter->uiNumPairs; i++)
+	{
+		psPair = mpcBuses->GetSplitterPair(psSplitter->uiFirstPair + i);
+		sPin = psPair->pcPin->GetGridPosition();
+		sEnd = psPair->pcEnd->GetGridPosition();
+		iOffset = bAcrossX ? (sPin.y - sEnd.y - iAlong) : (sPin.x - sEnd.x - iAlong);
+		iOffset = (iOffset < 0) ? -iOffset : iOffset;
+		if (iOffset > iStep)
 		{
-			psSplitter->pcSplitter->SetPosition(sPosition.x + iAcross, sPosition.y + iAlong);
-		}
-		else
-		{
-			psSplitter->pcSplitter->SetPosition(sPosition.x + iAlong, sPosition.y + iAcross);
+			iStep = iOffset;
 		}
 	}
+	return iStep;
 }
 
 
