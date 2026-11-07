@@ -154,6 +154,116 @@ void CCircuitEditor::FollowFrom(SInt32Vec2 sPoint, CPortView* pcPort, CArrayComp
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The port at sPoint that isn't moving (isn't on one of papcComponents),
+// NULL if there's none.  Each port there that is moving is counted in
+// *puiMoving.
+//
+//////////////////////////////////////////////////////////////////////////
+static CPortView* FindStillPortAt(SInt32Vec2 sPoint, CArrayPortViewPtr* papcPortViews, CArrayComponentViewPtr* papcComponents, size* puiMoving)
+{
+	size		i;
+	CPortView*	pcPortView;
+	CPortView*	pcStill;
+
+	pcStill = NULL;
+	for (i = 0; i < papcPortViews->NumElements(); i++)
+	{
+		pcPortView = papcPortViews->GetPtr(i);
+		if (pcPortView->GetGridPosition() == sPoint)
+		{
+			if (papcComponents->Find(pcPortView->GetOwner()) == ARRAY_ELEMENT_NOT_FOUND)
+			{
+				pcStill = pcPortView;
+			}
+			else
+			{
+				(*puiMoving)++;
+			}
+		}
+	}
+	return pcStill;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A wire on sPoint that isn't moving, not pcFrom or already in the chain,
+// NULL if there's none.  The wires there that aren't moving are counted
+// in *puiStill and those that are in *puiMoving.
+//
+//////////////////////////////////////////////////////////////////////////
+CTraceView* CCircuitEditor::FindStillTraceAt(SInt32Vec2 sPoint, CTraceView* pcFrom, CArrayTraceViewPtr* papcMoving, CArrayTraceViewPtr* papcChain, size* puiStill, size* puiMoving)
+{
+	size			i;
+	CTraceView*		pcTrace;
+	CTraceView*		pcStill;
+
+	pcStill = NULL;
+	for (i = 0; i < mpcCircuit->NumTraces(); i++)
+	{
+		pcTrace = mpcCircuit->GetTrace(i);
+		if ((pcTrace != pcFrom) && pcTrace->Contains(sPoint) && (papcChain->Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
+		{
+			if (papcMoving->Find(pcTrace) != ARRAY_ELEMENT_NOT_FOUND)
+			{
+				(*puiMoving)++;
+			}
+			else
+			{
+				pcStill = pcTrace;
+				(*puiStill)++;
+			}
+		}
+	}
+	return pcStill;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the chain FollowChain is following ends at sPoint, and how, in
+// *peChain.  bStart if sPoint is where it started, bPortAt if a port
+// that isn't moving is there, uiStill and uiMoving how many still and
+// moving things are joined there, and pcNext one of the still wires.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool IsMoveChainEnd(SInt32Vec2 sPoint, bool bStart, bool bPortAt, size uiStill, size uiMoving, CTraceView* pcNext, EMoveChain* peChain)
+{
+	//The moved port or wire at sPoint itself is one of the moving there.
+	if (bStart && (uiMoving > 1))
+	{
+		*peChain = MC_None;
+	}
+	else if (bPortAt)
+	{
+		*peChain = MC_Stops;
+	}
+	else if (bStart && (uiStill == 0))
+	{
+		*peChain = MC_None;
+	}
+	else if (!bStart && (uiMoving > 0))
+	{
+		*peChain = (uiStill == 0) ? MC_Follows : MC_Stops;
+	}
+	else if (uiStill == 0)
+	{
+		*peChain = MC_Follows;
+	}
+	else if ((uiStill > 1) || !pcNext->IsEnd(sPoint))
+	{
+		*peChain = MC_Stops;
+	}
+	else
+	{
+		return false;
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Follows the wires that aren't moving from sPoint (a moved port, or a
 // moved wire's end) on through the points where one wire ends on another
 // and nothing else is, into papcChain.  MC_Follows if they end on nothing
@@ -166,14 +276,12 @@ void CCircuitEditor::FollowFrom(SInt32Vec2 sPoint, CPortView* pcPort, CArrayComp
 //////////////////////////////////////////////////////////////////////////
 EMoveChain CCircuitEditor::FollowChain(SInt32Vec2 sPoint, CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcMoving, CArrayTraceViewPtr* papcChain, SInt32Vec2* psEnd, CPortView** ppcPortAt)
 {
-	size				i;
 	CTraceView*			pcFrom;
-	CTraceView*			pcTrace;
 	CTraceView*			pcNext;
 	size				uiStill;
 	size				uiMoving;
 	CArrayPortViewPtr	apcPortViews;
-	CPortView*			pcPortView;
+	EMoveChain			eChain;
 
 	apcPortViews.Init();
 	mpcCircuit->CollectPortViews(&apcPortViews);
@@ -181,72 +289,14 @@ EMoveChain CCircuitEditor::FollowChain(SInt32Vec2 sPoint, CArrayComponentViewPtr
 	for (;;)
 	{
 		*psEnd = sPoint;
-		*ppcPortAt = NULL;
-		uiMoving = 0;
-		for (i = 0; i < apcPortViews.NumElements(); i++)
-		{
-			pcPortView = apcPortViews.GetPtr(i);
-			if (pcPortView->GetGridPosition() == sPoint)
-			{
-				if (papcComponents->Find(pcPortView->GetOwner()) == ARRAY_ELEMENT_NOT_FOUND)
-				{
-					*ppcPortAt = pcPortView;
-				}
-				else
-				{
-					uiMoving++;
-				}
-			}
-		}
-		pcNext = NULL;
 		uiStill = 0;
-		for (i = 0; i < mpcCircuit->NumTraces(); i++)
-		{
-			pcTrace = mpcCircuit->GetTrace(i);
-			if ((pcTrace != pcFrom) && pcTrace->Contains(sPoint) && (papcChain->Find(pcTrace) == ARRAY_ELEMENT_NOT_FOUND))
-			{
-				if (papcMoving->Find(pcTrace) != ARRAY_ELEMENT_NOT_FOUND)
-				{
-					uiMoving++;
-				}
-				else
-				{
-					pcNext = pcTrace;
-					uiStill++;
-				}
-			}
-		}
-
-		//The moved port or wire at sPoint itself is one of the moving there.
-		if ((pcFrom == NULL) && (uiMoving > 1))
+		uiMoving = 0;
+		*ppcPortAt = FindStillPortAt(sPoint, &apcPortViews, papcComponents, &uiMoving);
+		pcNext = FindStillTraceAt(sPoint, pcFrom, papcMoving, papcChain, &uiStill, &uiMoving);
+		if (IsMoveChainEnd(sPoint, pcFrom == NULL, *ppcPortAt != NULL, uiStill, uiMoving, pcNext, &eChain))
 		{
 			apcPortViews.Kill();
-			return MC_None;
-		}
-		if (*ppcPortAt != NULL)
-		{
-			apcPortViews.Kill();
-			return MC_Stops;
-		}
-		if ((pcFrom == NULL) && (uiStill == 0))
-		{
-			apcPortViews.Kill();
-			return MC_None;
-		}
-		if ((pcFrom != NULL) && (uiMoving > 0))
-		{
-			apcPortViews.Kill();
-			return (uiStill == 0) ? MC_Follows : MC_Stops;
-		}
-		if (uiStill == 0)
-		{
-			apcPortViews.Kill();
-			return MC_Follows;
-		}
-		if ((uiStill > 1) || !pcNext->IsEnd(sPoint))
-		{
-			apcPortViews.Kill();
-			return MC_Stops;
+			return eChain;
 		}
 
 		papcChain->Add(pcNext);

@@ -274,6 +274,7 @@ protected:
 	bool				RouteWire(SInt32Vec2 sFrom, SInt32Vec2 sTo);
 	void				FollowFrom(SInt32Vec2 sPoint, CPortView* pcPort, CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcMoving, CArrayTraceViewPtr* papcFollowing);
 	EMoveChain			FollowChain(SInt32Vec2 sPoint, CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcMoving, CArrayTraceViewPtr* papcChain, SInt32Vec2* psEnd, CPortView** ppcPortAt);
+	CTraceView*			FindStillTraceAt(SInt32Vec2 sPoint, CTraceView* pcFrom, CArrayTraceViewPtr* papcMoving, CArrayTraceViewPtr* papcChain, size* puiStill, size* puiMoving);
 	CPortView*			FindNetPort(SInt32Vec2 sPoint, CArrayTraceViewPtr* papcExcluded, CArrayComponentViewPtr* papcComponents);
 	void				LiftLeads(void);
 	void				RouteLeads(void);
