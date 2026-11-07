@@ -203,7 +203,7 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 
 	sInsets.Init(aiInsets);
 	mpList = OMalloc<CListContainer>(pWindow, psLook->pcTheme);
-	mpList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetListSelectedColour(), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetListHoverColour(), 4, &sInsets));
+	mpList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetColour(TC_ListSelected), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetColour(TC_ListHover), 4, &sInsets));
 	mpList->SetAlignment(CSH_Stretch, CSV_Top);
 	mpList->GetSelectionEvent()->Add(this, &CLogicimComponentChooser::SelectionChanged);
 	mpList->GetActivationEvent()->Add(this, &CLogicimComponentChooser::ItemActivated);

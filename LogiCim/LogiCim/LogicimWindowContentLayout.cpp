@@ -287,7 +287,7 @@ Ptr<CListContainer> CLogicimWindowContent::CreateList(void)
 
 	sInsets.Init(aiInsets);
 	pList = OMalloc<CListContainer>(mpWindow, mpTheme);
-	pList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetListSelectedColour(), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetListHoverColour(), 4, &sInsets));
+	pList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetColour(TC_ListSelected), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetColour(TC_ListHover), 4, &sInsets));
 	pList->SetAlignment(CSH_Stretch, CSV_Top);
 	pList->GetSelectionEvent()->Add(this, &CLogicimWindowContent::UpdateInfo);
 	return pList;
