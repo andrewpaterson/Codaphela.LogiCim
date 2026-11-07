@@ -53,8 +53,18 @@ struct SWiringNet
 };
 
 
+//What the wiring has found of a node's set of joined nodes, kept by its root node (see FindNets): the net it is, -1 if
+//it's none, and the width of its widest port.
+struct SWiringNodeNet
+{
+	int		iNet;
+	int		iWidth;
+};
+
+
 typedef CArrayTemplate<SWiringLevel>	CArrayWiringLevel;
 typedef CArrayTemplate<SWiringNet>		CArrayWiringNet;
+typedef CArrayTemplate<SWiringNodeNet>	CArrayWiringNodeNet;
 
 
 //Wires a circuit's views, and those of the subcircuits in it all the way down, in a circuit simulation, as Logicim's
@@ -78,8 +88,7 @@ protected:
 	CArrayWiringLevel			masLevels;
 	size						muiNumNodes;
 	CArrayInt					maiParents;
-	CArrayInt					maiNetWidths;
-	CArrayInt					maiNetIndices;
+	CArrayWiringNodeNet			masNodeNets;
 	size						muiNumNets;
 	CArrayWiringNet				masNets;
 	CArrayInt					maiBitParents;
@@ -119,6 +128,7 @@ protected:
 	bool	IsDetached(CPortView* pcPortView);
 	int		GetPortViewNode(SWiringLevel* psLevel, CPortView* pcPortView);
 	int		GetPortViewNet(SWiringLevel* psLevel, CPortView* pcPortView);
+	int		GetNodeNet(size uiNode);
 	int		FindRoot(CArrayInt* paiParents, int iNode);
 	void	Join(CArrayInt* paiParents, int iNode1, int iNode2);
 };

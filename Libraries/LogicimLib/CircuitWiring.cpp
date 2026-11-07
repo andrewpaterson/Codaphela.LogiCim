@@ -39,8 +39,7 @@ void CCircuitWiring::Init(CCircuitSimulation* pcSimulation)
 	masLevels.Init();
 	muiNumNodes = 0;
 	maiParents.Init();
-	maiNetWidths.Init();
-	maiNetIndices.Init();
+	masNodeNets.Init();
 	muiNumNets = 0;
 	masNets.Init();
 	maiBitParents.Init();
@@ -64,8 +63,7 @@ void CCircuitWiring::Kill(void)
 	}
 	masNets.Kill();
 	maiBitParents.Kill();
-	maiNetIndices.Kill();
-	maiNetWidths.Kill();
+	masNodeNets.Kill();
 	maiParents.Kill();
 	for (i = 0; i < masLevels.NumElements(); i++)
 	{
@@ -407,8 +405,8 @@ void CCircuitWiring::JoinPins(SWiringLevel* psLevel)
 // A net is as wide as its widest port view; one with no ports gets a
 // single trace to show it's undriven.  Roots that are nets (anything with
 // a wire that isn't detached, and port views joined to another) are
-// numbered in maiNetIndices
-// (-1 for the others) and their widths are in maiNetWidths, both by root.
+// numbered in masNodeNets
+// (-1 for the others) with their widths, by root.
 // Fails if ports of different widths are joined.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -422,12 +420,14 @@ bool CCircuitWiring::FindNets(void)
 	CPortView*		pcPortView;
 	bool			bResult;
 	size			uiTraces;
+	SWiringNodeNet*	psNodeNet;
 
 	bResult = true;
 	for (i = 0; i < muiNumNodes; i++)
 	{
-		maiNetWidths.Add(0);
-		maiNetIndices.Add(-1);
+		psNodeNet = masNodeNets.Add();
+		psNodeNet->iNet = -1;
+		psNodeNet->iWidth = 0;
 	}
 	for (i = 0; i < masLevels.NumElements(); i++)
 	{
@@ -438,14 +438,15 @@ bool CCircuitWiring::FindNets(void)
 			pcPortView = psLevel->apcPortViews.GetPtr(j);
 			iRoot = FindRoot(&maiParents, (int)(psLevel->uiFirstNode + uiTraces + j));
 			iWidth = (int)pcPortView->NumPorts(psLevel->pcViewPath, mpcSimulation);
-			if ((maiNetWidths.GetValue(iRoot) != 0) && (iWidth != 0) && (maiNetWidths.GetValue(iRoot) != iWidth))
+			psNodeNet = masNodeNets.Get(iRoot);
+			if ((psNodeNet->iWidth != 0) && (iWidth != 0) && (psNodeNet->iWidth != iWidth))
 			{
 				gcLogger.Error2(__METHOD__, " Ports of different widths are connected at [", IntToString(pcPortView->GetGridPosition().x), ", ", IntToString(pcPortView->GetGridPosition().y), "].", NULL);
 				bResult = false;
 			}
-			if (iWidth > maiNetWidths.GetValue(iRoot))
+			if (iWidth > psNodeNet->iWidth)
 			{
-				maiNetWidths.SetValue(iRoot, iWidth);
+				psNodeNet->iWidth = iWidth;
 			}
 		}
 	}
@@ -456,9 +457,10 @@ bool CCircuitWiring::FindNets(void)
 		iRoot = FindRoot(&maiParents, (int)i);
 		if ((IsTraceNode(i) && !IsDetachedTraceNode(i)) || (iRoot != (int)i))
 		{
-			if (maiNetIndices.GetValue(iRoot) == -1)
+			psNodeNet = masNodeNets.Get(iRoot);
+			if (psNodeNet->iNet == -1)
 			{
-				maiNetIndices.SetValue(iRoot, (int)muiNumNets);
+				psNodeNet->iNet = (int)muiNumNets;
 				muiNumNets++;
 			}
 		}
@@ -503,10 +505,10 @@ void CCircuitWiring::FindBits(void)
 		iRoot = FindRoot(&maiParents, (int)i);
 		if ((int)i == iRoot)
 		{
-			iNet = maiNetIndices.GetValue(iRoot);
+			iNet = masNodeNets.Get(iRoot)->iNet;
 			if (iNet != -1)
 			{
-				iWidth = maiNetWidths.GetValue(iRoot);
+				iWidth = masNodeNets.Get(iRoot)->iWidth;
 				masNets.Get(iNet)->iBitWidth = (iWidth == 0) ? 1 : iWidth;
 			}
 		}
@@ -631,7 +633,7 @@ void CCircuitWiring::ReuseBitTraces(CArrayTraceViewTracePtr* papcBitTraces)
 		uiTraces = NumLevelTraces(psLevel);
 		for (j = 0; j < psLevel->apcPortViews.NumElements(); j++)
 		{
-			iNet = maiNetIndices.GetValue(FindRoot(&maiParents, (int)(psLevel->uiFirstNode + uiTraces + j)));
+			iNet = GetNodeNet(psLevel->uiFirstNode + uiTraces + j);
 			if (iNet != -1)
 			{
 				pcPortView = psLevel->apcPortViews.GetPtr(j);
@@ -643,7 +645,7 @@ void CCircuitWiring::ReuseBitTraces(CArrayTraceViewTracePtr* papcBitTraces)
 		}
 		for (j = 0; j < uiTraces; j++)
 		{
-			iNet = maiNetIndices.GetValue(FindRoot(&maiParents, (int)(psLevel->uiFirstNode + j)));
+			iNet = GetNodeNet(psLevel->uiFirstNode + j);
 			papcOldTraces = psLevel->pcCircuit->GetTrace(j)->GetTraces(psLevel->pcViewPath, mpcSimulation);
 			if ((iNet != -1) && (papcOldTraces != NULL))
 			{
@@ -736,7 +738,7 @@ void CCircuitWiring::SetLevelTraces(SWiringLevel* psLevel)
 
 	for (i = 0; i < NumLevelTraces(psLevel); i++)
 	{
-		iNet = maiNetIndices.GetValue(FindRoot(&maiParents, (int)(psLevel->uiFirstNode + i)));
+		iNet = GetNodeNet(psLevel->uiFirstNode + i);
 		if (iNet == -1)
 		{
 			psLevel->pcCircuit->GetTrace(i)->ClearTraces(psLevel->pcViewPath, mpcSimulation);
@@ -772,7 +774,7 @@ void CCircuitWiring::DisconnectLevel(SWiringLevel* psLevel)
 	for (i = 0; i < psLevel->apcPortViews.NumElements(); i++)
 	{
 		pcPortView = psLevel->apcPortViews.GetPtr(i);
-		iNet = maiNetIndices.GetValue(FindRoot(&maiParents, (int)(psLevel->uiFirstNode + uiTraces + i)));
+		iNet = GetNodeNet(psLevel->uiFirstNode + uiTraces + i);
 		for (k = 0; k < pcPortView->NumPorts(pcViewPath, mpcSimulation); k++)
 		{
 			pcPort = pcPortView->GetPort(pcViewPath, mpcSimulation, k);
@@ -811,7 +813,7 @@ bool CCircuitWiring::ConnectLevel(SWiringLevel* psLevel, bool bStart)
 	for (i = 0; i < psLevel->apcPortViews.NumElements(); i++)
 	{
 		pcPortView = psLevel->apcPortViews.GetPtr(i);
-		iNet = maiNetIndices.GetValue(FindRoot(&maiParents, (int)(psLevel->uiFirstNode + uiTraces + i)));
+		iNet = GetNodeNet(psLevel->uiFirstNode + uiTraces + i);
 		if (iNet != -1)
 		{
 			for (k = 0; k < pcPortView->NumPorts(pcViewPath, mpcSimulation); k++)
@@ -1000,7 +1002,7 @@ int CCircuitWiring::GetPortViewNet(SWiringLevel* psLevel, CPortView* pcPortView)
 	{
 		return -1;
 	}
-	return maiNetIndices.GetValue(FindRoot(&maiParents, iNode));
+	return GetNodeNet((size)iNode);
 }
 
 
@@ -1039,5 +1041,16 @@ void CCircuitWiring::Join(CArrayInt* paiParents, int iNode1, int iNode2)
 	{
 		paiParents->SetValue(iRoot2, iRoot1);
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The net the node is on, -1 if it's on none.
+//
+//////////////////////////////////////////////////////////////////////////
+int CCircuitWiring::GetNodeNet(size uiNode)
+{
+	return masNodeNets.Get(FindRoot(&maiParents, (int)uiNode))->iNet;
 }
 
