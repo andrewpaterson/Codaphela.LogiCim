@@ -570,19 +570,40 @@ bool CKicadSchemLogicimConverter::AddLogic74Part(SKicadSchemLogicPart* psPart, S
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A package (or unit) view of the part turned eRotation.
+//
+//////////////////////////////////////////////////////////////////////////
+static CComponentView* NewKicadSchemLogic74View(SKicadSchemLogicPart* psPart, ERotation eRotation, bool bUnit, int iUnit)
+{
+	CLogic74PackageView*	pcPackage;
+	CLogic74UnitView*		pcUnit;
+
+	if (bUnit)
+	{
+		pcUnit = NewMalloc<CLogic74UnitView>();
+		pcUnit->Init(0, 0, eRotation, psPart->pcSymbol->GetReference(), psPart->szFamily.Text(), false, psPart->szPartType.Text(), iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
+		return pcUnit;
+	}
+	pcPackage = NewMalloc<CLogic74PackageView>();
+	pcPackage->Init(0, 0, eRotation, psPart->pcSymbol->GetReference(), psPart->szFamily.Text(), false, psPart->szPartType.Text(), KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	return pcPackage;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Unit iUnit of the part: its inputs in letter order, then its output, as
 // the generic gate's.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddLogic74Unit(SKicadSchemLogicPart* psPart, int iUnit, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation)
 {
-	CLogic74UnitView*	pcUnit;
+	CComponentView*		pcUnit;
 	size				uiItem;
 	size				i;
 	CChars				szPortName;
 
-	pcUnit = NewMalloc<CLogic74UnitView>();
-	pcUnit->Init(0, 0, eRotation, psPart->pcSymbol->GetReference(), psPart->szFamily.Text(), false, psPart->szPartType.Text(), iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	pcUnit = NewKicadSchemLogic74View(psPart, eRotation, true, iUnit);
 	uiItem = mcModel.AddItem(pcUnit, KSLIK_Part, &psLayout->sCentre, NULL, psPart->pcSymbol);
 	for (i = 0; i < psLayout->aiInputs.NumElements(); i++)
 	{
@@ -603,7 +624,7 @@ void CKicadSchemLogicimConverter::AddLogic74Unit(SKicadSchemLogicPart* psPart, i
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddLogic74Package(SKicadSchemLogicPart* psPart, SKicadSchemLogicPins* psPins, SKicadSchemLogicLayout* psLayout, ERotation eRotation)
 {
-	CLogic74PackageView*	pcPackage;
+	CComponentView*			pcPackage;
 	size					uiItem;
 	size					i;
 	CChars					szPortName;
@@ -611,8 +632,7 @@ void CKicadSchemLogicimConverter::AddLogic74Package(SKicadSchemLogicPart* psPart
 	CPortView*				pcPortView;
 	SKicadSchemLogicPin*	psPin;
 
-	pcPackage = NewMalloc<CLogic74PackageView>();
-	pcPackage->Init(0, 0, eRotation, psPart->pcSymbol->GetReference(), psPart->szFamily.Text(), false, psPart->szPartType.Text(), KICAD_SCHEM_LOGICIM_PIN_SPACING);
+	pcPackage = NewKicadSchemLogic74View(psPart, eRotation, false, 0);
 	uiItem = mcModel.AddItem(pcPackage, KSLIK_Part, &psLayout->sCentre, NULL, psPart->pcSymbol);
 	for (i = 0; i < psPins->NumPins(); i++)
 	{
@@ -711,28 +731,6 @@ static bool MapKicadSchemLogic74Pins(CComponentView* pcView, CArrayTemplatePtr<C
 		papcPorts->Add(pcPortView);
 	}
 	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// A package (or unit) view of the part turned eRotation.
-//
-//////////////////////////////////////////////////////////////////////////
-static CComponentView* NewKicadSchemLogic74View(SKicadSchemLogicPart* psPart, ERotation eRotation, bool bUnit, int iUnit)
-{
-	CLogic74PackageView*	pcPackage;
-	CLogic74UnitView*		pcUnit;
-
-	if (bUnit)
-	{
-		pcUnit = NewMalloc<CLogic74UnitView>();
-		pcUnit->Init(0, 0, eRotation, psPart->pcSymbol->GetReference(), psPart->szFamily.Text(), false, psPart->szPartType.Text(), iUnit, KICAD_SCHEM_LOGICIM_PIN_SPACING);
-		return pcUnit;
-	}
-	pcPackage = NewMalloc<CLogic74PackageView>();
-	pcPackage->Init(0, 0, eRotation, psPart->pcSymbol->GetReference(), psPart->szFamily.Text(), false, psPart->szPartType.Text(), KICAD_SCHEM_LOGICIM_PIN_SPACING);
-	return pcPackage;
 }
 
 
