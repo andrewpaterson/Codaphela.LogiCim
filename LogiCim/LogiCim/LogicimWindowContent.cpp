@@ -137,8 +137,6 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpTheme);
 	U_Pointer(msDialogLook.pcTheme);
 	U_Pointer(msDialogLook.pcDimFont);
-	U_Data(ARGB32, msDialogLook.sBackground);
-	U_Data(ARGB32, msDialogLook.sDivider);
 	M_Embedded(mapIcons);
 	M_Pointer(mpFileIcon);
 	M_Pointer(mpCommands);

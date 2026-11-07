@@ -120,8 +120,6 @@ void CLogicimWindowContent::CreateLooks(void)
 	mpTheme = CJewelTheme::CreateDarkTheme(mpWindow, mpFont);
 	msDialogLook.pcTheme = &mpTheme;
 	msDialogLook.pcDimFont = &mpDimFont;
-	msDialogLook.sBackground = JEWEL_PANEL;
-	msDialogLook.sDivider = JEWEL_SEPARATOR;
 }
 
 
