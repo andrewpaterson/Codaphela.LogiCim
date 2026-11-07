@@ -257,6 +257,7 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 {
 	Ptr<CTextField>		pName;
 	char*				szName;
+	CChars				szMessage;
 
 	mpDialog = OMalloc<CDialog>(mpWindow, &msDialogLook, "New Subcircuit");
 	pName = mpDialog->AddTextField("Name", "");
@@ -268,7 +269,11 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 		{
 			if (mpLogicimCircuit->GetEditor()->GetCircuits()->Get(szName) != NULL)
 			{
-				gcLogger.Error2(__METHOD__, " There is already a subcircuit [", szName, "].", NULL);
+				szMessage.Init("There is already a subcircuit called ");
+				szMessage.Append(szName);
+				szMessage.Append('.');
+				ShowMessage("New Subcircuit", szMessage.Text());
+				szMessage.Kill();
 			}
 			else if (mpLogicimCircuit->GetEditor()->AddCircuit(szName) != NULL)
 			{
@@ -281,6 +286,21 @@ void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 
 	pName = NULL;
 	mpDialog = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szMessage told in a dialog with only OK.  Show it from a tick (after
+// another dialog, say), not from input.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowMessage(const char* szTitle, const char* szMessage)
+{
+	mpMessageDialog = OMalloc<CMessageDialog>(mpWindow, &msDialogLook, szTitle, szMessage);
+	mpMessageDialog->GetDialog()->SetCancelCaption(NULL);
+	mpMessageDialog->Show();
+	mpMessageDialog = NULL;
 }
 
 

@@ -168,6 +168,7 @@ void CLogicimWindowContent::Class(void)
 	U_Unknown(CArrayInt, maiMenuItemActions);
 	M_Pointer(mpLogicimCircuit);
 	M_Pointer(mpDialog);
+	M_Pointer(mpMessageDialog);
 	M_Pointer(mpComponentChooser);
 	M_Pointer(mpFileChooser);
 	U_String(mszProjectFilename);

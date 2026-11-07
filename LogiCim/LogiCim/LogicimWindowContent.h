@@ -31,7 +31,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/Button.h"
 #include "WindowLib/Label.h"
 #include "LogicimWindowData.h"
-#include "WindowLib/Dialog.h"
+#include "WindowLib/MessageDialog.h"
 #include "CircuitCanvas.h"
 #include "LogicimCircuit.h"
 
@@ -138,6 +138,7 @@ protected:
 
 	Ptr<CLogicimCircuit>	mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
+	Ptr<CMessageDialog>				mpMessageDialog;  //The message being shown, NULL when none is.
 	Ptr<CLogicimComponentChooser>	mpComponentChooser;
 	Ptr<CFileChooser>				mpFileChooser;
 	CChars					mszProjectFilename;  //The project last loaded or saved.
@@ -207,6 +208,7 @@ protected:
 	void					ShowPropertiesDialog(void);
 	int						AddPropertyEditor(CComponentProperties* pcProperties, SComponentProperty* psProperty, CArray<CTextField>* paTextFields, CArray<CCheckBox>* paCheckBoxes, CArray<CComboBox>* paComboBoxes);
 	void					ShowNewSubcircuitDialog(void);
+	void					ShowMessage(const char* szTitle, const char* szMessage);
 	void					ShowNewSimulationDialog(void);
 	void					ShowSelectZoomDialog(void);
 	void					ShowZoom(void);
