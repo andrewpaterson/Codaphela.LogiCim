@@ -269,6 +269,11 @@ public:
 protected:
 	CComponentView*		NewFromProperties(CComponentView* pcComponent, CComponentProperties* pcProperties, ERotation eRotation, bool bMirrored);
 	void				DestroyInSimulations(CComponentView* pcComponent);
+	void				CreateNewComponents(CArrayComponentViewPtr* papcComponents);
+	void				TakeAnchorLines(bool bChanged, CArrayTraceLine* pasAnchorLines);
+	void				EndLeads(bool bChanged, CArrayTraceViewPtr* papcSeeds);
+	void				RewireMovedViews(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasAnchorLines, CArrayTraceViewPtr* papcSeeds, CArrayTraceViewPtr* papcAdded);
+	void				KeepMovedTraces(CArrayTraceViewPtr* papcTraces, CArrayTraceViewPtr* papcAdded);
 	void				GetMovedLines(CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasMovedLines);
 	void				AddPortTraces(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcSeeds);
 	void				SelectMoved(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcAdded, CArrayTraceLine* pasMovedLines);

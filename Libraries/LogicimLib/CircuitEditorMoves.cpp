@@ -444,7 +444,6 @@ void CCircuitEditor::GetAnchorLines(SMoveAnchor* psAnchor, CArrayTraceLine* pasL
 //////////////////////////////////////////////////////////////////////////
 void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, bool bSelect, bool bNew, bool bChanged)
 {
-	size				i;
 	CArrayTraceLine		asMovedLines;
 	CArrayTraceLine		asAnchorLines;
 	CArrayTraceViewPtr	apcSeeds;
@@ -453,61 +452,25 @@ void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArra
 	ClearHover();
 	if (bNew)
 	{
-		CreateComponents(papcComponents);
-
-		//A unit of a part placed as its units is followed by the part's next unit (see ButtonReleased).
-		if (papcComponents->NumElements() == 1)
-		{
-			mpcNextUnit = papcComponents->GetPtr(0)->NewNextUnit();
-		}
+		CreateNewComponents(papcComponents);
 	}
 
 	asAnchorLines.Init();
-	if (bChanged)
-	{
-		for (i = 0; i < masAnchors.NumElements(); i++)
-		{
-			GetAnchorLines(masAnchors.Get(i), &asAnchorLines);
-		}
-	}
-	masAnchors.ReInit();
-
+	TakeAnchorLines(bChanged, &asAnchorLines);
 	asMovedLines.Init();
 	GetMovedLines(papcTraces, &asMovedLines);
 	mapcFollowing.ReInit();
-
 	apcSeeds.Init();
-	if (bChanged)
-	{
-		FinishLeads(&apcSeeds);
-	}
-	else
-	{
-		RestoreLeads();
-	}
-	KillLeads();
+	EndLeads(bChanged, &apcSeeds);
 
 	apcAdded.Init();
 	if (bNew || bChanged)
 	{
-		for (i = 0; i < papcTraces->NumElements(); i++)
-		{
-			apcSeeds.Add(papcTraces->GetPtr(i));
-		}
-		AddPortTraces(papcComponents, &apcSeeds);
-		mpcCircuit->ReplaceWires(&asAnchorLines, &apcSeeds, &apcAdded);
-		Rewire();
+		RewireMovedViews(papcComponents, papcTraces, &asAnchorLines, &apcSeeds, &apcAdded);
 	}
 	else
 	{
-		for (i = 0; i < papcTraces->NumElements(); i++)
-		{
-			apcAdded.Add(papcTraces->GetPtr(i));
-		}
-		if (mbDetachedMove)
-		{
-			Rewire();
-		}
+		KeepMovedTraces(papcTraces, &apcAdded);
 	}
 	mbDetachedMove = false;
 	apcSeeds.Kill();
@@ -524,6 +487,107 @@ void CCircuitEditor::DoneMoveViews(CArrayComponentViewPtr* papcComponents, CArra
 	if (bNew || bChanged)
 	{
 		PushUndo(false);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The new components made and started in the simulations.  A unit of a
+// part placed as its units is followed by the part's next unit (see
+// ButtonReleased).
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::CreateNewComponents(CArrayComponentViewPtr* papcComponents)
+{
+	CreateComponents(papcComponents);
+	if (papcComponents->NumElements() == 1)
+	{
+		mpcNextUnit = papcComponents->GetPtr(0)->NewNextUnit();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The lines of the wires at the move's anchors, if anything changed, and
+// the anchors done with.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::TakeAnchorLines(bool bChanged, CArrayTraceLine* pasAnchorLines)
+{
+	size	i;
+
+	if (bChanged)
+	{
+		for (i = 0; i < masAnchors.NumElements(); i++)
+		{
+			GetAnchorLines(masAnchors.Get(i), pasAnchorLines);
+		}
+	}
+	masAnchors.ReInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The leads' routes kept as wires (the seeds of the rewiring) if anything
+// changed, otherwise put back, and the leads done with.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::EndLeads(bool bChanged, CArrayTraceViewPtr* papcSeeds)
+{
+	if (bChanged)
+	{
+		FinishLeads(papcSeeds);
+	}
+	else
+	{
+		RestoreLeads();
+	}
+	KillLeads();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The moved wires and the wires at the moved components' ports, with the
+// seeds, merged and split again with the wires they touch (the anchors'
+// lines replaced), and the simulations rewired.  papcAdded gets the wires
+// that are there now.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::RewireMovedViews(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, CArrayTraceLine* pasAnchorLines, CArrayTraceViewPtr* papcSeeds, CArrayTraceViewPtr* papcAdded)
+{
+	size	i;
+
+	for (i = 0; i < papcTraces->NumElements(); i++)
+	{
+		papcSeeds->Add(papcTraces->GetPtr(i));
+	}
+	AddPortTraces(papcComponents, papcSeeds);
+	mpcCircuit->ReplaceWires(pasAnchorLines, papcSeeds, papcAdded);
+	Rewire();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Nothing changed: the moved wires stay as they are (papcAdded gets them)
+// and detached views are joined again where they were.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::KeepMovedTraces(CArrayTraceViewPtr* papcTraces, CArrayTraceViewPtr* papcAdded)
+{
+	size	i;
+
+	for (i = 0; i < papcTraces->NumElements(); i++)
+	{
+		papcAdded->Add(papcTraces->GetPtr(i));
+	}
+	if (mbDetachedMove)
+	{
+		Rewire();
 	}
 }
 
