@@ -215,7 +215,6 @@ protected:
 	CArrayKicadSchemLogicimRegulated	masRegulated;
 	CArrayKicadSchemLogicimSplitter		masSplitters;
 	CArrayKicadSchemLogicimSplitterPair	masSplitterPairs;
-	CKicadSchemSymbol*					mpcAddingSymbol;
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
 	float64								mfSpread;
@@ -281,7 +280,7 @@ protected:
 	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
 	void							JoinSplitterEnd(size uiEnd, size uiPin);
 
-	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor);
+	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol);
 	void							AttachItems(void);
 	void							PlaceAttachedItems(void);
 	void							PlaceSplitters(void);

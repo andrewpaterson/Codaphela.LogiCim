@@ -66,7 +66,6 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	masRegulated.Init();
 	masSplitters.Init();
 	masSplitterPairs.Init();
-	mpcAddingSymbol = NULL;
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
 	mfSpread = 1.0;
@@ -133,14 +132,11 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 
 	for (i = 0; i < mpcFile->NumSymbols(); i++)
 	{
-		mpcAddingSymbol = mpcFile->GetSymbol(i);
-		if (!AddSymbol(mpcAddingSymbol))
+		if (!AddSymbol(mpcFile->GetSymbol(i)))
 		{
-			mpcAddingSymbol = NULL;
 			return false;
 		}
 	}
-	mpcAddingSymbol = NULL;
 	ApplyRegulatedVoltages();
 	AddTunnels();
 	AddBuses();
@@ -324,16 +320,17 @@ ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo)
 //////////////////////////////////////////////////////////////////////////
 //
 // Adds the view, made at (0, 0), to the circuit, as what eKind says.  The anchor is the port
-// that goes where KiCad has the thing, if not the view's position.
+// that goes where KiCad has the thing, if not the view's position.  pcSymbol is the symbol it
+// was made for, NULL for a tunnel or splitter.
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor)
+size CKicadSchemLogicimConverter::AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol)
 {
 	SFloat64Vec2	sPosition;
 
 	mpcCircuit->Add(pcView);
 	sPosition.Init(psKicadPosition->x / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE, psKicadPosition->y / KICAD_SCHEM_LOGICIM_GRID * KICAD_SCHEM_LOGICIM_SCALE);
-	return mcModel.AddItem(pcView, eKind, &sPosition, pcAnchor, mpcAddingSymbol);
+	return mcModel.AddItem(pcView, eKind, &sPosition, pcAnchor, pcSymbol);
 }
 
 
