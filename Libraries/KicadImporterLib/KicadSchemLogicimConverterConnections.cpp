@@ -180,94 +180,104 @@ size CKicadSchemLogicimConverter::FindPortTerminal(CPortView* pcPortView)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Each end of a splitter beside its component wired straight to its pin,
-// the short wire between them.  KiCad's wires can join the end to the pin
-// through another terminal (a label on the pin): that connection is
-// joined to the pin instead, so long as the other terminal still reaches
-// the pin by the other connections.
+// Whether a connection joins the two terminals, either way round.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::JoinSplitterPins(void)
+bool CKicadSchemLogicimConverter::IsConnectionBetween(size uiTerminal1, size uiTerminal2)
 {
 	size							i;
-	size							j;
-	size							k;
-	size							uiPin;
-	size							uiEnd;
-	size							uiOther;
 	SKicadSchemLogicimConnection*	psConnection;
-	SKicadSchemLogicimConnection*	psOther;
-	bool							bJoined;
-	bool							bOtherJoined;
+
+	for (i = 0; i < masConnections.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(i);
+		if (((psConnection->uiFrom == uiTerminal1) && (psConnection->uiTo == uiTerminal2)) || ((psConnection->uiFrom == uiTerminal2) && (psConnection->uiTo == uiTerminal1)))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the connections, all but uiWithout, join terminal uiFrom to
+// terminal uiTo.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::ReachesTerminal(size uiFrom, size uiTo, size uiWithout)
+{
 	CArrayInt						aiReached;
 	size							uiHead;
 	size							uiNext;
+	size							i;
+	SKicadSchemLogicimConnection*	psConnection;
 
 	aiReached.Init();
-	for (i = 0; i < mapcSplitterPins.NumElements(); i++)
+	aiReached.Add((int)uiFrom);
+	for (uiHead = 0; uiHead < aiReached.NumElements(); uiHead++)
 	{
-		uiPin = FindPortTerminal(mapcSplitterPins.GetPtr(i));
-		uiEnd = FindPortTerminal(mapcSplitterEnds.GetPtr(i));
-		if ((uiPin == ARRAY_ELEMENT_NOT_FOUND) || (uiEnd == ARRAY_ELEMENT_NOT_FOUND))
+		for (i = 0; i < masConnections.NumElements(); i++)
+		{
+			psConnection = masConnections.Get(i);
+			if (i == uiWithout)
+			{
+				continue;
+			}
+			if (psConnection->uiFrom == (size)aiReached.GetValue(uiHead))
+			{
+				uiNext = psConnection->uiTo;
+			}
+			else if (psConnection->uiTo == (size)aiReached.GetValue(uiHead))
+			{
+				uiNext = psConnection->uiFrom;
+			}
+			else
+			{
+				continue;
+			}
+			if (uiNext == uiTo)
+			{
+				aiReached.Kill();
+				return true;
+			}
+			if (aiReached.Find((int)uiNext) == ARRAY_ELEMENT_NOT_FOUND)
+			{
+				aiReached.Add((int)uiNext);
+			}
+		}
+	}
+	aiReached.Kill();
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The first connection from the splitter's end to another terminal that
+// still reaches the pin without it, joined to the pin instead (see
+// JoinSplitterPins).
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::JoinSplitterEnd(size uiEnd, size uiPin)
+{
+	size							i;
+	size							uiOther;
+	SKicadSchemLogicimConnection*	psConnection;
+
+	for (i = 0; i < masConnections.NumElements(); i++)
+	{
+		psConnection = masConnections.Get(i);
+		if ((psConnection->uiFrom != uiEnd) && (psConnection->uiTo != uiEnd))
 		{
 			continue;
 		}
+		uiOther = (psConnection->uiFrom == uiEnd) ? psConnection->uiTo : psConnection->uiFrom;
 
-		bJoined = false;
-		for (j = 0; (j < masConnections.NumElements()) && !bJoined; j++)
+		//The other terminal must still reach the pin without this connection, or the subnet would come apart.
+		if (ReachesTerminal(uiOther, uiPin, i))
 		{
-			psConnection = masConnections.Get(j);
-			bJoined = ((psConnection->uiFrom == uiEnd) && (psConnection->uiTo == uiPin)) || ((psConnection->uiFrom == uiPin) && (psConnection->uiTo == uiEnd));
-		}
-		for (j = 0; (j < masConnections.NumElements()) && !bJoined; j++)
-		{
-			psConnection = masConnections.Get(j);
-			if ((psConnection->uiFrom != uiEnd) && (psConnection->uiTo != uiEnd))
-			{
-				continue;
-			}
-			uiOther = (psConnection->uiFrom == uiEnd) ? psConnection->uiTo : psConnection->uiFrom;
-
-			//The other terminal must still reach the pin without this connection, or the subnet would come apart.
-			aiReached.ReInit();
-			aiReached.Add((int)uiOther);
-			bOtherJoined = false;
-			for (uiHead = 0; (uiHead < aiReached.NumElements()) && !bOtherJoined; uiHead++)
-			{
-				for (k = 0; k < masConnections.NumElements(); k++)
-				{
-					psOther = masConnections.Get(k);
-					if (k == j)
-					{
-						continue;
-					}
-					if (psOther->uiFrom == (size)aiReached.GetValue(uiHead))
-					{
-						uiNext = psOther->uiTo;
-					}
-					else if (psOther->uiTo == (size)aiReached.GetValue(uiHead))
-					{
-						uiNext = psOther->uiFrom;
-					}
-					else
-					{
-						continue;
-					}
-					if (uiNext == uiPin)
-					{
-						bOtherJoined = true;
-						break;
-					}
-					if (aiReached.Find((int)uiNext) == ARRAY_ELEMENT_NOT_FOUND)
-					{
-						aiReached.Add((int)uiNext);
-					}
-				}
-			}
-			if (!bOtherJoined)
-			{
-				continue;
-			}
 			if (psConnection->uiFrom == uiEnd)
 			{
 				psConnection->uiTo = uiPin;
@@ -277,10 +287,36 @@ void CKicadSchemLogicimConverter::JoinSplitterPins(void)
 				psConnection->uiFrom = uiPin;
 			}
 			psConnection->fBend = 0.5;
-			bJoined = true;
+			return;
 		}
 	}
-	aiReached.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each end of a splitter beside its component wired straight to its pin,
+// the short wire between them.  KiCad's wires can join the end to the pin
+// through another terminal (a label on the pin): that connection is
+// joined to the pin instead, so long as the other terminal still reaches
+// the pin by the other connections.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::JoinSplitterPins(void)
+{
+	size	i;
+	size	uiPin;
+	size	uiEnd;
+
+	for (i = 0; i < mapcSplitterPins.NumElements(); i++)
+	{
+		uiPin = FindPortTerminal(mapcSplitterPins.GetPtr(i));
+		uiEnd = FindPortTerminal(mapcSplitterEnds.GetPtr(i));
+		if ((uiPin != ARRAY_ELEMENT_NOT_FOUND) && (uiEnd != ARRAY_ELEMENT_NOT_FOUND) && !IsConnectionBetween(uiEnd, uiPin))
+		{
+			JoinSplitterEnd(uiEnd, uiPin);
+		}
+	}
 }
 
 

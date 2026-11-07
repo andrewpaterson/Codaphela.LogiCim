@@ -369,6 +369,9 @@ protected:
 	void							FindAlignments(void);
 	void							AlignItems(void);
 	void							AddSubnetConnections(CKicadSchemSubnet* pcSubnet, size uiSubnet);
+	bool							IsConnectionBetween(size uiTerminal1, size uiTerminal2);
+	bool							ReachesTerminal(size uiFrom, size uiTo, size uiWithout);
+	void							JoinSplitterEnd(size uiEnd, size uiPin);
 
 	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SKicadSchemPoint* psKicadPosition, CPortView* pcAnchor);
 	void							AttachItems(void);
