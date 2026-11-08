@@ -1064,11 +1064,12 @@ void CTraceAutoConnector::CalculateRunBends(size uiRun)
 {
 	CArraySize				auiMembers;
 	size					i;
-	int						iMember;
+	size					uiNumMembers;
 	STraceAutoConnection*	psConnection;
 	int32					iAcross;
 	int32					iAlong;
 	int32					iBendSum;
+	int32					iAverageBend;
 	int						iSign;
 	int						iCentre;
 	STraceAutoStairOrder	sOrder;
@@ -1096,12 +1097,13 @@ void CTraceAutoConnector::CalculateRunBends(size uiRun)
 	{
 		iSign = -iSign;
 	}
-	iCentre = (int)(auiMembers.NumElements() - 1) / 2;
-	for (i = 0; i < auiMembers.NumElements(); i++)
+	uiNumMembers = auiMembers.NumElements();
+	iCentre = (int)(uiNumMembers - 1) / 2;
+	iAverageBend = (int32)floor((float64)iBendSum / (float64)uiNumMembers + 0.5);
+	for (i = 0; i < uiNumMembers; i++)
 	{
-		iMember = auiMembers.GetValue(i);
-		psConnection = masConnections.Get(iMember);
-		psConnection->iBend = (int32)floor((float64)iBendSum / (float64)auiMembers.NumElements() + 0.5) + iSign * ((int)i - iCentre);
+		psConnection = masConnections.Get(auiMembers.GetValue(i));
+		psConnection->iBend = iAverageBend + iSign * ((int)i - iCentre);
 	}
 	auiMembers.Kill();
 }
