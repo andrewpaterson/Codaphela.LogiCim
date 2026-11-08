@@ -1,4 +1,5 @@
 #include "BaseLib/FileUtil.h"
+#include "BaseLib/Logger.h"
 #include "BaseLib/TextFile.h"
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "BaseLib/DataMemory.h"
@@ -831,6 +832,7 @@ void TestKicadPathVariables(void)
 	CChars				szRoot;
 	CChars				szExpected;
 	CFileUtil			cFileUtil;
+	SLogConfig			sLogConfig;
 
 	cVariables.Init();
 	AssertTrue(cVariables.ReadKicadCommon("{ \"api\": { \"enable_server\": false }, \"environment\": { \"show_warning_dialog\": true, \"vars\": { \"KICAD_TEST_A\": \"D:\\\\Boards\", \"KICAD_TEST_B\": \"\\u0041/B\" } }, \"x\": null }"));
@@ -861,7 +863,9 @@ void TestKicadPathVariables(void)
 	AssertString(szExpected.Text(), szPath.Text());
 	szExpected.Kill();
 	szPath.Kill();
+	sLogConfig = gcLogger.SetSilent();  //An unset variable is an error.
 	AssertFalse(cVariables.Resolve("${KICAD_TEST_UNSET}/A.kicad_sch", NULL, &szPath));
+	gcLogger.SetConfig(&sLogConfig);
 	szRoot.Kill();
 	cVariables.Kill();
 }
