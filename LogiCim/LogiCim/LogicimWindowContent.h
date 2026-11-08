@@ -31,6 +31,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/Button.h"
 #include "WindowLib/CommandSet.h"
 #include "WindowLib/Label.h"
+#include "WindowLib/Toolbar.h"
+#include "WindowLib/StatusBar.h"
 #include "LogicimWindowData.h"
 #include "WindowLib/MessageDialog.h"
 #include "CircuitCanvas.h"
@@ -187,19 +189,18 @@ protected:
 
 	Ptr<CComponent>			CreateMenuBar(void);
 	Ptr<CMenuContainer>		CreateMenu(ELogicimAction* aeActions, int iNumActions);
-	Ptr<CComponent>			CreateToolbar(void);
-	Ptr<CComponent>			CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical);
+	Ptr<CToolbar>			CreateToolbar(void);
+	Ptr<CToolbar>			CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical);
 	Ptr<CComponent>			CreateEditor(void);
 	Ptr<CComponent>			CreateToolWindow(const char* szTitle, Ptr<CListContainer> pList);
-	Ptr<CComponent>			CreateStatusBar(void);
+	Ptr<CStatusBar>			CreateStatusBar(void);
 
-	Ptr<CButton>			CreateToolButton(ELogicimAction eAction);
 	void					RemoveFromList(Ptr<CListContainer> pList);
 	Ptr<CCanvas>			CreateLine(int32 iWidth, int32 iHeight, ARGB32 sColour);
 	Ptr<CListContainer>		CreateList(void);
 	void					AddListItem(Ptr<CListContainer> pList, CArray<CLabel>* paLabels, const char* szText);
 	char*					GetListItemText(Ptr<CListContainer> pList, CArray<CLabel>* paLabels);
-	Ptr<CLabel>				AddStatusLabel(Ptr<CGridContainer> pBar, int* piColumn, int32 iWidth);
+	Ptr<CLabel>				AddStatusField(Ptr<CStatusBar> pBar, int32 iWidth);
 
 	void					AddCommands(void);
 	void					ActionCommand(CCommand* pcCommand);

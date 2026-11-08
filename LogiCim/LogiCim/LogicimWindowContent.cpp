@@ -35,6 +35,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/ClearCanvasDraw.h"
 #include "WindowLib/FillContainer.h"
 #include "WindowLib/RoundedBoxCanvasDraw.h"
+#include "WindowLib/ToolTips.h"
 #include "LogicimComponentChooser.h"
 #include "WindowLib/FileChooser.h"
 #include "LogicimLib/ComponentProperties.h"
@@ -232,6 +233,7 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	CreateLooks();
 	AddCommands();
 	pWindow->SetCommands(mpCommands);
+	pWindow->SetToolTips(OMalloc<CToolTips>(pWindow, mpTheme));
 
 	pGrid = OMalloc<CGridContainer>(pWindow);
 	pWindow->SetContainer(pGrid);
@@ -265,6 +267,7 @@ void CLogicimWindowContent::Free(void)
 	if (mpWindow.IsNotNull())
 	{
 		mpWindow->SetCommands(NULL);
+		mpWindow->SetToolTips(NULL);
 	}
 	RemoveFromList(mpSubcircuits);
 	if (mpCanvasMenu.IsNotNull())

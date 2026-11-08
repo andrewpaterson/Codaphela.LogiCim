@@ -117,6 +117,9 @@ void CLogicimWindowContent::CreateLooks(void)
 {
 	//The dialogs share the window's theme, they have the same colour format.
 	mpTheme = CJewelTheme::CreateDarkTheme(mpWindow, mpFontColours);
+	mpTheme->SetMetric(TM_ToolbarThickness, 40);  //IntelliJ IDEA's main toolbar and stripes.
+	mpTheme->SetMetric(TM_StatusBarHeight, 26);
+	mpTheme->SetMetric(TM_StatusFieldGap, 10);
 	mpFont = mpTheme->GetFont();
 	msDialogLook.pcTheme = &mpTheme;
 	msDialogLook.pcDimFont = &mpDimFont;
@@ -175,24 +178,6 @@ Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A flat button showing the action's icon, highlighted under the pointer.
-//
-//////////////////////////////////////////////////////////////////////////
-Ptr<CButton> CLogicimWindowContent::CreateToolButton(ELogicimAction eAction)
-{
-	Ptr<CButton>	pButton;
-
-	pButton = OMalloc<CButton>(mpWindow, mpTheme, BL_Flat, mapIcons.Get(eAction), (const char*)NULL);
-	pButton->SetPadding(0, 0);
-	pButton->SetShowsPushed(true);
-	pButton->SetCommand(mpCommands->Find(gasLogicimActions[eAction].szCommand));
-	pButton->SetAlignment(CSH_Center, CSV_Center);
-	return pButton;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // A line iWidth by iHeight, -1 to stretch along an axis.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -212,7 +197,7 @@ Ptr<CCanvas> CLogicimWindowContent::CreateLine(int32 iWidth, int32 iHeight, ARGB
 // Logicim's toolbar: load and save, the simulation, then rotate and flip.
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CComponent> CLogicimWindowContent::CreateToolbar(void)
+Ptr<CToolbar> CLogicimWindowContent::CreateToolbar(void)
 {
 	ELogicimAction	aeActions[] = { LA_LoadProject, LA_SaveProject, LA_Separator,
 									LA_NewSimulation, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed, LA_Separator,
@@ -224,49 +209,27 @@ Ptr<CComponent> CLogicimWindowContent::CreateToolbar(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A row of tool buttons (the toolbar) or a column of them like IntelliJ's
-// tool window stripes (Logicim's display and creation panels), 40 pixels
-// across with a little space before the first button.  A separator is a
-// line across the strip.  The space after the last button takes up the
-// rest of the strip.
+// A toolbar of the actions' buttons, or a column of them like IntelliJ's
+// tool window stripes (Logicim's display and creation panels).
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CComponent> CLogicimWindowContent::CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical)
+Ptr<CToolbar> CLogicimWindowContent::CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical)
 {
-	Ptr<CGridContainer>		pStrip;
-	Ptr<CFillContainer>		pFiller;
-	Ptr<CCanvas>			pLine;
-	int						i;
-	int						iCell;
+	Ptr<CToolbar>	pStrip;
+	int				i;
 
-	//A grid only has a size if it is given one.
-	pStrip = OMalloc<CGridContainer>(mpWindow);
-	pStrip->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pStrip->SetDesiredSize(bVertical ? 40 : -1, bVertical ? -1 : 40);
-
-	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pFiller->SetDesiredSize(bVertical ? 1 : 4, bVertical ? 4 : 1);
-	pStrip->AddComponent(pFiller, 0, 0);
-	iCell = 1;
+	pStrip = OMalloc<CToolbar>(mpWindow, mpTheme, bVertical);
 	for (i = 0; i < iNumActions; i++)
 	{
 		if (aeActions[i] == LA_Separator)
 		{
-			pLine = CreateLine(bVertical ? 22 : 1, bVertical ? 1 : 22, mpTheme->GetColour(TC_Separator));
-			pFiller = OMalloc<CFillContainer>(mpWindow);
-			pFiller->SetDesiredSize(bVertical ? 22 : 13, bVertical ? 13 : 22);
-			pFiller->AddComponent(pLine);
-			pStrip->AddComponent(pFiller, bVertical ? 0 : iCell, bVertical ? iCell : 0);
+			pStrip->AddSeparator();
 		}
 		else
 		{
-			pStrip->AddComponent(CreateToolButton(aeActions[i]), bVertical ? 0 : iCell, bVertical ? iCell : 0);
+			pStrip->AddCommand(mpCommands->Find(gasLogicimActions[aeActions[i]].szCommand));
 		}
-		iCell++;
 	}
-
-	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pStrip->AddComponent(pFiller, bVertical ? 0 : iCell, bVertical ? iCell : 0, 1, 1, bVertical ? 0 : 1, bVertical ? 1 : 0);
 	return pStrip;
 }
 
@@ -430,60 +393,38 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A label iWidth wide followed by a separator.
+// Logicim's circuit information: the subcircuit, the simulation and the
+// view path on the left, the pointer and zoom on the right.
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CLabel> CLogicimWindowContent::AddStatusLabel(Ptr<CGridContainer> pBar, int* piColumn, int32 iWidth)
+Ptr<CStatusBar> CLogicimWindowContent::CreateStatusBar(void)
 {
-	Ptr<CLabel>			pLabel;
-	Ptr<CFillContainer>	pGap;
+	Ptr<CStatusBar>	pBar;
 
-	pGap = OMalloc<CFillContainer>(mpWindow);
-	pGap->SetDesiredSize(10, 26);
-	pBar->AddComponent(pGap, *piColumn, 0);
-	(*piColumn)++;
-
-	pLabel = OMalloc<CLabel>(mpWindow, mpDimFont, "");
-	pLabel->SetDesiredSize(iWidth, -1);
-	pLabel->SetAlignment(CSH_Left, CSV_Center);
-	pBar->AddComponent(pLabel, *piColumn, 0);
-	(*piColumn)++;
-
-	pBar->AddComponent(CreateLine(1, 16, mpTheme->GetColour(TC_Separator)), *piColumn, 0);
-	(*piColumn)++;
-	return pLabel;
+	pBar = OMalloc<CStatusBar>(mpWindow, mpTheme, mpDimFont);
+	mpSubcircuitInfo = AddStatusField(pBar, 190);
+	mpSimulationInfo = AddStatusField(pBar, 250);
+	mpViewPathInfo = AddStatusField(pBar, 250);
+	pBar->AddStretch();
+	mpMouseXInfo = AddStatusField(pBar, 56);
+	mpMouseYInfo = AddStatusField(pBar, 56);
+	mpZoomInfo = AddStatusField(pBar, 44);
+	return pBar;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Logicim's circuit information: the subcircuit, the simulation and the
-// view path on the left, the pointer and zoom on the right.
+// A field iWidth wide followed by a separator.
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CComponent> CLogicimWindowContent::CreateStatusBar(void)
+Ptr<CLabel> CLogicimWindowContent::AddStatusField(Ptr<CStatusBar> pBar, int32 iWidth)
 {
-	Ptr<CGridContainer>		pBar;
-	Ptr<CFillContainer>		pFiller;
-	int						iColumn;
+	Ptr<CLabel>	pField;
 
-	pBar = OMalloc<CGridContainer>(mpWindow);
-	pBar->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pBar->SetDesiredSize(-1, 26);
-
-	iColumn = 0;
-	mpSubcircuitInfo = AddStatusLabel(pBar, &iColumn, 190);
-	mpSimulationInfo = AddStatusLabel(pBar, &iColumn, 250);
-	mpViewPathInfo = AddStatusLabel(pBar, &iColumn, 250);
-
-	pFiller = OMalloc<CFillContainer>(mpWindow);
-	pBar->AddComponent(pFiller, iColumn, 0, 1, 1, 1, 0);
-	iColumn++;
-
-	mpMouseXInfo = AddStatusLabel(pBar, &iColumn, 56);
-	mpMouseYInfo = AddStatusLabel(pBar, &iColumn, 56);
-	mpZoomInfo = AddStatusLabel(pBar, &iColumn, 44);
-	return pBar;
+	pField = pBar->AddField(iWidth);
+	pBar->AddSeparator();
+	return pField;
 }
 
 
