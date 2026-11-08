@@ -804,9 +804,15 @@ void TestKicadSchemLogicimBoards(void)
 	AssertSize(pcTop->NumTraces(), cLoaded.Get("Audio Board")->NumTraces());
 	cLoaded.Kill();
 
-	//A board that isn't there is a placeholder.
-	AssertNull(cImporter.Import("${_658_COMPUTER_}/Kicad/Computer/Nothing/Nothing.kicad_sch"));
-	AssertNull(cImporter.Import("${_NOT_SET_}/Nothing.kicad_sch"));
+	//A board that isn't there is a placeholder (and an error).
+	{
+		SLogConfig	sLogConfig;
+
+		sLogConfig = gcLogger.SetSilent();
+		AssertNull(cImporter.Import("${_658_COMPUTER_}/Kicad/Computer/Nothing/Nothing.kicad_sch"));
+		AssertNull(cImporter.Import("${_NOT_SET_}/Nothing.kicad_sch"));
+		gcLogger.SetConfig(&sLogConfig);
+	}
 
 	cImporter.Kill();
 	cCircuits.Kill();
