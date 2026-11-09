@@ -144,6 +144,11 @@ Ptr<CFontColours> CCircuitFonts::GetColours(ECircuitFont eFont, float32 fPixelSi
 // font.
 //
 //////////////////////////////////////////////////////////////////////////
+//What's measured is saved in circuit files, so it must be the same in every build.  /fp:fast lets an optimised build
+//multiply by 0.1, which can't be held exactly, in place of dividing by CIRCUIT_TEXT_SCALE.
+#ifdef _MSC_VER
+#pragma float_control(precise, on, push)
+#endif // _MSC_VER
 SCircuitTextSize CCircuitFonts::Measure(ECircuitFont eFont, float64 fSize, const char* szMarkup)
 {
 	CCircuitTextLine	cLine;
@@ -161,6 +166,9 @@ SCircuitTextSize CCircuitFonts::Measure(ECircuitFont eFont, float64 fSize, const
 	cLine.Kill();
 	return sSize;
 }
+#ifdef _MSC_VER
+#pragma float_control(pop)
+#endif // _MSC_VER
 
 
 //////////////////////////////////////////////////////////////////////////
