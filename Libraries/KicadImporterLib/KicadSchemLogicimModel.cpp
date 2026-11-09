@@ -23,6 +23,13 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicimModel.h"
 
 
+//A converted circuit must be the same in every build.  KiCad's positions land on whole grid units or halves of them, so an
+//optimised build rewriting how they are worked out, as /fp:fast lets it, rounds some of them to the next grid unit.
+#ifdef _MSC_VER
+#pragma float_control(precise, on)
+#endif // _MSC_VER
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
