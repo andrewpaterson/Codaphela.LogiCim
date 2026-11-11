@@ -31,7 +31,7 @@ option(BASELIB_ASAN "Build with AddressSanitizer and LeakSanitizer" OFF)
 # This solution is in the LogiCim repository (with LogicimLib and KicadImporterLib), which is beside CommonLibraries.
 get_filename_component(LOGICIM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 get_filename_component(CODAPHELA_ROOT "${LOGICIM_ROOT}/.." ABSOLUTE)
-set(COMMON_DIR "${CODAPHELA_ROOT}/commonlibraries/Libraries")
+set(COMMON_DIR "${CODAPHELA_ROOT}/CommonLibraries/Libraries")
 set(BASELIB_DIR "${COMMON_DIR}/BaseLib")
 set(STANDARDLIB_DIR "${COMMON_DIR}/StandardLib")
 set(SUPPORTLIB_DIR "${COMMON_DIR}/SupportLib")

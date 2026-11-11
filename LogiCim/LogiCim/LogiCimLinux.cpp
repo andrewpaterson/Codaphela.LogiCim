@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 			cX11Input.Init();
 			cNativeFactory.SetInput(&cX11Input);
 
-			bResult = RunLogicimApp(&cNativeFactory, &cX11Input, "../../../commonlibraries/Libraries/WinInputLib/xml");
+			bResult = RunLogicimApp(&cNativeFactory, &cX11Input, "../../../CommonLibraries/Libraries/WinInputLib/xml");
 
 			cNativeFactory.SetInput(NULL);
 			cX11Input.Kill();
