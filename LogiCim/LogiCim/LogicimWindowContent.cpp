@@ -40,6 +40,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/FileChooser.h"
 #include "LogicimLib/ComponentProperties.h"
 #include "MicroprocessorLib/LongTime.h"
+#include "WindowLib/Clipboard.h"
 #include "LogicimWindowContent.h"
 #include "LogicimWindowContentInternal.h"
 
@@ -135,6 +136,7 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpFont);
 	M_Pointer(mpDimFont);
 	M_Pointer(mpTheme);
+	M_Pointer(mpPasteHistory);
 	U_Pointer(msDialogLook.pcTheme);
 	U_Pointer(msDialogLook.pcDimFont);
 	M_Embedded(mapIcons);
@@ -231,6 +233,8 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 		return false;
 	}
 	CreateLooks();
+	mpPasteHistory = OMalloc<CPasteHistoryDialog>(pWindow, &msDialogLook, mpFont);
+	pWindow->GetClipboard()->GetHistory()->SetChooser(&mpPasteHistory);
 	AddCommands();
 	pWindow->SetCommands(mpCommands);
 	pWindow->SetToolTips(OMalloc<CToolTips>(pWindow, mpTheme));
@@ -268,6 +272,10 @@ void CLogicimWindowContent::Free(void)
 	{
 		mpWindow->SetCommands(NULL);
 		mpWindow->SetToolTips(NULL);
+		if (mpPasteHistory.IsNotNull())
+		{
+			mpWindow->GetClipboard()->GetHistory()->SetChooser(NULL);
+		}
 	}
 	RemoveFromList(mpSubcircuits);
 	if (mpCanvasMenu.IsNotNull())

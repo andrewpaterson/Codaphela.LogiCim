@@ -27,6 +27,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/GridContainer.h"
 #include "WindowLib/ScrollPane.h"
 #include "WindowLib/ListContainer.h"
+#include "WindowLib/PasteHistoryDialog.h"
 #include "WindowLib/MenuBar.h"
 #include "WindowLib/Button.h"
 #include "WindowLib/CommandSet.h"
@@ -112,6 +113,7 @@ protected:
 	Ptr<CFont>				mpDimFont;
 	Ptr<CWindowTheme>		mpTheme;
 	SDialogLook				msDialogLook;
+	Ptr<CPasteHistoryDialog>	mpPasteHistory;  //Paste from History (Control+Shift+V) in the dialogs' fields: what the clipboard's history chooses with.
 	CArray<CImageCel>		mapIcons;  //One for each ELogicimAction, NULL if the action has no icon.
 	Ptr<CImageCel>			mpFileIcon;  //Beside a file in the file chooser, Load Project's beside a folder.
 
