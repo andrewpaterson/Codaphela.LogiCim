@@ -296,15 +296,15 @@ uint64 CPortView::GetSpriteState(CCircuitPainter* pcPainter, ARGB32 sColour)
 
 	fRadius = pcPainter->GetViewport()->GetConnectionRadius();
 	uiState = pcPainter->GetSpriteState(msRelativePosition.x, msRelativePosition.y);
-	uiState = HashSpriteState(uiState, &msRelativePosition, sizeof(SInt32Vec2));
-	uiState = HashSpriteState(uiState, &mbClock, sizeof(bool));
-	uiState = HashSpriteState(uiState, masClockNotch, sizeof(masClockNotch));
-	uiState = HashSpriteState(uiState, &mbInverting, sizeof(bool));
-	uiState = HashSpriteState(uiState, &msBubbleCentre, sizeof(SFloat64Vec2));
-	uiState = HashSpriteState(uiState, &mfBubbleDiameter, sizeof(float64));
-	uiState = HashSpriteState(uiState, &pcPainter->GetColours()->msShapeBorder, sizeof(ARGB32));
-	uiState = HashSpriteState(uiState, &sColour, sizeof(ARGB32));
-	uiState = HashSpriteState(uiState, &fRadius, sizeof(float64));
+	uiState = FNVHash64(&msRelativePosition, sizeof(SInt32Vec2), uiState);
+	uiState = FNVHash64(&mbClock, sizeof(bool), uiState);
+	uiState = FNVHash64(masClockNotch, sizeof(masClockNotch), uiState);
+	uiState = FNVHash64(&mbInverting, sizeof(bool), uiState);
+	uiState = FNVHash64(&msBubbleCentre, sizeof(SFloat64Vec2), uiState);
+	uiState = FNVHash64(&mfBubbleDiameter, sizeof(float64), uiState);
+	uiState = FNVHash64(&pcPainter->GetColours()->msShapeBorder, sizeof(ARGB32), uiState);
+	uiState = FNVHash64(&sColour, sizeof(ARGB32), uiState);
+	uiState = FNVHash64(&fRadius, sizeof(float64), uiState);
 	return uiState;
 }
 

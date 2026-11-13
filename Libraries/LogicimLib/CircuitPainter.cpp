@@ -232,7 +232,7 @@ SInt32Vec2 CCircuitPainter::GetSpriteOrigin(float64 x, float64 y, SFloat64Vec2* 
 //
 // What the painter adds to a sprite's state about x, y: the zoom, the
 // transform's turn and mirroring, and where in a pixel x, y is.  The
-// caller adds what its shapes look like (see HashSpriteState).
+// caller adds what its shapes look like (FNVHash64 each thing).
 //
 //////////////////////////////////////////////////////////////////////////
 uint64 CCircuitPainter::GetSpriteState(float64 x, float64 y)
@@ -247,12 +247,12 @@ uint64 CCircuitPainter::GetSpriteState(float64 x, float64 y)
 	fZoom = mpcViewport->GetZoom();
 	iRotation = (int32)meRotation;
 	bMirrored = mbMirrored;
-	uiState = COMPONENT_SPRITE_STATE_START;
-	uiState = HashSpriteState(uiState, &fZoom, sizeof(float64));
-	uiState = HashSpriteState(uiState, &iRotation, sizeof(int32));
-	uiState = HashSpriteState(uiState, &bMirrored, sizeof(bool));
-	uiState = HashSpriteState(uiState, &sFraction.x, sizeof(float64));
-	uiState = HashSpriteState(uiState, &sFraction.y, sizeof(float64));
+	uiState = FNV_HASH64_START;
+	uiState = FNVHash64(&fZoom, sizeof(float64), uiState);
+	uiState = FNVHash64(&iRotation, sizeof(int32), uiState);
+	uiState = FNVHash64(&bMirrored, sizeof(bool), uiState);
+	uiState = FNVHash64(&sFraction.x, sizeof(float64), uiState);
+	uiState = FNVHash64(&sFraction.y, sizeof(float64), uiState);
 	return uiState;
 }
 

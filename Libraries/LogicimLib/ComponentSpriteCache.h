@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __COMPONENT_SPRITE_CACHE_H__
 #define __COMPONENT_SPRITE_CACHE_H__
 #include "BaseLib/ArrayTemplate.h"
+#include "BaseLib/FNVHash.h"
 #include "BaseLib/MapBlock.h"
 #include "StandardLib/Array.h"
 #include "SupportLib/GeometryMap.h"
@@ -31,7 +32,6 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define COMPONENT_SPRITE_CACHE_DEFAULT_BYTES	(64 * 1024 * 1024)
 #define COMPONENT_SPRITE_PAGE_SIZE				512
 #define COMPONENT_SPRITE_NO_PAGE				((size)-1)
-#define COMPONENT_SPRITE_STATE_START			((uint64)14695981039346656037ULL)
 
 
 class CComponentSpriteCache;
@@ -59,7 +59,6 @@ struct SComponentSpriteMemo
 
 
 void	InitComponentSpriteMemo(SComponentSpriteMemo* psMemo);
-uint64	HashSpriteState(uint64 uiHash, const void* pvData, size uiSize);
 
 
 //An atlas page: sprites packed in shelves, left to right, each shelf as tall as its tallest sprite.

@@ -464,7 +464,7 @@ uint64 CComponentShapes::GetSpriteState(CCircuitPainter* pcPainter)
 	ARGB32				sBorder;
 
 	uiState = pcPainter->GetSpriteState(0, 0);
-	uiState = HashSpriteState(uiState, &muiRevision, sizeof(uint32));
+	uiState = FNVHash64(&muiRevision, sizeof(uint32), uiState);
 	for (i = 0; i < masShapes.NumElements(); i++)
 	{
 		psShape = masShapes.Get(i);
@@ -472,18 +472,18 @@ uint64 CComponentShapes::GetSpriteState(CCircuitPainter* pcPainter)
 		{
 			continue;
 		}
-		uiState = HashSpriteState(uiState, &psShape->bVisible, sizeof(bool));
+		uiState = FNVHash64(&psShape->bVisible, sizeof(bool), uiState);
 		if (!psShape->bVisible)
 		{
 			continue;
 		}
 		sFill = GetFill(pcPainter, psShape);
 		sBorder = GetBorder(pcPainter, psShape);
-		uiState = HashSpriteState(uiState, &psShape->bFill, sizeof(bool));
-		uiState = HashSpriteState(uiState, &psShape->bBorder, sizeof(bool));
-		uiState = HashSpriteState(uiState, &psShape->fLineWidth, sizeof(float64));
-		uiState = HashSpriteState(uiState, &sFill, sizeof(ARGB32));
-		uiState = HashSpriteState(uiState, &sBorder, sizeof(ARGB32));
+		uiState = FNVHash64(&psShape->bFill, sizeof(bool), uiState);
+		uiState = FNVHash64(&psShape->bBorder, sizeof(bool), uiState);
+		uiState = FNVHash64(&psShape->fLineWidth, sizeof(float64), uiState);
+		uiState = FNVHash64(&sFill, sizeof(ARGB32), uiState);
+		uiState = FNVHash64(&sBorder, sizeof(ARGB32), uiState);
 	}
 	return uiState;
 }

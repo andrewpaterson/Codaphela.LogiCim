@@ -41,27 +41,6 @@ void InitComponentSpriteMemo(SComponentSpriteMemo* psMemo)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// FNV-1a: start from COMPONENT_SPRITE_STATE_START and add each thing the
-// state depends on.
-//
-//////////////////////////////////////////////////////////////////////////
-uint64 HashSpriteState(uint64 uiHash, const void* pvData, size uiSize)
-{
-	const uint8*	puiData;
-	size			i;
-
-	puiData = (const uint8*)pvData;
-	for (i = 0; i < uiSize; i++)
-	{
-		uiHash ^= puiData[i];
-		uiHash *= (uint64)1099511628211ULL;
-	}
-	return uiHash;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 //
 //////////////////////////////////////////////////////////////////////////
 void CComponentSpritePage::Init(int32 iWidth, int32 iHeight, uint32 uiGeneration)
@@ -511,7 +490,7 @@ void CComponentSpriteCache::FoldKey(void)
 		return;
 	}
 	uiLength = (uint64)mauiKey.NumElements();
-	uiHash = HashSpriteState(COMPONENT_SPRITE_STATE_START, mauiKey.GetData(), mauiKey.NumElements());
+	uiHash = FNVHash64(mauiKey.GetData(), mauiKey.NumElements(), FNV_HASH64_START);
 	uiKept = MAX_KEY_SIZE - sizeof(uint64) - sizeof(uint64);
 	mauiKey.SetUsedElements(uiKept);
 	memcpy(mauiKey.InsertNumAt(sizeof(uint64), mauiKey.NumElements()), &uiHash, sizeof(uint64));
