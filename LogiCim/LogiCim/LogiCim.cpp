@@ -19,6 +19,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include <windows.h>
+#include "BaseLib/LeakDetector.h"
 #include "BaseLib/GlobalMemory.h"
 #include "WinGdiLib/WinGDIWindowFactory.h"
 #include "WinInputLib/WinInput.h"
@@ -33,7 +34,7 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 {
 	bool	bResult;
 
-	_CrtSetBreakAlloc(0);
+	BreakOnAllocation(0);
 	InitLogicimGlobals();
 
 	{
@@ -57,7 +58,7 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 
 	KillLogicimGlobals();
-	_CrtDumpMemoryLeaks();
+	LeakDetection();
 	return bResult ? 0 : 1;
 }
 
