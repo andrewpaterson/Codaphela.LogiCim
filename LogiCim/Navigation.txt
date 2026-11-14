@@ -118,7 +118,30 @@ for anything in LogicimLib; the real panes are tried on the isolated X server.
    7.1 This note's status; every check and test passing.
 
 
+Where it stands (2026-11-14)
+----------------------------
+
+Steps 1 to 7 are built, checked and committed.  LogiCim's checks have one for each step (places, simulation-tree,
+subcircuit-tree, back-forward, tabs, go-to) on Checks/Nested.xml; the panes, tabs, menus and Go To were also tried
+by hand on the isolated X server.  What was built differs from the plan in these ways:
+
+- A place is LogicimLib's (SCircuitPlace in CircuitPlace.h), not LogiCim's, so the editor can keep the tabs with the
+  project (CCircuitEditor::SetTabs, <Tab> elements in <Editor>, left alone by undo).  The editor enters a path in one
+  step (EnterInstancePath) and finds a path's view path in the simulation (GetInstanceViewPath).
+- The commands are View's, as LogiCim has no Navigate menu: View.Back, View.Forward and View.GoTo (Go To..., Ctrl+N),
+  in the View menu.  Back and Forward have no toolbar buttons: LogiCim's toolbar icons are KiCad's and have no arrows.
+- The first tab (the Circuit pane) is the one that can't be closed, rather than whichever is last: a tab's close
+  cross is made with its tab.  Window, New Tab opens the place edited in a tab of its own.
+- Open in New Tab is on the canvas menu of a subcircuit instance and on both trees' menus; there's no middle click.
+  A right click on the Subcircuits tree selects the node under it, as its list did, which edits that circuit.
+- Go To finds components and nets in the circuit simulated and its instances; other circuits are found on its
+  Subcircuits tab.  A component's part name is CComponentView::AppendPartName.
+- The Simulation tree makes all its nodes at once: on Audio Board (27 instances, 2204 components) the trees and Go To
+  take no time to notice, so it needs no lazy nodes.
+- The status bar's zoom follows a canvas fitted as it's first drawn (a new tab's), at the next tick.
+
 Open
 ----
 
-- Whether the Simulation tree needs lazy nodes for big imports (decided when step 2 is tried on the HCP65 project).
+- A tab whose place is gone after an edit or undo shows where the editor is when it's next made active; its title
+  says the place's circuit until then.
