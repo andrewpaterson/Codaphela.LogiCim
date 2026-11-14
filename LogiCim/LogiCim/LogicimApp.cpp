@@ -260,7 +260,9 @@ bool CLogicimApp::Check(const char* szSteps)
 // Projects does.
 //
 // keymap does on Settings' Keymap what LOGICIM_KEYMAP_EDITS says (see
-// CKeymapPage::ApplyEdits) and then OK.
+// CKeymapPage::ApplyEdits) and then OK.  chooser does with the component
+// chooser's shortcut what LOGICIM_CHOOSER_EDITS says (see
+// CLogicimComponentChooser::ApplyEdits) and then closes it.
 //
 // panes: each dock pane and whether it's shown.  hide:<pane> and
 // show:<pane> hide and show one, savelayout writes the layout as LogiCim
@@ -330,6 +332,10 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	{
 		//The edits are LOGICIM_KEYMAP_EDITS's, as keys have commas ("Control+Shift+F, H") and the steps are separated by them.
 		printf("Keymap: %s\n", mpContent->ApplyKeymapEdits((getenv("LOGICIM_KEYMAP_EDITS") != NULL) ? getenv("LOGICIM_KEYMAP_EDITS") : "") ? "kept" : "not kept");
+	}
+	else if (StringCompare(szStep, "chooser") == 0)
+	{
+		printf("Chooser: %s\n", mpContent->ApplyChooserEdits((getenv("LOGICIM_CHOOSER_EDITS") != NULL) ? getenv("LOGICIM_CHOOSER_EDITS") : "") ? "closed" : "not shown");
 	}
 	else if (StringCompare(szStep, "savelayout") == 0)
 	{

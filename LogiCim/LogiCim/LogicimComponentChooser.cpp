@@ -31,6 +31,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimLib/ComponentPlacement.h"
 #include "LogicimLib/CircuitEditor.h"
 #include "LogicimCircuit.h"
+#include "LogicimWindowContent.h"
 #include "LogicimComponentChooser.h"
 
 
@@ -47,11 +48,11 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //
 // Starts with no filter and every library closed, the library of the
 // component of that element (or subcircuit) name selected, otherwise the
-// first.  The circuit (its editor, colours and fonts) must outlive the
-// chooser.
+// first.  The circuit (its editor, colours and fonts), the commands and
+// the input must outlive the chooser.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected)
+void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected, CCommandSet* pcCommands, CComponentInput* pcInput)
 {
 	Ptr<CComponent>		pBody;
 	CColourFormatHelper	cFormat;
@@ -68,8 +69,13 @@ void CLogicimComponentChooser::Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CL
 	mbChosenSubcircuit = false;
 	masRows.Init();
 	maszSubcircuits.Init();
+	mpcCommands = pcCommands;
+	mcKeys.Init(pcCommands);
+	mcGiver.Init(&mcKeys, pcInput);
+	mbKeysChanged = false;
 
 	mpDialog = OMalloc<CDialog>(pOwner, psLook, "Choose Component");
+	mcGiver.SetDialog(mpDialog->GetWindow(), psLook, NULL);
 	mpDialog->GetWindow()->GetColourFormat(&cFormat);
 	pBody = CreateBody();
 	mpDialog->SetBody(pBody, mpFilter);
@@ -105,6 +111,15 @@ void CLogicimComponentChooser::Class(void)
 	M_Pointer(mpName);
 	M_Pointer(mpDescription);
 	M_Pointer(mpLibrary);
+	M_Pointer(mpShortcut);
+	M_Pointer(mpAddShortcut);
+	M_Pointer(mpRemoveShortcut);
+	M_Pointer(mpShortcutStatus);
+	M_Pointer(mpCapture);
+	U_Pointer(mpcCommands);
+	U_Unknown(CCommandSetKeys, mcKeys);
+	U_Unknown(CKeyGiver, mcGiver);
+	U_Bool(mbKeysChanged);
 	U_Unknown(CArrayInt, maiExpanded);
 	U_Unknown(CArrayLogicimChooserRow, masRows);
 	U_Unknown(CArrayChars, maszSubcircuits);
@@ -153,7 +168,13 @@ void CLogicimComponentChooser::Free(void)
 	{
 		mpFilter->GetChangeEvent()->Remove(this);
 	}
+	if (mpAddShortcut.IsNotNull())
+	{
+		mpAddShortcut->GetClickEvent()->Remove(this);
+		mpRemoveShortcut->GetClickEvent()->Remove(this);
+	}
 	KillPreview();
+	mcGiver.Kill();
 
 	maszSubcircuits.Kill();
 	masRows.Kill();
@@ -165,8 +186,8 @@ void CLogicimComponentChooser::Free(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The filter on top, the list and preview side by side under it, and the
-// details along the bottom.
+// The filter on top, the list and the selected component's shortcut and
+// preview side by side under it, and the details along the bottom.
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
@@ -175,6 +196,7 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	SDialogLook*			psLook;
 	Ptr<CGridContainer>		pBody;
 	Ptr<CGridContainer>		pDetails;
+	Ptr<CGridContainer>		pPreview;
 	Ptr<CScrollPane>		pScrollPane;
 	Ptr<CFillContainer>		pGap;
 	SInsets					sInsets;
@@ -214,7 +236,11 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	mpPreviewDraw->SetPreviewOnly(true);  //A library's row shows nothing, not the project's circuit.
 	mpPreview = OMalloc<CCanvas>(pWindow, mpPreviewDraw);
 	mpPreview->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pBody->AddComponent(mpPreview, 2, 2, 1, 1, 1, 1);
+	pPreview = OMalloc<CGridContainer>(pWindow);
+	pPreview->SetAlignment(CSH_Stretch, CSV_Stretch);
+	pPreview->AddComponent(CreateShortcut(), 0, 0, 1, 1, 1, 0);
+	pPreview->AddComponent(mpPreview, 0, 1, 1, 1, 1, 1);
+	pBody->AddComponent(pPreview, 2, 2, 1, 1, 1, 1);
 
 	pGap = OMalloc<CFillContainer>(pWindow);
 	pGap->SetDesiredSize(CHOOSER_GAP, CHOOSER_GAP);
@@ -599,6 +625,7 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 	mpPreviewDraw->SetPreview(NULL);
 	mpPreview->Invalidate();
 	KillPreview();
+	ShowShortcut();
 
 	psRow = GetRow(iRow);
 	szName = GetRowName(iRow);
@@ -636,6 +663,271 @@ void CLogicimComponentChooser::ShowComponent(int32 iRow)
 	sz.Kill();
 	mpPreviewDraw->SetPreview(mpcPreview);
 	mpPreview->Invalidate();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// "Shortcut: Shift+A (Circuit)", Add Shortcut and Remove under it, and
+// under them what the last change did.
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CComponent> CLogicimComponentChooser::CreateShortcut(void)
+{
+	Ptr<CWindow>		pWindow;
+	SDialogLook*		psLook;
+	Ptr<CGridContainer>	pShortcut;
+	Ptr<CFillContainer>	pGap;
+
+	pWindow = mpDialog->GetWindow();
+	psLook = mpDialog->GetLook();
+	pShortcut = OMalloc<CGridContainer>(pWindow);
+	pShortcut->SetAlignment(CSH_Stretch, CSV_Top);
+	mpShortcut = OMalloc<CLabel>(pWindow, psLook->pcTheme->GetFont(), " ");
+	mpShortcut->SetAlignment(CSH_Left, CSV_Center);
+	pShortcut->AddComponent(mpShortcut, 0, 0, 4, 1, 1, 0);
+	mpAddShortcut = OMalloc<CButton>(pWindow, psLook->pcTheme, "Add Shortcut...");
+	mpAddShortcut->SetAlignment(CSH_Left, CSV_Center);
+	mpAddShortcut->GetClickEvent()->Add(this, &CLogicimComponentChooser::AddShortcutClicked);
+	pShortcut->AddComponent(mpAddShortcut, 0, 1);
+	pGap = OMalloc<CFillContainer>(pWindow);
+	pGap->SetDesiredSize(CHOOSER_GAP, 1);
+	pShortcut->AddComponent(pGap, 1, 1);
+	mpRemoveShortcut = OMalloc<CButton>(pWindow, psLook->pcTheme, "Remove");
+	mpRemoveShortcut->SetAlignment(CSH_Left, CSV_Center);
+	mpRemoveShortcut->GetClickEvent()->Add(this, &CLogicimComponentChooser::RemoveShortcutClicked);
+	pShortcut->AddComponent(mpRemoveShortcut, 2, 1);
+	pGap = OMalloc<CFillContainer>(pWindow);
+	pShortcut->AddComponent(pGap, 3, 1, 1, 1, 1, 0);
+	mpShortcutStatus = OMalloc<CLabel>(pWindow, psLook->pcDimFont, " ");
+	mpShortcutStatus->SetAlignment(CSH_Left, CSV_Center);
+	pShortcut->AddComponent(mpShortcutStatus, 0, 2, 4, 1, 1, 0);
+	pGap = OMalloc<CFillContainer>(pWindow);
+	pGap->SetDesiredSize(1, CHOOSER_GAP);
+	pShortcut->AddComponent(pGap, 0, 3);
+	return pShortcut;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The command that places the row's component, NULL for a library's row
+// or a subcircuit's.
+//
+//////////////////////////////////////////////////////////////////////////
+CCommand* CLogicimComponentChooser::GetRowCommand(int32 iRow)
+{
+	SLogicimChooserRow*	psRow;
+	Ptr<CCommand>		pCommand;
+
+	psRow = GetRow(iRow);
+	if ((psRow == NULL) || (psRow->iEntry < 0) || (psRow->iLibrary == (int)NumComponentLibraries()))
+	{
+		return NULL;
+	}
+	pCommand = FindLogicimPlaceCommand(mpcCommands, GetComponentLibrary(psRow->iLibrary)->asEntries[psRow->iEntry].szXMLName);
+	return &pCommand;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The selected component's keys; none for a row that has no command.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimComponentChooser::ShowShortcut(void)
+{
+	CCommand*	pcCommand;
+	CChars		sz;
+
+	pcCommand = GetRowCommand(mpList->GetSelected());
+	sz.Init("Shortcut: ");
+	if (pcCommand == NULL)
+	{
+		sz.Set(" ");
+	}
+	else if (pcCommand->NumKeys() == 0)
+	{
+		sz.Append("none");
+	}
+	else
+	{
+		AppendKeyListText(&sz, pcCommand->GetKeyList());
+	}
+	mpShortcut->SetText(sz.Text());
+	sz.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Add Shortcut for the selected component, from the dialog's tick: a
+// dialog can't be shown from a button's input action.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimComponentChooser::AddShortcutClicked(CButton* pcButton) { mpDialog->GetWindow()->Post(this, &CLogicimComponentChooser::ShowCapture); }
+void CLogicimComponentChooser::RemoveShortcutClicked(CButton* pcButton) { RemoveShortcut(); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimComponentChooser::ShowCapture(void)
+{
+	CCommand*	pcCommand;
+	CChars		szKeys;
+
+	pcCommand = GetRowCommand(mpList->GetSelected());
+	if (pcCommand == NULL)
+	{
+		mpShortcutStatus->SetText("Select a component first.");
+		return;
+	}
+	mpCapture = OMalloc<CKeyCaptureDialog>(mpDialog->GetWindow(), mpDialog->GetLook(), this, pcCommand, pcCommand->GetFirstContext());
+	if (mpCapture->Show())
+	{
+		szKeys.Init(mpCapture->GetKeys());
+		AddShortcut(szKeys.Text(), mpCapture->GetContext());
+		szKeys.Kill();
+	}
+	mpCapture = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Add Shortcut's keys for the selected component.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimComponentChooser::DescribeCapturedKeys(const char* szContext, const char* szKeys, CChars* pszMessage)
+{
+	CCommand*	pcCommand;
+
+	pcCommand = GetRowCommand(mpList->GetSelected());
+	if (pcCommand == NULL)
+	{
+		return false;
+	}
+	return mcGiver.Describe(mcKeys.Find(pcCommand), szContext, szKeys, pszMessage);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szKeys go to the selected component's command in szContext (NULL for
+// its first), from whichever had them there, asking first.  False, with
+// why under the shortcut, if it can't have them or moving them was
+// cancelled.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimComponentChooser::AddShortcut(const char* szKeys, const char* szContext)
+{
+	CCommand*	pcCommand;
+	CChars		szMessage;
+	bool		bResult;
+
+	pcCommand = GetRowCommand(mpList->GetSelected());
+	if (pcCommand == NULL)
+	{
+		return false;
+	}
+	szMessage.Init();
+	bResult = mcGiver.Give(mcKeys.Find(pcCommand), StrEmpty(szContext) ? pcCommand->GetFirstContext() : szContext, szKeys, &szMessage);
+	mpShortcutStatus->SetText(szMessage.Text());
+	szMessage.Kill();
+	mbKeysChanged |= bResult;
+	ShowShortcut();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The selected component's command has no keys.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimComponentChooser::RemoveShortcut(void)
+{
+	CCommand*	pcCommand;
+
+	pcCommand = GetRowCommand(mpList->GetSelected());
+	if ((pcCommand != NULL) && (pcCommand->NumKeys() > 0))
+	{
+		pcCommand->GetKeyList()->Clear();
+		mbKeysChanged = true;
+		mpShortcutStatus->SetText(" ");
+		ShowShortcut();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a shortcut was added or removed: the commands have them, but
+// they're neither bound nor kept.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimComponentChooser::KeysChanged(void) { return mbKeysChanged; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// For checking, what a user would do, separated by semicolons:
+// select:<XML name> selects that component (opening its library),
+// add:<keys> or add:<context>:<keys> does Add Shortcut with them, remove
+// does Remove, and show prints the shortcut line and what the last change
+// did.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimComponentChooser::ApplyEdits(const char* szEdits)
+{
+	CArrayChars	aszEdits;
+	size		i;
+	char*		sz;
+	char*		szColon;
+	CChars		szContext;
+	int			iLibrary;
+	int			iEntry;
+
+	aszEdits.Init();
+	aszEdits.Split(szEdits, ';');
+	mcGiver.SetAnswer(KGA_Give);
+	for (i = 0; i < aszEdits.NumElements(); i++)
+	{
+		sz = aszEdits.GetText(i);
+		if (strncmp(sz, "select:", 7) == 0)
+		{
+			if (FindEntry(&sz[7], &iLibrary, &iEntry))
+			{
+				maiExpanded.SetValue(iLibrary, 1);
+				FillList(iLibrary, iEntry);
+			}
+		}
+		else if (strncmp(sz, "add:", 4) == 0)
+		{
+			szColon = strchr(&sz[4], ':');
+			szContext.Init();
+			if (szColon != NULL)
+			{
+				szContext.Append(&sz[4], szColon - &sz[4]);
+			}
+			AddShortcut((szColon != NULL) ? &szColon[1] : &sz[4], szContext.Empty() ? NULL : szContext.Text());
+			szContext.Kill();
+			printf("Chooser: %s\n", mpShortcutStatus->GetText());
+		}
+		else if (strcmp(sz, "remove") == 0)
+		{
+			RemoveShortcut();
+		}
+		else if (strcmp(sz, "show") == 0)
+		{
+			printf("Chooser: %s %s\n", GetRowName(mpList->GetSelected()), mpShortcut->GetText());
+		}
+		fflush(stdout);
+	}
+	mcGiver.SetAnswer(KGA_Ask);
+	aszEdits.Kill();
 }
 
 

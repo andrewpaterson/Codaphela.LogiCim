@@ -622,6 +622,34 @@ void CLogicimWindowContent::AddCircuitKeys(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The command that places the library component of that XML name: an
+// action's (Add Splitter) or its own Place.<XML name>.  NULL if there's
+// no such component.
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CCommand> FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szXMLName)
+{
+	int		i;
+	CChars	szName;
+	Ptr<CCommand>	pCommand;
+
+	for (i = 0; i < NUM_LOGICIM_ACTIONS; i++)
+	{
+		if (StringCompare(gasLogicimActions[i].szPlaced, szXMLName) == 0)
+		{
+			return pcCommands->Find(gasLogicimActions[i].szCommand);
+		}
+	}
+	szName.Init("Place.");
+	szName.Append(szXMLName);
+	pCommand = pcCommands->Find(szName.Text());
+	szName.Kill();
+	return pCommand;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The circuit's keys work over it unless a text field has the focus (see
 // CCircuitCanvas::GetKeyContext): the input has to know of them before
 // they're read or bound.

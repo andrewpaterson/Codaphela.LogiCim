@@ -27,6 +27,9 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/ScrollPane.h"
 #include "WindowLib/Label.h"
 #include "WindowLib/Dialog.h"
+#include "WindowLib/Button.h"
+#include "WindowLib/KeymapPage.h"
+#include "WindowLib/KeyGiver.h"
 #include "CircuitCanvasDraw.h"
 
 
@@ -55,7 +58,10 @@ typedef CArrayTemplate<SLogicimChooserRow>	CArrayLogicimChooserRow;
 //enter) opens or closes it.  Typing in the filter shows only the components with every word of it in
 //them, their libraries opened; clearing it closes them again.  A double click on a component (or enter, or OK)
 //chooses it.
-class CLogicimComponentChooser : public CObject
+//
+//Above the preview is the selected component's shortcut, its Place command's keys, which Add Shortcut and Remove change
+//there and then, as Settings' Keymap would (see CKeyGiver): whoever shows the chooser binds and keeps them (KeysChanged).
+class CLogicimComponentChooser : public CObject, public CKeyCaptureDescriber
 {
 CONSTRUCTABLE(CLogicimComponentChooser);
 DESTRUCTABLE(CLogicimComponentChooser);
@@ -69,6 +75,15 @@ protected:
 	Ptr<CLabel>				mpName;
 	Ptr<CLabel>				mpDescription;
 	Ptr<CLabel>				mpLibrary;
+	Ptr<CLabel>				mpShortcut;
+	Ptr<CButton>			mpAddShortcut;
+	Ptr<CButton>			mpRemoveShortcut;
+	Ptr<CLabel>				mpShortcutStatus;  //What the last shortcut change did, or why not.
+	Ptr<CKeyCaptureDialog>	mpCapture;
+	CCommandSet*			mpcCommands;  //Not held: the window's.
+	CCommandSetKeys			mcKeys;
+	CKeyGiver				mcGiver;
+	bool					mbKeysChanged;
 	CArrayInt				maiExpanded;  //1 for each library that's open, the subcircuits last.
 	CArrayLogicimChooserRow	masRows;
 	CArrayChars				maszSubcircuits;
@@ -77,7 +92,7 @@ protected:
 	bool					mbChosenSubcircuit;
 
 public:
-	void				Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected);
+	void				Init(Ptr<CWindow> pOwner, SDialogLook* psLook, CLogicimCircuit* pcCircuit, const char* szSelected, CCommandSet* pcCommands, CComponentInput* pcInput);
 	void				Class(void) override;
 	void				Free(void) override;
 
@@ -86,10 +101,15 @@ public:
 
 	bool				Show(void);
 	char*				GetChosen(bool* pbSubcircuit);
+	bool				KeysChanged(void);
+	void				ApplyEdits(const char* szEdits);
 
 	void				FilterChanged(void);
 	void				SelectionChanged(void);
 	void				ItemActivated(void);
+	void				AddShortcutClicked(CButton* pcButton);
+	void				RemoveShortcutClicked(CButton* pcButton);
+	bool				DescribeCapturedKeys(const char* szContext, const char* szKeys, CChars* pszMessage) override;
 
 protected:
 	Ptr<CComponent>		CreateBody(void);
@@ -109,6 +129,12 @@ protected:
 	const char*			GetRowName(int32 iRow);
 	void				ShowComponent(int32 iRow);
 	void				KillPreview(void);
+	Ptr<CComponent>		CreateShortcut(void);
+	CCommand*			GetRowCommand(int32 iRow);
+	void				ShowShortcut(void);
+	void				ShowCapture(void);
+	bool				AddShortcut(const char* szKeys, const char* szContext);
+	void				RemoveShortcut(void);
 };
 
 

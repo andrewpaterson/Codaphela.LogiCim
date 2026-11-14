@@ -400,7 +400,8 @@ void CLogicimWindowContent::ShowSelectZoomDialog(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // The component chosen is placed (see PlaceComponent).  The chooser opens
-// again on the library of the component last chosen.
+// again on the library of the component last chosen.  Shortcuts given in
+// it are kept, whether or not a component was chosen.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowComponentChooser(void)
@@ -408,12 +409,16 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 	char*	szChosen;
 	bool	bSubcircuit;
 
-	mpComponentChooser = OMalloc<CLogicimComponentChooser>(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text());
+	mpComponentChooser = OMalloc<CLogicimComponentChooser>(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text(), &mpCommands, mpWindow->GetComponentInput());
 	if (mpComponentChooser->Show())
 	{
 		szChosen = mpComponentChooser->GetChosen(&bSubcircuit);
 		mszChooserSelected.Set(szChosen);
 		PlaceComponent(szChosen, bSubcircuit);
+	}
+	if (mpComponentChooser->KeysChanged())
+	{
+		KeepKeymap();
 	}
 	mpComponentChooser = NULL;
 }
@@ -809,6 +814,31 @@ bool CLogicimWindowContent::ApplyKeymapEdits(const char* szEdits)
 	pPage->ApplyEdits(szEdits);
 	pPage->Keep();
 	KeepKeymap();
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// For checking: what a user would do with the component chooser's
+// shortcut (szEdits, see CLogicimComponentChooser::ApplyEdits), then
+// closing it.  False if there are no keyboards to bind keys to.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::ApplyChooserEdits(const char* szEdits)
+{
+	Ptr<CLogicimComponentChooser>	pChooser;
+
+	if (mpWindow->GetComponentInput() == NULL)
+	{
+		return false;
+	}
+	pChooser = OMalloc<CLogicimComponentChooser>(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text(), &mpCommands, mpWindow->GetComponentInput());
+	pChooser->ApplyEdits(szEdits);
+	if (pChooser->KeysChanged())
+	{
+		KeepKeymap();
+	}
 	return true;
 }
 

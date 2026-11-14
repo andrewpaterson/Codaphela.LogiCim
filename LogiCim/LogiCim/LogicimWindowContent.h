@@ -210,6 +210,7 @@ public:
 	void				AddKeyContexts(CComponentInput* pcInput);
 	void				ReadKeymap(void);
 	bool				ApplyKeymapEdits(const char* szEdits);
+	bool				ApplyChooserEdits(const char* szEdits);
 	void				ResetLayout(void);
 	Ptr<CDockManager>	GetDock(void);
 	bool				PaneClosing(CDockPane* pcPane) override;
@@ -294,6 +295,9 @@ protected:
 	void					ShowImportKicadDialog(void);
 	void					ShowComponentChooser(void);
 };
+
+
+Ptr<CCommand>	FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szXMLName);
 
 
 #endif // __LOGICIM_WINDOW_CONTENT_H__

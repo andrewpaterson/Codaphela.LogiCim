@@ -61,6 +61,7 @@ def Run(szExecutable, szSteps, asExtraEnv=None):
 	asEnv.pop('LOGICIM_LAYOUT', None)
 	asEnv.pop('LOGICIM_KEYMAP', None)
 	asEnv.pop('LOGICIM_KEYMAP_EDITS', None)
+	asEnv.pop('LOGICIM_CHOOSER_EDITS', None)
 	asEnv['LOGICIM_CHECK'] = szSteps
 	if asExtraEnv:
 		asEnv.update(asExtraEnv)
@@ -318,6 +319,25 @@ def CheckKeymap(szExecutable):
 		if os.path.exists(szKeymap) or os.path.exists(os.path.join(szDirectory, '.config')) or os.path.exists(os.path.join(szDirectory, 'LogiCim')):
 			print('FAIL keymap-scripted\n    a keymap was written')
 			bPassed = False
+
+		#The component chooser's shortcut: the selected component's Place command's keys, given as Settings' Keymap gives
+		#them, bound and kept when it closes, and read back the next time.
+		asEnv = {'LOGICIM_KEYMAP': szKeymap, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml'), 'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml'),
+				 'LOGICIM_CHOOSER_EDITS': 'select:AndGate;show;add:Shift+O;show;select:OrGate;show;select:Adder;add:Control+Alt+D;show;add:Global:Shift+Q;add:Global:Control+Alt+S;select:Splitter;remove;show'}
+		bPassed = Check(szExecutable, 'chooser-keys', 'chooser,commands',
+			[r'^Chooser: AndGate Shortcut: Shift\+A \(Circuit\)$', r'^Chooser: Shift\+O moves here from Add OR Gate\.$',
+			 r'^Chooser: AndGate Shortcut: Shift\+A \(Circuit\), Shift\+O \(Circuit\)$', r'^Chooser: OrGate Shortcut: none$',
+			 r'^Chooser: Ctrl\+Alt\+D is free\.$', r'^Chooser: Adder Shortcut: Ctrl\+Alt\+D \(Circuit\)$',
+			 r'^Chooser: Shift\+Q types a character: add Ctrl or Alt\.$', r'^Chooser: Ctrl\+Alt\+S moves here from Settings\.$',
+			 r'^Chooser: Splitter Shortcut: none$', r'^Chooser: closed$',
+			 r'^Command: Place\.Splitter$', r'^Command: File\.Settings$', r'^Command: Place\.AndGate \[Shift\+A \(Circuit\)\] bound$',
+			 r'^Command: Place\.OrGate$', r'^Command: Place\.Adder \[Control\+Alt\+S\] bound$'],
+			[r'Unknown check step', r'NOT BOUND'], asEnv) and bPassed
+		del asEnv['LOGICIM_CHOOSER_EDITS']
+		bPassed = Check(szExecutable, 'chooser-keys-read', 'keys:Circuit:Shift+O,keys:Circuit:Control+Alt+D,keys:Circuit:Control+Alt+S,keys:Circuit:Shift+S',
+			[r'^Keys Shift\+O in Circuit: Place\.AndGate$', r'^Keys Control\+Alt\+D in Circuit: Place\.Adder$',
+			 r'^Keys Control\+Alt\+S in Circuit: Place\.Adder$', r'^Keys Shift\+S in Circuit: none$'],
+			[], asEnv) and bPassed
 		return bPassed
 	finally:
 		shutil.rmtree(szDirectory, ignore_errors=True)
