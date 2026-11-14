@@ -565,6 +565,45 @@ void CCircuitEditor::GetInstancePathText(CChars* psz)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Edits the circuit at the end of szPath (as GetInstancePathText writes
+// it, empty for the top) in the circuit simulated, as entering each
+// instance on it would, but as one step to undo.  False, nothing
+// changed, if there's no such path.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::EnterInstancePath(const char* szPath)
+{
+	CArrayTemplatePtr<CCircuitInstanceView>	apcPath;
+	CCircuitView*							pcTop;
+	CCircuitView*							pcCircuit;
+	CViewPath*								pcViewPath;
+
+	pcTop = GetTopCircuit();
+	if (pcTop == NULL)
+	{
+		return false;
+	}
+	apcPath.Init();
+	pcCircuit = StrEmpty(szPath) ? pcTop : FindInstancePath(pcTop, szPath, &apcPath);
+	pcViewPath = (pcCircuit != NULL) ? GetCircuitEditorViewPath(mpcCircuits, pcTop, &apcPath) : NULL;
+	apcPath.Kill();
+	if (pcViewPath == NULL)
+	{
+		return false;
+	}
+
+	DiscardEdit();
+	mcSelection.Clear();
+	mpcViewPath = pcViewPath->IsTop() ? NULL : pcViewPath;
+	mpcCircuit = pcCircuit;
+	UpdateHover();
+	PushUndo(true);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The circuit at the end of the path of instance indices from pcTop, and
 // the instances, NULL if the path doesn't follow instances.
 //

@@ -1442,6 +1442,22 @@ void TestCircuitEditorEnterInstance(void)
 	AssertSize(1, sTest.pEditor->GetSelection()->NumComponents());
 	AssertString("Subcircuit", sTest.pEditor->GetSelection()->GetComponent(0)->GetType());
 
+	//A path entered as one step: its text is the instance's index; one undo comes back out; a path that isn't
+	//there changes nothing.  (Undo above loaded the project again, so the circuits are found by name.)
+	AssertTrue(sTest.pEditor->EnterInstancePath("0"));
+	AssertString("Inverter", sTest.pEditor->GetCircuit()->GetTypeName());
+	AssertString("Main", sTest.pEditor->GetTopCircuit()->GetTypeName());
+	AssertFalse(sTest.pEditor->EnterInstancePath("1"));
+	AssertFalse(sTest.pEditor->EnterInstancePath("0/0"));
+	AssertFalse(sTest.pEditor->EnterInstancePath("x"));
+	AssertString("Inverter", sTest.pEditor->GetCircuit()->GetTypeName());
+	AssertTrue(sTest.pEditor->Undo(true));
+	AssertFalse(sTest.pEditor->IsInInstance());
+	AssertTrue(sTest.pEditor->EnterInstancePath("0"));
+	AssertTrue(sTest.pEditor->EnterInstancePath(""));
+	AssertFalse(sTest.pEditor->IsInInstance());
+	AssertString("Main", sTest.pEditor->GetCircuit()->GetTypeName());
+
 	sTest.Kill();
 }
 

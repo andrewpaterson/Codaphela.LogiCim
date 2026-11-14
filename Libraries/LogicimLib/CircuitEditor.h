@@ -244,6 +244,9 @@ public:
 	bool				IsInInstance(void);
 	bool				EnterInstance(CComponentView* pcInstance);
 	bool				LeaveInstance(void);
+	bool				EnterInstancePath(const char* szPath);
+	void				GetInstancePathText(CChars* psz);
+	CCircuitView*		FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath);
 	void				LeaveInstances(void);
 	CComponentView*		GetComponentAt(SFloat64Vec2 sPosition);
 	void				SelectOnly(CComponentView* pcComponent);
@@ -312,8 +315,6 @@ protected:
 	void				KillProject(bool bFreeing = false);
 	bool				LoadUndo(size uiIndex);
 	void				KillSimulation(bool bFreeing = false);
-	void				GetInstancePathText(CChars* psz);
-	CCircuitView*		FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath);
 };
 
 
