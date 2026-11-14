@@ -433,7 +433,7 @@ bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSc
 	{
 		if (!pcBoard->IsLaidOut())
 		{
-			LayOutBoardPins(&apcPins, pcConnector);
+			LayOutBoardPins(&apcPins, pcConnector, pcBoard->GetCircuit());
 			pcBoard->SetLaidOut();
 		}
 		pcInstance = AddSubcircuitInstance(pcSymbol, pcBoard->GetCircuit(), &uiItem);
@@ -517,21 +517,158 @@ static void GetKicadSchemPlaceholderName(CKicadSchemSymbol* pcSymbol, CKicadSche
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Shows the board's circuit pins on an instance as the symbol shows its
-// pins: on the same sides, in the same order, inverted and clocked as
-// they are.  A circuit pin that isn't one of the symbol's (a pin of
-// another connector) stays as its own connector placed it.
+// Where each of the library symbol's pins (papcPins, its shown pins) is
+// along its side, as the symbol draws it: in pitches (the smallest step
+// between two of its pins) from the top of the left and right sides, and
+// from the right of the top and bottom sides, so pins level with each
+// other on the left and right are at the same position.  aiPositions gets
+// each pin's and paiSidePositions how many positions each side (left,
+// right, top and bottom) has, 0 for a side without pins.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::LayOutBoardPins(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector)
+static void GetKicadSchemLibPinPositions(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayInt* paiPositions, int32* paiSidePositions)
 {
 	size				i;
+	size				j;
 	CKicadSchemLibPin*	pcPin;
-	CPinView*			pcPinView;
 	EPinAlignment		eAlignment;
-	int32				iWeight;
-	CArrayTemplatePtr<CPinView>	apcLaidOut;
+	float64				fAlong;
+	float64				fPitch;
+	float64				fStep;
+	float64				afFirst[2];
+	float64				afLast[2];
+	bool				abAny[2];
+	int					iAxis;
+	int32				iPosition;
+	int					iSide;
 
+	//The pitch: the smallest step between two pins along the same axis.
+	fPitch = 0;
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		for (j = i + 1; j < papcPins->NumElements(); j++)
+		{
+			fStep = fabs(papcPins->GetPtr(i)->GetPosition()->y - papcPins->GetPtr(j)->GetPosition()->y);
+			if ((fStep > 0.01) && ((fPitch == 0) || (fStep < fPitch)))
+			{
+				fPitch = fStep;
+			}
+			fStep = fabs(papcPins->GetPtr(i)->GetPosition()->x - papcPins->GetPtr(j)->GetPosition()->x);
+			if ((fStep > 0.01) && ((fPitch == 0) || (fStep < fPitch)))
+			{
+				fPitch = fStep;
+			}
+		}
+	}
+	if (fPitch == 0)
+	{
+		fPitch = 2.54;
+	}
+
+	//Left and right pins run down from the highest (library Y is up); top and bottom pins right to left from the rightmost.
+	for (iAxis = 0; iAxis < 2; iAxis++)
+	{
+		abAny[iAxis] = false;
+		afFirst[iAxis] = 0;
+		afLast[iAxis] = 0;
+	}
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		pcPin = papcPins->GetPtr(i);
+		GetKicadSchemLibPinPlace(papcPins, i, &eAlignment);
+		iAxis = ((eAlignment == PA_Left) || (eAlignment == PA_Right)) ? 0 : 1;
+		fAlong = (iAxis == 0) ? pcPin->GetPosition()->y : pcPin->GetPosition()->x;
+		if (!abAny[iAxis] || (fAlong > afFirst[iAxis]))
+		{
+			afFirst[iAxis] = fAlong;
+		}
+		if (!abAny[iAxis] || (fAlong < afLast[iAxis]))
+		{
+			afLast[iAxis] = fAlong;
+		}
+		abAny[iAxis] = true;
+	}
+
+	for (iSide = 0; iSide < 4; iSide++)
+	{
+		paiSidePositions[iSide] = 0;
+	}
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		pcPin = papcPins->GetPtr(i);
+		GetKicadSchemLibPinPlace(papcPins, i, &eAlignment);
+		iAxis = ((eAlignment == PA_Left) || (eAlignment == PA_Right)) ? 0 : 1;
+		fAlong = (iAxis == 0) ? pcPin->GetPosition()->y : pcPin->GetPosition()->x;
+		iPosition = (int32)floor((afFirst[iAxis] - fAlong) / fPitch + 0.5);
+		paiPositions->Add(iPosition);
+		if ((eAlignment >= PA_Left) && (eAlignment <= PA_Bottom))
+		{
+			paiSidePositions[eAlignment - PA_Left] = (int32)floor((afFirst[iAxis] - afLast[iAxis]) / fPitch + 0.5) + 1;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Shows the board's circuit pins on an instance as the symbol shows its
+// pins: on the same sides, inverted and clocked as they are, and where
+// they are along them (see CCircuitView::SetPinPositions and
+// GetKicadSchemLibPinPositions).  A symbol pin with no circuit pin (on a
+// supply, or on nothing on the board) leaves a gap, as does a space the
+// symbol has between its pins, and pins level on the symbol are level on
+// the instance.
+//
+// A circuit pin that isn't one of the symbol's (a pin of another
+// connector) stays as its own connector placed it, and the symbol's pins
+// on its side are only kept in the symbol's order, as there could be two
+// pins at a position.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::LayOutBoardPins(CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CKicadSchemBoardConnector* pcConnector, CCircuitView* pcCircuit)
+{
+	size						i;
+	CKicadSchemLibPin*			pcPin;
+	CPinView*					pcPinView;
+	EPinAlignment				eAlignment;
+	int32						iWeight;
+	CArrayTemplatePtr<CPinView>	apcConnectorPins;
+	CArrayTemplatePtr<CPinView>	apcLaidOut;
+	CArrayTemplatePtr<CPinView>	apcCircuitPins;
+	CArrayInt					aiPositions;
+	int32						aiSidePositions[4];
+	bool						abOther[4];
+	int							iSide;
+
+	apcConnectorPins.Init();
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		pcPinView = pcConnector->GetPin(papcPins->GetPtr(i)->GetNumber());
+		if (pcPinView != NULL)
+		{
+			apcConnectorPins.Add(pcPinView);
+		}
+	}
+	for (iSide = 0; iSide < 4; iSide++)
+	{
+		abOther[iSide] = false;
+	}
+	apcCircuitPins.Init();
+	GetCircuitPinViews(pcCircuit, &apcCircuitPins);
+	for (i = 0; i < apcCircuitPins.NumElements(); i++)
+	{
+		pcPinView = apcCircuitPins.GetPtr(i);
+		eAlignment = pcPinView->GetAlignment();
+		if ((eAlignment >= PA_Left) && (eAlignment <= PA_Bottom) && (apcConnectorPins.Find(pcPinView) == ARRAY_ELEMENT_NOT_FOUND))
+		{
+			abOther[eAlignment - PA_Left] = true;
+		}
+	}
+	apcCircuitPins.Kill();
+	apcConnectorPins.Kill();
+
+	aiPositions.Init();
+	GetKicadSchemLibPinPositions(papcPins, &aiPositions, aiSidePositions);
 	apcLaidOut.Init();
 	for (i = 0; i < papcPins->NumElements(); i++)
 	{
@@ -543,9 +680,19 @@ void CKicadSchemLogicimConverter::LayOutBoardPins(CArrayTemplatePtr<CKicadSchemL
 		}
 		apcLaidOut.Add(pcPinView);
 		iWeight = GetKicadSchemLibPinPlace(papcPins, i, &eAlignment);
+		if ((eAlignment >= PA_Left) && (eAlignment <= PA_Bottom) && !abOther[eAlignment - PA_Left])
+		{
+			iWeight = aiPositions.GetValue(i);
+		}
 		SetKicadSchemPinAppearance(pcPinView, pcPin, eAlignment, iWeight);
 	}
 	apcLaidOut.Kill();
+	aiPositions.Kill();
+
+	for (iSide = 0; iSide < 4; iSide++)
+	{
+		pcCircuit->SetPinPositions((EPinAlignment)(PA_Left + iSide), abOther[iSide] ? 0 : aiSidePositions[iSide]);
+	}
 }
 
 
