@@ -10,13 +10,13 @@ import os, re, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOGICIM_DIR = os.path.join(HERE, '..', 'LogiCim')
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-NUM_ACTIONS = 40	#ELogicimAction's actions, each a command, with the three commands that only have keys.
+NUM_ACTIONS = 40	#ELogicimAction's actions, each a command, with the three commands that only have keys and Clear Recent Files.
 
 #Each check: its name, its LOGICIM_CHECK steps, the lines (regular expressions) its output must have, in order, and
 #lines it mustn't have.
 CHECKS = [
 	('commands', 'commands',
-		[r'^Commands: %d$' % (NUM_ACTIONS + 3),
+		[r'^Commands: %d$' % (NUM_ACTIONS + 4),
 		 r'^Command: File\.LoadProject$',
 		 r'^Command: Edit\.FlipHorizontally \[Control\+Shift\+F, H\] bound$',
 		 r'^Command: Edit\.FlipVertically \[Control\+Shift\+F, V\] bound$',
@@ -26,13 +26,13 @@ CHECKS = [
 		 r'^Command: Circuit\.LeaveSubcircuit \[Alt\+Backspace\] bound$'],
 		[r'NOT BOUND']),
 	('menus-and-buttons', 'menus,buttons',
-		[r'^Menu File: Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Exit \[File\.Exit\]$',
+		[r'^Menu File: Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Files \[none\] Clear Recent Files \[File\.ClearRecentFiles\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
 		 r'^Menu View: ',
 		 r'^Menu Simulation: ',
 		 r'^Menu Place: ',
 		 r'^Buttons: [1-9][0-9]* with a command, 0 without$'],
-		[r'\[none\]']),
+		[r'(?<!Recent Files )\[none\]']),	#Recent Files opens its submenu; every other item runs a command.
 	('run-commands', 'zoom,command:View.ZoomIn,zoom,command:View.ZoomOut,command:View.ZoomOut,zoom,command:View.ResetZoom,zoom',
 		[r'^Zoom: 1\.00$', r'^Command View\.ZoomIn: run$', r'^Zoom: 2\.00$', r'^Command View\.ZoomOut: run$',
 		 r'^Command View\.ZoomOut: run$', r'^Zoom: (0\.\d\d|1\.00)$', r'^Command View\.ResetZoom: run$', r'^Zoom: 1\.00$'],
@@ -43,6 +43,7 @@ CHECKS = [
 def Run(szExecutable, szSteps, asExtraEnv=None):
 	asEnv = dict(os.environ)
 	asEnv.pop('LOGICIM_SETTINGS', None)
+	asEnv.pop('LOGICIM_RECENT', None)
 	asEnv['LOGICIM_CHECK'] = szSteps
 	if asExtraEnv:
 		asEnv.update(asExtraEnv)
@@ -130,6 +131,40 @@ def CheckRememberedFiles(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#File, Recent Files: the projects loaded or saved, the latest first, each once, kept between runs in LOGICIM_RECENT.
+#One chosen is loaded; one that isn't there any more is taken off; Clear Recent Files leaves none.
+def CheckRecentFiles(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szRecent = os.path.join(szDirectory, 'RecentFiles.xml')
+		szProject = os.path.join(szDirectory, 'FlipFlop.xml')
+		szGone = os.path.join(szDirectory, 'Gone.xml')
+		szSaved = os.path.join(szDirectory, 'Saved.xml')
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szProject)
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szGone)
+		asEnv = {'LOGICIM_RECENT': szRecent, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml')}
+		E = re.escape
+
+		bPassed = Check(szExecutable, 'recent-files', ','.join(['recent', 'load:' + szGone, 'load:' + szProject, 'save:' + szSaved, 'load:' + szProject, 'recent']),
+			[r'^Recent Files: 1$', r'^Recent: \[\(No recent files\)\] disabled$',
+			 r'^Recent Files: 3$', r'^Recent: \[1 %s\]$' % E(szProject), r'^Recent: \[2 %s\]$' % E(szSaved), r'^Recent: \[3 %s\]$' % E(szGone)],
+			[r'Unknown check step'], asEnv)
+		os.remove(szGone)
+		bPassed = Check(szExecutable, 'recent-files-read', 'recent,openrecent:3,recent,openrecent:2,files,recent,clearrecent,recent',
+			[r'^Recent Files: 3$', r'^Recent: \[3 %s\]$' % E(szGone),
+			 r'^Open recent 3: not loaded$', r'^Recent Files: 2$', r'^Recent: \[2 %s\]$' % E(szSaved),
+			 r'^Open recent 2: loaded$', r'^Project file: \[%s\]$' % E(szSaved),
+			 r'^Recent Files: 2$', r'^Recent: \[1 %s\]$' % E(szSaved), r'^Recent: \[2 %s\]$' % E(szProject),
+			 r'^Recent files cleared$', r'^Recent Files: 1$', r'^Recent: \[\(No recent files\)\] disabled$'],
+			[r'Unknown check step'], asEnv) and bPassed
+		bPassed = Check(szExecutable, 'recent-files-cleared', 'recent',
+			[r'^Recent Files: 1$', r'^Recent: \[\(No recent files\)\] disabled$'],
+			[], asEnv) and bPassed
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -146,6 +181,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('remembered-files' in aszNames):
 		if not CheckRememberedFiles(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('recent-files' in aszNames):
+		if not CheckRecentFiles(szExecutable):
 			iFailed += 1
 	print('%d failed' % iFailed)
 	return 1 if iFailed else 0

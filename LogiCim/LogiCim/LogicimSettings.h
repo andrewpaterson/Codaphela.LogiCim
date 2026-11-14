@@ -21,33 +21,45 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __LOGICIM_SETTINGS_H__
 #define __LOGICIM_SETTINGS_H__
 #include "BaseLib/Chars.h"
+#include "BaseLib/RecentFiles.h"
 
 
 //What LogiCim keeps of how the user left it, between runs: the KiCad schematic last imported and the project last
-//loaded, where Import KiCad Schematic and Load Project open.  They're kept in the user's own file (see
-//GetLogicimSettingsFile), written as soon as one changes.  With no file they're kept only while LogiCim runs.
+//loaded, where Import KiCad Schematic and Load Project open, and the projects loaded or saved last (File, Recent
+//Files).  They're kept in the user's own files (see GetLogicimSettingsFile and GetLogicimRecentFile), written as soon
+//as one changes.  With no file they're kept only while LogiCim runs.
 class CLogicimSettings
 {
 protected:
-	CChars	mszFile;			//Where they're kept, empty if they aren't.
-	CChars	mszKicadImport;		//The KiCad schematic last imported.
-	CChars	mszProjectLoad;		//The project last loaded.
+	CChars			mszFile;			//Where they're kept, empty if they aren't.
+	CChars			mszKicadImport;		//The KiCad schematic last imported.
+	CChars			mszProjectLoad;		//The project last loaded.
+	CRecentFiles	mcRecent;			//The projects loaded or saved last, the latest first.
+	CChars			mszRecentFile;		//Where they're kept, empty if they aren't.
 
 public:
-	void	Init(void);
-	void	Kill(void);
+	void			Init(void);
+	void			Kill(void);
 
-	void	Read(const char* szFile);
-	bool	Write(void);
+	void			Read(const char* szFile);
+	bool			Write(void);
+	void			ReadRecent(const char* szFile);
+	bool			WriteRecent(void);
 
-	char*	GetKicadImport(void);
-	char*	GetProjectLoad(void);
-	void	SetKicadImport(const char* szFilename);
-	void	SetProjectLoad(const char* szFilename);
+	char*			GetKicadImport(void);
+	char*			GetProjectLoad(void);
+	void			SetKicadImport(const char* szFilename);
+	void			SetProjectLoad(const char* szFilename);
+
+	CRecentFiles*	GetRecent(void);
+	void			AddRecent(const char* szFilename);
+	bool			RemoveRecent(const char* szFilename);
+	void			ClearRecent(void);
 };
 
 
 void GetLogicimSettingsFile(CChars* pszDest);
+void GetLogicimRecentFile(CChars* pszDest);
 
 
 #endif // __LOGICIM_SETTINGS_H__

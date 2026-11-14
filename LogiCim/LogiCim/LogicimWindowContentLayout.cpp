@@ -134,9 +134,22 @@ void CLogicimWindowContent::CreateLooks(void)
 Ptr<CMenuContainer> CLogicimWindowContent::CreateMenu(ELogicimAction* aeActions, int iNumActions)
 {
 	Ptr<CMenuContainer>		pMenu;
-	int						i;
 
 	pMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
+	AddMenuActions(pMenu, aeActions, iNumActions);
+	return pMenu;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The actions as pMenu's next items, LA_Separator between groups.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::AddMenuActions(Ptr<CMenuContainer> pMenu, ELogicimAction* aeActions, int iNumActions)
+{
+	int		i;
+
 	for (i = 0; i < iNumActions; i++)
 	{
 		if (aeActions[i] == LA_Separator)
@@ -148,6 +161,27 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateMenu(ELogicimAction* aeActions,
 			pMenu->AddItem(mpCommands->Find(gasLogicimActions[aeActions[i]].szCommand));
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Load and Save Project, Recent Files (see ShowRecentMenu) and Clear
+// Recent Files, then Import KiCad Schematic and Exit.
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CMenuContainer> CLogicimWindowContent::CreateFileMenu(void)
+{
+	ELogicimAction			aeProject[] = { LA_LoadProject, LA_SaveProject };
+	ELogicimAction			aeRest[] = { LA_Separator, LA_ImportKicadSchematic, LA_Separator, LA_Exit };
+	Ptr<CMenuContainer>		pMenu;
+
+	pMenu = CreateMenu(aeProject, sizeof(aeProject) / sizeof(ELogicimAction));
+	mpRecentMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
+	pMenu->AddItem("Recent Files", NULL, mpRecentMenu);
+	pMenu->AddItem(mpCommands->Find("File.ClearRecentFiles"));
+	AddMenuActions(pMenu, aeRest, sizeof(aeRest) / sizeof(ELogicimAction));
+	ShowRecentMenu();
 	return pMenu;
 }
 
@@ -159,14 +193,13 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateMenu(ELogicimAction* aeActions,
 //////////////////////////////////////////////////////////////////////////
 Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 {
-	ELogicimAction	aeFile[] = { LA_LoadProject, LA_SaveProject, LA_Separator, LA_ImportKicadSchematic, LA_Separator, LA_Exit };
 	ELogicimAction	aeEdit[] = { LA_Undo, LA_Redo, LA_Separator, LA_Cut, LA_Copy, LA_Paste, LA_Duplicate, LA_Delete, LA_Separator, LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically, LA_Separator, LA_EditProperties };
 	ELogicimAction	aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_SelectZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
 	ELogicimAction	aeSimulation[] = { LA_NewSimulation, LA_Separator, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_Separator, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed };
 	ELogicimAction	aePlace[] = { LA_AddComponent, LA_AddTrace, LA_AddSplitter, LA_AddTunnel, LA_AddConnection, LA_AddPower, LA_AddLabel, LA_AddSubcircuit, LA_Separator, LA_NewSubcircuit };
 
 	mpMenuBar = OMalloc<CMenuBar>(mpWindow, mpTheme);
-	mpMenuBar->AddMenu("File", CreateMenu(aeFile, sizeof(aeFile) / sizeof(ELogicimAction)));
+	mpMenuBar->AddMenu("File", CreateFileMenu());
 	mpMenuBar->AddMenu("Edit", CreateMenu(aeEdit, sizeof(aeEdit) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("View", CreateMenu(aeView, sizeof(aeView) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Simulation", CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction)));

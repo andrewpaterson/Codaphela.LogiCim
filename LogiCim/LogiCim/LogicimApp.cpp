@@ -61,7 +61,6 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 {
 	Ptr<CLogicimWindowTick>	pTick;
 	Ptr<CClearCanvasDraw>	pBackground;
-	CChars					szSettings;
 
 	pTick = OMalloc<CLogicimWindowTick>(&msData);
 	if (getenv("LOGICIM_SNAPSHOT") != NULL)
@@ -92,9 +91,7 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 		mpWindow->GetCommands()->BindKeys(&mcComponentInput);  //LogiCim's keys, Control+Alt+Z and so on.
 		mpWindow->SetComponentInput(&mcComponentInput);
 		mpWindow->SetWindowSize(1280, 800);
-		GetLogicimSettingsFile(&szSettings);
-		mpContent->GetSettings()->Read(szSettings.Text());  //Where the user last loaded and imported from.
-		szSettings.Kill();
+		mpContent->ReadSettings();  //Where the user last loaded and imported from, and the recent projects.
 		if (getenv("LOGICIM_IMPORT") != NULL)
 		{
 			mpContent->SetStartupImport(getenv("LOGICIM_IMPORT"));
@@ -246,6 +243,9 @@ bool CLogicimApp::Check(const char* szSteps)
 // circuit's zoom.  load:<file>, save:<file> and import:<file> do what
 // Load Project, Save Project and Import KiCad Schematic do with the file
 // chosen.  files: the project's file and where each of those opens.
+// recent: File, Recent Files' items.  openrecent:<n> loads the nth (1
+// the latest) as its item does, and clearrecent does what Clear Recent
+// Files does.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimApp::CheckStep(const char* szStep)
@@ -295,6 +295,19 @@ bool CLogicimApp::CheckStep(const char* szStep)
 		printf("Save Project opens: [%s]\n", mpContent->GetProjectDialogStart(true));
 		printf("Import KiCad Schematic opens: [%s]\n", mpContent->GetSettings()->GetKicadImport());
 	}
+	else if (StringCompare(szStep, "recent") == 0)
+	{
+		PrintRecent();
+	}
+	else if (strncmp(szStep, "openrecent:", 11) == 0)
+	{
+		printf("Open recent %s: %s\n", &szStep[11], mpContent->OpenRecentFile((size)(atoi(&szStep[11]) - 1)) ? "loaded" : "not loaded");
+	}
+	else if (StringCompare(szStep, "clearrecent") == 0)
+	{
+		mpContent->ClearRecentFiles();
+		printf("Recent files cleared\n");
+	}
 	else
 	{
 		printf("Unknown check step [%s]\n", szStep);
@@ -327,6 +340,25 @@ void CLogicimApp::PrintCommands(void)
 		{
 			printf("Command: %s [%s] %s\n", pCommand->GetName(), pCommand->GetKeys(), mcComponentInput.IsBound(pCommand->GetKeys()) ? "bound" : "NOT BOUND");
 		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// File, Recent Files' items, in order.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintRecent(void)
+{
+	Ptr<CMenuContainer>	pMenu;
+	size				i;
+
+	pMenu = mpContent->GetRecentMenu();
+	printf("Recent Files: %d\n", (int)pMenu->NumItems());
+	for (i = 0; i < pMenu->NumItems(); i++)
+	{
+		printf("Recent: [%s]%s\n", pMenu->GetItem(i)->GetText(), pMenu->GetItem(i)->IsEnabled() ? "" : " disabled");
 	}
 }
 

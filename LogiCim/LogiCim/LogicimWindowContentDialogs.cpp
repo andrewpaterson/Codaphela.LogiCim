@@ -482,6 +482,8 @@ bool CLogicimWindowContent::LoadProject(const char* szFilename)
 	if (bResult)
 	{
 		mcSettings.SetProjectLoad(szFilename);
+		mcSettings.AddRecent(szFilename);
+		ShowRecentMenu();
 		gcLogger.Info2("Loaded [", szFilename, "].", NULL);
 	}
 	UpdateInfo();
@@ -502,10 +504,145 @@ bool CLogicimWindowContent::SaveProject(const char* szFilename)
 	bResult = mpLogicimCircuit->Save(szFilename);
 	if (bResult)
 	{
+		mcSettings.AddRecent(szFilename);
+		ShowRecentMenu();
 		gcLogger.Info2("Saved [", szFilename, "].", NULL);
 	}
 	UpdateInfo();
 	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where the user last loaded and imported from, and the recent projects,
+// from the user's own files (none for a scripted run, see
+// GetLogicimSettingsFile).
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ReadSettings(void)
+{
+	CChars	szFile;
+
+	GetLogicimSettingsFile(&szFile);
+	mcSettings.Read(szFile.Text());
+	szFile.Kill();
+	GetLogicimRecentFile(&szFile);
+	mcSettings.ReadRecent(szFile.Text());
+	szFile.Kill();
+	ShowRecentMenu();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An item for each recent project, the latest first, numbered as the
+// IDE's recent solutions: "1 /home/.../FlipFlop.xml".  With none, one
+// that says so.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowRecentMenu(void)
+{
+	CRecentFiles*	pcRecent;
+	Ptr<CMenuItem>	pItem;
+	CChars			szText;
+	size			i;
+
+	if (mpRecentMenu.IsNull())
+	{
+		return;
+	}
+	pcRecent = mcSettings.GetRecent();
+	mpRecentMenu->RemoveAllItems();
+	if (pcRecent->NumFiles() == 0)
+	{
+		mpRecentMenu->AddItem("(No recent files)")->SetEnabled(false);
+		return;
+	}
+	szText.Init();
+	for (i = 0; i < pcRecent->NumFiles(); i++)
+	{
+		szText.Clear();
+		szText.Append((uint32)(i + 1));
+		szText.Append(' ');
+		szText.Append(pcRecent->GetFile(i));
+		pItem = mpRecentMenu->AddItem(szText.Text());
+		pItem->SetTag((int32)i);
+		pItem->GetClickEvent()->Add(this, &CLogicimWindowContent::RecentItemClicked);
+	}
+	szText.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A recent project's item: it is loaded at the next tick, once its menu
+// is done with the click.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::RecentItemClicked(CMenuItem* pcItem)
+{
+	muiQueuedRecent = (size)pcItem->GetTag();
+	mpWindow->Post(this, &CLogicimWindowContent::OpenQueuedRecentFile);
+}
+
+
+void CLogicimWindowContent::OpenQueuedRecentFile(void)
+{
+	size	uiIndex;
+
+	uiIndex = muiQueuedRecent;
+	muiQueuedRecent = MAX_SIZE;
+	OpenRecentFile(uiIndex);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The recent project uiIndex (0 the latest) is loaded as Load Project
+// would.  One that isn't there any more is taken off.  False if it
+// couldn't be loaded, or there isn't one.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::OpenRecentFile(size uiIndex)
+{
+	CFileUtil	cFileUtil;
+	CChars		szFilename;
+	bool		bResult;
+
+	if (uiIndex >= mcSettings.GetRecent()->NumFiles())
+	{
+		return false;
+	}
+	szFilename.Init(mcSettings.GetRecent()->GetFile(uiIndex));
+	bResult = LoadProject(szFilename.Text());
+	if (!bResult && !cFileUtil.Exists(szFilename.Text()))
+	{
+		mcSettings.RemoveRecent(szFilename.Text());
+		ShowRecentMenu();
+		gcLogger.Warning2(__METHOD__, " [", szFilename.Text(), "] isn't there any more.", NULL);
+	}
+	szFilename.Kill();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// File, Clear Recent Files: done at the next tick, not while the menu
+// that holds Recent Files is handling the click.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::QueueClearRecentFiles(void)
+{
+	mpWindow->Post(this, &CLogicimWindowContent::ClearRecentFiles);
+}
+
+
+void CLogicimWindowContent::ClearRecentFiles(void)
+{
+	mcSettings.ClearRecent();
+	ShowRecentMenu();
 }
 
 

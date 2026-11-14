@@ -121,6 +121,7 @@ protected:
 	Ptr<CCommandSet>		mpCommands;  //The actions' commands, the window's.
 	Ptr<CMenuBar>			mpMenuBar;
 	Ptr<CMenuContainer>		mpCanvasMenu;  //The circuit canvas's right button menu, filled as it opens.
+	Ptr<CMenuContainer>		mpRecentMenu;  //File, Recent Files: an item for each recent project, or one saying there are none.
 	Ptr<CMenuItem>			mpEnterItem;
 	Ptr<CMenuItem>			mpPropertiesItem;
 	Ptr<CListContainer>		mpSubcircuits;
@@ -145,6 +146,7 @@ protected:
 	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars							mszChooserSelected;  //The component last chosen.
 	int								miSimulationCount;
+	size							muiQueuedRecent;  //The recent project chosen, loaded once its menu is done with the click.
 	bool							mbRunning;
 	bool							mbRanLastTick;  //The simulation ran in the last tick, so the time since it is simulated.
 	float64							mfNanosecondsPerMillisecond;  //How fast the simulation runs.
@@ -180,6 +182,7 @@ public:
 	Ptr<CWindowTheme>	GetTheme(void);
 	CLogicimSettings*	GetSettings(void);
 	CLogicimCircuit*	GetLogicimCircuit(void);
+	Ptr<CMenuContainer>	GetRecentMenu(void);
 	Ptr<CMenuBar>	GetMenuBar(void);
 	float32			GetZoom(void);
 	void				SubcircuitSelected(void);
@@ -187,6 +190,9 @@ public:
 	void				LeaveSubcircuit(void);
 	void				PrepareCanvasMenu(SFloat64Vec2 sGrid);
 	void				CanvasMenuItemClicked(CMenuItem* pcItem);
+	void				ReadSettings(void);
+	bool				OpenRecentFile(size uiIndex);
+	void				ClearRecentFiles(void);
 	void				ListSubcircuits(void);
 
 protected:
@@ -197,6 +203,12 @@ protected:
 
 	Ptr<CComponent>			CreateMenuBar(void);
 	Ptr<CMenuContainer>		CreateMenu(ELogicimAction* aeActions, int iNumActions);
+	void					AddMenuActions(Ptr<CMenuContainer> pMenu, ELogicimAction* aeActions, int iNumActions);
+	Ptr<CMenuContainer>		CreateFileMenu(void);
+	void					ShowRecentMenu(void);
+	void					RecentItemClicked(CMenuItem* pcItem);
+	void					OpenQueuedRecentFile(void);
+	void					QueueClearRecentFiles(void);
 	Ptr<CToolbar>			CreateToolbar(void);
 	Ptr<CToolbar>			CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical);
 	Ptr<CComponent>			CreateEditor(void);

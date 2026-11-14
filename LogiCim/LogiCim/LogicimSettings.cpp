@@ -29,6 +29,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LOGICIM_SETTINGS_DIRECTORY		"LogiCim"
 #define LOGICIM_SETTINGS_FILE			"Settings.xml"
+#define LOGICIM_RECENT_FILE				"RecentFiles.xml"
 #define LOGICIM_SETTINGS_TAG			"LogicimSettings"
 #define LOGICIM_FILES_TAG				"Files"
 #define LOGICIM_KICAD_IMPORT_ATTRIBUTE	"KicadImport"
@@ -49,6 +50,8 @@ void CLogicimSettings::Init(void)
 	mszFile.Init();
 	mszKicadImport.Init(LOGICIM_DEFAULT_KICAD_IMPORT);
 	mszProjectLoad.Init(LOGICIM_DEFAULT_PROJECT_LOAD);
+	mcRecent.Init();
+	mszRecentFile.Init();
 }
 
 
@@ -58,6 +61,8 @@ void CLogicimSettings::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimSettings::Kill(void)
 {
+	mszRecentFile.Kill();
+	mcRecent.Kill();
 	mszProjectLoad.Kill();
 	mszKicadImport.Kill();
 	mszFile.Kill();
@@ -181,22 +186,101 @@ char* CLogicimSettings::GetProjectLoad(void) { return mszProjectLoad.Text(); }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The user's settings file: %APPDATA%\LogiCim\Settings.xml, or
-// ~/.config/LogiCim/Settings.xml on Linux; LOGICIM_SETTINGS if it is set.
-// A scripted run (LOGICIM_CHECK, LOGICIM_IMPORT or LOGICIM_SNAPSHOT) has
-// none unless LOGICIM_SETTINGS is set: the user's own isn't what's checked
-// and mustn't be changed by it.  Empty if there's no such place.
+// The recent projects, from szFile, which is where they're written from
+// now on.  It being missing only means there are none yet; "" keeps
+// none.
 //
 //////////////////////////////////////////////////////////////////////////
-void GetLogicimSettingsFile(CChars* pszDest)
+void CLogicimSettings::ReadRecent(const char* szFile)
+{
+	CFileUtil	cFileUtil;
+
+	mszRecentFile.Set(szFile);
+	mcRecent.Clear();
+	if (!mszRecentFile.Empty() && cFileUtil.Exists(szFile) && !mcRecent.Read(szFile))
+	{
+		gcLogger.Warning2(__METHOD__, " Recent files [", szFile, "] couldn't be read.", NULL);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// False if they couldn't be written; true if they were, or none are kept.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimSettings::WriteRecent(void)
+{
+	if (mszRecentFile.Empty())
+	{
+		return true;
+	}
+	if (!mcRecent.Write(mszRecentFile.Text()))
+	{
+		gcLogger.Warning2(__METHOD__, " Recent files [", mszRecentFile.Text(), "] couldn't be written.", NULL);
+		return false;
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szFilename, loaded or saved, is the latest; written as it changes.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimSettings::AddRecent(const char* szFilename)
+{
+	mcRecent.Add(szFilename);
+	WriteRecent();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szFilename taken off (it isn't there any more).  False if it wasn't
+// recent.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimSettings::RemoveRecent(const char* szFilename)
+{
+	if (!mcRecent.Remove(szFilename))
+	{
+		return false;
+	}
+	WriteRecent();
+	return true;
+}
+
+
+void CLogicimSettings::ClearRecent(void)
+{
+	mcRecent.Clear();
+	WriteRecent();
+}
+
+
+CRecentFiles* CLogicimSettings::GetRecent(void) { return &mcRecent; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A file of the user's, szFile in %APPDATA%\LogiCim, or ~/.config/LogiCim
+// on Linux; the variable szVariable if it is set.  A scripted run
+// (LOGICIM_CHECK, LOGICIM_IMPORT or LOGICIM_SNAPSHOT) has none unless
+// szVariable is set: the user's own isn't what's checked and mustn't be
+// changed by it.  Empty if there's no such place.
+//
+//////////////////////////////////////////////////////////////////////////
+static void GetLogicimUserFile(CChars* pszDest, const char* szFile, const char* szVariable)
 {
 	CFileUtil	cFileUtil;
 	const char*	szBase;
 
 	pszDest->Init();
-	if (getenv("LOGICIM_SETTINGS") != NULL)
+	if (getenv(szVariable) != NULL)
 	{
-		pszDest->Set(getenv("LOGICIM_SETTINGS"));
+		pszDest->Set(getenv(szVariable));
 		return;
 	}
 	if ((getenv("LOGICIM_CHECK") != NULL) || (getenv("LOGICIM_IMPORT") != NULL) || (getenv("LOGICIM_SNAPSHOT") != NULL))
@@ -222,6 +306,16 @@ void GetLogicimSettingsFile(CChars* pszDest)
 		return;
 	}
 	cFileUtil.AppendToPath(pszDest, LOGICIM_SETTINGS_DIRECTORY);
-	cFileUtil.AppendToPath(pszDest, LOGICIM_SETTINGS_FILE);
+	cFileUtil.AppendToPath(pszDest, szFile);
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The user's settings (Settings.xml, LOGICIM_SETTINGS) and recent
+// projects (RecentFiles.xml, LOGICIM_RECENT).
+//
+//////////////////////////////////////////////////////////////////////////
+void GetLogicimSettingsFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_SETTINGS_FILE, "LOGICIM_SETTINGS"); }
+void GetLogicimRecentFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_RECENT_FILE, "LOGICIM_RECENT"); }
 

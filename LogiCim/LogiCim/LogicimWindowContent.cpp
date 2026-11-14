@@ -107,6 +107,7 @@ void CLogicimWindowContent::Init(void)
 
 	mpsData = NULL;
 	miSimulationCount = 0;
+	muiQueuedRecent = MAX_SIZE;
 	mbRunning = true;
 	mbRanLastTick = false;
 	mfNanosecondsPerMillisecond = LOGICIM_DEFAULT_SPEED;
@@ -144,6 +145,7 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMenuBar);
 	M_Pointer(mpSubcircuits);
 	M_Pointer(mpCanvasMenu);
+	M_Pointer(mpRecentMenu);
 	M_Pointer(mpEnterItem);
 	M_Pointer(mpPropertiesItem);
 	M_Pointer(mpSimulations);
@@ -166,6 +168,7 @@ void CLogicimWindowContent::Class(void)
 	U_Bool(mbListingSubcircuits);
 	U_String(mszChooserSelected);
 	U_Int32(miSimulationCount);
+	U_Size(muiQueuedRecent);
 	U_Bool(mbRunning);
 	U_Bool(mbRanLastTick);
 	U_Data(float64, mfNanosecondsPerMillisecond);
@@ -454,7 +457,8 @@ void CLogicimWindowContent::EditProperties(void)
 // A command for each action, run by its menu items, tool buttons and
 // keys, then the keys with no menu item: Ctrl+Alt+Z and Ctrl+Alt+Shift+Z
 // undo and redo a change at a time, and Alt+Backspace leaves the
-// subcircuit entered, as KiCad's Leave Sheet.
+// subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent Files
+// has no button.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::AddCommands(void)
@@ -476,6 +480,7 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Edit.StepUndo", "Undo Step", "Control+Alt+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepUndo);
 	mpCommands->Add("Edit.StepRedo", "Redo Step", "Control+Alt+Shift+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepRedo);
 	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
+	mpCommands->Add("File.ClearRecentFiles", "Clear Recent Files", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentFiles);
 }
 
 
@@ -686,5 +691,6 @@ void CLogicimWindowContent::Redo(bool bStep)
 Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) { return mpTheme; }
 CLogicimSettings* CLogicimWindowContent::GetSettings(void) { return &mcSettings; }
 CLogicimCircuit* CLogicimWindowContent::GetLogicimCircuit(void) { return &mpLogicimCircuit; }
+Ptr<CMenuContainer> CLogicimWindowContent::GetRecentMenu(void) { return mpRecentMenu; }
 Ptr<CMenuBar> CLogicimWindowContent::GetMenuBar(void) { return mpMenuBar; }
 float32 CLogicimWindowContent::GetZoom(void) { return mpCircuit->GetCircuitDraw()->GetZoom(); }
