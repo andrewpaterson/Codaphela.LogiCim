@@ -42,6 +42,7 @@ void CLogicimCircuit::Init(void)
 
 	mcColours.InitDark();
 	mcFamilies.Init();
+	mszFilename.Init();
 
 	PostInit();
 }
@@ -56,6 +57,7 @@ void CLogicimCircuit::Class(void)
 	U_Unknown(CFamilyVoltageConfigurationStore, mcFamilies);
 	M_Pointer(mpEditor);
 	U_Unknown(CCircuitColours, mcColours);
+	U_String(mszFilename);
 }
 
 
@@ -67,6 +69,7 @@ void CLogicimCircuit::Class(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimCircuit::Free(void)
 {
+	mszFilename.Kill();
 	mcFamilies.Kill();
 	mcColours.Kill();
 }
@@ -161,21 +164,37 @@ bool CLogicimCircuit::Run(int64 iTimeForward)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// szFilename is the project's file from now on, if it was saved.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::Save(const char* szFilename)
 {
-	return mpEditor->Save(szFilename);
+	bool	bResult;
+
+	bResult = mpEditor->Save(szFilename);
+	if (bResult)
+	{
+		mszFilename.Set(szFilename);
+	}
+	return bResult;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
+// szFilename is the project's file from now on, if it was loaded.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::Load(const char* szFilename)
 {
-	return mpEditor->Load(szFilename);
+	bool	bResult;
+
+	bResult = mpEditor->Load(szFilename);
+	if (bResult)
+	{
+		mszFilename.Set(szFilename);
+	}
+	return bResult;
 }
 
 
@@ -186,7 +205,9 @@ bool CLogicimCircuit::Load(const char* szFilename)
 // Schematic property, found through KiCad's path variables), and the
 // boards drawn on those, and the placeholder subcircuits made for its
 // parts, and loads them as a project is loaded so the import can be
-// undone.  If it can't be imported the project is left as it was.
+// undone.  The project's file is the schematic's name as an .xml file
+// beside it ("Audio Board.xml"), not yet written.  If it can't be
+// imported the project is left as it was.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
@@ -218,6 +239,12 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 		if (bResult)
 		{
 			mpEditor->PushUndo(false);
+			mszFilename.Set(szFilename);
+			if (mszFilename.EndsWith(".kicad_sch"))
+			{
+				mszFilename.RemoveFromEnd(10);
+			}
+			mszFilename.Append(".xml");
 		}
 	}
 
@@ -235,4 +262,5 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 CCircuitEditor* CLogicimCircuit::GetEditor(void) { return &mpEditor; }
 CCircuitColours* CLogicimCircuit::GetColours(void) { return &mcColours; }
 CCircuitFonts* CLogicimCircuit::GetFonts(void) { return mpEditor->GetFonts(); }
+char* CLogicimCircuit::GetFilename(void) { return mszFilename.Text(); }
 int64 CLogicimCircuit::GetTime(void) { return (mpEditor->GetSimulation() != NULL) ? mpEditor->GetSimulation()->GetTime() : -1; }

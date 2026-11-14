@@ -113,8 +113,7 @@ void CLogicimWindowContent::Init(void)
 	mapIcons.Init();
 	maSubcircuitLabels.Init();
 	maSimulationLabels.Init();
-	mszProjectFilename.Init("Project.xml");
-	mszKicadFilename.Init("Schematic.kicad_sch");
+	mcSettings.Init();
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
 	mszChooserSelected.Init();
@@ -162,8 +161,7 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMessageDialog);
 	M_Pointer(mpComponentChooser);
 	M_Pointer(mpFileChooser);
-	U_String(mszProjectFilename);
-	U_String(mszKicadFilename);
+	U_Unknown(CLogicimSettings, mcSettings);
 	U_String(mszStartupImport);
 	U_Bool(mbListingSubcircuits);
 	U_String(mszChooserSelected);
@@ -289,8 +287,7 @@ void CLogicimWindowContent::Free(void)
 	}
 
 	mszStartupImport.Kill();
-	mszKicadFilename.Kill();
-	mszProjectFilename.Kill();
+	mcSettings.Kill();
 	mszChooserSelected.Kill();
 }
 
@@ -687,5 +684,7 @@ void CLogicimWindowContent::Redo(bool bStep)
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) { return mpTheme; }
+CLogicimSettings* CLogicimWindowContent::GetSettings(void) { return &mcSettings; }
+CLogicimCircuit* CLogicimWindowContent::GetLogicimCircuit(void) { return &mpLogicimCircuit; }
 Ptr<CMenuBar> CLogicimWindowContent::GetMenuBar(void) { return mpMenuBar; }
 float32 CLogicimWindowContent::GetZoom(void) { return mpCircuit->GetCircuitDraw()->GetZoom(); }

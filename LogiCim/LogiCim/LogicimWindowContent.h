@@ -38,6 +38,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/MessageDialog.h"
 #include "CircuitCanvas.h"
 #include "LogicimCircuit.h"
+#include "LogicimSettings.h"
 
 
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
@@ -140,8 +141,7 @@ protected:
 	Ptr<CMessageDialog>				mpMessageDialog;  //The message being shown, NULL when none is.
 	Ptr<CLogicimComponentChooser>	mpComponentChooser;
 	Ptr<CFileChooser>				mpFileChooser;
-	CChars							mszProjectFilename;  //The project last loaded or saved.
-	CChars							mszKicadFilename;  //The KiCad schematic last imported.
+	CLogicimSettings				mcSettings;  //Where Load Project and Import KiCad Schematic open.
 	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars							mszChooserSelected;  //The component last chosen.
 	int								miSimulationCount;
@@ -172,8 +172,14 @@ public:
 	void				ShowDialog(ELogicimDialog eDialog);
 	void				Tick(int64 iUpdateTimeInMilliseconds);
 	bool				ImportKicadSchematic(const char* szFilename);
+	bool				ImportChosenKicadSchematic(const char* szFilename);
+	bool				LoadProject(const char* szFilename);
+	bool				SaveProject(const char* szFilename);
+	char*				GetProjectDialogStart(bool bSave);
 	void				SetStartupImport(const char* szFilename);
 	Ptr<CWindowTheme>	GetTheme(void);
+	CLogicimSettings*	GetSettings(void);
+	CLogicimCircuit*	GetLogicimCircuit(void);
 	Ptr<CMenuBar>	GetMenuBar(void);
 	float32			GetZoom(void);
 	void				SubcircuitSelected(void);

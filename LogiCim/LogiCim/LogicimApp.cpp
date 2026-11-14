@@ -61,6 +61,7 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 {
 	Ptr<CLogicimWindowTick>	pTick;
 	Ptr<CClearCanvasDraw>	pBackground;
+	CChars					szSettings;
 
 	pTick = OMalloc<CLogicimWindowTick>(&msData);
 	if (getenv("LOGICIM_SNAPSHOT") != NULL)
@@ -91,6 +92,9 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 		mpWindow->GetCommands()->BindKeys(&mcComponentInput);  //LogiCim's keys, Control+Alt+Z and so on.
 		mpWindow->SetComponentInput(&mcComponentInput);
 		mpWindow->SetWindowSize(1280, 800);
+		GetLogicimSettingsFile(&szSettings);
+		mpContent->GetSettings()->Read(szSettings.Text());  //Where the user last loaded and imported from.
+		szSettings.Kill();
 		if (getenv("LOGICIM_IMPORT") != NULL)
 		{
 			mpContent->SetStartupImport(getenv("LOGICIM_IMPORT"));
@@ -239,7 +243,9 @@ bool CLogicimApp::Check(const char* szSteps)
 // commands: every command, its keys and whether the keyboard gives them.
 // menus: each menu's items and their commands.  buttons: how many of the
 // tool buttons run a command.  command:<name> runs one.  zoom: the
-// circuit's zoom.
+// circuit's zoom.  load:<file>, save:<file> and import:<file> do what
+// Load Project, Save Project and Import KiCad Schematic do with the file
+// chosen.  files: the project's file and where each of those opens.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimApp::CheckStep(const char* szStep)
@@ -269,6 +275,25 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "zoom") == 0)
 	{
 		printf("Zoom: %.2f\n", mpContent->GetZoom());
+	}
+	else if (strncmp(szStep, "load:", 5) == 0)
+	{
+		printf("Load %s: %s\n", &szStep[5], mpContent->LoadProject(&szStep[5]) ? "loaded" : "not loaded");
+	}
+	else if (strncmp(szStep, "save:", 5) == 0)
+	{
+		printf("Save %s: %s\n", &szStep[5], mpContent->SaveProject(&szStep[5]) ? "saved" : "not saved");
+	}
+	else if (strncmp(szStep, "import:", 7) == 0)
+	{
+		printf("Import %s: %s\n", &szStep[7], mpContent->ImportChosenKicadSchematic(&szStep[7]) ? "imported" : "not imported");
+	}
+	else if (StringCompare(szStep, "files") == 0)
+	{
+		printf("Project file: [%s]\n", mpContent->GetLogicimCircuit()->GetFilename());
+		printf("Load Project opens: [%s]\n", mpContent->GetProjectDialogStart(false));
+		printf("Save Project opens: [%s]\n", mpContent->GetProjectDialogStart(true));
+		printf("Import KiCad Schematic opens: [%s]\n", mpContent->GetSettings()->GetKicadImport());
 	}
 	else
 	{

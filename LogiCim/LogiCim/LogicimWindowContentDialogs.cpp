@@ -22,6 +22,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include "BaseLib/Logger.h"
 #include "BaseLib/FileUtil.h"
+#include "BaseLib/StringHelper.h"
 #include "StandardLib/Objects.h"
 #include "StandardLib/ObjectReader.h"
 #include "StandardLib/ObjectWriter.h"
@@ -430,27 +431,81 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // Asks for the project file to load or save with Logicim's file chooser,
-// starting on the one last used.
+// starting on GetProjectDialogStart's.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowProjectDialog(bool bSave)
 {
-	char*				szFilename;
-	bool				bResult;
-
-	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, bSave ? "Save Project" : "Load Project", bSave, mszProjectFilename.Text(), gasProjectFileTypes, sizeof(gasProjectFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
+	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, bSave ? "Save Project" : "Load Project", bSave, GetProjectDialogStart(bSave), gasProjectFileTypes, sizeof(gasProjectFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
 	if (mpFileChooser->Show())
 	{
-		szFilename = mpFileChooser->GetChosen();
-		mszProjectFilename.Set(szFilename);
-		bResult = bSave ? mpLogicimCircuit->Save(szFilename) : mpLogicimCircuit->Load(szFilename);
-		if (bResult)
+		if (bSave)
 		{
-			gcLogger.Info2(bSave ? "Saved [" : "Loaded [", szFilename, "].", NULL);
+			SaveProject(mpFileChooser->GetChosen());
 		}
-		UpdateInfo();
+		else
+		{
+			LoadProject(mpFileChooser->GetChosen());
+		}
 	}
 	mpFileChooser = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Save offers the project's own file; Load opens on the project last
+// loaded, as does Save when the project hasn't a file.
+//
+//////////////////////////////////////////////////////////////////////////
+char* CLogicimWindowContent::GetProjectDialogStart(bool bSave)
+{
+	if (bSave && !StrEmpty(mpLogicimCircuit->GetFilename()))
+	{
+		return mpLogicimCircuit->GetFilename();
+	}
+	return mcSettings.GetProjectLoad();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// As Load Project does with the file chosen: Load Project opens on it
+// from now on, if it was loaded.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::LoadProject(const char* szFilename)
+{
+	bool	bResult;
+
+	bResult = mpLogicimCircuit->Load(szFilename);
+	if (bResult)
+	{
+		mcSettings.SetProjectLoad(szFilename);
+		gcLogger.Info2("Loaded [", szFilename, "].", NULL);
+	}
+	UpdateInfo();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// As Save Project does with the file chosen.  Where Load Project opens
+// isn't changed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::SaveProject(const char* szFilename)
+{
+	bool	bResult;
+
+	bResult = mpLogicimCircuit->Save(szFilename);
+	if (bResult)
+	{
+		gcLogger.Info2("Saved [", szFilename, "].", NULL);
+	}
+	UpdateInfo();
+	return bResult;
 }
 
 
@@ -466,14 +521,33 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 {
 	char*				szFilename;
 
-	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, "Import KiCad Schematic", false, mszKicadFilename.Text(), gasKicadFileTypes, sizeof(gasKicadFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
+	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, "Import KiCad Schematic", false, mcSettings.GetKicadImport(), gasKicadFileTypes, sizeof(gasKicadFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
 	if (mpFileChooser->Show())
 	{
 		szFilename = mpFileChooser->GetChosen();
-		mszKicadFilename.Set(szFilename);
-		ImportKicadSchematic(szFilename);
+		ImportChosenKicadSchematic(szFilename);
 	}
 	mpFileChooser = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// As Import KiCad Schematic does with the file chosen: it opens on it
+// from now on, if it was imported.  Where Load Project opens isn't
+// changed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::ImportChosenKicadSchematic(const char* szFilename)
+{
+	bool	bResult;
+
+	bResult = ImportKicadSchematic(szFilename);
+	if (bResult)
+	{
+		mcSettings.SetKicadImport(szFilename);
+	}
+	return bResult;
 }
 
 
@@ -502,12 +576,6 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 	bResult = mpLogicimCircuit->ImportKicadSchematic(szFilename);
 	if (bResult)
 	{
-		mszProjectFilename.Set(szFilename);
-		if (mszProjectFilename.EndsWith(".kicad_sch"))
-		{
-			mszProjectFilename.RemoveFromEnd(10);
-		}
-		mszProjectFilename.Append(".xml");
 		gcLogger.Info2("Imported [", szFilename, "].", NULL);
 		ZoomToFit(false);
 	}

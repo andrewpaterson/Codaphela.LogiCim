@@ -241,6 +241,7 @@
     <ClCompile Include="CircuitCanvasDraw.cpp" />
     <ClCompile Include="LogicimCircuit.cpp" />
     <ClCompile Include="LogicimComponentChooser.cpp" />
+    <ClCompile Include="LogicimSettings.cpp" />
     <ClCompile Include="LogicimWindowContent.cpp" />
     <ClCompile Include="LogicimWindowContentSubcircuits.cpp" />
     <ClCompile Include="LogicimWindowContentDialogs.cpp" />
@@ -254,6 +255,7 @@
     <ClInclude Include="CircuitCanvasDraw.h" />
     <ClInclude Include="LogicimCircuit.h" />
     <ClInclude Include="LogicimComponentChooser.h" />
+    <ClInclude Include="LogicimSettings.h" />
     <ClInclude Include="LogicimWindowContent.h" />
     <ClInclude Include="LogicimWindowContentInternal.h" />
     <ClInclude Include="LogicimWindowData.h" />

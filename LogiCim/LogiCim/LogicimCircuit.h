@@ -28,7 +28,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //LogiCim's editor and the circuits in it.  It starts with an empty "Main" circuit, simulated on its top view path.  A
 //project loaded, or a KiCad schematic imported (see CKicadSchemLogicimConverter), replaces it.  It is an object held by the window's
-//content; Setup makes the editor.
+//content; Setup makes the editor.  It knows the project's file: the one it was loaded from or saved to, or after an import the
+//schematic's name as an .xml file beside it; empty until there's one.
 class CLogicimCircuit : public CObject
 {
 CONSTRUCTABLE(CLogicimCircuit);
@@ -37,6 +38,7 @@ protected:
 	CFamilyVoltageConfigurationStore	mcFamilies;
 	Ptr<CCircuitEditor>					mpEditor;  //It holds the circuit fonts.
 	CCircuitColours						mcColours;
+	CChars								mszFilename;  //The project's file, empty if it hasn't one.
 
 public:
 	void				Init(void);
@@ -57,6 +59,7 @@ public:
 	CCircuitEditor*		GetEditor(void);
 	CCircuitColours*	GetColours(void);
 	CCircuitFonts*		GetFonts(void);
+	char*				GetFilename(void);
 	int64				GetTime(void);
 
 protected:

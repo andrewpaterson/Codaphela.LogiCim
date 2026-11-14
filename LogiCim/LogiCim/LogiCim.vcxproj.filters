@@ -21,6 +21,9 @@
     <ClCompile Include="LogicimComponentChooser.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LogicimSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="LogicimWindowContent.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -54,6 +57,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimComponentChooser.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimSettings.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimWindowContent.h">

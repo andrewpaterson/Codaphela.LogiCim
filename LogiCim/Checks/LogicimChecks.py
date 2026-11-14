@@ -5,7 +5,7 @@
 #  LogicimChecks.py [logicim executable] [check name...]
 #
 #The executable defaults to ../../../build/LogiCimRelease/LogiCim.  Exits non-zero if a check fails.
-import os, re, subprocess, sys
+import os, re, shutil, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOGICIM_DIR = os.path.join(HERE, '..', 'LogiCim')
@@ -40,16 +40,19 @@ CHECKS = [
 ]
 
 
-def Run(szExecutable, szSteps):
+def Run(szExecutable, szSteps, asExtraEnv=None):
 	asEnv = dict(os.environ)
+	asEnv.pop('LOGICIM_SETTINGS', None)
 	asEnv['LOGICIM_CHECK'] = szSteps
+	if asExtraEnv:
+		asEnv.update(asExtraEnv)
 	cResult = subprocess.run([szExecutable], cwd=LOGICIM_DIR, env=asEnv, capture_output=True, timeout=120)
 	szOut = cResult.stdout.decode('latin-1') + cResult.stderr.decode('latin-1')
 	return cResult.returncode, szOut.split('\n')
 
 
-def Check(szExecutable, szName, szSteps, aszExpected, aszForbidden):
-	iCode, aszLines = Run(szExecutable, szSteps)
+def Check(szExecutable, szName, szSteps, aszExpected, aszForbidden, asExtraEnv=None):
+	iCode, aszLines = Run(szExecutable, szSteps, asExtraEnv)
 	aszProblems = []
 	if iCode != 0:
 		aszProblems.append('exited with %d' % iCode)
@@ -80,6 +83,53 @@ def Check(szExecutable, szName, szSteps, aszExpected, aszForbidden):
 	return True
 
 
+#Import KiCad Schematic and Load Project each open where they were last used, kept apart and kept between runs in
+#LOGICIM_SETTINGS; Save Project offers the project's own file.  A scripted run without LOGICIM_SETTINGS keeps nothing.
+def CheckRememberedFiles(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szSettings = os.path.join(szDirectory, 'Settings.xml')
+		szProjects = os.path.join(szDirectory, 'Projects')
+		szKicad = os.path.join(szDirectory, 'Kicad')
+		os.makedirs(szProjects)
+		os.makedirs(szKicad)
+		szProject = os.path.join(szProjects, 'FlipFlop.xml')
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szProject)
+		szSchematic = os.path.join(szKicad, 'Empty.kicad_sch')
+		with open(szSchematic, 'w') as cFile:
+			cFile.write('(kicad_sch (version 20250114) (generator "eeschema") (uuid "root") (paper "A4"))\n')
+		szImported = os.path.join(szKicad, 'Empty.xml')
+		szSaved = os.path.join(szProjects, 'Saved.xml')
+		szMissing = os.path.join(szProjects, 'Missing.xml')
+		asEnv = {'LOGICIM_SETTINGS': szSettings}
+		E = re.escape
+
+		bPassed = Check(szExecutable, 'remembered-files', ','.join(['files', 'load:' + szProject, 'files', 'import:' + szSchematic, 'files', 'save:' + szSaved, 'files', 'load:' + szMissing, 'files']),
+			[r'^Project file: \[\]$', r'^Load Project opens: \[Project\.xml\]$', r'^Import KiCad Schematic opens: \[Schematic\.kicad_sch\]$',
+			 r'loaded$',
+			 r'^Project file: \[%s\]$' % E(szProject), r'^Load Project opens: \[%s\]$' % E(szProject), r'^Save Project opens: \[%s\]$' % E(szProject),
+			 r'imported$',
+			 r'^Project file: \[%s\]$' % E(szImported), r'^Load Project opens: \[%s\]$' % E(szProject), r'^Save Project opens: \[%s\]$' % E(szImported), r'^Import KiCad Schematic opens: \[%s\]$' % E(szSchematic),
+			 r'saved$',
+			 r'^Project file: \[%s\]$' % E(szSaved), r'^Load Project opens: \[%s\]$' % E(szProject),
+			 r'not loaded$',
+			 r'^Project file: \[%s\]$' % E(szSaved), r'^Load Project opens: \[%s\]$' % E(szProject)],
+			[r'Unknown check step'], asEnv)
+		bPassed = Check(szExecutable, 'remembered-files-read', 'files',
+			[r'^Project file: \[\]$', r'^Load Project opens: \[%s\]$' % E(szProject), r'^Import KiCad Schematic opens: \[%s\]$' % E(szSchematic)],
+			[], asEnv) and bPassed
+		os.remove(szSettings)
+		bPassed = Check(szExecutable, 'remembered-files-scripted', 'load:' + szProject + ',files',
+			[r'loaded$', r'^Load Project opens: \[%s\]$' % E(szProject)],
+			[], {'HOME': szDirectory, 'APPDATA': szDirectory}) and bPassed
+		if os.path.exists(szSettings) or os.path.exists(os.path.join(szDirectory, '.config')) or os.path.exists(os.path.join(szDirectory, 'LogiCim')):
+			print('FAIL remembered-files-scripted\n    a settings file was written')
+			bPassed = False
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -93,6 +143,9 @@ def main():
 		if aszNames and (szName not in aszNames):
 			continue
 		if not Check(szExecutable, szName, szSteps, aszExpected, aszForbidden):
+			iFailed += 1
+	if (not aszNames) or ('remembered-files' in aszNames):
+		if not CheckRememberedFiles(szExecutable):
 			iFailed += 1
 	print('%d failed' % iFailed)
 	return 1 if iFailed else 0
