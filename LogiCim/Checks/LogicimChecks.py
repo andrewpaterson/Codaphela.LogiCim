@@ -28,7 +28,7 @@ CHECKS = [
 	('menus-and-buttons', 'menus,buttons',
 		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Settings\.\.\. \[File\.Settings\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
-		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulation Tree \[View\.SimulationTree\]$',
+		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulation Tree \[View\.SimulationTree\] Back \[View\.Back\] Forward \[View\.Forward\]$',
 		 r'^Menu Simulation: ',
 		 r'^Menu Place: ',
 		 r'^Menu Window: Reset Window Layout \[Window\.ResetLayout\]$',
@@ -67,6 +67,19 @@ CHECKS = [
 		 r'^Subcircuits node:     Gate$', r'^Subcircuits node: Spare$', r'^Subcircuits node 2: selected$', r'^Place: Gate \(Gate\)$',
 		 r'^Subcircuits node:   \+Board$', r'^Subcircuits node:     Gate \*$', r'^Subcircuits node 3: selected$', r'^Place: Spare \(Spare\)$',
 		 r'^Subcircuits node: Spare \*$', r'^Subcircuits node:     Gate \*$'],
+		[r'Unknown check step', r'ERROR']),
+	#Back and Forward: each move (entering through the trees or the canvas, choosing a circuit) records the place it
+	#left; Back goes to the latest, Forward back again; a new move forgets Forward's places, and a new project all of
+	#them.
+	('back-forward', ','.join(['load:../Checks/Nested.xml', 'history', 'command:View.Back', 'showplace:Main:0', 'simactivate:0/1', 'showplace:Board:', 'history',
+							   'command:View.Back', 'place', 'command:View.Back', 'place', 'history', 'command:View.Forward', 'place', 'history',
+							   'showplace:Main:1', 'history', 'command:View.Forward', 'new', 'history', 'commands']),
+		[r'^History: back \[\] forward \[\]$', r'^Command View\.Back: not run$', r'^History: back \[Main 0/1, Main 0, Main\] forward \[\]$',
+		 r'^Command View\.Back: run$', r'^Place: Main 0/1 \(Gate\)$', r'^Place: Main 0 \(Board\)$',
+		 r'^History: back \[Main\] forward \[Main 0/1, Board\]$', r'^Command View\.Forward: run$', r'^Place: Main 0/1 \(Gate\)$',
+		 r'^History: back \[Main 0, Main\] forward \[Board\]$', r'^History: back \[Main 0/1, Main 0, Main\] forward \[\]$',
+		 r'^Command View\.Forward: not run$', r'^History: back \[\] forward \[\]$',
+		 r'^Command: View\.Back \[Control\+Alt\+Cursor Left\] bound$', r'^Command: View\.Forward \[Control\+Alt\+Cursor Right\] bound$'],
 		[r'Unknown check step', r'ERROR']),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',

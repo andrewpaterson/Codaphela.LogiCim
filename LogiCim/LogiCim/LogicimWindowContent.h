@@ -44,7 +44,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/SettingsDialog.h"
 #include "WindowLib/KeymapPage.h"
 #include "WindowLib/TreeContainer.h"
-#include "LogicimPlace.h"
+#include "LogicimNavigationHistory.h"
 
 
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
@@ -181,6 +181,8 @@ protected:
 	CLogicimSettings				mcSettings;  //Where Load Project and Import KiCad Schematic open.
 	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars							mszChooserSelected;  //The component last chosen.
+	CLogicimNavigationHistory		mcHistory;  //The places Back and Forward go to.
+	bool							mbNavigating;  //While Back or Forward moves, so the move isn't recorded as one.
 	CChars							mszSimulationName;  //As New Simulation named it, empty for the circuit simulated's.
 	int								miSimulationCount;
 	size							muiQueuedRecent;  //The recent project chosen, loaded once its menu is done with the click.
@@ -242,6 +244,11 @@ public:
 	void				ClearRecentProjects(void);
 	void				GetPlace(SLogicimPlace* psDest);
 	bool				ShowPlace(SLogicimPlace* psPlace);
+	bool				GoBack(void);
+	bool				GoForward(void);
+	bool				CanGoBack(void);
+	bool				CanGoForward(void);
+	CLogicimNavigationHistory*	GetHistory(void);
 	Ptr<CTreeContainer>	GetSimulationTree(void);
 	Ptr<CTreeContainer>	GetSubcircuitTree(void);
 	bool				ActivateSimulationNode(const char* szPath);
@@ -277,6 +284,10 @@ protected:
 	void					KeepKeymap(void);
 	void					ShowSubcircuits(void);
 	void					ShowSimulationTree(void);
+	bool					Go(bool bBack);
+	void					RecordLeft(SLogicimPlace* psLeft);
+	void					NavigateBack(void);
+	void					NavigateForward(void);
 	Ptr<CTreeContainer>		CreateTree(void);
 	void					ListSimulation(void);
 	void					AddInstanceNodes(int32 iParent, CCircuitView* pcCircuit, const char* szPath);

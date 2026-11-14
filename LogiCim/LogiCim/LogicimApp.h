@@ -65,6 +65,7 @@ protected:
 	void	PrintCommands(void);
 	void	PrintKeysCommand(const char* szStep);
 	void	PrintPlace(void);
+	void	PrintHistory(void);
 	bool	SelectTreeNode(Ptr<CTreeContainer> pTree, const char* szNode);
 	void	PrintTree(const char* szName, Ptr<CTreeContainer> pTree);
 	void	ShowPlace(const char* szStep);

@@ -83,20 +83,17 @@ bool CLogicimWindowContent::ShowPlace(SLogicimPlace* psPlace)
 	sHere.Init();
 	GetPlace(&sHere);
 	bMoved = !sHere.IsSameView(psPlace);
-	sHere.Kill();
 	if (bMoved)
 	{
-		if ((pcEditor->GetTopCircuit() != pcTop) && !pcEditor->Simulate(psPlace->szCircuit.Text()))
+		if (((pcEditor->GetTopCircuit() != pcTop) && !pcEditor->Simulate(psPlace->szCircuit.Text())) || !pcEditor->EnterInstancePath(psPlace->szPath.Text()))
 		{
+			sHere.Kill();
 			UpdateInfo();
 			return false;
 		}
-		if (!pcEditor->EnterInstancePath(psPlace->szPath.Text()))
-		{
-			UpdateInfo();
-			return false;
-		}
+		RecordLeft(&sHere);
 	}
+	sHere.Kill();
 
 	if (psPlace->fZoom > 0)
 	{
@@ -112,4 +109,60 @@ bool CLogicimWindowContent::ShowPlace(SLogicimPlace* psPlace)
 	UpdateInfo();
 	return true;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A move left psLeft, for Back, unless Back or Forward made it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::RecordLeft(SLogicimPlace* psLeft)
+{
+	if (!mbNavigating && !psLeft->szCircuit.Empty())
+	{
+		mcHistory.Record(psLeft);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// View, Back and Forward: to the latest place left, or gone back from,
+// that's still there, as it was shown, the place left kept for going the
+// other way.  False if there's none.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::Go(bool bBack)
+{
+	SLogicimPlace	sHere;
+	SLogicimPlace	sPlace;
+	bool			bShown;
+
+	sHere.Init();
+	sPlace.Init();
+	GetPlace(&sHere);
+	bShown = false;
+	mbNavigating = true;
+	while (!bShown && mcHistory.Take(bBack, &sPlace))
+	{
+		bShown = ShowPlace(&sPlace);
+	}
+	mbNavigating = false;
+	if (bShown)
+	{
+		mcHistory.Put(!bBack, &sHere);
+	}
+	sPlace.Kill();
+	sHere.Kill();
+	return bShown;
+}
+
+
+bool CLogicimWindowContent::GoBack(void) { return Go(true); }
+bool CLogicimWindowContent::GoForward(void) { return Go(false); }
+void CLogicimWindowContent::NavigateBack(void) { Go(true); }
+void CLogicimWindowContent::NavigateForward(void) { Go(false); }
+bool CLogicimWindowContent::CanGoBack(void) { return mcHistory.Num(true) > 0; }
+bool CLogicimWindowContent::CanGoForward(void) { return mcHistory.Num(false) > 0; }
+CLogicimNavigationHistory* CLogicimWindowContent::GetHistory(void) { return &mcHistory; }
 

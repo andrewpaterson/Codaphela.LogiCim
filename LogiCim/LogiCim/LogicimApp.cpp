@@ -251,7 +251,8 @@ bool CLogicimApp::Check(const char* szSteps)
 // indented by its depth, "+" before an open one and "*" after the one
 // selected; simactivate:<path> double clicks the node of that instance.
 // subcircuits: the Subcircuits pane's tree, as simtree; subselect:<n>
-// clicks its nth node (from 0, open or not).
+// clicks its nth node (from 0, open or not).  history: the places Back
+// and Forward go to, the next first.
 // keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
@@ -312,6 +313,10 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "simtree") == 0)
 	{
 		PrintTree("Simulation", mpContent->GetSimulationTree());
+	}
+	else if (StringCompare(szStep, "history") == 0)
+	{
+		PrintHistory();
 	}
 	else if (StringCompare(szStep, "subcircuits") == 0)
 	{
@@ -493,6 +498,25 @@ bool CLogicimApp::SelectTreeNode(Ptr<CTreeContainer> pTree, const char* szNode)
 
 	iNode = (int32)atoi(szNode);
 	return (iNode >= 0) && (iNode < pTree->NumNodes()) && pTree->SelectNode(iNode);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintHistory(void)
+{
+	CChars	szBack;
+	CChars	szForward;
+
+	szBack.Init();
+	szForward.Init();
+	mpContent->GetHistory()->Print(true, &szBack);
+	mpContent->GetHistory()->Print(false, &szForward);
+	printf("History: back [%s] forward [%s]\n", szBack.Text(), szForward.Text());
+	szForward.Kill();
+	szBack.Kill();
 }
 
 

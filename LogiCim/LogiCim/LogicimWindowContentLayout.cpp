@@ -391,6 +391,9 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateViewMenu(void)
 	pMenu->AddSeparator();
 	pMenu->AddItem(mpCommands->Find("View.Subcircuits"));
 	pMenu->AddItem(mpCommands->Find("View.SimulationTree"));
+	pMenu->AddSeparator();
+	pMenu->AddItem(mpCommands->Find("View.Back"));
+	pMenu->AddItem(mpCommands->Find("View.Forward"));
 	return pMenu;
 }
 

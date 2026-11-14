@@ -581,6 +581,7 @@ bool CLogicimWindowContent::NewProject(void)
 	if (bResult)
 	{
 		gcLogger.Info("New project.");
+		mcHistory.Clear();
 		Zoom(1.0f);
 	}
 	UpdateInfo();
@@ -601,6 +602,7 @@ bool CLogicimWindowContent::LoadProject(const char* szFilename)
 	bResult = mpLogicimCircuit->Load(szFilename);
 	if (bResult)
 	{
+		mcHistory.Clear();
 		mcSettings.SetProjectLoad(szFilename);
 		mcSettings.AddRecent(szFilename);
 		ShowRecentMenu();
@@ -1111,6 +1113,7 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 	if (bResult)
 	{
 		gcLogger.Info2("Imported [", szFilename, "].", NULL);
+		mcHistory.Clear();
 		ZoomToFit(false);
 	}
 	UpdateInfo();

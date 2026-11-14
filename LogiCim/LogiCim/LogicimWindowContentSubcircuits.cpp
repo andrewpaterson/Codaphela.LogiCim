@@ -321,10 +321,16 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::EnterSubcircuit(CComponentView* pcInstance)
 {
+	SLogicimPlace	sLeft;
+
+	sLeft.Init();
+	GetPlace(&sLeft);
 	if (mpLogicimCircuit->GetEditor()->EnterInstance(pcInstance))
 	{
+		RecordLeft(&sLeft);
 		ZoomToFit(false);
 	}
+	sLeft.Kill();
 	UpdateInfo();
 }
 
@@ -336,10 +342,16 @@ void CLogicimWindowContent::EnterSubcircuit(CComponentView* pcInstance)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::LeaveSubcircuit(void)
 {
+	SLogicimPlace	sLeft;
+
+	sLeft.Init();
+	GetPlace(&sLeft);
 	if (mpLogicimCircuit->GetEditor()->LeaveInstance())
 	{
+		RecordLeft(&sLeft);
 		ZoomToFit(false);
 	}
+	sLeft.Kill();
 	UpdateInfo();
 }
 

@@ -152,6 +152,8 @@ void CLogicimWindowContent::Init(void)
 	maszSimulationPaths.Init();
 	mszSimulationShape.Init();
 	mszSimulationName.Init();
+	mcHistory.Init();
+	mbNavigating = false;
 	mcSettings.Init();
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
@@ -198,6 +200,8 @@ void CLogicimWindowContent::Class(void)
 	U_Unknown(CArrayChars, maszSimulationPaths);
 	U_String(mszSimulationShape);
 	U_String(mszSimulationName);
+	U_Unknown(CLogicimNavigationHistory, mcHistory);
+	U_Bool(mbNavigating);
 	M_Pointer(mpCircuit);
 	M_Pointer(mpSubcircuitInfo);
 	M_Pointer(mpSimulationInfo);
@@ -355,6 +359,7 @@ void CLogicimWindowContent::Free(void)
 	mszKeymapFile.Kill();
 	mszChooserSelected.Kill();
 	mszSimulationName.Kill();
+	mcHistory.Kill();
 	mszSimulationShape.Kill();
 	mszSubcircuitShape.Kill();
 	maszSimulationPaths.Kill();
@@ -538,7 +543,8 @@ void CLogicimWindowContent::EditProperties(void)
 // undo and redo a change at a time, and Alt+Backspace leaves the
 // subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent
 // Projects and Settings (Control+Alt+S, as IntelliJ IDEA's), Window's
-// Reset Window Layout and View's tool windows have no buttons.  Then a
+// Reset Window Layout, View's tool windows and View's Back and Forward
+// (Ctrl+Alt+Left and Right, as the HCP65 IDE's) have no buttons.  Then a
 // command to place each library component, and the keys over the circuit
 // (see AddCircuitKeys).
 //
@@ -567,6 +573,8 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("File.Settings", "Settings...", "Control+Alt+S", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestSettings);
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
 	mpCommands->Add("Edit.Move", "Move", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::Move);
+	mpCommands->Add("View.Back", "Back", "Control+Alt+Cursor Left", Ptr<CImageCel>(), this, &CLogicimWindowContent::NavigateBack)->SetEnabledCheck(this, &CLogicimWindowContent::CanGoBack);
+	mpCommands->Add("View.Forward", "Forward", "Control+Alt+Cursor Right", Ptr<CImageCel>(), this, &CLogicimWindowContent::NavigateForward)->SetEnabledCheck(this, &CLogicimWindowContent::CanGoForward);
 	AddPlaceCommands();
 	AddCircuitKeys();
 }
