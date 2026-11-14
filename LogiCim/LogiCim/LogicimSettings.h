@@ -61,6 +61,7 @@ public:
 void GetLogicimSettingsFile(CChars* pszDest);
 void GetLogicimRecentFile(CChars* pszDest);
 void GetLogicimLayoutFile(CChars* pszDest);
+void GetLogicimKeymapFile(CChars* pszDest);
 
 
 #endif // __LOGICIM_SETTINGS_H__

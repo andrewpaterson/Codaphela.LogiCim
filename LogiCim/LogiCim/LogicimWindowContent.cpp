@@ -119,6 +119,7 @@ void CLogicimWindowContent::Init(void)
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
 	mszLayoutFile.Init();
+	mszKeymapFile.Init();
 	mszChooserSelected.Init();
 	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
 
@@ -150,6 +151,8 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpDock);
 	M_Pointer(mpCircuitPane);
 	U_String(mszLayoutFile);
+	U_String(mszKeymapFile);
+	M_Pointer(mpSettingsDialog);
 	M_Pointer(mpRecentMenu);
 	M_Pointer(mpEnterItem);
 	M_Pointer(mpPropertiesItem);
@@ -306,6 +309,7 @@ void CLogicimWindowContent::Free(void)
 	mszStartupImport.Kill();
 	mcSettings.Kill();
 	mszLayoutFile.Kill();
+	mszKeymapFile.Kill();
 	mszChooserSelected.Kill();
 }
 
@@ -476,8 +480,9 @@ void CLogicimWindowContent::EditProperties(void)
 // A command for each action, run by its menu items, tool buttons and
 // keys, then the keys with no menu item: Ctrl+Alt+Z and Ctrl+Alt+Shift+Z
 // undo and redo a change at a time, and Alt+Backspace leaves the
-// subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent Projects
-// has no button.
+// subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent
+// Projects and Settings (Control+Alt+S, as IntelliJ IDEA's), Window's
+// Reset Window Layout and View's tool windows have no buttons.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::AddCommands(void)
@@ -501,6 +506,7 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
 	mpCommands->Add("File.ClearRecentProjects", "Clear Recent Projects", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentProjects);
 	mpCommands->Add("Window.ResetLayout", "Reset Window Layout", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ResetLayout);
+	mpCommands->Add("File.Settings", "Settings...", "Control+Alt+S", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestSettings);
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
 	mpCommands->Add("View.Simulations", "Simulations", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSimulations);
 }

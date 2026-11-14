@@ -31,6 +31,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #define LOGICIM_SETTINGS_FILE			"Settings.xml"
 #define LOGICIM_RECENT_FILE				"RecentProjects.xml"
 #define LOGICIM_LAYOUT_FILE				"Layout.xml"
+#define LOGICIM_KEYMAP_FILE				"Keymap.xml"
 #define LOGICIM_SETTINGS_TAG			"LogicimSettings"
 #define LOGICIM_FILES_TAG				"Files"
 #define LOGICIM_KICAD_IMPORT_ATTRIBUTE	"KicadImport"
@@ -314,11 +315,14 @@ static void GetLogicimUserFile(CChars* pszDest, const char* szFile, const char* 
 //////////////////////////////////////////////////////////////////////////
 //
 // The user's settings (Settings.xml, LOGICIM_SETTINGS), recent projects
-// (RecentProjects.xml, LOGICIM_RECENT) and window layout (Layout.xml,
-// LOGICIM_LAYOUT: the window and its tool windows, see CDockManager).
+// (RecentProjects.xml, LOGICIM_RECENT), window layout (Layout.xml,
+// LOGICIM_LAYOUT: the window and its tool windows, see CDockManager) and
+// the keys they've changed (Keymap.xml, LOGICIM_KEYMAP, see
+// CCommandSet::ReadKeys).
 //
 //////////////////////////////////////////////////////////////////////////
 void GetLogicimSettingsFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_SETTINGS_FILE, "LOGICIM_SETTINGS"); }
 void GetLogicimRecentFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_RECENT_FILE, "LOGICIM_RECENT"); }
 void GetLogicimLayoutFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_LAYOUT_FILE, "LOGICIM_LAYOUT"); }
+void GetLogicimKeymapFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_KEYMAP_FILE, "LOGICIM_KEYMAP"); }
 

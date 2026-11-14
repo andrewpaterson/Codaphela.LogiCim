@@ -672,6 +672,135 @@ bool CLogicimWindowContent::SaveLayout(void)
 }
 
 
+//The keymap's groups, in the order Settings' Keymap shows them: the part of a command's name before its dot and what's
+//shown.
+static SKeymapGroup	gasLogicimKeymapGroups[] =
+{
+	{ "File", "File" },
+	{ "Edit", "Edit" },
+	{ "View", "View" },
+	{ "Simulation", "Simulation" },
+	{ "Place", "Place" },
+	{ "Circuit", "Circuit" },
+	{ "Window", "Window" },
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The keys the user changed, from their file (none for a scripted run,
+// see GetLogicimSettingsFile), before the commands' keys are bound.  One
+// that can't be read is said, and the commands keep their own keys.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ReadKeymap(void)
+{
+	CFileUtil	cFileUtil;
+
+	mszKeymapFile.Kill();
+	GetLogicimKeymapFile(&mszKeymapFile);
+	if (!mszKeymapFile.Empty() && cFileUtil.Exists(mszKeymapFile.Text()) && !mpCommands->ReadKeys(mszKeymapFile.Text()))
+	{
+		gcLogger.Warning2(__METHOD__, " Keymap [", mszKeymapFile.Text(), "] couldn't be read: the default keys are used.", NULL);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// File, Settings: a dialog can't be shown from the keys or a menu item's
+// input action, so it's shown at the next tick.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::RequestSettings(void)
+{
+	mpWindow->Post(this, &CLogicimWindowContent::ShowSettingsDialog);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Settings' Keymap (WindowLib's CKeymapPage) on pDialog, with LogiCim's
+// commands in their menus' groups.
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CKeymapPage> CLogicimWindowContent::CreateKeymapPage(Ptr<CSettingsDialog> pDialog)
+{
+	return OMalloc<CKeymapPage>(pDialog->GetDialog(), mpCommands, mpWindow->GetComponentInput(), gasLogicimKeymapGroups, sizeof(gasLogicimKeymapGroups) / sizeof(gasLogicimKeymapGroups[0]));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// File, Settings, as IntelliJ IDEA's: its Keymap page.  What OK keeps
+// applies now, and is written for next time.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowSettingsDialog(void)
+{
+	bool	bOK;
+
+	mpSettingsDialog = OMalloc<CSettingsDialog>(mpWindow, &msDialogLook);
+	mpSettingsDialog->AddPage(CreateKeymapPage(mpSettingsDialog));
+	bOK = mpSettingsDialog->Show();
+	mpSettingsDialog = NULL;
+	if (bOK)
+	{
+		KeepKeymap();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The commands' keys, as the Keymap page left them, bound and written to
+// the user's file.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::KeepKeymap(void)
+{
+	mpCommands->BindKeys(mpWindow->GetComponentInput());
+	if (mszKeymapFile.Empty())
+	{
+		gcLogger.Info("Changed the keymap.");
+	}
+	else if (mpCommands->WriteKeys(mszKeymapFile.Text()))
+	{
+		gcLogger.Info2("Saved the keymap [", mszKeymapFile.Text(), "].", NULL);
+	}
+	else
+	{
+		gcLogger.Warning2(__METHOD__, " Changed the keymap, but it couldn't be saved for next time [", mszKeymapFile.Text(), "].", NULL);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// For checking: what a user would do on Settings' Keymap (szEdits, see
+// CKeymapPage::ApplyEdits), then OK, without the dialog being shown.
+// False if there's no window input to bind the keys to.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::ApplyKeymapEdits(const char* szEdits)
+{
+	Ptr<CSettingsDialog>	pDialog;
+	Ptr<CKeymapPage>		pPage;
+
+	if (mpWindow->GetComponentInput() == NULL)
+	{
+		return false;
+	}
+	pDialog = OMalloc<CSettingsDialog>(mpWindow, &msDialogLook);
+	pPage = CreateKeymapPage(pDialog);
+	pDialog->AddPage(pPage);
+	pPage->ApplyEdits(szEdits);
+	pPage->Keep();
+	KeepKeymap();
+	return true;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Window, Reset Window Layout: the tool windows back where they start.

@@ -10,23 +10,24 @@ import os, re, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOGICIM_DIR = os.path.join(HERE, '..', 'LogiCim')
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-NUM_ACTIONS = 41	#ELogicimAction's actions, each a command.  The other commands: the three that only have keys, Clear Recent Projects, Reset Window Layout and the two tool windows'.
+NUM_ACTIONS = 41	#ELogicimAction's actions, each a command.  The other commands: the three that only have keys, Clear Recent Projects, Settings, Reset Window Layout and the two tool windows'.
 
 #Each check: its name, its LOGICIM_CHECK steps, the lines (regular expressions) its output must have, in order, and
 #lines it mustn't have.
 CHECKS = [
 	('commands', 'commands',
-		[r'^Commands: %d$' % (NUM_ACTIONS + 7),
+		[r'^Commands: %d$' % (NUM_ACTIONS + 8),
 		 r'^Command: File\.LoadProject$',
 		 r'^Command: Edit\.FlipHorizontally \[Control\+Shift\+F, H\] bound$',
 		 r'^Command: Edit\.FlipVertically \[Control\+Shift\+F, V\] bound$',
 		 r'^Command: File\.Exit$',
 		 r'^Command: Edit\.StepUndo \[Control\+Alt\+Z\] bound$',
 		 r'^Command: Edit\.StepRedo \[Control\+Alt\+Shift\+Z\] bound$',
-		 r'^Command: Circuit\.LeaveSubcircuit \[Alt\+Backspace\] bound$'],
+		 r'^Command: Circuit\.LeaveSubcircuit \[Alt\+Backspace\] bound$',
+		 r'^Command: File\.Settings \[Control\+Alt\+S\] bound$'],
 		[r'NOT BOUND']),
 	('menus-and-buttons', 'menus,buttons',
-		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Exit \[File\.Exit\]$',
+		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Settings\.\.\. \[File\.Settings\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
 		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulations \[View\.Simulations\]$',
 		 r'^Menu Simulation: ',
@@ -46,6 +47,8 @@ def Run(szExecutable, szSteps, asExtraEnv=None):
 	asEnv.pop('LOGICIM_SETTINGS', None)
 	asEnv.pop('LOGICIM_RECENT', None)
 	asEnv.pop('LOGICIM_LAYOUT', None)
+	asEnv.pop('LOGICIM_KEYMAP', None)
+	asEnv.pop('LOGICIM_KEYMAP_EDITS', None)
 	asEnv['LOGICIM_CHECK'] = szSteps
 	if asExtraEnv:
 		asEnv.update(asExtraEnv)
@@ -277,6 +280,37 @@ def CheckDockLayout(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#File, Settings' Keymap: a key given to a command is bound and kept in LOGICIM_KEYMAP, read back the next time, and a
+#key moved from another command leaves it.  A scripted run without LOGICIM_KEYMAP keeps none.
+def CheckKeymap(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szKeymap = os.path.join(szDirectory, 'Keymap.xml')
+		asEnv = {'LOGICIM_KEYMAP': szKeymap, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml'), 'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml'),
+				 'LOGICIM_KEYMAP_EDITS': 'select:View.ZoomIn;add:Control+Alt+I;select:View.ZoomOut;add:Control+Alt+S'}
+		bPassed = Check(szExecutable, 'keymap-edit', 'keymap,commands',
+			[r'^Keymap: Ctrl\+Alt\+I is free\.$', r'^Keymap: kept$',
+			 r'^Command: View\.ZoomIn \[Control\+Alt\+I\] bound$', r'^Command: View\.ZoomOut \[Control\+Alt\+S\] bound$'],
+			[r'Unknown check step', r'^Command: File\.Settings \[Control\+Alt\+S\]'], asEnv)
+		if not os.path.exists(szKeymap):
+			print('FAIL keymap-edit\n    no keymap was written')
+			bPassed = False
+		del asEnv['LOGICIM_KEYMAP_EDITS']
+		bPassed = Check(szExecutable, 'keymap-read', 'commands',
+			[r'^Command: View\.ZoomIn \[Control\+Alt\+I\] bound$', r'^Command: View\.ZoomOut \[Control\+Alt\+S\] bound$', r'^Command: File\.Settings$'],
+			[], asEnv) and bPassed
+		os.remove(szKeymap)
+		bPassed = Check(szExecutable, 'keymap-scripted', 'keymap,commands',
+			[r'^Keymap: kept$', r'^Command: View\.ZoomIn \[Control\+Alt\+I\] bound$'],
+			[], {'HOME': szDirectory, 'APPDATA': szDirectory, 'LOGICIM_KEYMAP_EDITS': 'select:View.ZoomIn;add:Control+Alt+I'}) and bPassed
+		if os.path.exists(szKeymap) or os.path.exists(os.path.join(szDirectory, '.config')) or os.path.exists(os.path.join(szDirectory, 'LogiCim')):
+			print('FAIL keymap-scripted\n    a keymap was written')
+			bPassed = False
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -293,6 +327,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('remembered-files' in aszNames):
 		if not CheckRememberedFiles(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('keymap' in aszNames):
+		if not CheckKeymap(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('dock-layout' in aszNames):
 		if not CheckDockLayout(szExecutable):

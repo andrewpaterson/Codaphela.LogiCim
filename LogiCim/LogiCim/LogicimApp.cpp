@@ -88,6 +88,7 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 		mbInputs = true;
 		mcComponentInput.AddKeyboards();
 		mcComponentInput.AddMice();
+		mpContent->ReadKeymap();  //The keys the user changed, before they're bound.
 		mpWindow->GetCommands()->BindKeys(&mcComponentInput);  //LogiCim's keys, Control+Alt+Z and so on.
 		mpWindow->SetComponentInput(&mcComponentInput);
 		mpWindow->SetWindowSize(1280, 800);
@@ -256,6 +257,9 @@ bool CLogicimApp::Check(const char* szSteps)
 // the latest) as its item does, and clearrecent does what Clear Recent
 // Projects does.
 //
+// keymap does on Settings' Keymap what LOGICIM_KEYMAP_EDITS says (see
+// CKeymapPage::ApplyEdits) and then OK.
+//
 // panes: each dock pane and whether it's shown.  hide:<pane> and
 // show:<pane> hide and show one, savelayout writes the layout as LogiCim
 // does as it closes, and resetlayout does Window, Reset Window Layout.
@@ -315,6 +319,11 @@ bool CLogicimApp::CheckStep(const char* szStep)
 			mpContent->GetDock()->Show(pPane);
 		}
 		printf("%s %s\n", (szStep[0] == 'h') ? "Hid" : "Showed", &szStep[5]);
+	}
+	else if (StringCompare(szStep, "keymap") == 0)
+	{
+		//The edits are LOGICIM_KEYMAP_EDITS's, as keys have commas ("Control+Shift+F, H") and the steps are separated by them.
+		printf("Keymap: %s\n", mpContent->ApplyKeymapEdits((getenv("LOGICIM_KEYMAP_EDITS") != NULL) ? getenv("LOGICIM_KEYMAP_EDITS") : "") ? "kept" : "not kept");
 	}
 	else if (StringCompare(szStep, "savelayout") == 0)
 	{

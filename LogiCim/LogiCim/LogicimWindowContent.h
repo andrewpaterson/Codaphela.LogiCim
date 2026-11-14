@@ -41,6 +41,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimSettings.h"
 #include "WindowLib/ProgressBar.h"
 #include "WindowLib/DockManager.h"
+#include "WindowLib/SettingsDialog.h"
+#include "WindowLib/KeymapPage.h"
 
 
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
@@ -149,6 +151,8 @@ protected:
 	Ptr<CDockManager>		mpDock;  //The circuit in the document well, the tool windows docked around it.
 	Ptr<CDockPane>			mpCircuitPane;
 	CChars					mszLayoutFile;  //Where the layout is kept, empty if it isn't.
+	CChars					mszKeymapFile;  //Where the keys the user changed are kept, empty if they aren't.
+	Ptr<CSettingsDialog>	mpSettingsDialog;  //File, Settings, while it's shown.
 	Ptr<CListContainer>		mpSubcircuits;
 	Ptr<CListContainer>		mpSimulations;
 	CArray<CLabel>			maSubcircuitLabels;  //The text of each row, the project's circuits in order.
@@ -202,6 +206,8 @@ public:
 	void				Tick(int64 iUpdateTimeInMilliseconds);
 	bool				ImportKicadSchematic(const char* szFilename);
 	bool				SaveLayout(void);
+	void				ReadKeymap(void);
+	bool				ApplyKeymapEdits(const char* szEdits);
 	void				ResetLayout(void);
 	Ptr<CDockManager>	GetDock(void);
 	bool				PaneClosing(CDockPane* pcPane) override;
@@ -248,6 +254,10 @@ protected:
 	Ptr<CComponent>			CreateToolWindow(Ptr<CListContainer> pList);
 	Ptr<CMenuContainer>		CreateViewMenu(void);
 	void					ShowToolWindow(const char* szPaneID);
+	void					RequestSettings(void);
+	void					ShowSettingsDialog(void);
+	Ptr<CKeymapPage>		CreateKeymapPage(Ptr<CSettingsDialog> pDialog);
+	void					KeepKeymap(void);
 	void					ShowSubcircuits(void);
 	void					ShowSimulations(void);
 	Ptr<CStatusBar>			CreateStatusBar(void);

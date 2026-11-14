@@ -167,20 +167,23 @@ void CLogicimWindowContent::AddMenuActions(Ptr<CMenuContainer> pMenu, ELogicimAc
 //////////////////////////////////////////////////////////////////////////
 //
 // New, Load and Save Project, Recent Projects (see ShowRecentMenu) and Clear
-// Recent Projects, then Import KiCad Schematic and Exit.
+// Recent Projects, then Import KiCad Schematic, Settings and Exit.
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CMenuContainer> CLogicimWindowContent::CreateFileMenu(void)
 {
 	ELogicimAction			aeProject[] = { LA_NewProject, LA_LoadProject, LA_SaveProject };
-	ELogicimAction			aeRest[] = { LA_Separator, LA_ImportKicadSchematic, LA_Separator, LA_Exit };
+	ELogicimAction			aeImport[] = { LA_Separator, LA_ImportKicadSchematic, LA_Separator };
+	ELogicimAction			aeExit[] = { LA_Separator, LA_Exit };
 	Ptr<CMenuContainer>		pMenu;
 
 	pMenu = CreateMenu(aeProject, sizeof(aeProject) / sizeof(ELogicimAction));
 	mpRecentMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
 	pMenu->AddItem("Recent Projects", NULL, mpRecentMenu);
 	pMenu->AddItem(mpCommands->Find("File.ClearRecentProjects"));
-	AddMenuActions(pMenu, aeRest, sizeof(aeRest) / sizeof(ELogicimAction));
+	AddMenuActions(pMenu, aeImport, sizeof(aeImport) / sizeof(ELogicimAction));
+	pMenu->AddItem(mpCommands->Find("File.Settings"));
+	AddMenuActions(pMenu, aeExit, sizeof(aeExit) / sizeof(ELogicimAction));
 	ShowRecentMenu();
 	return pMenu;
 }
