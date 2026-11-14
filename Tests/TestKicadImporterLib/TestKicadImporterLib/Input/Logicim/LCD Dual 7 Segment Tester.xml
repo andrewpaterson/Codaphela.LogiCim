@@ -2,77 +2,81 @@
 <Logicim version="2">
   <Circuits>
     <Circuit type="LCD Dual 7 Segment Tester">
-      <Pin name="12V Socket" x="80" y="124" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
-      <Subcircuit name="S1" x="91" y="125" rotation="East" type="A107SYCQ04" comment="A107SYCQ04" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Subcircuit name="S2" x="35" y="71" rotation="East" type="NDS-04-V" comment="NDS-04-V" left="-8" top="-5" right="7" bottom="5" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Pin name="IC7" x="87" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
-      <Pin name="IC6" x="82" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
-      <Pin name="IC5" x="71" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
-      <Pin name="IC4" x="77" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
-      <Pin name="IC3" x="79" y="45" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
-      <Pin name="IC2" x="65" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
-      <Pin name="IC1" x="60" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
-      <Pin name="IC0" x="55" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="12V Socket" x="64" y="107" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
+      <Subcircuit name="S1" x="75" y="108" rotation="East" type="A107SYCQ04" comment="A107SYCQ04" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="S2" x="35" y="59" rotation="East" type="NDS-04-V" comment="NDS-04-V" left="-8" top="-5" right="7" bottom="5" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Pin name="IC7" x="99" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
+      <Pin name="IC6" x="93" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="IC5" x="87" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="IC4" x="81" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="IC3" x="75" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="IC2" x="69" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="IC1" x="63" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="IC0" x="57" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
       <Subcircuit name="S3" x="35" y="37" rotation="East" type="NDS-04-V" comment="NDS-04-V" left="-8" top="-5" right="7" bottom="5" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Tunnel name="5V" x="26" y="68" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="26" y="70" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="26" y="72" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="26" y="74" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="26" y="56" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="26" y="58" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="26" y="60" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="26" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="26" y="34" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="26" y="36" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="26" y="38" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="26" y="40" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="IC3" x="79" y="96" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC5" x="83" y="96" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC7" x="87" y="96" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC1" x="63" y="96" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC2" x="67" y="96" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC6" x="85" y="91" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC0" x="59" y="96" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Tunnel name="IC4" x="81" y="91" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
-      <Trace x0="83" y0="124" x1="80" y1="124"/>
-      <Trace x0="71" y0="38" x1="71" y1="33"/>
-      <Trace x0="43" y0="38" x1="71" y1="38"/>
-      <Trace x0="44" y0="74" x1="43" y1="74"/>
-      <Trace x0="44" y0="76" x1="44" y1="74"/>
-      <Trace x0="59" y0="76" x1="44" y1="76"/>
-      <Trace x0="59" y0="96" x1="59" y1="76"/>
-      <Trace x0="77" y0="40" x1="77" y1="33"/>
-      <Trace x0="43" y0="40" x1="77" y1="40"/>
-      <Trace x0="82" y0="36" x1="82" y1="33"/>
-      <Trace x0="43" y0="36" x1="82" y1="36"/>
-      <Trace x0="45" y0="72" x1="43" y1="72"/>
-      <Trace x0="45" y0="75" x1="45" y1="72"/>
-      <Trace x0="63" y0="75" x1="45" y1="75"/>
-      <Trace x0="63" y0="96" x1="63" y1="75"/>
-      <Trace x0="87" y0="35" x1="87" y1="33"/>
-      <Trace x0="54" y0="35" x1="87" y1="35"/>
-      <Trace x0="54" y0="34" x1="54" y1="35"/>
-      <Trace x0="43" y0="34" x1="54" y1="34"/>
-      <Trace x0="46" y0="70" x1="43" y1="70"/>
-      <Trace x0="46" y0="77" x1="46" y1="70"/>
-      <Trace x0="67" y0="77" x1="46" y1="77"/>
-      <Trace x0="67" y0="96" x1="67" y1="77"/>
-      <Trace x0="79" y0="45" x1="79" y1="96"/>
-      <Trace x0="55" y0="33" x1="55" y1="76"/>
-      <Trace x0="60" y0="33" x1="60" y1="75"/>
-      <Trace x0="65" y0="33" x1="65" y1="77"/>
-      <Trace x0="82" y0="62" x1="82" y1="36"/>
-      <Trace x0="85" y0="62" x1="82" y1="62"/>
-      <Trace x0="85" y0="91" x1="85" y1="62"/>
-      <Trace x0="77" y0="62" x1="77" y1="40"/>
-      <Trace x0="81" y0="62" x1="77" y1="62"/>
-      <Trace x0="81" y0="91" x1="81" y1="62"/>
-      <Trace x0="47" y0="68" x1="43" y1="68"/>
-      <Trace x0="47" y0="74" x1="47" y1="68"/>
-      <Trace x0="64" y0="74" x1="47" y1="74"/>
-      <Trace x0="64" y0="76" x1="64" y1="74"/>
-      <Trace x0="79" y0="76" x1="64" y1="76"/>
-      <Trace x0="79" y0="96" x1="79" y1="76"/>
-      <Trace x0="71" y0="39" x1="71" y1="38"/>
-      <Trace x0="83" y0="39" x1="71" y1="39"/>
-      <Trace x0="83" y0="96" x1="83" y1="39"/>
-      <Trace x0="87" y0="96" x1="87" y1="35"/>
+      <Tunnel name="IC3" x="63" y="80" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC5" x="67" y="80" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC7" x="71" y="80" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC1" x="59" y="80" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC2" x="61" y="75" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC6" x="69" y="75" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC0" x="55" y="80" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Tunnel name="IC4" x="65" y="75" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
+      <Trace x0="67" y0="107" x1="64" y1="107"/>
+      <Trace x0="44" y0="62" x1="43" y1="62"/>
+      <Trace x0="44" y0="64" x1="44" y1="62"/>
+      <Trace x0="55" y0="64" x1="44" y1="64"/>
+      <Trace x0="55" y0="80" x1="55" y1="64"/>
+      <Trace x0="45" y0="58" x1="43" y1="58"/>
+      <Trace x0="45" y0="63" x1="45" y1="58"/>
+      <Trace x0="61" y0="63" x1="45" y1="63"/>
+      <Trace x0="61" y0="75" x1="61" y1="63"/>
+      <Trace x0="47" y0="60" x1="43" y1="60"/>
+      <Trace x0="47" y0="65" x1="47" y1="60"/>
+      <Trace x0="59" y0="65" x1="47" y1="65"/>
+      <Trace x0="59" y0="80" x1="59" y1="65"/>
+      <Trace x0="53" y0="54" x1="53" y1="64"/>
+      <Trace x0="57" y0="54" x1="53" y1="54"/>
+      <Trace x0="57" y0="33" x1="57" y1="54"/>
+      <Trace x0="48" y0="56" x1="43" y1="56"/>
+      <Trace x0="48" y0="62" x1="48" y1="56"/>
+      <Trace x0="63" y0="62" x1="48" y1="62"/>
+      <Trace x0="63" y0="80" x1="63" y1="62"/>
+      <Trace x0="81" y0="40" x1="81" y1="33"/>
+      <Trace x0="43" y0="40" x1="81" y1="40"/>
+      <Trace x0="58" y0="54" x1="58" y1="65"/>
+      <Trace x0="63" y0="54" x1="58" y1="54"/>
+      <Trace x0="63" y0="33" x1="63" y1="54"/>
+      <Trace x0="87" y0="38" x1="87" y1="33"/>
+      <Trace x0="43" y0="38" x1="87" y1="38"/>
+      <Trace x0="61" y0="55" x1="61" y1="63"/>
+      <Trace x0="69" y0="55" x1="61" y1="55"/>
+      <Trace x0="69" y0="33" x1="69" y1="55"/>
+      <Trace x0="93" y0="36" x1="93" y1="33"/>
+      <Trace x0="43" y0="36" x1="93" y1="36"/>
+      <Trace x0="99" y0="35" x1="99" y1="33"/>
+      <Trace x0="55" y0="35" x1="99" y1="35"/>
+      <Trace x0="55" y0="34" x1="55" y1="35"/>
+      <Trace x0="43" y0="34" x1="55" y1="34"/>
+      <Trace x0="65" y0="75" x1="65" y1="40"/>
+      <Trace x0="63" y0="57" x1="63" y1="62"/>
+      <Trace x0="75" y0="57" x1="63" y1="57"/>
+      <Trace x0="75" y0="33" x1="75" y1="57"/>
+      <Trace x0="67" y0="80" x1="67" y1="38"/>
+      <Trace x0="71" y0="56" x1="71" y1="36"/>
+      <Trace x0="69" y0="56" x1="71" y1="56"/>
+      <Trace x0="69" y0="75" x1="69" y1="56"/>
+      <Trace x0="73" y0="59" x1="73" y1="35"/>
+      <Trace x0="71" y0="59" x1="73" y1="59"/>
+      <Trace x0="71" y0="80" x1="71" y1="59"/>
     </Circuit>
     <Circuit type="A107SYCQ04">
       <Pin name="CM" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>

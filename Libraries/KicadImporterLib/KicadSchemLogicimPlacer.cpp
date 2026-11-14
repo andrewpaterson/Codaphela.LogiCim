@@ -45,6 +45,9 @@ void CKicadSchemLogicimPlacer::Init(CCircuitFonts* pcFonts, CKicadSchemLogicimMo
 	mpcWiring = pcWiring;
 	mpsCounts = psCounts;
 	masAlignments.Init();
+	masGroups.Init();
+	masMembers.Init();
+	maiItemMember.Init();
 	mfSpread = 1.0;
 }
 
@@ -55,6 +58,9 @@ void CKicadSchemLogicimPlacer::Init(CCircuitFonts* pcFonts, CKicadSchemLogicimMo
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimPlacer::Kill(void)
 {
+	maiItemMember.Kill();
+	masMembers.Kill();
+	masGroups.Kill();
 	masAlignments.Kill();
 	mpsCounts = NULL;
 	mpcWiring = NULL;
@@ -601,7 +607,7 @@ void CKicadSchemLogicimPlacer::AlignItems(void)
 	aiFixed.Init();
 	for (i = 0; i < mpcModel->NumItems(); i++)
 	{
-		aiFixed.Add(0);
+		aiFixed.Add(((i < maiItemMember.NumElements()) && (maiItemMember.GetValue(i) >= 0)) ? 1 : 0);
 	}
 	for (i = 0; i < masAlignments.NumElements(); i++)
 	{
@@ -708,6 +714,7 @@ void CKicadSchemLogicimPlacer::Place(float64 fSpread)
 			psItem->pcView->SetPosition((int32)floor(psItem->sKicadPosition.x * fSpread + 0.5) - psItem->sAnchor.x + psItem->sOffset.x, (int32)floor(psItem->sKicadPosition.y * fSpread + 0.5) - psItem->sAnchor.y + psItem->sOffset.y);
 		}
 	}
+	PlaceGroups();
 	PlaceSplitters();
 	PlaceAttachedItems();
 	AlignItems();
@@ -1012,22 +1019,28 @@ bool CKicadSchemLogicimPlacer::GetItemBox(size uiItem, SFloat64Bounds* psBox)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether the box, moved and spaced, overlaps any of the boxes placed so
-// far.
+// Whether the boxes (uiNumBoxes of them, moved together), moved and
+// spaced, overlap any of the boxes placed so far.
 //
 //////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemLogicimBoxFree(SFloat64Bounds* psBox, int32 iMoveX, int32 iMoveY, CArrayTemplate<SFloat64Bounds>* pasPlaced)
+static bool IsKicadSchemLogicimBoxFree(SFloat64Bounds* pasBoxes, size uiNumBoxes, int32 iMoveX, int32 iMoveY, CArrayTemplate<SFloat64Bounds>* pasPlaced)
 {
 	size				i;
+	size				j;
+	SFloat64Bounds*		psBox;
 	SFloat64Bounds*		psOther;
 
-	for (i = 0; i < pasPlaced->NumElements(); i++)
+	for (j = 0; j < uiNumBoxes; j++)
 	{
-		psOther = pasPlaced->Get(i);
-		if ((psBox->sMinimum.x + iMoveX < psOther->sMaximum.x + KICAD_SCHEM_LOGICIM_SPACING) && (psOther->sMinimum.x < psBox->sMaximum.x + iMoveX + KICAD_SCHEM_LOGICIM_SPACING) &&
-			(psBox->sMinimum.y + iMoveY < psOther->sMaximum.y + KICAD_SCHEM_LOGICIM_SPACING) && (psOther->sMinimum.y < psBox->sMaximum.y + iMoveY + KICAD_SCHEM_LOGICIM_SPACING))
+		psBox = &pasBoxes[j];
+		for (i = 0; i < pasPlaced->NumElements(); i++)
 		{
-			return false;
+			psOther = pasPlaced->Get(i);
+			if ((psBox->sMinimum.x + iMoveX < psOther->sMaximum.x + KICAD_SCHEM_LOGICIM_SPACING) && (psOther->sMinimum.x < psBox->sMaximum.x + iMoveX + KICAD_SCHEM_LOGICIM_SPACING) &&
+				(psBox->sMinimum.y + iMoveY < psOther->sMaximum.y + KICAD_SCHEM_LOGICIM_SPACING) && (psOther->sMinimum.y < psBox->sMaximum.y + iMoveY + KICAD_SCHEM_LOGICIM_SPACING))
+			{
+				return false;
+			}
 		}
 	}
 	return true;
@@ -1062,13 +1075,14 @@ static int32 GetKicadSchemLogicimMoveCost(EKicadSchemLogicimAlign eAlign, int32 
 //////////////////////////////////////////////////////////////////////////
 struct SKicadSchemLogicimBestMove
 {
-	SFloat64Bounds*						psBox;
+	SFloat64Bounds*						pasBoxes;
+	size								uiNumBoxes;
 	EKicadSchemLogicimAlign				eAlign;
 	CArrayTemplate<SFloat64Bounds>*		pasPlaced;
 	int32								iDistance;
 	SInt32Vec2							sMove;
 
-	void	Init(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced);
+	void	Init(SFloat64Bounds* pasBoxes, size uiNumBoxes, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced);
 	void	Try(int32 iMoveX, int32 iMoveY);
 	bool	IsNearer(int32 iDistance);
 };
@@ -1078,9 +1092,10 @@ struct SKicadSchemLogicimBestMove
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void SKicadSchemLogicimBestMove::Init(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced)
+void SKicadSchemLogicimBestMove::Init(SFloat64Bounds* pasBoxes, size uiNumBoxes, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced)
 {
-	this->psBox = psBox;
+	this->pasBoxes = pasBoxes;
+	this->uiNumBoxes = uiNumBoxes;
 	this->eAlign = eAlign;
 	this->pasPlaced = pasPlaced;
 	iDistance = -1;
@@ -1108,7 +1123,7 @@ void SKicadSchemLogicimBestMove::Try(int32 iMoveX, int32 iMoveY)
 	int32	iMoveDistance;
 
 	iMoveDistance = GetKicadSchemLogicimMoveCost(eAlign, iMoveX, iMoveY);
-	if (IsNearer(iMoveDistance) && IsKicadSchemLogicimBoxFree(psBox, iMoveX, iMoveY, pasPlaced))
+	if (IsNearer(iMoveDistance) && IsKicadSchemLogicimBoxFree(pasBoxes, uiNumBoxes, iMoveX, iMoveY, pasPlaced))
 	{
 		iDistance = iMoveDistance;
 		sMove.x = iMoveX;
@@ -1119,12 +1134,13 @@ void SKicadSchemLogicimBestMove::Try(int32 iMoveX, int32 iMoveY)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The nearest move (see GetKicadSchemLogicimMoveCost) that puts the box
-// clear of those placed, searching out in rings.  False if there's none
-// within KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS.
+// The nearest move (see GetKicadSchemLogicimMoveCost) that puts the boxes
+// (uiNumBoxes of them, moved together) clear of those placed, searching
+// out in rings.  False if there's none within
+// KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS.
 //
 //////////////////////////////////////////////////////////////////////////
-static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* psBox, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced, SInt32Vec2* psMove)
+static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* pasBoxes, size uiNumBoxes, EKicadSchemLogicimAlign eAlign, CArrayTemplate<SFloat64Bounds>* pasPlaced, SInt32Vec2* psMove)
 {
 	SKicadSchemLogicimBestMove	sBest;
 	int32						iRadius;
@@ -1132,13 +1148,13 @@ static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* psBox, EKicadSchemLogi
 
 	psMove->x = 0;
 	psMove->y = 0;
-	if (IsKicadSchemLogicimBoxFree(psBox, 0, 0, pasPlaced))
+	if (IsKicadSchemLogicimBoxFree(pasBoxes, uiNumBoxes, 0, 0, pasPlaced))
 	{
 		return true;
 	}
 
 	//Rings out, while a ring could still have a nearer place than the best found (its moves cost at least its radius).
-	sBest.Init(psBox, eAlign, pasPlaced);
+	sBest.Init(pasBoxes, uiNumBoxes, eAlign, pasPlaced);
 	for (iRadius = 1; (iRadius <= KICAD_SCHEM_LOGICIM_SEPARATE_RADIUS) && sBest.IsNearer(iRadius); iRadius++)
 	{
 		for (iStep = -iRadius; iStep <= iRadius; iStep++)
@@ -1155,6 +1171,274 @@ static bool FindKicadSchemLogicimFreeMove(SFloat64Bounds* psBox, EKicadSchemLogi
 	}
 	*psMove = sBest.sMove;
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The connector's pins, with what's attached to them, moved together to
+// the nearest place clear of those placed, and added to them.  Counted
+// as an overlap if there's none.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::SeparateGroup(size uiGroup, CArrayTemplate<SFloat64Bounds>* pasPlaced)
+{
+	CArrayTemplate<SFloat64Bounds>	asBoxes;
+	size							i;
+	SKicadSchemLogicimGroupMember*	psMember;
+	SKicadSchemLogicimItem*			psItem;
+	SFloat64Bounds					sBox;
+	SInt32Vec2						sMove;
+	SInt32Vec2						sPosition;
+
+	asBoxes.Init();
+	for (i = 0; i < masMembers.NumElements(); i++)
+	{
+		psMember = masMembers.Get(i);
+		if ((psMember->uiGroup == uiGroup) && GetItemBox(psMember->uiItem, &sBox))
+		{
+			asBoxes.Add(&sBox);
+		}
+	}
+	if (asBoxes.NumElements() > 0)
+	{
+		if (!FindKicadSchemLogicimFreeMove(asBoxes.GetData(), asBoxes.NumElements(), KSLA_None, pasPlaced, &sMove))
+		{
+			mpsCounts->uiOverlaps++;
+		}
+		for (i = 0; i < masMembers.NumElements(); i++)
+		{
+			psMember = masMembers.Get(i);
+			if (psMember->uiGroup == uiGroup)
+			{
+				psItem = mpcModel->GetItem(psMember->uiItem);
+				sPosition = psItem->pcView->GetPosition();
+				psItem->pcView->SetPosition(sPosition.x + sMove.x, sPosition.y + sMove.y);
+			}
+		}
+		for (i = 0; i < asBoxes.NumElements(); i++)
+		{
+			asBoxes.Get(i)->Move(SFloat64Vec2(sMove.x, sMove.y));
+			pasPlaced->Add(asBoxes.Get(i));
+		}
+	}
+	asBoxes.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each connector's pins in its block (see LayOutGroup), the block at the
+// connector's KiCad place spread out, moved by its lead's offset.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::PlaceGroups(void)
+{
+	size								i;
+	SKicadSchemLogicimGroupMember*		psMember;
+	SKicadSchemLogicimConnectorGroup*	psGroup;
+	SKicadSchemLogicimItem*				psLead;
+	SKicadSchemLogicimItem*				psItem;
+	int32								iX;
+	int32								iY;
+
+	for (i = 0; i < masMembers.NumElements(); i++)
+	{
+		psMember = masMembers.Get(i);
+		psGroup = masGroups.Get(psMember->uiGroup);
+		psLead = mpcModel->GetItem(psGroup->uiLead);
+		psItem = mpcModel->GetItem(psMember->uiItem);
+		iX = (int32)floor(psGroup->sKicadOrigin.x * mfSpread + 0.5) + psLead->sOffset.x + psMember->sOffset.x;
+		iY = (int32)floor(psGroup->sKicadOrigin.y * mfSpread + 0.5) + psLead->sOffset.y + psMember->sOffset.y;
+		psItem->pcView->SetPosition(iX - psItem->sAnchor.x, iY - psItem->sAnchor.y);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where each of the connector's pins goes in its block: in the
+// connector's rows (a KiCad grid step apart) and columns (its pins'
+// different x), each column's ports lined up, the columns as wide as
+// their widest pin and the rows as tall as the tallest, with what's
+// attached to them, spaced apart.  A row without a pin (one on a supply,
+// or on nothing) is left empty.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::LayOutGroup(size uiGroup)
+{
+	CArrayTemplate<float64>			afColumns;
+	CArrayInt						aiLeft;
+	CArrayInt						aiRight;
+	size							i;
+	size							j;
+	SKicadSchemLogicimGroupMember*	psMember;
+	SKicadSchemLogicimItem*			psItem;
+	SFloat64Bounds					sBox;
+	SInt32Vec2						sPosition;
+	float64							fTop;
+	float64							fUp;
+	float64							fDown;
+	size							uiColumn;
+	int32							iPitch;
+	int32							iPortX;
+	float64							fX;
+
+	//The columns, left to right, and the top row.
+	afColumns.Init();
+	fTop = 0;
+	for (i = 0; i < masMembers.NumElements(); i++)
+	{
+		psMember = masMembers.Get(i);
+		if (psMember->uiGroup != uiGroup)
+		{
+			continue;
+		}
+		if ((afColumns.NumElements() == 0) || (psMember->sKicadPosition.y < fTop))
+		{
+			fTop = psMember->sKicadPosition.y;
+		}
+		for (j = 0; j < afColumns.NumElements(); j++)
+		{
+			if (fabs(*afColumns.Get(j) - psMember->sKicadPosition.x) < 0.5)
+			{
+				break;
+			}
+		}
+		if (j == afColumns.NumElements())
+		{
+			fX = psMember->sKicadPosition.x;
+			for (j = 0; (j < afColumns.NumElements()) && (*afColumns.Get(j) < fX); j++)
+			{
+			}
+			afColumns.InsertAt(&fX, j);
+		}
+	}
+
+	//How far the pins (and what's attached) reach each way from their ports.
+	aiLeft.Init();
+	aiRight.Init();
+	for (j = 0; j < afColumns.NumElements(); j++)
+	{
+		aiLeft.Add(0);
+		aiRight.Add(0);
+	}
+	fUp = 0;
+	fDown = 0;
+	for (i = 0; i < masMembers.NumElements(); i++)
+	{
+		psMember = masMembers.Get(i);
+		if ((psMember->uiGroup != uiGroup) || !GetItemBox(psMember->uiItem, &sBox))
+		{
+			continue;
+		}
+		psItem = mpcModel->GetItem(psMember->uiItem);
+		sPosition = psItem->pcView->GetPosition() + psItem->sAnchor;
+		for (uiColumn = 0; (uiColumn + 1 < afColumns.NumElements()) && (fabs(*afColumns.Get(uiColumn) - psMember->sKicadPosition.x) >= 0.5); uiColumn++)
+		{
+		}
+		if ((int32)ceil(sPosition.x - sBox.sMinimum.x) > aiLeft.GetValue(uiColumn))
+		{
+			aiLeft.SetValue(uiColumn, (int32)ceil(sPosition.x - sBox.sMinimum.x));
+		}
+		if ((int32)ceil(sBox.sMaximum.x - sPosition.x) > aiRight.GetValue(uiColumn))
+		{
+			aiRight.SetValue(uiColumn, (int32)ceil(sBox.sMaximum.x - sPosition.x));
+		}
+		fUp = (sPosition.y - sBox.sMinimum.y > fUp) ? sPosition.y - sBox.sMinimum.y : fUp;
+		fDown = (sBox.sMaximum.y - sPosition.y > fDown) ? sBox.sMaximum.y - sPosition.y : fDown;
+	}
+	iPitch = (int32)ceil(fUp + fDown) + KICAD_SCHEM_LOGICIM_SPACING;
+	if (iPitch < (int32)KICAD_SCHEM_LOGICIM_SCALE)
+	{
+		iPitch = (int32)KICAD_SCHEM_LOGICIM_SCALE;
+	}
+
+	for (i = 0; i < masMembers.NumElements(); i++)
+	{
+		psMember = masMembers.Get(i);
+		if (psMember->uiGroup != uiGroup)
+		{
+			continue;
+		}
+		iPortX = 0;
+		for (uiColumn = 0; (uiColumn + 1 < afColumns.NumElements()) && (fabs(*afColumns.Get(uiColumn) - psMember->sKicadPosition.x) >= 0.5); uiColumn++)
+		{
+			iPortX += aiRight.GetValue(uiColumn) + KICAD_SCHEM_LOGICIM_SPACING + aiLeft.GetValue(uiColumn + 1);
+		}
+		psMember->sOffset.x = iPortX;
+		psMember->sOffset.y = (int32)floor((psMember->sKicadPosition.y - fTop) / KICAD_SCHEM_LOGICIM_SCALE + 0.5) * iPitch;
+	}
+	aiRight.Kill();
+	aiLeft.Kill();
+	afColumns.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each connector's pins (the board pins one connector symbol made, see
+// CKicadSchemLogicimConverter::AddBoardPins) are put in a group, placed
+// together as the connector has them (see LayOutGroup).  The other
+// parts' pins are in their components, which are placed as they are.
+// Done once the import boxes are measured and the attached items turned.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::GroupConnectorPins(void)
+{
+	size								i;
+	size								j;
+	SKicadSchemLogicimItem*				psItem;
+	SKicadSchemLogicimConnectorGroup*	psGroup;
+	SKicadSchemLogicimGroupMember*		psMember;
+
+	masGroups.ReInit();
+	masMembers.ReInit();
+	maiItemMember.ReInit();
+	PlaceAttachedItems();
+	for (i = 0; i < mpcModel->NumItems(); i++)
+	{
+		maiItemMember.Add(-1);
+		psItem = mpcModel->GetItem(i);
+		if ((psItem->eKind != KSLIK_BoardPin) || (psItem->pcSymbol == NULL) || (psItem->pcAttachedTo != NULL))
+		{
+			continue;
+		}
+		for (j = 0; j < masGroups.NumElements(); j++)
+		{
+			if (masGroups.Get(j)->pcSymbol == psItem->pcSymbol)
+			{
+				break;
+			}
+		}
+		if (j == masGroups.NumElements())
+		{
+			psGroup = masGroups.Add();
+			psGroup->pcSymbol = psItem->pcSymbol;
+			psGroup->uiLead = i;
+			psGroup->sKicadOrigin = psItem->sKicadPosition;
+		}
+		psGroup = masGroups.Get(j);
+		if (psItem->sKicadPosition.x < psGroup->sKicadOrigin.x)
+		{
+			psGroup->sKicadOrigin.x = psItem->sKicadPosition.x;
+		}
+		if (psItem->sKicadPosition.y < psGroup->sKicadOrigin.y)
+		{
+			psGroup->sKicadOrigin.y = psItem->sKicadPosition.y;
+		}
+		maiItemMember.SetValue(i, (int)masMembers.NumElements());
+		psMember = masMembers.Add();
+		psMember->uiItem = i;
+		psMember->uiGroup = j;
+		psMember->sKicadPosition = psItem->sKicadPosition;
+		psMember->sOffset.x = 0;
+		psMember->sOffset.y = 0;
+	}
+	for (j = 0; j < masGroups.NumElements(); j++)
+	{
+		LayOutGroup(j);
+	}
 }
 
 
@@ -1213,12 +1497,20 @@ void CKicadSchemLogicimPlacer::SeparateItems(void)
 	{
 		i = auiOrder.GetValue(uiOrder);
 		psItem = mpcModel->GetItem(i);
+		if ((i < maiItemMember.NumElements()) && (maiItemMember.GetValue(i) >= 0))
+		{
+			if (masGroups.Get(masMembers.Get(maiItemMember.GetValue(i))->uiGroup)->uiLead == i)
+			{
+				SeparateGroup(masMembers.Get(maiItemMember.GetValue(i))->uiGroup, &asPlaced);
+			}
+			continue;
+		}
 		if ((psItem->pcAttachedTo != NULL) || !GetItemBox(i, &sBox))
 		{
 			continue;
 		}
 
-		if (!FindKicadSchemLogicimFreeMove(&sBox, psItem->eAlign, &asPlaced, &sMove))
+		if (!FindKicadSchemLogicimFreeMove(&sBox, 1, psItem->eAlign, &asPlaced, &sMove))
 		{
 			mpsCounts->uiOverlaps++;
 		}

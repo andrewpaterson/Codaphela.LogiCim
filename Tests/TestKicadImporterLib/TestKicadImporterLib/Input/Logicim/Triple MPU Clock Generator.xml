@@ -19,60 +19,60 @@
       <Logic74Unit name="IC8" x="202" y="135" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G17" unit="A" pinSpacing="2"/>
       <Logic74Unit name="IC10" x="185" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
       <Pin name="J5-1" x="95" y="147" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
-      <Pin name="J5-3" x="95" y="152" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
-      <Pin name="CLK" x="95" y="157" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="J5-3" x="95" y="157" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="CLK" x="95" y="162" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
       <Logic74Unit name="IC4" x="75" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
       <Logic74Unit name="IC2" x="119" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
       <Logic74Unit name="IC6" x="163" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
       <Subcircuit name="Y1" x="114" y="134" rotation="East" type="XLH735100.000000I" comment="XLH735100.000000I" left="-10" top="-3" right="10" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Pin name="J2-1" x="38" y="98" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
       <Pin name="J2-2" x="38" y="103" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
-      <Pin name="J2-5" x="38" y="108" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
-      <Pin name="J2-6" x="38" y="113" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
-      <Pin name="J2-7" x="31" y="110" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
-      <Pin name="J2-8" x="38" y="118" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
-      <Pin name="~{MPU Clock0}" x="45" y="116" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
-      <Pin name="~{Main Access0}" x="26" y="118" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
-      <Pin name="J2-12" x="38" y="123" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="12" inverting="false" clockNotch="false"/>
-      <Pin name="~{MPU Clock1}" x="46" y="122" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
-      <Pin name="~{Main Access1}" x="26" y="124" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
-      <Pin name="J2-15" x="38" y="128" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
-      <Pin name="~{MPU Clock2}" x="46" y="128" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
-      <Pin name="~{Main Access2}" x="38" y="133" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="17" inverting="false" clockNotch="false"/>
-      <Pin name="J2-18" x="38" y="138" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
-      <Pin name="J2-19" x="30" y="134" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
-      <Pin name="J2-21" x="38" y="143" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="21" inverting="false" clockNotch="false"/>
-      <Pin name="J2-22" x="38" y="148" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
-      <Pin name="J2-23" x="30" y="142" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
-      <Pin name="J2-24" x="46" y="144" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
-      <Pin name="J2-25" x="38" y="153" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
-      <Pin name="J2-26" x="30" y="148" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
-      <Pin name="J2-27" x="38" y="158" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
-      <Pin name="J2-28" x="46" y="152" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="28" inverting="false" clockNotch="false"/>
-      <Pin name="J2-56" x="54" y="98" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="56" inverting="false" clockNotch="false"/>
-      <Pin name="WATCH CLK" x="54" y="103" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="55" inverting="false" clockNotch="false"/>
-      <Pin name="J2-54" x="54" y="108" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="54" inverting="false" clockNotch="false"/>
-      <Pin name="J2-53" x="62" y="104" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="53" inverting="false" clockNotch="false"/>
-      <Pin name="J2-52" x="62" y="109" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="52" inverting="false" clockNotch="false"/>
-      <Pin name="J2-50" x="61" y="114" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="50" inverting="false" clockNotch="false"/>
-      <Pin name="J2-49" x="62" y="119" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="49" inverting="false" clockNotch="false"/>
-      <Pin name="J2-47" x="62" y="124" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="47" inverting="false" clockNotch="false"/>
-      <Pin name="J2-46" x="55" y="133" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="46" inverting="false" clockNotch="false"/>
-      <Pin name="J2-45" x="70" y="120" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="45" inverting="false" clockNotch="false"/>
-      <Pin name="J2-44" x="63" y="129" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="44" inverting="false" clockNotch="false"/>
-      <Pin name="J2-43" x="54" y="138" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="43" inverting="false" clockNotch="false"/>
-      <Pin name="J2-42" x="63" y="134" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="42" inverting="false" clockNotch="false"/>
-      <Pin name="J2-41" x="71" y="128" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="41" inverting="false" clockNotch="false"/>
-      <Pin name="J2-40" x="62" y="139" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="40" inverting="false" clockNotch="false"/>
-      <Pin name="J2-39" x="59" y="144" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="39" inverting="false" clockNotch="false"/>
-      <Pin name="J2-38" x="71" y="134" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="38" inverting="false" clockNotch="false"/>
-      <Pin name="J2-36" x="59" y="149" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="36" inverting="false" clockNotch="false"/>
-      <Pin name="J2-35" x="70" y="140" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="35" inverting="false" clockNotch="false"/>
-      <Pin name="J2-34" x="54" y="157" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="34" inverting="false" clockNotch="false"/>
-      <Pin name="J2-33" x="62" y="154" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="33" inverting="false" clockNotch="false"/>
-      <Pin name="J2-32" x="54" y="162" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
-      <Pin name="J2-30" x="62" y="159" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
-      <Pin name="J2-29" x="54" y="167" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
+      <Pin name="J2-5" x="38" y="118" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Pin name="J2-6" x="38" y="123" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="J2-7" x="38" y="128" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="J2-8" x="38" y="133" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="~{MPU Clock0}" x="38" y="143" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="~{Main Access0}" x="38" y="148" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
+      <Pin name="J2-12" x="38" y="153" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="12" inverting="false" clockNotch="false"/>
+      <Pin name="~{MPU Clock1}" x="38" y="158" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="~{Main Access1}" x="38" y="163" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
+      <Pin name="J2-15" x="38" y="168" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
+      <Pin name="~{MPU Clock2}" x="38" y="173" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
+      <Pin name="~{Main Access2}" x="38" y="178" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="17" inverting="false" clockNotch="false"/>
+      <Pin name="J2-18" x="38" y="183" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
+      <Pin name="J2-19" x="38" y="188" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
+      <Pin name="J2-21" x="38" y="198" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="21" inverting="false" clockNotch="false"/>
+      <Pin name="J2-22" x="38" y="203" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
+      <Pin name="J2-23" x="38" y="208" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
+      <Pin name="J2-24" x="38" y="213" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
+      <Pin name="J2-25" x="38" y="218" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
+      <Pin name="J2-26" x="38" y="223" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
+      <Pin name="J2-27" x="38" y="228" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
+      <Pin name="J2-28" x="38" y="233" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="28" inverting="false" clockNotch="false"/>
+      <Pin name="J2-56" x="60" y="98" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="56" inverting="false" clockNotch="false"/>
+      <Pin name="WATCH CLK" x="60" y="103" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="55" inverting="false" clockNotch="false"/>
+      <Pin name="J2-54" x="60" y="108" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="54" inverting="false" clockNotch="false"/>
+      <Pin name="J2-53" x="60" y="113" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="53" inverting="false" clockNotch="false"/>
+      <Pin name="J2-52" x="60" y="118" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="52" inverting="false" clockNotch="false"/>
+      <Pin name="J2-50" x="60" y="128" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="50" inverting="false" clockNotch="false"/>
+      <Pin name="J2-49" x="60" y="133" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="49" inverting="false" clockNotch="false"/>
+      <Pin name="J2-47" x="60" y="143" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="47" inverting="false" clockNotch="false"/>
+      <Pin name="J2-46" x="60" y="148" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="46" inverting="false" clockNotch="false"/>
+      <Pin name="J2-45" x="60" y="153" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="45" inverting="false" clockNotch="false"/>
+      <Pin name="J2-44" x="60" y="158" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="44" inverting="false" clockNotch="false"/>
+      <Pin name="J2-43" x="60" y="163" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="43" inverting="false" clockNotch="false"/>
+      <Pin name="J2-42" x="60" y="168" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="42" inverting="false" clockNotch="false"/>
+      <Pin name="J2-41" x="60" y="173" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="41" inverting="false" clockNotch="false"/>
+      <Pin name="J2-40" x="60" y="178" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="40" inverting="false" clockNotch="false"/>
+      <Pin name="J2-39" x="60" y="183" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="39" inverting="false" clockNotch="false"/>
+      <Pin name="J2-38" x="60" y="188" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="38" inverting="false" clockNotch="false"/>
+      <Pin name="J2-36" x="60" y="198" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="36" inverting="false" clockNotch="false"/>
+      <Pin name="J2-35" x="60" y="203" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="35" inverting="false" clockNotch="false"/>
+      <Pin name="J2-34" x="60" y="208" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="34" inverting="false" clockNotch="false"/>
+      <Pin name="J2-33" x="60" y="213" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="33" inverting="false" clockNotch="false"/>
+      <Pin name="J2-32" x="60" y="218" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
+      <Pin name="J2-30" x="60" y="228" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
+      <Pin name="J2-29" x="60" y="233" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
       <Logic74Unit name="IC3" x="97" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
       <Tunnel name="GND" x="146" y="135" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="213" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -85,19 +85,19 @@
       <Tunnel name="GND" x="213" y="68" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="212" y="74" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="103" y="133" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="WATCH CLK" x="57" y="100" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="7.6250000000000009" bottom="0.65000000000000002"/>
+      <Tunnel name="WATCH CLK" x="63" y="103" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="7.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="WATCH CLK" x="203" y="135" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="7.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{1s}" x="213" y="50" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{1s}" x="138" y="66" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="~{MPU Clock1}" x="23" y="122" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.4035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{MPU Clock1}" x="35" y="158" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.4035714285714285" bottom="0.82857142857142851"/>
       <Tunnel name="MA_{5s}" x="213" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{5s}" x="94" y="66" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{2s}" x="213" y="54" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{2s}" x="160" y="51" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="CLK" x="37" y="72" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
-      <Tunnel name="CLK" x="95" y="157" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="CLK" x="95" y="162" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
       <Tunnel name="CLK" x="125" y="135" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Main Access2}" x="35" y="129" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Main Access2}" x="35" y="178" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
       <Tunnel name="3.3V" x="146" y="133" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="166" y="133" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="93" y="102" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
@@ -113,14 +113,14 @@
       <Tunnel name="3.3V" x="159" y="49" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="125" y="133" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="93" y="68" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Main Access0}" x="23" y="118" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Main Access0}" x="35" y="148" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
       <Tunnel name="!(R•CLK)_{s}" x="72" y="47" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="!(R•CLK)_{s}" x="116" y="85" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="!(R•CLK)_{s}" x="160" y="85" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="!(R•CLK)_{s}" x="72" y="85" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="!(R•CLK)_{s}" x="116" y="47" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.6250000000000009" bottom="0.65000000000000002"/>
       <Tunnel name="!(R•CLK)_{s}" x="160" y="47" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.6250000000000009" bottom="0.65000000000000002"/>
-      <Tunnel name="~{MPU Clock0}" x="28" y="113" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.4035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{MPU Clock0}" x="35" y="143" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.4035714285714285" bottom="0.82857142857142851"/>
       <Tunnel name="CK_{2s}" x="213" y="92" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{2s}" x="160" y="89" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="~{CLK}_{s}" x="38" y="47" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="3.8035714285714284" bottom="0.82857142857142851"/>
@@ -128,7 +128,7 @@
       <Tunnel name="CK_{3s}" x="182" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{0s}" x="213" y="48" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{0s}" x="116" y="51" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="~{MPU Clock2}" x="23" y="128" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.4035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{MPU Clock2}" x="35" y="173" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.4035714285714285" bottom="0.82857142857142851"/>
       <Tunnel name="MA_{3s}" x="182" y="66" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{3s}" x="213" y="56" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{4s}" x="72" y="51" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -143,7 +143,7 @@
       <Tunnel name="R•CLK_{s}" x="94" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.4250000000000007" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{0s}" x="213" y="86" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{0s}" x="116" y="89" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Main Access1}" x="13" y="124" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Main Access1}" x="35" y="163" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
       <Tunnel name="CK_{5s}" x="213" y="100" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{5s}" x="94" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{1s}" x="213" y="88" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
@@ -181,27 +181,13 @@
       <Tunnel name="MA_{4}" x="166" y="49" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.0249999999999999" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{0}" x="78" y="87" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.9249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="MA_{1}" x="100" y="64" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.0249999999999999" bottom="0.65000000000000002"/>
-      <Trace x0="23" y0="118" x1="26" y1="118"/>
-      <Trace x0="56" y0="103" x1="54" y1="103"/>
-      <Trace x0="56" y0="100" x1="56" y1="103"/>
-      <Trace x0="57" y0="100" x1="56" y1="100"/>
-      <Trace x0="37" y0="133" x1="38" y1="133"/>
-      <Trace x0="37" y0="129" x1="37" y1="133"/>
-      <Trace x0="35" y0="129" x1="37" y1="129"/>
-      <Trace x0="13" y0="124" x1="26" y1="124"/>
-      <Trace x0="37" y0="116" x1="45" y1="116"/>
-      <Trace x0="37" y0="113" x1="37" y1="116"/>
-      <Trace x0="28" y0="113" x1="37" y1="113"/>
-      <Trace x0="44" y0="122" x1="46" y1="122"/>
-      <Trace x0="44" y0="121" x1="44" y1="122"/>
-      <Trace x0="35" y0="121" x1="44" y1="121"/>
-      <Trace x0="35" y0="122" x1="35" y1="121"/>
-      <Trace x0="23" y0="122" x1="35" y1="122"/>
-      <Trace x0="44" y0="128" x1="46" y1="128"/>
-      <Trace x0="44" y0="126" x1="44" y1="128"/>
-      <Trace x0="35" y0="126" x1="44" y1="126"/>
-      <Trace x0="35" y0="128" x1="35" y1="126"/>
-      <Trace x0="23" y0="128" x1="35" y1="128"/>
+      <Trace x0="63" y0="103" x1="60" y1="103"/>
+      <Trace x0="35" y0="158" x1="38" y1="158"/>
+      <Trace x0="35" y0="178" x1="38" y1="178"/>
+      <Trace x0="35" y0="173" x1="38" y1="173"/>
+      <Trace x0="35" y0="148" x1="38" y1="148"/>
+      <Trace x0="35" y0="143" x1="38" y1="143"/>
+      <Trace x0="35" y0="163" x1="38" y1="163"/>
       <Trace x0="201" y0="135" x1="166" y1="135"/>
     </Circuit>
     <Circuit type="LFSPXO020733">

@@ -6,32 +6,32 @@
       <Logic74Unit name="IC3" x="63" y="91" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="C" pinSpacing="2"/>
       <Logic74Unit name="IC7" x="111" y="120" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" unit="D" pinSpacing="2"/>
       <Logic74Unit name="IC3" x="168" y="120" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="E" pinSpacing="2"/>
-      <Pin name="CLK" x="39" y="177" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
-      <Pin name="Write Clear Interrupt" x="39" y="182" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
-      <Pin name="~{Set Interrupt on CLK}" x="39" y="187" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
-      <Pin name="Read Flags" x="39" y="192" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
-      <Pin name="Write Flags" x="39" y="197" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
-      <Pin name="D7" x="39" y="202" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
-      <Pin name="D6" x="39" y="207" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
-      <Pin name="D5" x="30" y="202" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
-      <Pin name="D4" x="39" y="212" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
-      <Pin name="D3" x="39" y="217" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
-      <Pin name="D2" x="39" y="222" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
-      <Pin name="D1" x="30" y="216" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
-      <Pin name="D0" x="39" y="227" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
-      <Pin name="~{Reset}" x="63" y="174" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
-      <Pin name="J1-31" x="63" y="179" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="31" inverting="false" clockNotch="false"/>
-      <Pin name="Interrupt" x="73" y="180" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
-      <Pin name="~{Interrupt}" x="63" y="184" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
-      <Pin name="Enable" x="63" y="189" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
-      <Pin name="~{Enable}" x="63" y="194" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
-      <Pin name="J1-25" x="63" y="199" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
-      <Pin name="F5" x="69" y="198" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
-      <Pin name="F4" x="55" y="201" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
-      <Pin name="F3" x="63" y="204" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
-      <Pin name="F2" x="63" y="210" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
-      <Pin name="F1" x="57" y="213" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
-      <Pin name="F0" x="63" y="216" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
+      <Pin name="CLK" x="39" y="179" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
+      <Pin name="Write Clear Interrupt" x="39" y="184" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
+      <Pin name="~{Set Interrupt on CLK}" x="39" y="189" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
+      <Pin name="Read Flags" x="39" y="199" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="6" inverting="false" clockNotch="false"/>
+      <Pin name="Write Flags" x="39" y="204" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
+      <Pin name="D7" x="39" y="209" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
+      <Pin name="D6" x="39" y="214" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="9" inverting="false" clockNotch="false"/>
+      <Pin name="D5" x="39" y="219" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="10" inverting="false" clockNotch="false"/>
+      <Pin name="D4" x="39" y="224" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="11" inverting="false" clockNotch="false"/>
+      <Pin name="D3" x="39" y="234" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="13" inverting="false" clockNotch="false"/>
+      <Pin name="D2" x="39" y="239" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
+      <Pin name="D1" x="39" y="244" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="15" inverting="false" clockNotch="false"/>
+      <Pin name="D0" x="39" y="249" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
+      <Pin name="~{Reset}" x="61" y="174" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
+      <Pin name="J1-31" x="61" y="179" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="31" inverting="false" clockNotch="false"/>
+      <Pin name="Interrupt" x="61" y="184" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
+      <Pin name="~{Interrupt}" x="61" y="189" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
+      <Pin name="Enable" x="61" y="199" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
+      <Pin name="~{Enable}" x="61" y="204" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="26" inverting="false" clockNotch="false"/>
+      <Pin name="J1-25" x="61" y="209" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="25" inverting="false" clockNotch="false"/>
+      <Pin name="F5" x="61" y="214" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="24" inverting="false" clockNotch="false"/>
+      <Pin name="F4" x="61" y="219" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="23" inverting="false" clockNotch="false"/>
+      <Pin name="F3" x="61" y="224" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="22" inverting="false" clockNotch="false"/>
+      <Pin name="F2" x="61" y="234" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
+      <Pin name="F1" x="61" y="239" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
+      <Pin name="F0" x="61" y="244" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
       <Logic74Unit name="IC3" x="114" y="195" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="F" pinSpacing="2"/>
       <Logic74Unit name="IC1" x="237" y="26" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G11" unit="A" pinSpacing="2"/>
       <Logic74Package name="IC6" x="310" y="156" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="573" pinSpacing="2"/>
@@ -48,73 +48,73 @@
       <Tunnel name="GND" x="55" y="127" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="304" y="30" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="305" y="160" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
-      <Tunnel name="Interrupt" x="76" y="180" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="Interrupt" x="65" y="184" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="289" y="153" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="80" y="128" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="F5" x="72" y="198" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="F5" x="65" y="214" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="D5" x="329" y="153" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D5" x="51" y="133" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D5" x="30" y="202" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D5" x="39" y="219" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D0" x="327" y="168" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D0" x="39" y="227" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D0" x="39" y="249" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D0" x="56" y="107" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="F1" x="295" y="165" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="F1" x="66" y="213" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="F1" x="65" y="239" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F1" x="78" y="140" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F2" x="78" y="136" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="F2" x="66" y="209" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="F2" x="65" y="234" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F2" x="295" y="161" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="292" y="32" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="F4" x="289" y="157" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="F4" x="66" y="202" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="F4" x="65" y="219" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F4" x="80" y="132" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="D2" x="51" y="137" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D2" x="329" y="162" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D2" x="39" y="222" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D2" x="39" y="239" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="F3" x="290" y="161" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F3" x="73" y="134" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="F3" x="71" y="204" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="F3" x="65" y="224" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="Enable" x="305" y="158" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Enable" x="236" y="24" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Enable" x="303" y="38" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.5250000000000004" bottom="0.65000000000000002"/>
-      <Tunnel name="Enable" x="66" y="189" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="Enable" x="65" y="199" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="4.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Enable" x="110" y="119" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="D7" x="48" y="118" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D7" x="329" y="147" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D7" x="39" y="202" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D7" x="39" y="209" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="Write Flags" x="48" y="114" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="Write Flags" x="110" y="89" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
-      <Tunnel name="Write Flags" x="39" y="197" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
+      <Tunnel name="Write Flags" x="39" y="204" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="Write Flags" x="110" y="59" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="D1" x="322" y="166" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D1" x="48" y="142" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D1" x="30" y="216" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Interrupt}" x="66" y="185" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.7035714285714283" bottom="0.82857142857142851"/>
+      <Tunnel name="D1" x="39" y="244" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Interrupt}" x="65" y="189" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.7035714285714283" bottom="0.82857142857142851"/>
       <Tunnel name="~{Interrupt}" x="303" y="28" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.7035714285714283" bottom="0.82857142857142851"/>
       <Tunnel name="D3" x="329" y="158" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D3" x="40" y="134" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D3" x="39" y="217" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D3" x="39" y="234" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="F0" x="295" y="169" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="F0" x="66" y="217" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="F0" x="65" y="244" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F0" x="78" y="144" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Enable}" x="66" y="193" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="4.7035714285714292" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Enable}" x="65" y="204" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="4.7035714285714292" bottom="0.82857142857142851"/>
       <Tunnel name="~{Enable}" x="304" y="40" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="4.7035714285714292" bottom="0.82857142857142851"/>
       <Tunnel name="D4" x="334" y="156" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D4" x="40" y="130" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D4" x="39" y="212" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="D4" x="39" y="224" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D6" x="334" y="150" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D6" x="40" y="125" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="D6" x="39" y="207" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="CLK" x="39" y="177" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
+      <Tunnel name="D6" x="39" y="214" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="CLK" x="39" y="179" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
       <Tunnel name="CLK" x="293" y="30" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
-      <Tunnel name="Write Clear Interrupt" x="39" y="182" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="11.525" bottom="0.65000000000000002"/>
+      <Tunnel name="Write Clear Interrupt" x="39" y="184" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="11.525" bottom="0.65000000000000002"/>
       <Tunnel name="Write Clear Interrupt" x="115" y="28" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="11.525" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Set Interrupt on CLK}" x="39" y="187" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="12.00357142857143" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Set Interrupt on CLK}" x="39" y="189" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="12.00357142857143" bottom="0.82857142857142851"/>
       <Tunnel name="~{Set Interrupt on CLK}" x="293" y="28" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="12.00357142857143" bottom="0.82857142857142851"/>
-      <Tunnel name="Read Flags" x="39" y="192" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
+      <Tunnel name="Read Flags" x="39" y="199" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="Read Flags" x="305" y="164" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="Read Flags" x="242" y="166" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Reset}" x="63" y="174" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Reset}" x="61" y="174" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset}" x="162" y="88" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
       <Splitter name="" x="44" y="122" rotation="West" bitWidth="9" fanOut="9" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="8 0 1 2 3 4 6 5 7"/>
       <Splitter name="" x="325" y="162" rotation="East" bitWidth="9" fanOut="9" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="8 7 6 5 4 3 1 2 0"/>
@@ -178,30 +178,20 @@
       <Trace x0="310" y0="46" x1="278" y1="46"/>
       <Trace x0="310" y0="38" x1="310" y1="46"/>
       <Trace x0="303" y0="38" x1="310" y1="38"/>
-      <Trace x0="72" y0="198" x1="69" y1="198"/>
-      <Trace x0="76" y0="180" x1="73" y1="180"/>
-      <Trace x0="66" y0="189" x1="63" y1="189"/>
-      <Trace x0="65" y0="184" x1="63" y1="184"/>
-      <Trace x0="65" y0="185" x1="65" y1="184"/>
-      <Trace x0="66" y0="185" x1="65" y1="185"/>
-      <Trace x0="65" y0="194" x1="63" y1="194"/>
-      <Trace x0="65" y0="193" x1="65" y1="194"/>
-      <Trace x0="66" y0="193" x1="65" y1="193"/>
-      <Trace x0="65" y0="210" x1="63" y1="210"/>
-      <Trace x0="65" y0="209" x1="65" y1="210"/>
-      <Trace x0="66" y0="209" x1="65" y1="209"/>
-      <Trace x0="65" y0="216" x1="63" y1="216"/>
-      <Trace x0="65" y0="217" x1="65" y1="216"/>
-      <Trace x0="66" y0="217" x1="65" y1="217"/>
-      <Trace x0="71" y0="204" x1="63" y1="204"/>
-      <Trace x0="66" y0="213" x1="57" y1="213"/>
+      <Trace x0="65" y0="239" x1="61" y1="239"/>
+      <Trace x0="65" y0="219" x1="61" y1="219"/>
+      <Trace x0="65" y0="214" x1="61" y1="214"/>
+      <Trace x0="65" y0="184" x1="61" y1="184"/>
+      <Trace x0="65" y0="189" x1="61" y1="189"/>
+      <Trace x0="65" y0="199" x1="61" y1="199"/>
+      <Trace x0="65" y0="224" x1="61" y1="224"/>
+      <Trace x0="65" y0="204" x1="61" y1="204"/>
+      <Trace x0="65" y0="234" x1="61" y1="234"/>
+      <Trace x0="65" y0="244" x1="61" y1="244"/>
       <Trace x0="44" y0="116" x1="44" y1="121"/>
       <Trace x0="49" y0="116" x1="44" y1="116"/>
       <Trace x0="49" y0="118" x1="49" y1="116"/>
       <Trace x0="48" y0="118" x1="49" y1="118"/>
-      <Trace x0="61" y0="201" x1="55" y1="201"/>
-      <Trace x0="61" y0="202" x1="61" y1="201"/>
-      <Trace x0="66" y0="202" x1="61" y1="202"/>
       <Trace x0="297" y0="157" x1="297" y1="156"/>
       <Trace x0="291" y0="157" x1="297" y1="157"/>
       <Trace x0="291" y0="153" x1="291" y1="157"/>

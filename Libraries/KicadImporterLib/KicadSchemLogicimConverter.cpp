@@ -129,6 +129,7 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	RemoveUnconnectedItems();
 	mcPlacer.AttachItems();
 	mcPlacer.MeasureImportBoxes();
+	mcPlacer.GroupConnectorPins();
 	mcWiring.AddConnections();
 	mcPlacer.FindAlignments();
 	PlaceAndRoute();

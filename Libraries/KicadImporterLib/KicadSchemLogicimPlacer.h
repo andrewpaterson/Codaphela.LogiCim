@@ -67,9 +67,35 @@ struct SKicadSchemLogicimAlignment
 typedef CArrayTemplate<SKicadSchemLogicimAlignment>		CArrayKicadSchemLogicimAlignment;
 
 
+//A connector's pins (the board pins one connector symbol made), placed together as the connector has them: in its
+//rows and columns, the block at the connector's place in KiCad (its top left pin's), moved as one.  Its lead is its
+//first pin: the block takes the lead's offset (see ExplodeAreas).
+struct SKicadSchemLogicimConnectorGroup
+{
+	CKicadSchemSymbol*	pcSymbol;
+	size				uiLead;
+	SFloat64Vec2		sKicadOrigin;
+};
+
+
+//One of a connector group's pins: where it goes in the block, from the block's origin.
+struct SKicadSchemLogicimGroupMember
+{
+	size				uiItem;
+	size				uiGroup;
+	SFloat64Vec2		sKicadPosition;
+	SInt32Vec2			sOffset;
+};
+
+
+typedef CArrayTemplate<SKicadSchemLogicimConnectorGroup>	CArrayKicadSchemLogicimConnectorGroup;
+typedef CArrayTemplate<SKicadSchemLogicimGroupMember>		CArrayKicadSchemLogicimGroupMember;
+
+
 //Places the model's items (see CKicadSchemLogicimConverter): where KiCad has them, spread out, with tunnels and
 //supplies on their pins, splitters beside their components and components a straight wire joins lined up, moved clear
-//of each other.  Dense areas are exploded and rewired.
+//of each other.  A connector's pins stay together in its rows and columns (see GroupConnectorPins).  Dense areas are
+//exploded and rewired.
 class CKicadSchemLogicimPlacer
 {
 protected:
@@ -79,6 +105,9 @@ protected:
 	CKicadSchemLogicimWiring*			mpcWiring;
 	SKicadSchemLogicimCounts*			mpsCounts;
 	CArrayKicadSchemLogicimAlignment	masAlignments;
+	CArrayKicadSchemLogicimConnectorGroup	masGroups;
+	CArrayKicadSchemLogicimGroupMember	masMembers;
+	CArrayInt							maiItemMember;  //Each item's index in masMembers, -1 if it isn't a connector's pin.
 	float64								mfSpread;
 
 public:
@@ -87,6 +116,7 @@ public:
 
 	void		AttachItems(void);
 	void		MeasureImportBoxes(void);
+	void		GroupConnectorPins(void);
 	void		FindAlignments(void);
 	void		Place(float64 fSpread);
 	void		Explode(void);
@@ -103,6 +133,9 @@ protected:
 	void		AlignItems(void);
 	void		AlignItem(SKicadSchemLogicimAlignment* psAlignment, CArrayInt* paiFixed);
 	void		SeparateItems(void);
+	void		SeparateGroup(size uiGroup, CArrayTemplate<SFloat64Bounds>* pasPlaced);
+	void		PlaceGroups(void);
+	void		LayOutGroup(size uiGroup);
 	void		GetSeparateOrder(CArraySize* pauiOrder);
 	bool		GetItemBox(size uiItem, SFloat64Bounds* psBox);
 	size		FindDenseAreas(CArrayTemplate<SFloat64Vec2>* pasCentres);
