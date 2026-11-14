@@ -20,6 +20,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 ** ------------------------------------------------------------------------ **/
 #ifndef __KICAD_SCHEM_BOARDS_H__
 #define __KICAD_SCHEM_BOARDS_H__
+#include "KicadSchemImportProgress.h"
 #include "BaseLib/Chars.h"
 #include "BaseLib/ArrayChars.h"
 #include "BaseLib/ArrayTemplatePtr.h"
@@ -115,10 +116,12 @@ protected:
 	CCircuitFonts*						mpcFonts;
 	CKicadPathVariables*				mpcVariables;
 	CArrayTemplatePtr<CKicadSchemBoard>	mapcBoards;
+	CKicadSchemImportProgress*			mpcProgress;  //Told each board's steps, NULL for none.
 
 public:
 	void				Init(CCircuitViews* pcCircuits, CCircuitFonts* pcFonts, CKicadPathVariables* pcVariables);
 	void				Kill(void);
+	void				SetProgress(CKicadSchemImportProgress* pcProgress);
 
 	CCircuitView*		Import(const char* szSchematic);
 	CKicadSchemBoard*	GetBoard(const char* szSchematic, const char* szDrawnIn) override;

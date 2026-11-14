@@ -703,6 +703,113 @@ void AssertKicadSchemBoardPin(CKicadSchemBoard* pcBoard, size uiSymbolPins, cons
 }
 
 
+//What an import told its progress, in order.
+class CKicadSchemTestProgress : public CKicadSchemImportProgress
+{
+public:
+	CArrayChars		maszBoards;
+	CArrayChars		maszStages;
+	CArrayInt		maiSteps;
+	size			muiBadTotals;
+
+	void	Init(void) { maszBoards.Init(); maszStages.Init(); maiSteps.Init(); muiBadTotals = 0; }
+	void	Kill(void) { maiSteps.Kill(); maszStages.Kill(); maszBoards.Kill(); }
+	void	Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) override
+	{
+		maszBoards.Add((char*)szBoard);
+		maszStages.Add((char*)szStage);
+		maiSteps.Add((int)uiStep);
+		muiBadTotals += (uiSteps != KICAD_SCHEM_IMPORT_STEPS) ? 1 : 0;
+	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The progress told: every board read first and done last, its steps in
+// order, and the boards drawn on the Audio Board made while its parts
+// are.
+//
+//////////////////////////////////////////////////////////////////////////
+static void AssertKicadSchemImportProgress(CKicadSchemTestProgress* pcProgress, CKicadSchemBoardImporter* pcImporter)
+{
+	size		i;
+	size		j;
+	char*		szBoard;
+	int			iLast;
+	bool		bRead;
+	bool		bDone;
+	size		uiPartsAt;
+	size		uiBusesAt;
+	size		uiInner;
+	CChars		szProblems;
+
+	AssertTrue(pcProgress->maszBoards.NumElements() > 0);
+	AssertSize(0, pcProgress->muiBadTotals);
+	AssertString("Audio Board", pcProgress->maszBoards.GetText(0));
+	AssertInt(KICAD_SCHEM_IMPORT_STEP_READ, pcProgress->maiSteps.GetValue(0));
+	AssertString("Reading", pcProgress->maszStages.GetText(0));
+	AssertString("Audio Board", pcProgress->maszBoards.GetText(pcProgress->maszBoards.NumElements() - 1));
+	AssertInt(KICAD_SCHEM_IMPORT_STEP_DONE, pcProgress->maiSteps.GetValue(pcProgress->maiSteps.NumElements() - 1));
+
+	szProblems.Init();
+	for (j = 0; j < pcImporter->NumBoards(); j++)
+	{
+		szBoard = pcImporter->GetBoard(j)->GetCircuit()->GetTypeName();
+		iLast = -1;
+		bRead = false;
+		bDone = false;
+		for (i = 0; i < pcProgress->maszBoards.NumElements(); i++)
+		{
+			if (StringCompare(pcProgress->maszBoards.GetText(i), szBoard) != 0)
+			{
+				continue;
+			}
+			if (pcProgress->maiSteps.GetValue(i) < iLast)
+			{
+				szProblems.Append(szBoard);
+				szProblems.Append(" went back; ");
+			}
+			iLast = pcProgress->maiSteps.GetValue(i);
+			bRead |= (iLast == KICAD_SCHEM_IMPORT_STEP_READ);
+			bDone |= (iLast == KICAD_SCHEM_IMPORT_STEP_DONE);
+		}
+		if (!bRead || !bDone)
+		{
+			szProblems.Append(szBoard);
+			szProblems.Append(" wasn't read and done; ");
+		}
+	}
+	AssertString("", szProblems.Text());
+	szProblems.Kill();
+
+	//The other boards are made between the Audio Board's parts and buses steps.
+	uiPartsAt = MAX_SIZE;
+	uiBusesAt = MAX_SIZE;
+	for (i = 0; i < pcProgress->maszBoards.NumElements(); i++)
+	{
+		if (StringCompare(pcProgress->maszBoards.GetText(i), "Audio Board") == 0)
+		{
+			if (pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_PARTS)
+			{
+				uiPartsAt = i;
+			}
+			else if (pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_BUSES)
+			{
+				uiBusesAt = i;
+			}
+		}
+	}
+	AssertTrue((uiPartsAt != MAX_SIZE) && (uiBusesAt != MAX_SIZE) && (uiPartsAt < uiBusesAt));
+	uiInner = 0;
+	for (i = uiPartsAt + 1; i < uiBusesAt; i++)
+	{
+		uiInner += (pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_DONE) ? 1 : 0;
+	}
+	AssertSize(pcImporter->NumBoards() - 1, uiInner);
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The Audio Board, with the boards drawn on it made from their own
@@ -725,6 +832,7 @@ void TestKicadSchemLogicimBoards(void)
 	size						uiInstances;
 	CFileUtil					cFileUtil;
 	CChars						szProblems;
+	CKicadSchemTestProgress		cProgress;
 
 	ObjectsInit();
 	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
@@ -734,9 +842,14 @@ void TestKicadSchemLogicimBoards(void)
 	cVariables.Set("_658_COMPUTER_", "Input");
 	cCircuits.Init();
 	cImporter.Init(&cCircuits, &pFonts, &cVariables);
+	cProgress.Init();
+	cImporter.SetProgress(&cProgress);
 	pcTop = cImporter.Import("${_658_COMPUTER_}/Kicad/Computer/Audio/Audio Board/Audio Board.kicad_sch");
+	cImporter.SetProgress(NULL);
 	AssertNotNull(pcTop);
 	AssertString("Audio Board", pcTop->GetTypeName());
+	AssertKicadSchemImportProgress(&cProgress, &cImporter);
+	cProgress.Kill();
 
 	//The Audio Board and the 12 boards on it, each once though Selector 12bit, Memory 32KB and Comparator 16bit are drawn twice.
 	AssertSize(13, cImporter.NumBoards());

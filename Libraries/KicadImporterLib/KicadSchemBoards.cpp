@@ -210,6 +210,19 @@ void CKicadSchemBoardImporter::Init(CCircuitViews* pcCircuits, CCircuitFonts* pc
 	mpcFonts = pcFonts;
 	mpcVariables = pcVariables;
 	mapcBoards.Init();
+	mpcProgress = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// pcProgress is told each board's steps as it's made (see
+// CKicadSchemImportProgress), NULL for none.  It isn't held.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemBoardImporter::SetProgress(CKicadSchemImportProgress* pcProgress)
+{
+	mpcProgress = pcProgress;
 }
 
 
@@ -314,13 +327,18 @@ CKicadSchemBoard* CKicadSchemBoardImporter::Convert(const char* szFullPath)
 	mapcBoards.Add(pcBoard);
 	pcBoard->SetConverting(true);
 
+	GetTypeName(szFullPath, &szTypeName);
+	if (mpcProgress != NULL)
+	{
+		mpcProgress->Progress(szTypeName.Text(), "Reading", KICAD_SCHEM_IMPORT_STEP_READ, KICAD_SCHEM_IMPORT_STEPS);
+	}
 	cFile.Init();
 	bResult = cFile.Load((char*)szFullPath);
 	cNetlist.Init(&cFile);
 	bResult = bResult && cNetlist.Build();
-	GetTypeName(szFullPath, &szTypeName);
 	cConverter.Init(&cFile, &cNetlist, mpcCircuits, mpcFonts);
 	cConverter.SetBoards(pcBoard, this);
+	cConverter.SetProgress(mpcProgress);
 	bResult = bResult && cConverter.Convert(szTypeName.Text());
 	if (bResult)
 	{

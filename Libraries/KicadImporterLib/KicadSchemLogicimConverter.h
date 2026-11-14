@@ -20,6 +20,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 ** ------------------------------------------------------------------------ **/
 #ifndef __KICAD_SCHEM_LOGICIM_CONVERTER_H__
 #define __KICAD_SCHEM_LOGICIM_CONVERTER_H__
+#include "KicadSchemImportProgress.h"
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/ArrayChars.h"
 #include "LogicimLib/CircuitViews.h"
@@ -149,12 +150,14 @@ protected:
 	CKicadSchemBoard*					mpcBoard;  //The board the sheet is, its connectors' pins recorded.  NULL for none.
 	CKicadSchemBoardSource*				mpcBoardSource;  //Where boards drawn as symbols come from.  NULL to make them placeholders.
 	SKicadSchemLogicimCounts			msCounts;
+	CKicadSchemImportProgress*			mpcProgress;  //Told the steps, NULL for none.
 
 public:
 	void							Init(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, CCircuitViews* pcCircuits, CCircuitFonts* pcFonts);
 	void							Kill(void);
 
 	void							SetBoards(CKicadSchemBoard* pcBoard, CKicadSchemBoardSource* pcBoardSource);
+	void							SetProgress(CKicadSchemImportProgress* pcProgress);
 	bool							Convert(const char* szTypeName);
 
 	CCircuitView*					GetCircuit(void);
@@ -195,6 +198,8 @@ protected:
 	bool							IsDrawnTerminal(SKicadSchemLogicimTerminal* psTerminal);
 	bool							IsSubnetDrawn(CKicadSchemSubnet* pcSubnet);
 	void							PlaceAndRoute(void);
+	void							PlaceAndRouteAt(float64 fSpread, size* puiPass);
+	void							ReportProgress(const char* szStage, size uiStep);
 
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);
 };

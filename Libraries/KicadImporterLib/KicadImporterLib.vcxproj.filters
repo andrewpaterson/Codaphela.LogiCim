@@ -74,6 +74,9 @@
     <ClInclude Include="KicadSchemBoards.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>
+    <ClInclude Include="KicadSchemImportProgress.h">
+      <Filter>Source\Logicim</Filter>
+    </ClInclude>
     <ClInclude Include="KicadSchemLogicFunction.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>

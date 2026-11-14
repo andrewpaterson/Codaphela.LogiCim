@@ -51,6 +51,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcNetlist = pcNetlist;
 	mpcCircuits = pcCircuits;
 	mpcFonts = pcFonts;
+	mpcProgress = NULL;
 	mcModel.Init();
 	masRegulated.Init();
 	mpcBoard = NULL;
@@ -116,6 +117,7 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	}
 	mcModel.SetCircuit(pcCircuit);
 
+	ReportProgress("Making parts", KICAD_SCHEM_IMPORT_STEP_PARTS);
 	for (i = 0; i < mpcFile->NumSymbols(); i++)
 	{
 		if (!AddSymbol(mpcFile->GetSymbol(i)))
@@ -123,18 +125,64 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 			return false;
 		}
 	}
+	ReportProgress("Making buses", KICAD_SCHEM_IMPORT_STEP_BUSES);
 	ApplyRegulatedVoltages();
 	mcBuses.AddTunnels();
 	mcBuses.AddBuses();
 	RemoveUnconnectedItems();
+	ReportProgress("Finding wires", KICAD_SCHEM_IMPORT_STEP_WIRES);
 	mcPlacer.AttachItems();
 	mcPlacer.MeasureImportBoxes();
 	mcPlacer.GroupConnectorPins();
 	mcWiring.AddConnections();
 	mcPlacer.FindAlignments();
 	PlaceAndRoute();
+	ReportProgress("Untangling", KICAD_SCHEM_IMPORT_STEP_UNTANGLE);
 	mcPlacer.Explode();
+	ReportProgress("Done", KICAD_SCHEM_IMPORT_STEP_DONE);
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// pcProgress is told the steps as the circuit is made (see
+// CKicadSchemImportProgress), NULL for none.  It isn't held.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::SetProgress(CKicadSchemImportProgress* pcProgress)
+{
+	mpcProgress = pcProgress;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::ReportProgress(const char* szStage, size uiStep)
+{
+	if ((mpcProgress != NULL) && (mcModel.GetCircuit() != NULL))
+	{
+		mpcProgress->Progress(mcModel.GetCircuit()->GetTypeName(), szStage, uiStep, KICAD_SCHEM_IMPORT_STEPS);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Placed at fSpread and wired, told as the next placing step (the last
+// placing step once there have been as many as there are).
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::PlaceAndRouteAt(float64 fSpread, size* puiPass)
+{
+	size	uiStep;
+
+	uiStep = KICAD_SCHEM_IMPORT_STEP_PLACE + ((*puiPass < KICAD_SCHEM_IMPORT_PLACE_STEPS) ? *puiPass : KICAD_SCHEM_IMPORT_PLACE_STEPS - 1);
+	ReportProgress("Placing", uiStep);
+	(*puiPass)++;
+	mcPlacer.Place(fSpread);
 }
 
 
@@ -154,11 +202,13 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 	float64	fWorse;
 	float64	fSpread;
 	bool	bRouted;
+	size	uiPass;
 
-	mcPlacer.Place(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM);
+	uiPass = 0;
+	PlaceAndRouteAt(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM, &uiPass);
 	uiFirstUnconnected = mcWiring.Route();
 	fClosest = KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM;
-	mcPlacer.Place(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM);
+	PlaceAndRouteAt(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM, &uiPass);
 	msCounts.uiUnconnected = mcWiring.Route();
 	if (msCounts.uiUnconnected <= uiFirstUnconnected)
 	{
@@ -170,7 +220,7 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 	for (i = 0; i < KICAD_SCHEM_LOGICIM_SPREAD_HALVINGS; i++)
 	{
 		fSpread = (fClosest + fWorse) / 2;
-		mcPlacer.Place(fSpread);
+		PlaceAndRouteAt(fSpread, &uiPass);
 		msCounts.uiUnconnected = mcWiring.Route();
 		if (msCounts.uiUnconnected > uiFirstUnconnected)
 		{
@@ -185,7 +235,7 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 	}
 	if (!bRouted)
 	{
-		mcPlacer.Place(fClosest);
+		PlaceAndRouteAt(fClosest, &uiPass);
 		msCounts.uiUnconnected = mcWiring.Route();
 	}
 }
