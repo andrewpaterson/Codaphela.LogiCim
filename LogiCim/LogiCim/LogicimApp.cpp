@@ -164,6 +164,9 @@ bool CLogicimApp::Run(void)
 	if (mbValid)
 	{
 		mpWindow->Show();
+
+		//The window and its tool windows are kept for next time.
+		mpContent->SaveLayout();
 	}
 
 	if (mbInputs)
@@ -240,21 +243,29 @@ bool CLogicimApp::Check(const char* szSteps)
 // commands: every command, its keys and whether the keyboard gives them.
 // menus: each menu's items and their commands.  buttons: how many of the
 // tool buttons run a command.  command:<name> runs one.  zoom: the
-// circuit's zoom.  load:<file>, save:<file> and import:<file> do what
-// Load Project, Save Project and Import KiCad Schematic do with the file
-// chosen.  files: the project's file and where each of those opens.
-// new does what New Project does (without asking to save the changes).
-// modified: whether the project has changes, which closing it asks to
-// save.  close: whether the close button (and File, Exit) closes
-// LogiCim at once or asks to save first.  recent: File, Recent Projects' items.  openrecent:<n> loads the nth (1
+// circuit's zoom.
+//
+// load:<file>, save:<file> and import:<file> do what Load Project, Save
+// Project and Import KiCad Schematic do with the file chosen, and new
+// what New Project does (without asking to save the changes).  files:
+// the project's file and where each of those opens.  modified: whether
+// the project has changes.  close: whether the close button (and File,
+// Exit) closes LogiCim at once or asks to save first.
+//
+// recent: File, Recent Projects' items.  openrecent:<n> loads the nth (1
 // the latest) as its item does, and clearrecent does what Clear Recent
-// Files does.
+// Projects does.
+//
+// panes: each dock pane and whether it's shown.  hide:<pane> and
+// show:<pane> hide and show one, savelayout writes the layout as LogiCim
+// does as it closes, and resetlayout does Window, Reset Window Layout.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimApp::CheckStep(const char* szStep)
 {
-	size	uiWithCommand;
-	size	uiWithout;
+	size			uiWithCommand;
+	size			uiWithout;
+	Ptr<CDockPane>	pPane;
 
 	if (StringCompare(szStep, "commands") == 0)
 	{
@@ -282,6 +293,37 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "modified") == 0)
 	{
 		printf("Modified: %s\n", mpContent->GetLogicimCircuit()->IsModified() ? "yes" : "no");
+	}
+	else if (StringCompare(szStep, "panes") == 0)
+	{
+		PrintPanes();
+	}
+	else if ((strncmp(szStep, "hide:", 5) == 0) || (strncmp(szStep, "show:", 5) == 0))
+	{
+		pPane = mpContent->GetDock()->GetPane(&szStep[5]);
+		if (pPane.IsNull())
+		{
+			printf("No pane [%s]\n", &szStep[5]);
+			return false;
+		}
+		if (szStep[0] == 'h')
+		{
+			mpContent->GetDock()->Hide(pPane);
+		}
+		else
+		{
+			mpContent->GetDock()->Show(pPane);
+		}
+		printf("%s %s\n", (szStep[0] == 'h') ? "Hid" : "Showed", &szStep[5]);
+	}
+	else if (StringCompare(szStep, "savelayout") == 0)
+	{
+		printf("Layout: %s\n", mpContent->SaveLayout() ? "saved" : "not saved");
+	}
+	else if (StringCompare(szStep, "resetlayout") == 0)
+	{
+		mpContent->ResetLayout();
+		printf("Layout reset\n");
 	}
 	else if (StringCompare(szStep, "close") == 0)
 	{
@@ -357,6 +399,28 @@ void CLogicimApp::PrintCommands(void)
 		{
 			printf("Command: %s [%s] %s\n", pCommand->GetName(), pCommand->GetKeys(), mcComponentInput.IsBound(pCommand->GetKeys()) ? "bound" : "NOT BOUND");
 		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The dock's panes in the order they were added: ID, title, and whether
+// it's shown.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintPanes(void)
+{
+	Ptr<CDockManager>	pDock;
+	Ptr<CDockPane>		pPane;
+	size				i;
+
+	pDock = mpContent->GetDock();
+	printf("Panes: %d\n", (int)pDock->NumPanes());
+	for (i = 0; i < pDock->NumPanes(); i++)
+	{
+		pPane = pDock->GetPane(i);
+		printf("Pane %s [%s]: %s\n", pPane->GetID(), pPane->GetTitle(), pDock->IsPaneVisible(pPane) ? "shown" : "hidden");
 	}
 }
 

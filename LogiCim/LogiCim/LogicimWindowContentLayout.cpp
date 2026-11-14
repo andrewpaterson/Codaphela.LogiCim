@@ -194,16 +194,19 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateFileMenu(void)
 Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 {
 	ELogicimAction	aeEdit[] = { LA_Undo, LA_Redo, LA_Separator, LA_Cut, LA_Copy, LA_Paste, LA_Duplicate, LA_Delete, LA_Separator, LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically, LA_Separator, LA_EditProperties };
-	ELogicimAction	aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_SelectZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
 	ELogicimAction	aeSimulation[] = { LA_NewSimulation, LA_Separator, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_Separator, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed };
 	ELogicimAction	aePlace[] = { LA_AddComponent, LA_AddTrace, LA_AddSplitter, LA_AddTunnel, LA_AddConnection, LA_AddPower, LA_AddLabel, LA_AddSubcircuit, LA_Separator, LA_NewSubcircuit };
+	Ptr<CMenuContainer>	pWindowMenu;
 
 	mpMenuBar = OMalloc<CMenuBar>(mpWindow, mpTheme);
 	mpMenuBar->AddMenu("File", CreateFileMenu());
 	mpMenuBar->AddMenu("Edit", CreateMenu(aeEdit, sizeof(aeEdit) / sizeof(ELogicimAction)));
-	mpMenuBar->AddMenu("View", CreateMenu(aeView, sizeof(aeView) / sizeof(ELogicimAction)));
+	mpMenuBar->AddMenu("View", CreateViewMenu());
 	mpMenuBar->AddMenu("Simulation", CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Place", CreateMenu(aePlace, sizeof(aePlace) / sizeof(ELogicimAction)));
+	pWindowMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
+	pWindowMenu->AddItem(mpCommands->Find("Window.ResetLayout"));
+	mpMenuBar->AddMenu("Window", pWindowMenu);
 	mpMenuBar->SetAlignment(CSH_Stretch, CSV_Stretch);
 	return mpMenuBar;
 }
@@ -343,43 +346,34 @@ char* CLogicimWindowContent::GetListItemText(Ptr<CListContainer> pList, CArray<C
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A tool window: its title at the top then its list, scrolled.
+// A tool window's content: its list, scrolled.  Its dock pane shows its
+// title.
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CComponent> CLogicimWindowContent::CreateToolWindow(const char* szTitle, Ptr<CListContainer> pList)
+Ptr<CComponent> CLogicimWindowContent::CreateToolWindow(Ptr<CListContainer> pList)
 {
-	Ptr<CGridContainer>		pToolWindow;
-	Ptr<CFillContainer>		pGap;
-	Ptr<CLabel>				pTitle;
 	Ptr<CScrollPane>		pScrollPane;
-
-	pToolWindow = OMalloc<CGridContainer>(mpWindow);
-	pToolWindow->SetAlignment(CSH_Stretch, CSV_Stretch);
-
-	pGap = OMalloc<CFillContainer>(mpWindow);
-	pGap->SetDesiredSize(12, 32);
-	pTitle = OMalloc<CLabel>(mpWindow, mpFont, szTitle);
-	pTitle->SetAlignment(CSH_Left, CSV_Center);
-	pToolWindow->AddComponent(pGap, 0, 0);
-	pToolWindow->AddComponent(pTitle, 1, 0, 1, 1, 1, 0);
 
 	pScrollPane = OMalloc<CScrollPane>(mpWindow, mpTheme);
 	pScrollPane->SetPolicy(SBO_Horizontal, SPP_Never);
 	pScrollPane->SetContent(pList);
 	pScrollPane->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pToolWindow->AddComponent(pScrollPane, 0, 1, 2, 1, 1, 1);
-	return pToolWindow;
+	return pScrollPane;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The view stripe, the subcircuits' tool window, the circuit with the
-// simulations' tool window below it, and the add stripe.
+// The view stripe, the dock area and the add stripe.  The circuit is the
+// document in the dock's well, with the subcircuits' tool window on its
+// left and the simulations' below it; they can be moved, floated, auto
+// hidden and hidden as Visual Studio's (see CDockManager), and the layout
+// is kept for next time (see SaveLayout).
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 {
+	SDockPlace				sPlace;
 	ELogicimAction			aeDisplay[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
 	ELogicimAction			aeCreation[] = { LA_AddComponent, LA_AddTrace, LA_AddSplitter, LA_AddTunnel, LA_AddConnection, LA_AddPower, LA_AddLabel, LA_AddSubcircuit, LA_Separator, LA_NewSubcircuit };
 	Ptr<CGridContainer>		pEditor;
@@ -393,8 +387,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	mpSubcircuits = CreateList();
 	mpSubcircuits->GetSelectionEvent()->Remove(this);
 	mpSubcircuits->GetSelectionEvent()->Add(this, &CLogicimWindowContent::SubcircuitSelected);
-	pSubcircuits = CreateToolWindow("Subcircuits", mpSubcircuits);
-	pSubcircuits->SetDesiredSize(200, -1);
+	pSubcircuits = CreateToolWindow(mpSubcircuits);
 
 	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mpLogicimCircuit), this, mpLogicimCircuit->GetEditor());
 	mpCircuit->SetAlignment(CSH_Stretch, CSV_Stretch);
@@ -405,24 +398,72 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	mpCanvasMenu->GetItemClickEvent()->Add(this, &CLogicimWindowContent::CanvasMenuItemClicked);
 	mpCircuit->SetContextMenu(mpCanvasMenu);
 	mpSimulations = CreateList();
-	pSimulations = CreateToolWindow("Simulations", mpSimulations);
-	pSimulations->SetDesiredSize(-1, 150);
+	pSimulations = CreateToolWindow(mpSimulations);
+
+	mpDock = OMalloc<CDockManager>(mpWindow, mpTheme, Ptr<CFont>());
+	mpDock->SetListener(this);
+	sPlace.InWell();
+	//The circuit's tab has no close cross: it's added hidden, made unclosable, then shown (its tab is made as it's shown).
+	mpCircuitPane = mpDock->AddPane(LOGICIM_CIRCUIT_PANE, "Main", Ptr<CImageCel>(), mpCircuit, DPK_Document, &sPlace, false);
+	mpCircuitPane->SetClosable(false);
+	mpDock->Show(mpCircuitPane);
+	sPlace.BesideWell(DS_Left, 200);
+	mpDock->AddPane(LOGICIM_SUBCIRCUITS_PANE, "Subcircuits", Ptr<CImageCel>(), pSubcircuits, DPK_Tool, &sPlace);
+	sPlace.BesideWell(DS_Bottom, 150);
+	mpDock->AddPane(LOGICIM_SIMULATIONS_PANE, "Simulations", Ptr<CImageCel>(), pSimulations, DPK_Tool, &sPlace);
 
 	pCentre = OMalloc<CGridContainer>(mpWindow);
 	pCentre->SetAlignment(CSH_Stretch, CSV_Stretch);
-	pCentre->AddComponent(mpCircuit, 0, 0, 1, 1, 1, 1);
-	pCentre->AddComponent(CreateLine(-1, 1, mpTheme->GetColour(TC_Editor)), 0, 1, 1, 1, 1, 0);
-	pCentre->AddComponent(pSimulations, 0, 2, 1, 1, 1, 0);
+	pCentre->AddComponent(mpDock->GetArea(), 0, 0, 1, 1, 1, 1);
 
 	pEditor->AddComponent(CreateToolStrip(aeDisplay, sizeof(aeDisplay) / sizeof(ELogicimAction), true), 0, 0, 1, 1, 0, 1);
 	pEditor->AddComponent(CreateLine(1, -1, mpTheme->GetColour(TC_Editor)), 1, 0, 1, 1, 0, 1);
-	pEditor->AddComponent(pSubcircuits, 2, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(pCentre, 2, 0, 1, 1, 1, 1);
 	pEditor->AddComponent(CreateLine(1, -1, mpTheme->GetColour(TC_Editor)), 3, 0, 1, 1, 0, 1);
-	pEditor->AddComponent(pCentre, 4, 0, 1, 1, 1, 1);
-	pEditor->AddComponent(CreateLine(1, -1, mpTheme->GetColour(TC_Editor)), 5, 0, 1, 1, 0, 1);
-	pEditor->AddComponent(CreateToolStrip(aeCreation, sizeof(aeCreation) / sizeof(ELogicimAction), true), 6, 0, 1, 1, 0, 1);
+	pEditor->AddComponent(CreateToolStrip(aeCreation, sizeof(aeCreation) / sizeof(ELogicimAction), true), 4, 0, 1, 1, 0, 1);
 	return pEditor;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// View: Logicim's view actions, then an item for each tool window, which
+// shows it wherever it was.
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CMenuContainer> CLogicimWindowContent::CreateViewMenu(void)
+{
+	ELogicimAction			aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_SelectZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
+	Ptr<CMenuContainer>		pMenu;
+
+	pMenu = CreateMenu(aeView, sizeof(aeView) / sizeof(ELogicimAction));
+	pMenu->AddSeparator();
+	pMenu->AddItem(mpCommands->Find("View.Subcircuits"));
+	pMenu->AddItem(mpCommands->Find("View.Simulations"));
+	return pMenu;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// View, Subcircuits and Simulations: the tool window shown, wherever it
+// was, and made active.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowToolWindow(const char* szPaneID)
+{
+	Ptr<CDockPane>	pPane;
+
+	pPane = mpDock->GetPane(szPaneID);
+	if (pPane.IsNotNull())
+	{
+		mpDock->Activate(pPane);
+	}
+}
+
+
+void CLogicimWindowContent::ShowSubcircuits(void) { ShowToolWindow(LOGICIM_SUBCIRCUITS_PANE); }
+void CLogicimWindowContent::ShowSimulations(void) { ShowToolWindow(LOGICIM_SIMULATIONS_PANE); }
 
 
 //////////////////////////////////////////////////////////////////////////

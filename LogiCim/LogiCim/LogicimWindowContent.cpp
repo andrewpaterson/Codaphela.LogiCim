@@ -118,6 +118,7 @@ void CLogicimWindowContent::Init(void)
 	mcSettings.Init();
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
+	mszLayoutFile.Init();
 	mszChooserSelected.Init();
 	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
 
@@ -146,6 +147,9 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMenuBar);
 	M_Pointer(mpSubcircuits);
 	M_Pointer(mpCanvasMenu);
+	M_Pointer(mpDock);
+	M_Pointer(mpCircuitPane);
+	U_String(mszLayoutFile);
 	M_Pointer(mpRecentMenu);
 	M_Pointer(mpEnterItem);
 	M_Pointer(mpPropertiesItem);
@@ -276,6 +280,10 @@ void CLogicimWindowContent::Free(void)
 	if (mpWindow.IsNotNull())
 	{
 		mpWindow->CancelPosted(this);
+		if (mpDock.IsNotNull())
+		{
+			mpDock->SetListener(NULL);
+		}
 		mpWindow->ClearCloseApprover();
 		mpWindow->SetCommands(NULL);
 		mpWindow->SetToolTips(NULL);
@@ -297,6 +305,7 @@ void CLogicimWindowContent::Free(void)
 
 	mszStartupImport.Kill();
 	mcSettings.Kill();
+	mszLayoutFile.Kill();
 	mszChooserSelected.Kill();
 }
 
@@ -315,6 +324,10 @@ void CLogicimWindowContent::UpdateInfo(void)
 	sz.Append(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
 	mpSubcircuitInfo->SetText(sz.Text());
 	sz.Kill();
+	if (mpCircuitPane.IsNotNull())
+	{
+		mpCircuitPane->SetTitle(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
+	}
 
 	sz.Init("Simulation: ");
 	sz.Append(GetListItemText(mpSimulations, &maSimulationLabels));
@@ -487,6 +500,9 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Edit.StepRedo", "Redo Step", "Control+Alt+Shift+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepRedo);
 	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
 	mpCommands->Add("File.ClearRecentProjects", "Clear Recent Projects", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentProjects);
+	mpCommands->Add("Window.ResetLayout", "Reset Window Layout", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ResetLayout);
+	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
+	mpCommands->Add("View.Simulations", "Simulations", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSimulations);
 }
 
 
@@ -699,6 +715,7 @@ void CLogicimWindowContent::Redo(bool bStep)
 //////////////////////////////////////////////////////////////////////////
 Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) { return mpTheme; }
 CLogicimSettings* CLogicimWindowContent::GetSettings(void) { return &mcSettings; }
+Ptr<CDockManager> CLogicimWindowContent::GetDock(void) { return mpDock; }
 CLogicimCircuit* CLogicimWindowContent::GetLogicimCircuit(void) { return &mpLogicimCircuit; }
 Ptr<CMenuContainer> CLogicimWindowContent::GetRecentMenu(void) { return mpRecentMenu; }
 Ptr<CMenuBar> CLogicimWindowContent::GetMenuBar(void) { return mpMenuBar; }

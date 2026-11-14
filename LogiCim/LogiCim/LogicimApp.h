@@ -65,6 +65,7 @@ protected:
 	void	PrintCommands(void);
 	void	PrintMenus(void);
 	void	PrintRecent(void);
+	void	PrintPanes(void);
 	void	CountButtons(Ptr<CComponent> pComponent, size* puiWithCommand, size* puiWithout);
 };
 

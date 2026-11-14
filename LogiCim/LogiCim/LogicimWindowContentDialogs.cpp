@@ -626,7 +626,8 @@ bool CLogicimWindowContent::SaveProject(const char* szFilename)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ReadSettings(void)
 {
-	CChars	szFile;
+	CChars		szFile;
+	CFileUtil	cFileUtil;
 
 	GetLogicimSettingsFile(&szFile);
 	mcSettings.Read(szFile.Text());
@@ -635,6 +636,61 @@ void CLogicimWindowContent::ReadSettings(void)
 	mcSettings.ReadRecent(szFile.Text());
 	szFile.Kill();
 	ShowRecentMenu();
+
+	//The window and its tool windows as they were left; the window takes its place and size as it's shown.
+	GetLogicimLayoutFile(&szFile);
+	mszLayoutFile.Set(szFile.Text());
+	szFile.Kill();
+	if (!mszLayoutFile.Empty() && cFileUtil.Exists(mszLayoutFile.Text()) && !mpDock->LoadLayout(mszLayoutFile.Text()))
+	{
+		gcLogger.Warning2(__METHOD__, " Layout [", mszLayoutFile.Text(), "] couldn't be read: the tool windows start where they do.", NULL);
+		mpDock->ResetLayout();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The window and its tool windows, written for next time (as LogiCim
+// closes).  True if they were, or nothing is kept.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::SaveLayout(void)
+{
+	CFileUtil	cFileUtil;
+
+	if (mszLayoutFile.Empty())
+	{
+		return true;
+	}
+	cFileUtil.TouchDir(mszLayoutFile.Text(), true);
+	if (!mpDock->SaveLayout(mszLayoutFile.Text()))
+	{
+		return gcLogger.Error2(__METHOD__, " Layout [", mszLayoutFile.Text(), "] couldn't be written.", NULL);
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Window, Reset Window Layout: the tool windows back where they start.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ResetLayout(void)
+{
+	mpDock->ResetLayout();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit is the one document and stays open.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::PaneClosing(CDockPane* pcPane)
+{
+	return pcPane != &mpCircuitPane;
 }
 
 

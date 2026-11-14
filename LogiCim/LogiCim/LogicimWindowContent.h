@@ -40,6 +40,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimCircuit.h"
 #include "LogicimSettings.h"
 #include "WindowLib/ProgressBar.h"
+#include "WindowLib/DockManager.h"
 
 
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
@@ -97,6 +98,12 @@ class CLogicimComponentChooser;
 class CLogicimWindowContent;
 
 
+//The dock panes' IDs in the layout file: the circuit (the one document, which can't be closed) and the tool windows.
+#define LOGICIM_CIRCUIT_PANE		"Circuit"
+#define LOGICIM_SUBCIRCUITS_PANE	"Subcircuits"
+#define LOGICIM_SIMULATIONS_PANE	"Simulations"
+
+
 //Shows a KiCad import's progress in the content's status bar as it goes (see ShowImportProgress).
 class CLogicimImportProgress : public CKicadSchemImportProgress
 {
@@ -117,7 +124,7 @@ public:
 //The dialogs (a component's properties, a new subcircuit, a new simulation) are native windows shown modally.
 //
 //The content is an object; keep it under the root, see Setup.  It holds the window, its widgets and LogiCim's circuit.
-class CLogicimWindowContent : public CObject
+class CLogicimWindowContent : public CObject, public CDockManagerListener
 {
 CONSTRUCTABLE(CLogicimWindowContent);
 DESTRUCTABLE(CLogicimWindowContent);
@@ -139,6 +146,9 @@ protected:
 	Ptr<CMenuContainer>		mpRecentMenu;  //File, Recent Projects: an item for each recent project, or one saying there are none.
 	Ptr<CMenuItem>			mpEnterItem;
 	Ptr<CMenuItem>			mpPropertiesItem;
+	Ptr<CDockManager>		mpDock;  //The circuit in the document well, the tool windows docked around it.
+	Ptr<CDockPane>			mpCircuitPane;
+	CChars					mszLayoutFile;  //Where the layout is kept, empty if it isn't.
 	Ptr<CListContainer>		mpSubcircuits;
 	Ptr<CListContainer>		mpSimulations;
 	CArray<CLabel>			maSubcircuitLabels;  //The text of each row, the project's circuits in order.
@@ -191,6 +201,10 @@ public:
 	void				ShowDialog(ELogicimDialog eDialog);
 	void				Tick(int64 iUpdateTimeInMilliseconds);
 	bool				ImportKicadSchematic(const char* szFilename);
+	bool				SaveLayout(void);
+	void				ResetLayout(void);
+	Ptr<CDockManager>	GetDock(void);
+	bool				PaneClosing(CDockPane* pcPane) override;
 	bool				ImportChosenKicadSchematic(const char* szFilename);
 	void				ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps);
 	bool				NewProject(void);
@@ -231,7 +245,11 @@ protected:
 	Ptr<CToolbar>			CreateToolbar(void);
 	Ptr<CToolbar>			CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical);
 	Ptr<CComponent>			CreateEditor(void);
-	Ptr<CComponent>			CreateToolWindow(const char* szTitle, Ptr<CListContainer> pList);
+	Ptr<CComponent>			CreateToolWindow(Ptr<CListContainer> pList);
+	Ptr<CMenuContainer>		CreateViewMenu(void);
+	void					ShowToolWindow(const char* szPaneID);
+	void					ShowSubcircuits(void);
+	void					ShowSimulations(void);
 	Ptr<CStatusBar>			CreateStatusBar(void);
 
 	void					RemoveFromList(Ptr<CListContainer> pList);

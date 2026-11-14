@@ -10,13 +10,13 @@ import os, re, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOGICIM_DIR = os.path.join(HERE, '..', 'LogiCim')
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-NUM_ACTIONS = 41	#ELogicimAction's actions, each a command, with the three commands that only have keys and Clear Recent Projects.
+NUM_ACTIONS = 41	#ELogicimAction's actions, each a command.  The other commands: the three that only have keys, Clear Recent Projects, Reset Window Layout and the two tool windows'.
 
 #Each check: its name, its LOGICIM_CHECK steps, the lines (regular expressions) its output must have, in order, and
 #lines it mustn't have.
 CHECKS = [
 	('commands', 'commands',
-		[r'^Commands: %d$' % (NUM_ACTIONS + 4),
+		[r'^Commands: %d$' % (NUM_ACTIONS + 7),
 		 r'^Command: File\.LoadProject$',
 		 r'^Command: Edit\.FlipHorizontally \[Control\+Shift\+F, H\] bound$',
 		 r'^Command: Edit\.FlipVertically \[Control\+Shift\+F, V\] bound$',
@@ -28,9 +28,10 @@ CHECKS = [
 	('menus-and-buttons', 'menus,buttons',
 		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
-		 r'^Menu View: ',
+		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulations \[View\.Simulations\]$',
 		 r'^Menu Simulation: ',
 		 r'^Menu Place: ',
+		 r'^Menu Window: Reset Window Layout \[Window\.ResetLayout\]$',
 		 r'^Buttons: [1-9][0-9]* with a command, 0 without$'],
 		[r'(?<!Recent Projects )\[none\]']),	#Recent Projects opens its submenu; every other item runs a command.
 	('run-commands', 'zoom,command:View.ZoomIn,zoom,command:View.ZoomOut,command:View.ZoomOut,zoom,command:View.ResetZoom,zoom',
@@ -44,6 +45,7 @@ def Run(szExecutable, szSteps, asExtraEnv=None):
 	asEnv = dict(os.environ)
 	asEnv.pop('LOGICIM_SETTINGS', None)
 	asEnv.pop('LOGICIM_RECENT', None)
+	asEnv.pop('LOGICIM_LAYOUT', None)
 	asEnv['LOGICIM_CHECK'] = szSteps
 	if asExtraEnv:
 		asEnv.update(asExtraEnv)
@@ -244,6 +246,37 @@ def CheckProjectChanges(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#The tool windows are dock panes around the circuit, the one document; their layout is kept in LOGICIM_LAYOUT and read
+#back the next time, and Reset Window Layout puts them back.  A scripted run without LOGICIM_LAYOUT keeps none.
+def CheckDockLayout(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szLayout = os.path.join(szDirectory, 'Layout.xml')
+		asEnv = {'LOGICIM_LAYOUT': szLayout, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml'), 'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml')}
+		bPassed = Check(szExecutable, 'dock-layout', 'panes,hide:Simulations,panes,savelayout',
+			[r'^Panes: 3$', r'^Pane Circuit \[Main\]: shown$', r'^Pane Subcircuits \[Subcircuits\]: shown$', r'^Pane Simulations \[Simulations\]: shown$',
+			 r'^Hid Simulations$', r'^Pane Simulations \[Simulations\]: hidden$', r'^Layout: saved$'],
+			[r'Unknown check step', r'No pane'], asEnv)
+		if not os.path.exists(szLayout):
+			print('FAIL dock-layout\n    no layout was written')
+			bPassed = False
+		bPassed = Check(szExecutable, 'dock-layout-read', 'panes,resetlayout,panes',
+			[r'^Pane Subcircuits \[Subcircuits\]: shown$', r'^Pane Simulations \[Simulations\]: hidden$',
+			 r'^Layout reset$', r'^Pane Simulations \[Simulations\]: shown$'],
+			[r'Unknown check step'], asEnv) and bPassed
+		if os.path.exists(szLayout):
+			os.remove(szLayout)
+		bPassed = Check(szExecutable, 'dock-layout-scripted', 'hide:Subcircuits,savelayout',
+			[r'^Hid Subcircuits$', r'^Layout: saved$'],
+			[], {'HOME': szDirectory, 'APPDATA': szDirectory}) and bPassed
+		if os.path.exists(szLayout) or os.path.exists(os.path.join(szDirectory, '.config')) or os.path.exists(os.path.join(szDirectory, 'LogiCim')):
+			print('FAIL dock-layout-scripted\n    a layout was written')
+			bPassed = False
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -260,6 +293,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('remembered-files' in aszNames):
 		if not CheckRememberedFiles(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('dock-layout' in aszNames):
+		if not CheckDockLayout(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('project-changes' in aszNames):
 		if not CheckProjectChanges(szExecutable):
