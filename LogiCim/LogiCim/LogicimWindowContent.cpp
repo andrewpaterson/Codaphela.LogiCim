@@ -557,7 +557,8 @@ void CLogicimWindowContent::AddCommands(void)
 //
 // Place.<XML name> for each library component an action doesn't already
 // place (Add Splitter is Place.Splitter), so each can have keys, over the
-// circuit or everywhere.
+// circuit or everywhere.  They're given in the component chooser, not
+// listed in Settings' Keymap.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::AddPlaceCommands(void)
@@ -590,6 +591,7 @@ void CLogicimWindowContent::AddPlaceCommands(void)
 				pCommand = mpCommands->Add(szName.Text(), szCaption.Text(), "", Ptr<CImageCel>(), this, &CLogicimWindowContent::PlaceCommand);
 				pCommand->SetContext(LOGICIM_CIRCUIT_CONTEXT);
 				pCommand->AllowContext(COMPONENT_INPUT_GLOBAL_CONTEXT);
+				pCommand->SetListedInKeymap(false);
 				szCaption.Kill();
 				szName.Kill();
 			}

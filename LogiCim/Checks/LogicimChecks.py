@@ -320,6 +320,14 @@ def CheckKeymap(szExecutable):
 			print('FAIL keymap-scripted\n    a keymap was written')
 			bPassed = False
 
+		#Settings' Keymap doesn't list the components' commands, their keys being the chooser's, but a key given there that
+		#one has still moves from it.
+		bPassed = Check(szExecutable, 'keymap-unlisted', 'keymap,keys:Circuit:Shift+A',
+			[r'^Keymap row: Edit\.RotateLeft ', r'^Keymap row: Place\.Splitter ', r'^Keymap: Shift\+A moves here from Place: Add AND Gate\.$',
+			 r'^Keymap: kept$', r'^Keys Shift\+A in Circuit: Edit\.Move$'],
+			[r'^Keymap row: Place\.AndGate', r'^Keymap row: Place\.Logic74', r'Unknown check step'],
+			{'HOME': szDirectory, 'APPDATA': szDirectory, 'LOGICIM_KEYMAP_EDITS': 'show;select:Edit.Move;add:Circuit:Shift+A'}) and bPassed
+
 		#The component chooser's shortcut: the selected component's Place command's keys, given as Settings' Keymap gives
 		#them, bound and kept when it closes, and read back the next time.
 		asEnv = {'LOGICIM_KEYMAP': szKeymap, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml'), 'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml'),

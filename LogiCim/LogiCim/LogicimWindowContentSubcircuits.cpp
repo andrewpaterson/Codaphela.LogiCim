@@ -108,7 +108,7 @@ void CLogicimWindowContent::ListSubcircuits(void)
 // CCircuitView::SetPlaceKeys), as the circuits change: after a load, an
 // undo, a new subcircuit.  A key another command already has there is
 // dropped, from the project too, without saying.  Kept by the project,
-// not the keymap.
+// not the keymap, and given in the component chooser, not listed there.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::FollowSubcircuitCommands(void)
@@ -178,6 +178,7 @@ bool CLogicimWindowContent::FollowSubcircuitCommand(CCircuitView* pcCircuit)
 		pCommand->SetContext(LOGICIM_CIRCUIT_CONTEXT);
 		pCommand->AllowContext(COMPONENT_INPUT_GLOBAL_CONTEXT);
 		pCommand->SetKeptByKeymap(false);
+		pCommand->SetListedInKeymap(false);
 		szText.Kill();
 		szName.Kill();
 		bChanged = true;
@@ -218,8 +219,8 @@ bool CLogicimWindowContent::FollowSubcircuitCommand(CCircuitView* pcCircuit)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The subcircuits' commands' keys, as Settings' Keymap or the component
-// chooser left them, go into the project as a change that can be undone.
+// The subcircuits' commands' keys, as the component chooser (or a key
+// moved in Settings' Keymap) left them, go into the project as a change that can be undone.
 // True if any had changed.
 //
 //////////////////////////////////////////////////////////////////////////
