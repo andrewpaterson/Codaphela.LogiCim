@@ -250,6 +250,8 @@ bool CLogicimApp::Check(const char* szSteps)
 // empty for the top).  simtree: the Simulation pane's tree, a line a node
 // indented by its depth, "+" before an open one and "*" after the one
 // selected; simactivate:<path> double clicks the node of that instance.
+// subcircuits: the Subcircuits pane's tree, as simtree; subselect:<n>
+// clicks its nth node (from 0, open or not).
 // keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
@@ -310,6 +312,14 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "simtree") == 0)
 	{
 		PrintTree("Simulation", mpContent->GetSimulationTree());
+	}
+	else if (StringCompare(szStep, "subcircuits") == 0)
+	{
+		PrintTree("Subcircuits", mpContent->GetSubcircuitTree());
+	}
+	else if (strncmp(szStep, "subselect:", 10) == 0)
+	{
+		printf("Subcircuits node %s: %s\n", &szStep[10], SelectTreeNode(mpContent->GetSubcircuitTree(), &szStep[10]) ? "selected" : "none");
 	}
 	else if (strncmp(szStep, "simactivate:", 12) == 0)
 	{
@@ -469,6 +479,20 @@ void CLogicimApp::PrintTree(const char* szName, Ptr<CTreeContainer> pTree)
 		printf("%s node: %*s%s%s%s\n", szName, (int)pTree->GetNodeDepth(iNode) * 2, "", pTree->IsExpanded(iNode) ? "+" : "", szText.Text(), (pTree->GetSelectedNode() == iNode) ? " *" : "");
 		szText.Kill();
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The node numbered szNode selected, as a click would.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimApp::SelectTreeNode(Ptr<CTreeContainer> pTree, const char* szNode)
+{
+	int32	iNode;
+
+	iNode = (int32)atoi(szNode);
+	return (iNode >= 0) && (iNode < pTree->NumNodes()) && pTree->SelectNode(iNode);
 }
 
 

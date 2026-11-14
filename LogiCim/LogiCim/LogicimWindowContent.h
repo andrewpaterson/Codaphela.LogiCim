@@ -157,12 +157,12 @@ protected:
 	CChars					mszLayoutFile;  //Where the layout is kept, empty if it isn't.
 	CChars					mszKeymapFile;  //Where the keys the user changed are kept, empty if they aren't.
 	Ptr<CSettingsDialog>	mpSettingsDialog;  //File, Settings, while it's shown.
-	Ptr<CListContainer>		mpSubcircuits;
+	Ptr<CTreeContainer>		mpSubcircuitTree;  //The circuits nothing uses, each with the circuits it uses under it.
+	CChars					mszSubcircuitShape;  //The circuits it shows, to tell when they change.
 	Ptr<CTreeContainer>		mpSimulationTree;  //The circuit simulated and the instances in it, nested.
 	CArrayChars				maszSimulationPaths;  //Each of its nodes' instance path, by the node's data.
 	CChars					mszSimulationShape;  //The instances it shows, to tell when they change.
-	CArray<CLabel>			maSubcircuitLabels;  //The text of each row, the project's circuits in order.
-	bool					mbListingSubcircuits;  //While the list is being remade, so its selection isn't an edit.
+	bool					mbListingSubcircuits;  //While the tree is being remade, so its selection isn't an edit.
 	Ptr<CCircuitCanvas>		mpCircuit;
 	Ptr<CLabel>				mpSubcircuitInfo;
 	Ptr<CLabel>				mpSimulationInfo;
@@ -243,6 +243,7 @@ public:
 	void				GetPlace(SLogicimPlace* psDest);
 	bool				ShowPlace(SLogicimPlace* psPlace);
 	Ptr<CTreeContainer>	GetSimulationTree(void);
+	Ptr<CTreeContainer>	GetSubcircuitTree(void);
 	bool				ActivateSimulationNode(const char* szPath);
 	void				ListSubcircuits(void);
 	void				FollowSubcircuitCommands(void);
@@ -280,14 +281,12 @@ protected:
 	void					ListSimulation(void);
 	void					AddInstanceNodes(int32 iParent, CCircuitView* pcCircuit, const char* szPath);
 	void					AppendInstanceShape(CChars* pszDest, CCircuitView* pcCircuit);
+	int32					AddCircuitNodes(int32 iParent, size uiCircuit, CChars* pszShape, bool bNodes);
+	const char*				GetEditedCircuitName(void);
 	void					SimulationNodeActivated(void);
 	Ptr<CStatusBar>			CreateStatusBar(void);
 
-	void					RemoveFromList(Ptr<CListContainer> pList);
 	Ptr<CCanvas>			CreateLine(int32 iWidth, int32 iHeight, ARGB32 sColour);
-	Ptr<CListContainer>		CreateList(void);
-	void					AddListItem(Ptr<CListContainer> pList, CArray<CLabel>* paLabels, const char* szText);
-	char*					GetListItemText(Ptr<CListContainer> pList, CArray<CLabel>* paLabels);
 	Ptr<CLabel>				AddStatusField(Ptr<CStatusBar> pBar, int32 iWidth);
 
 	void					AddCommands(void);
@@ -316,6 +315,8 @@ protected:
 
 
 CCircuitView*	GetInstanceCircuit(CComponentView* pcComponent);
+bool			CircuitUsesDirectly(CCircuitView* pcCircuit, CCircuitView* pcUsed);
+bool			IsCircuitUsed(CCircuitViews* pcCircuits, CCircuitView* pcCircuit);
 Ptr<CCommand>	FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szName, bool bSubcircuit);
 void			ReadPlaceKeys(const char* szText, CCommandKeyList* pcKeys);
 void			WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText);

@@ -276,79 +276,6 @@ Ptr<CToolbar> CLogicimWindowContent::CreateToolStrip(ELogicimAction* aeActions, 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A list whose rows are highlighted with rounded blocks, like IntelliJ's
-// trees.
-//
-//////////////////////////////////////////////////////////////////////////
-Ptr<CListContainer> CLogicimWindowContent::CreateList(void)
-{
-	Ptr<CListContainer>		pList;
-	SInsets					sInsets;
-	int						aiInsets[4] = { 0, 6, 0, 6 };
-
-	sInsets.Init(aiInsets);
-	pList = OMalloc<CListContainer>(mpWindow, mpTheme);
-	pList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetColour(TC_ListSelected), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetColour(TC_ListHover), 4, &sInsets));
-	pList->SetAlignment(CSH_Stretch, CSV_Top);
-	pList->GetSelectionEvent()->Add(this, &CLogicimWindowContent::UpdateInfo);
-	return pList;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::RemoveFromList(Ptr<CListContainer> pList)
-{
-	if (pList.IsNotNull())
-	{
-		pList->GetSelectionEvent()->Remove(this);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// A row is a gap and the text, a row high.
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::AddListItem(Ptr<CListContainer> pList, CArray<CLabel>* paLabels, const char* szText)
-{
-	Ptr<CFillContainer>		pGap;
-	Ptr<CLabel>				pLabel;
-	int32					iRow;
-
-	iRow = pList->AddRow(true);
-	pGap = OMalloc<CFillContainer>(mpWindow);
-	pGap->SetDesiredSize(16, LOGICIM_ROW_HEIGHT);
-	pLabel = OMalloc<CLabel>(mpWindow, mpFont, szText);
-	pLabel->SetAlignment(CSH_Left, CSV_Center);
-	pList->AddToRow(iRow, pGap, 0);
-	pList->AddToRow(iRow, pLabel, 1, 1, 1);
-	paLabels->Add(pLabel);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-char* CLogicimWindowContent::GetListItemText(Ptr<CListContainer> pList, CArray<CLabel>* paLabels)
-{
-	int32	iRow;
-
-	iRow = pList->GetSelected();
-	if ((iRow < 0) || ((size)iRow >= paLabels->NumElements()))
-	{
-		return "";
-	}
-	return paLabels->Get(iRow)->GetText();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // A tree, its rows highlighted as a list's; a double click (or enter)
 // activates a node.
 //
@@ -408,10 +335,9 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	pEditor = OMalloc<CGridContainer>(mpWindow);
 	pEditor->SetAlignment(CSH_Stretch, CSV_Stretch);
 
-	mpSubcircuits = CreateList();
-	mpSubcircuits->GetSelectionEvent()->Remove(this);
-	mpSubcircuits->GetSelectionEvent()->Add(this, &CLogicimWindowContent::SubcircuitSelected);
-	pSubcircuits = CreateToolWindow(mpSubcircuits);
+	mpSubcircuitTree = CreateTree();
+	mpSubcircuitTree->GetSelectionEvent()->Add(this, &CLogicimWindowContent::SubcircuitSelected);
+	pSubcircuits = CreateToolWindow(mpSubcircuitTree);
 
 	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mpLogicimCircuit), this, mpLogicimCircuit->GetEditor());
 	mpCircuit->SetAlignment(CSH_Stretch, CSV_Stretch);

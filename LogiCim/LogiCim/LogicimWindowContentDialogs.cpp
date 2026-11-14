@@ -329,7 +329,7 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 	char*				szName;
 
 	szDefault.Init("Top ");
-	szDefault.Append(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
+	szDefault.Append(GetEditedCircuitName());
 	szDefault.Append(" ");
 	szDefault.Append(miSimulationCount + 1);
 

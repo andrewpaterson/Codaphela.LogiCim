@@ -148,7 +148,7 @@ void CLogicimWindowContent::Init(void)
 	mbRanLastTick = false;
 	mfNanosecondsPerMillisecond = LOGICIM_DEFAULT_SPEED;
 	mapIcons.Init();
-	maSubcircuitLabels.Init();
+	mszSubcircuitShape.Init();
 	maszSimulationPaths.Init();
 	mszSimulationShape.Init();
 	mszSimulationName.Init();
@@ -183,7 +183,8 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpFileIcon);
 	M_Pointer(mpCommands);
 	M_Pointer(mpMenuBar);
-	M_Pointer(mpSubcircuits);
+	M_Pointer(mpSubcircuitTree);
+	U_String(mszSubcircuitShape);
 	M_Pointer(mpCanvasMenu);
 	M_Pointer(mpDock);
 	M_Pointer(mpCircuitPane);
@@ -194,7 +195,6 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpEnterItem);
 	M_Pointer(mpPropertiesItem);
 	M_Pointer(mpSimulationTree);
-	M_Embedded(maSubcircuitLabels);
 	U_Unknown(CArrayChars, maszSimulationPaths);
 	U_String(mszSimulationShape);
 	U_String(mszSimulationName);
@@ -332,7 +332,10 @@ void CLogicimWindowContent::Free(void)
 			mpWindow->GetClipboard()->GetHistory()->SetChooser(NULL);
 		}
 	}
-	RemoveFromList(mpSubcircuits);
+	if (mpSubcircuitTree.IsNotNull())
+	{
+		mpSubcircuitTree->GetSelectionEvent()->Remove(this);
+	}
 	if (mpCanvasMenu.IsNotNull())
 	{
 		mpCanvasMenu->GetItemClickEvent()->Remove(this);
@@ -353,6 +356,7 @@ void CLogicimWindowContent::Free(void)
 	mszChooserSelected.Kill();
 	mszSimulationName.Kill();
 	mszSimulationShape.Kill();
+	mszSubcircuitShape.Kill();
 	maszSimulationPaths.Kill();
 }
 
@@ -370,12 +374,12 @@ void CLogicimWindowContent::UpdateInfo(void)
 	FollowSubcircuitCommands();
 
 	sz.Init("Subcircuit: ");
-	sz.Append(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
+	sz.Append(GetEditedCircuitName());
 	mpSubcircuitInfo->SetText(sz.Text());
 	sz.Kill();
 	if (mpCircuitPane.IsNotNull())
 	{
-		mpCircuitPane->SetTitle(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
+		mpCircuitPane->SetTitle(GetEditedCircuitName());
 	}
 
 	sz.Init("Simulation: ");

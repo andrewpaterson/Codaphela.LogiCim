@@ -26,6 +26,129 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The Subcircuits pane: at the top the project's circuits nothing uses
+// (Main), under each circuit the circuits it uses, so a circuit used in
+// several is under each, in the project's order; the circuit edited's
+// first node selected with its parents opened.  The nodes are only made
+// again when the circuits, or what they use, have changed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ListSubcircuits(void)
+{
+	CCircuitViews*	pcCircuits;
+	CCircuitView*	pcEdited;
+	CChars			szShape;
+	size			i;
+	int32			iNode;
+	int32			iParent;
+
+	if (mpSubcircuitTree.IsNull() || mpLogicimCircuit.IsNull() || (mpLogicimCircuit->GetEditor()->GetCircuits() == NULL))
+	{
+		return;
+	}
+	pcCircuits = mpLogicimCircuit->GetEditor()->GetCircuits();
+	pcEdited = mpLogicimCircuit->GetEditor()->GetCircuit();
+
+	mbListingSubcircuits = true;
+	szShape.Init();
+	for (i = 0; i < pcCircuits->NumCircuits(); i++)
+	{
+		if (!IsCircuitUsed(pcCircuits, pcCircuits->Get(i)))
+		{
+			AddCircuitNodes(TREE_NO_NODE, i, &szShape, false);
+		}
+	}
+	if (!szShape.Equals(mszSubcircuitShape.Text()))
+	{
+		mszSubcircuitShape.Set(szShape.Text());
+		mpSubcircuitTree->RemoveAllNodes();
+		for (i = 0; i < pcCircuits->NumCircuits(); i++)
+		{
+			if (!IsCircuitUsed(pcCircuits, pcCircuits->Get(i)))
+			{
+				iNode = AddCircuitNodes(TREE_NO_NODE, i, NULL, true);
+				mpSubcircuitTree->SetExpanded(iNode, mpSubcircuitTree->HasChildren(iNode));
+			}
+		}
+	}
+	szShape.Kill();
+
+	for (iNode = 0; iNode < mpSubcircuitTree->NumNodes(); iNode++)
+	{
+		if (pcCircuits->Get((size)mpSubcircuitTree->GetNodeData(iNode)) == pcEdited)
+		{
+			for (iParent = mpSubcircuitTree->GetNodeParent(iNode); iParent != TREE_NO_NODE; iParent = mpSubcircuitTree->GetNodeParent(iParent))
+			{
+				mpSubcircuitTree->SetExpanded(iParent, true);
+			}
+			if (mpSubcircuitTree->GetSelectedNode() != iNode)
+			{
+				mpSubcircuitTree->SelectNode(iNode);
+			}
+			break;
+		}
+	}
+	mbListingSubcircuits = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The project's circuit uiCircuit and, under it, those it uses: as nodes
+// under iParent (bNodes), and as text in pszShape (if it isn't NULL), to
+// tell whether they changed.  The circuit's node, TREE_NO_NODE if none
+// was made.
+//
+//////////////////////////////////////////////////////////////////////////
+int32 CLogicimWindowContent::AddCircuitNodes(int32 iParent, size uiCircuit, CChars* pszShape, bool bNodes)
+{
+	CCircuitViews*	pcCircuits;
+	CCircuitView*	pcCircuit;
+	size			i;
+	int32			iNode;
+
+	pcCircuits = mpLogicimCircuit->GetEditor()->GetCircuits();
+	pcCircuit = pcCircuits->Get(uiCircuit);
+	iNode = bNodes ? mpSubcircuitTree->AddNode(iParent, pcCircuit->GetTypeName(), NULL, (int64)uiCircuit) : TREE_NO_NODE;
+	if (pszShape != NULL)
+	{
+		pszShape->Append(pcCircuit->GetTypeName());
+		pszShape->Append('(');
+	}
+	for (i = 0; i < pcCircuits->NumCircuits(); i++)
+	{
+		if (CircuitUsesDirectly(pcCircuit, pcCircuits->Get(i)))
+		{
+			AddCircuitNodes(iNode, i, pszShape, bNodes);
+		}
+	}
+	if (pszShape != NULL)
+	{
+		pszShape->Append(')');
+	}
+	return iNode;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The name of the circuit being edited, empty before there is one.
+//
+//////////////////////////////////////////////////////////////////////////
+const char* CLogicimWindowContent::GetEditedCircuitName(void)
+{
+	CCircuitView*	pcCircuit;
+
+	pcCircuit = mpLogicimCircuit.IsNotNull() ? mpLogicimCircuit->GetEditor()->GetCircuit() : NULL;
+	return (pcCircuit != NULL) ? pcCircuit->GetTypeName() : "";
+}
+
+
+Ptr<CTreeContainer> CLogicimWindowContent::GetSubcircuitTree(void) { return mpSubcircuitTree; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The Simulation pane: the circuit simulated at the top and under each
 // circuit its subcircuit instances, in the circuit's order ("U3
 // (Board)"), the place being edited selected with its parents opened.
@@ -206,6 +329,47 @@ bool CLogicimWindowContent::ActivateSimulationNode(const char* szPath)
 
 
 Ptr<CTreeContainer> CLogicimWindowContent::GetSimulationTree(void) { return mpSimulationTree; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether pcCircuit has an instance of pcUsed in it (not in its
+// subcircuits).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CircuitUsesDirectly(CCircuitView* pcCircuit, CCircuitView* pcUsed)
+{
+	size	i;
+
+	for (i = 0; i < pcCircuit->NumComponents(); i++)
+	{
+		if (GetInstanceCircuit(pcCircuit->GetComponent(i)) == pcUsed)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether any of the project's circuits has an instance of pcCircuit.
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsCircuitUsed(CCircuitViews* pcCircuits, CCircuitView* pcCircuit)
+{
+	size	i;
+
+	for (i = 0; i < pcCircuits->NumCircuits(); i++)
+	{
+		if (CircuitUsesDirectly(pcCircuits->Get(i), pcCircuit))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 
 //////////////////////////////////////////////////////////////////////////

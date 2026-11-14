@@ -59,6 +59,15 @@ CHECKS = [
 		 r'^Simulation node:     U3 \(Gate\) \*$', r'^Simulation tree: 2$', r'^Simulation node: \+Board \*$', r'^Simulation node:   U3 \(Gate\)$',
 		 r'^Command View\.SimulationTree: run$'],
 		[r'Unknown check step', r'ERROR', r"isn't done yet"]),
+	#The Subcircuits pane: the circuits nothing uses (Main, Spare) at the top, under each the circuits it uses; a click
+	#edits a circuit at its top, and the circuit edited is selected wherever it's edited from.
+	('subcircuit-tree', ','.join(['subcircuits', 'load:../Checks/Nested.xml', 'subcircuits', 'subselect:2', 'place', 'subcircuits', 'subselect:3', 'place', 'subcircuits',
+								  'showplace:Main:0/1', 'subcircuits']),
+		[r'^Subcircuits tree: 1$', r'^Subcircuits node: Main \*$', r'^Subcircuits tree: 4$', r'^Subcircuits node: \+Main \*$', r'^Subcircuits node:   Board$',
+		 r'^Subcircuits node:     Gate$', r'^Subcircuits node: Spare$', r'^Subcircuits node 2: selected$', r'^Place: Gate \(Gate\)$',
+		 r'^Subcircuits node:   \+Board$', r'^Subcircuits node:     Gate \*$', r'^Subcircuits node 3: selected$', r'^Place: Spare \(Spare\)$',
+		 r'^Subcircuits node: Spare \*$', r'^Subcircuits node:     Gate \*$'],
+		[r'Unknown check step', r'ERROR']),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',
 		[r'^Command: Edit\.RotateLeft \[R \(Circuit\)\] bound$',

@@ -46,63 +46,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The project's circuits, in order, the one being edited selected.  The
-// rows are only made again when the circuits have changed.
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::ListSubcircuits(void)
-{
-	CCircuitViews*	pcCircuits;
-	CCircuitView*	pcEdited;
-	size			i;
-	bool			bSame;
-	int32			iSelected;
-
-	if (mpSubcircuits.IsNull() || (mpLogicimCircuit.IsNull()))
-	{
-		return;
-	}
-	pcCircuits = mpLogicimCircuit->GetEditor()->GetCircuits();
-	pcEdited = mpLogicimCircuit->GetEditor()->GetCircuit();
-	if (pcCircuits == NULL)
-	{
-		return;
-	}
-
-	bSame = (maSubcircuitLabels.NumElements() == pcCircuits->NumCircuits());
-	for (i = 0; bSame && (i < pcCircuits->NumCircuits()); i++)
-	{
-		bSame = StringCompare(maSubcircuitLabels.Get(i)->GetText(), pcCircuits->Get(i)->GetTypeName()) == 0;
-	}
-
-	mbListingSubcircuits = true;
-	if (!bSame)
-	{
-		mpSubcircuits->RemoveAllComponents();
-		maSubcircuitLabels.RemoveAll();
-		for (i = 0; i < pcCircuits->NumCircuits(); i++)
-		{
-			AddListItem(mpSubcircuits, &maSubcircuitLabels, pcCircuits->Get(i)->GetTypeName());
-		}
-	}
-	iSelected = -1;
-	for (i = 0; i < pcCircuits->NumCircuits(); i++)
-	{
-		if (pcCircuits->Get(i) == pcEdited)
-		{
-			iSelected = (int32)i;
-		}
-	}
-	if (mpSubcircuits->GetSelected() != iSelected)
-	{
-		mpSubcircuits->Select(iSelected);
-	}
-	mbListingSubcircuits = false;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // A Place.Subcircuit.<type name> command for each of the project's
 // circuits, with the keys the project keeps with it (see
 // CCircuitView::SetPlaceKeys), as the circuits change: after a load, an
@@ -341,7 +284,7 @@ void WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The subcircuit chosen in the list is edited at its top, fitted to the
+// The circuit chosen in the Subcircuits tree is edited at its top, fitted to the
 // canvas: simulated on its own (see CCircuitEditor::Simulate), unless
 // it's the circuit simulated, which keeps its simulation.
 //
@@ -351,13 +294,15 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 	CCircuitEditor*		pcEditor;
 	char*				szName;
 	SLogicimPlace		sPlace;
+	int32				iNode;
 
 	if (mbListingSubcircuits)
 	{
 		return;
 	}
 	pcEditor = mpLogicimCircuit->GetEditor();
-	szName = GetListItemText(mpSubcircuits, &maSubcircuitLabels);
+	iNode = mpSubcircuitTree->GetSelectedNode();
+	szName = ((iNode != TREE_NO_NODE) && (pcEditor->GetCircuits() != NULL)) ? pcEditor->GetCircuits()->Get((size)mpSubcircuitTree->GetNodeData(iNode))->GetTypeName() : NULL;
 	if (!StrEmpty(szName) && ((pcEditor->GetCircuit() == NULL) || (StringCompare(pcEditor->GetCircuit()->GetTypeName(), szName) != 0)))
 	{
 		sPlace.Init(szName, NULL);
