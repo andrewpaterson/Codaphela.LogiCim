@@ -349,6 +349,27 @@ char* CLogicimWindowContent::GetListItemText(Ptr<CListContainer> pList, CArray<C
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A tree, its rows highlighted as a list's; a double click (or enter)
+// activates a node.
+//
+//////////////////////////////////////////////////////////////////////////
+Ptr<CTreeContainer> CLogicimWindowContent::CreateTree(void)
+{
+	Ptr<CTreeContainer>		pTree;
+	SInsets					sInsets;
+	int						aiInsets[4] = { 0, 6, 0, 6 };
+
+	sInsets.Init(aiInsets);
+	pTree = OMalloc<CTreeContainer>(mpWindow, mpTheme);
+	pTree->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetColour(TC_ListSelected), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(mpTheme->GetColour(TC_ListHover), 4, &sInsets));
+	pTree->SetAlignment(CSH_Stretch, CSV_Top);
+	pTree->SetDoubleClickActivates(true);
+	return pTree;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A tool window's content: its list, scrolled.  Its dock pane shows its
 // title.
 //
@@ -382,7 +403,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	Ptr<CGridContainer>		pEditor;
 	Ptr<CGridContainer>		pCentre;
 	Ptr<CComponent>			pSubcircuits;
-	Ptr<CComponent>			pSimulations;
+	Ptr<CComponent>			pSimulation;
 
 	pEditor = OMalloc<CGridContainer>(mpWindow);
 	pEditor->SetAlignment(CSH_Stretch, CSV_Stretch);
@@ -400,8 +421,9 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	mpCanvasMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
 	mpCanvasMenu->GetItemClickEvent()->Add(this, &CLogicimWindowContent::CanvasMenuItemClicked);
 	mpCircuit->SetContextMenu(mpCanvasMenu);
-	mpSimulations = CreateList();
-	pSimulations = CreateToolWindow(mpSimulations);
+	mpSimulationTree = CreateTree();
+	mpSimulationTree->GetActivationEvent()->Add(this, &CLogicimWindowContent::SimulationNodeActivated);
+	pSimulation = CreateToolWindow(mpSimulationTree);
 
 	mpDock = OMalloc<CDockManager>(mpWindow, mpTheme, Ptr<CFont>());
 	mpDock->SetListener(this);
@@ -413,7 +435,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	sPlace.BesideWell(DS_Left, 200);
 	mpDock->AddPane(LOGICIM_SUBCIRCUITS_PANE, "Subcircuits", Ptr<CImageCel>(), pSubcircuits, DPK_Tool, &sPlace);
 	sPlace.BesideWell(DS_Bottom, 150);
-	mpDock->AddPane(LOGICIM_SIMULATIONS_PANE, "Simulations", Ptr<CImageCel>(), pSimulations, DPK_Tool, &sPlace);
+	mpDock->AddPane(LOGICIM_SIMULATION_PANE, "Simulation", Ptr<CImageCel>(), pSimulation, DPK_Tool, &sPlace);
 
 	pCentre = OMalloc<CGridContainer>(mpWindow);
 	pCentre->SetAlignment(CSH_Stretch, CSV_Stretch);
@@ -436,20 +458,20 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 //////////////////////////////////////////////////////////////////////////
 Ptr<CMenuContainer> CLogicimWindowContent::CreateViewMenu(void)
 {
-	ELogicimAction			aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_SelectZoom, LA_ZoomFitAll, LA_ZoomFitSelection, LA_Separator, LA_ViewSimulationTree };
+	ELogicimAction			aeView[] = { LA_TogglePointView, LA_Separator, LA_ZoomIn, LA_ZoomOut, LA_ResetZoom, LA_SelectZoom, LA_ZoomFitAll, LA_ZoomFitSelection };
 	Ptr<CMenuContainer>		pMenu;
 
 	pMenu = CreateMenu(aeView, sizeof(aeView) / sizeof(ELogicimAction));
 	pMenu->AddSeparator();
 	pMenu->AddItem(mpCommands->Find("View.Subcircuits"));
-	pMenu->AddItem(mpCommands->Find("View.Simulations"));
+	pMenu->AddItem(mpCommands->Find("View.SimulationTree"));
 	return pMenu;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// View, Subcircuits and Simulations: the tool window shown, wherever it
+// View, Subcircuits and Simulation Tree: the tool window shown, wherever it
 // was, and made active.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -466,7 +488,7 @@ void CLogicimWindowContent::ShowToolWindow(const char* szPaneID)
 
 
 void CLogicimWindowContent::ShowSubcircuits(void) { ShowToolWindow(LOGICIM_SUBCIRCUITS_PANE); }
-void CLogicimWindowContent::ShowSimulations(void) { ShowToolWindow(LOGICIM_SIMULATIONS_PANE); }
+void CLogicimWindowContent::ShowSimulationTree(void) { ShowToolWindow(LOGICIM_SIMULATION_PANE); }
 
 
 //////////////////////////////////////////////////////////////////////////

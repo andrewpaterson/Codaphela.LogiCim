@@ -247,7 +247,10 @@ bool CLogicimApp::Check(const char* szSteps)
 // tool buttons run a command.  command:<name> runs one.  zoom: the
 // circuit's zoom.  place: where the editor is (the circuit simulated and
 // the path into it); showplace:<circuit>:<path> goes there (the path
-// empty for the top).  keys:<context>:<keys> says which command those keys
+// empty for the top).  simtree: the Simulation pane's tree, a line a node
+// indented by its depth, "+" before an open one and "*" after the one
+// selected; simactivate:<path> double clicks the node of that instance.
+// keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
 // load:<file>, save:<file> and import:<file> do what Load Project, Save
@@ -303,6 +306,14 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (strncmp(szStep, "showplace:", 10) == 0)
 	{
 		ShowPlace(&szStep[10]);
+	}
+	else if (StringCompare(szStep, "simtree") == 0)
+	{
+		PrintTree("Simulation", mpContent->GetSimulationTree());
+	}
+	else if (strncmp(szStep, "simactivate:", 12) == 0)
+	{
+		printf("Simulation node %s: %s\n", &szStep[12], mpContent->ActivateSimulationNode(&szStep[12]) ? "activated" : "none");
 	}
 	else if (strncmp(szStep, "keys:", 5) == 0)
 	{
@@ -437,6 +448,26 @@ void CLogicimApp::PrintCommands(void)
 			}
 			printf("] %s\n", mcComponentInput.IsBound(pCommand->GetKeys(), szContext) ? "bound" : "NOT BOUND");
 		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintTree(const char* szName, Ptr<CTreeContainer> pTree)
+{
+	int32	iNode;
+	CChars	szText;
+
+	printf("%s tree: %d\n", szName, (int)pTree->NumNodes());
+	for (iNode = 0; iNode < pTree->NumNodes(); iNode++)
+	{
+		szText.Init();
+		pTree->GetNodeText(iNode, &szText);
+		printf("%s node: %*s%s%s%s\n", szName, (int)pTree->GetNodeDepth(iNode) * 2, "", pTree->IsExpanded(iNode) ? "+" : "", szText.Text(), (pTree->GetSelectedNode() == iNode) ? " *" : "");
+		szText.Kill();
 	}
 }
 

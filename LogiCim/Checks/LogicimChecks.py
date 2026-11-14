@@ -28,7 +28,7 @@ CHECKS = [
 	('menus-and-buttons', 'menus,buttons',
 		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Settings\.\.\. \[File\.Settings\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
-		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulations \[View\.Simulations\]$',
+		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulation Tree \[View\.SimulationTree\]$',
 		 r'^Menu Simulation: ',
 		 r'^Menu Place: ',
 		 r'^Menu Window: Reset Window Layout \[Window\.ResetLayout\]$',
@@ -49,6 +49,16 @@ CHECKS = [
 		 r'^Show place Gone:: gone$', r'^Place: Main 1/1 \(Gate\)$', r'^Show place Board:1: shown$', r'^Place: Board 1 \(Gate\)$',
 		 r'^Place: Board \(Board\)$', r'^Show place Main:: shown$', r'^Place: Main \(Main\)$'],
 		[r'Unknown check step', r'ERROR']),
+	#The Simulation pane: the circuit simulated and its instances, nested, the place edited selected with its parents
+	#opened; a double click on a node edits its instance there.
+	('simulation-tree', ','.join(['simtree', 'load:../Checks/Nested.xml', 'simtree', 'simactivate:1/1', 'place', 'simtree', 'showplace:Board:', 'simtree',
+								  'command:View.SimulationTree']),
+		[r'^Simulation tree: 1$', r'^Simulation node: \+Main \*$', r'^Simulation tree: 5$', r'^Simulation node: \+Main \*$', r'^Simulation node:   U1 \(Board\)$',
+		 r'^Simulation node:     U3 \(Gate\)$', r'^Simulation node:   U2 \(Board\)$', r'^Simulation node:     U3 \(Gate\)$',
+		 r'^Simulation node 1/1: activated$', r'^Place: Main 1/1 \(Gate\)$', r'^Simulation node: \+Main$', r'^Simulation node:   \+U2 \(Board\)$',
+		 r'^Simulation node:     U3 \(Gate\) \*$', r'^Simulation tree: 2$', r'^Simulation node: \+Board \*$', r'^Simulation node:   U3 \(Gate\)$',
+		 r'^Command View\.SimulationTree: run$'],
+		[r'Unknown check step', r'ERROR', r"isn't done yet"]),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',
 		[r'^Command: Edit\.RotateLeft \[R \(Circuit\)\] bound$',
@@ -280,17 +290,24 @@ def CheckDockLayout(szExecutable):
 	try:
 		szLayout = os.path.join(szDirectory, 'Layout.xml')
 		asEnv = {'LOGICIM_LAYOUT': szLayout, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml'), 'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml')}
-		bPassed = Check(szExecutable, 'dock-layout', 'panes,hide:Simulations,panes,savelayout',
-			[r'^Panes: 3$', r'^Pane Circuit \[Main\]: shown$', r'^Pane Subcircuits \[Subcircuits\]: shown$', r'^Pane Simulations \[Simulations\]: shown$',
-			 r'^Hid Simulations$', r'^Pane Simulations \[Simulations\]: hidden$', r'^Layout: saved$'],
+		bPassed = Check(szExecutable, 'dock-layout', 'panes,hide:Simulation,panes,savelayout',
+			[r'^Panes: 3$', r'^Pane Circuit \[Main\]: shown$', r'^Pane Subcircuits \[Subcircuits\]: shown$', r'^Pane Simulation \[Simulation\]: shown$',
+			 r'^Hid Simulation$', r'^Pane Simulation \[Simulation\]: hidden$', r'^Layout: saved$'],
 			[r'Unknown check step', r'No pane'], asEnv)
 		if not os.path.exists(szLayout):
 			print('FAIL dock-layout\n    no layout was written')
 			bPassed = False
 		bPassed = Check(szExecutable, 'dock-layout-read', 'panes,resetlayout,panes',
-			[r'^Pane Subcircuits \[Subcircuits\]: shown$', r'^Pane Simulations \[Simulations\]: hidden$',
-			 r'^Layout reset$', r'^Pane Simulations \[Simulations\]: shown$'],
+			[r'^Pane Subcircuits \[Subcircuits\]: shown$', r'^Pane Simulation \[Simulation\]: hidden$',
+			 r'^Layout reset$', r'^Pane Simulation \[Simulation\]: shown$'],
 			[r'Unknown check step'], asEnv) and bPassed
+
+		#A layout from before the Simulation pane, with the Simulations pane it replaced: the new pane is laid out as it
+		#starts.
+		szText = open(szLayout).read().replace('"Simulation"', '"Simulations"')
+		open(szLayout, 'w').write(szText)
+		bPassed = Check(szExecutable, 'dock-layout-old', 'panes',
+			[r'^Panes: 3$', r'^Pane Simulation \[Simulation\]: shown$'], [r'ERROR'], asEnv) and bPassed
 		if os.path.exists(szLayout):
 			os.remove(szLayout)
 		bPassed = Check(szExecutable, 'dock-layout-scripted', 'hide:Subcircuits,savelayout',

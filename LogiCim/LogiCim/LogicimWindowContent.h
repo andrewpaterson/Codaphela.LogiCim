@@ -43,6 +43,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/DockManager.h"
 #include "WindowLib/SettingsDialog.h"
 #include "WindowLib/KeymapPage.h"
+#include "WindowLib/TreeContainer.h"
 #include "LogicimPlace.h"
 
 
@@ -104,7 +105,7 @@ class CLogicimWindowContent;
 //The dock panes' IDs in the layout file: the circuit (the one document, which can't be closed) and the tool windows.
 #define LOGICIM_CIRCUIT_PANE		"Circuit"
 #define LOGICIM_SUBCIRCUITS_PANE	"Subcircuits"
-#define LOGICIM_SIMULATIONS_PANE	"Simulations"
+#define LOGICIM_SIMULATION_PANE		"Simulation"
 #define LOGICIM_PLACE_SUBCIRCUIT	"Place.Subcircuit."  //Before a subcircuit's type name, its Place command's name.
 #define LOGICIM_CIRCUIT_CONTEXT		"Circuit"  //The keys over the circuit canvas, where bare letters place and turn components.
 
@@ -157,10 +158,11 @@ protected:
 	CChars					mszKeymapFile;  //Where the keys the user changed are kept, empty if they aren't.
 	Ptr<CSettingsDialog>	mpSettingsDialog;  //File, Settings, while it's shown.
 	Ptr<CListContainer>		mpSubcircuits;
-	Ptr<CListContainer>		mpSimulations;
+	Ptr<CTreeContainer>		mpSimulationTree;  //The circuit simulated and the instances in it, nested.
+	CArrayChars				maszSimulationPaths;  //Each of its nodes' instance path, by the node's data.
+	CChars					mszSimulationShape;  //The instances it shows, to tell when they change.
 	CArray<CLabel>			maSubcircuitLabels;  //The text of each row, the project's circuits in order.
 	bool					mbListingSubcircuits;  //While the list is being remade, so its selection isn't an edit.
-	CArray<CLabel>			maSimulationLabels;
 	Ptr<CCircuitCanvas>		mpCircuit;
 	Ptr<CLabel>				mpSubcircuitInfo;
 	Ptr<CLabel>				mpSimulationInfo;
@@ -179,6 +181,7 @@ protected:
 	CLogicimSettings				mcSettings;  //Where Load Project and Import KiCad Schematic open.
 	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars							mszChooserSelected;  //The component last chosen.
+	CChars							mszSimulationName;  //As New Simulation named it, empty for the circuit simulated's.
 	int								miSimulationCount;
 	size							muiQueuedRecent;  //The recent project chosen, loaded once its menu is done with the click.
 	bool							mbRunning;
@@ -239,6 +242,8 @@ public:
 	void				ClearRecentProjects(void);
 	void				GetPlace(SLogicimPlace* psDest);
 	bool				ShowPlace(SLogicimPlace* psPlace);
+	Ptr<CTreeContainer>	GetSimulationTree(void);
+	bool				ActivateSimulationNode(const char* szPath);
 	void				ListSubcircuits(void);
 	void				FollowSubcircuitCommands(void);
 	bool				FollowSubcircuitCommand(CCircuitView* pcCircuit);
@@ -270,7 +275,12 @@ protected:
 	Ptr<CKeymapPage>		CreateKeymapPage(Ptr<CSettingsDialog> pDialog);
 	void					KeepKeymap(void);
 	void					ShowSubcircuits(void);
-	void					ShowSimulations(void);
+	void					ShowSimulationTree(void);
+	Ptr<CTreeContainer>		CreateTree(void);
+	void					ListSimulation(void);
+	void					AddInstanceNodes(int32 iParent, CCircuitView* pcCircuit, const char* szPath);
+	void					AppendInstanceShape(CChars* pszDest, CCircuitView* pcCircuit);
+	void					SimulationNodeActivated(void);
 	Ptr<CStatusBar>			CreateStatusBar(void);
 
 	void					RemoveFromList(Ptr<CListContainer> pList);
@@ -305,6 +315,7 @@ protected:
 };
 
 
+CCircuitView*	GetInstanceCircuit(CComponentView* pcComponent);
 Ptr<CCommand>	FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szName, bool bSubcircuit);
 void			ReadPlaceKeys(const char* szText, CCommandKeyList* pcKeys);
 void			WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText);

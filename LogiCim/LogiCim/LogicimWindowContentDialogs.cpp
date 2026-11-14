@@ -343,8 +343,7 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 		if (szName[0] != '\0')
 		{
 			miSimulationCount++;
-			AddListItem(mpSimulations, &maSimulationLabels, szName);
-			mpSimulations->Select(mpSimulations->NumRows() - 1);
+			mszSimulationName.Set(szName);
 			UpdateInfo();
 		}
 	}

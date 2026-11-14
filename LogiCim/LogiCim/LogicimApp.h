@@ -65,6 +65,7 @@ protected:
 	void	PrintCommands(void);
 	void	PrintKeysCommand(const char* szStep);
 	void	PrintPlace(void);
+	void	PrintTree(const char* szName, Ptr<CTreeContainer> pTree);
 	void	ShowPlace(const char* szStep);
 	void	PrintMenus(void);
 	void	PrintRecent(void);

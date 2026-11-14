@@ -242,6 +242,7 @@
     <ClCompile Include="LogicimCircuit.cpp" />
     <ClCompile Include="LogicimComponentChooser.cpp" />
     <ClCompile Include="LogicimSettings.cpp" />
+    <ClCompile Include="LogicimWindowContentTrees.cpp" />
     <ClCompile Include="LogicimWindowContentNavigation.cpp" />
     <ClCompile Include="LogicimPlace.cpp" />
     <ClCompile Include="LogicimWindowContent.cpp" />

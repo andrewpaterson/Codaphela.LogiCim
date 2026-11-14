@@ -24,6 +24,9 @@
     <ClCompile Include="LogicimSettings.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LogicimWindowContentTrees.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="LogicimWindowContentNavigation.cpp">
       <Filter>Source</Filter>
     </ClCompile>

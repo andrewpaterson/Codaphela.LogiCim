@@ -76,7 +76,7 @@ SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 	{ "View.SelectZoom", "Select Zoom...", NULL, CIC_Ignored, NULL, LDG_SelectZoom, NULL },
 	{ "View.ZoomToFitAll", "Zoom to Fit All", NULL, CIC_Ignored, "zoom_fit_in_page", LDG_None, NULL },
 	{ "View.ZoomToFitSelection", "Zoom to Fit Selection", NULL, CIC_Ignored, "zoom_selection", LDG_None, NULL },
-	{ "View.SimulationTree", "Simulation Tree...", NULL, CIC_Ignored, "simulation_tree", LDG_None, NULL },
+	{ "View.SimulationTree", "Simulation Tree", NULL, CIC_Ignored, "simulation_tree", LDG_None, NULL },
 	{ "Place.Component", "Add Component...", NULL, CIC_Ignored, "add_component", LDG_ChooseComponent, NULL },
 	{ "Place.Trace", "Add Trace", NULL, CIC_Ignored, "add_line", LDG_None, NULL },
 	{ "Place.Splitter", "Add Splitter", NULL, CIC_Ignored, "add_line2bus", LDG_None, "Splitter" },
@@ -149,7 +149,9 @@ void CLogicimWindowContent::Init(void)
 	mfNanosecondsPerMillisecond = LOGICIM_DEFAULT_SPEED;
 	mapIcons.Init();
 	maSubcircuitLabels.Init();
-	maSimulationLabels.Init();
+	maszSimulationPaths.Init();
+	mszSimulationShape.Init();
+	mszSimulationName.Init();
 	mcSettings.Init();
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
@@ -191,9 +193,11 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpRecentMenu);
 	M_Pointer(mpEnterItem);
 	M_Pointer(mpPropertiesItem);
-	M_Pointer(mpSimulations);
+	M_Pointer(mpSimulationTree);
 	M_Embedded(maSubcircuitLabels);
-	M_Embedded(maSimulationLabels);
+	U_Unknown(CArrayChars, maszSimulationPaths);
+	U_String(mszSimulationShape);
+	U_String(mszSimulationName);
 	M_Pointer(mpCircuit);
 	M_Pointer(mpSubcircuitInfo);
 	M_Pointer(mpSimulationInfo);
@@ -295,11 +299,9 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	pGrid->AddComponent(CreateLine(-1, 1, mpTheme->GetColour(TC_Editor)), 0, 4, 1, 1, 1, 0);
 	pGrid->AddComponent(CreateStatusBar(), 0, 5, 1, 1, 1, 0);
 
-	//Like Logicim the project starts with a top level subcircuit and a simulation of it.  The subcircuits are listed
-	//by UpdateInfo.
-	AddListItem(mpSimulations, &maSimulationLabels, "Top Top 1");
+	//Like Logicim the project starts with a top level subcircuit and a simulation of it.  The subcircuits and the
+	//simulation are listed by UpdateInfo.
 	miSimulationCount = 1;
-	mpSimulations->Select(0);
 	UpdateInfo();
 	Zoom(1.0f);
 
@@ -335,7 +337,10 @@ void CLogicimWindowContent::Free(void)
 	{
 		mpCanvasMenu->GetItemClickEvent()->Remove(this);
 	}
-	RemoveFromList(mpSimulations);
+	if (mpSimulationTree.IsNotNull())
+	{
+		mpSimulationTree->GetActivationEvent()->Remove(this);
+	}
 	if (mpsData)
 	{
 		mpsData->pcContent = NULL;
@@ -346,6 +351,9 @@ void CLogicimWindowContent::Free(void)
 	mszLayoutFile.Kill();
 	mszKeymapFile.Kill();
 	mszChooserSelected.Kill();
+	mszSimulationName.Kill();
+	mszSimulationShape.Kill();
+	maszSimulationPaths.Kill();
 }
 
 
@@ -358,6 +366,7 @@ void CLogicimWindowContent::UpdateInfo(void)
 	CChars	sz;
 
 	ListSubcircuits();
+	ListSimulation();
 	FollowSubcircuitCommands();
 
 	sz.Init("Subcircuit: ");
@@ -370,7 +379,14 @@ void CLogicimWindowContent::UpdateInfo(void)
 	}
 
 	sz.Init("Simulation: ");
-	sz.Append(GetListItemText(mpSimulations, &maSimulationLabels));
+	if (!mszSimulationName.Empty())
+	{
+		sz.Append(mszSimulationName.Text());
+	}
+	else if (mpLogicimCircuit->GetEditor()->GetTopCircuit() != NULL)
+	{
+		sz.Append(mpLogicimCircuit->GetEditor()->GetTopCircuit()->GetTypeName());
+	}
 	mpSimulationInfo->SetText(sz.Text());
 	sz.Kill();
 
@@ -546,7 +562,6 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Window.ResetLayout", "Reset Window Layout", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ResetLayout);
 	mpCommands->Add("File.Settings", "Settings...", "Control+Alt+S", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestSettings);
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
-	mpCommands->Add("View.Simulations", "Simulations", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSimulations);
 	mpCommands->Add("Edit.Move", "Move", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::Move);
 	AddPlaceCommands();
 	AddCircuitKeys();
@@ -806,6 +821,9 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 		break;
 	case LA_ZoomFitSelection:
 		ZoomToFit(true);
+		break;
+	case LA_ViewSimulationTree:
+		ShowSimulationTree();
 		break;
 	case LA_Exit:
 		if (RequestExit())
