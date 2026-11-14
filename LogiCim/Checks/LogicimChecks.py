@@ -38,16 +38,16 @@ CHECKS = [
 		[r'^Zoom: 1\.00$', r'^Command View\.ZoomIn: run$', r'^Zoom: 2\.00$', r'^Command View\.ZoomOut: run$',
 		 r'^Command View\.ZoomOut: run$', r'^Zoom: (0\.\d\d|1\.00)$', r'^Command View\.ResetZoom: run$', r'^Zoom: 1\.00$'],
 		[r'Unknown check step', r'not run']),
-	#A place is the circuit simulated and the path of instances into it (each instance's index in the circuit before
-	#it); showing one simulates its circuit if it isn't, and enters the path as one step; a place that's gone changes
-	#nothing.  Checks/Nested.xml: Main holds Boards U1 and U2 (0 and 1), each Board a pin (0) and Gate U3 (1).
+	#A place is the circuit simulated and the path of instances into it (each instance's index and name in the circuit
+	#before it); showing one simulates its circuit if it isn't, and enters the path; a place that's gone changes nothing.
+	#Moving isn't a change to undo: undo shows where its change (here the load) was made, and waits for a second press.  Checks/Nested.xml: Main holds Boards U1 and U2 (0 and 1), each Board a pin (0) and Gate U3 (1).
 	('places', ','.join(['load:../Checks/Nested.xml', 'place', 'showplace:Main:1', 'place', 'showplace:Main:1/1', 'place', 'showplace:Main:1/0',
-						 'showplace:Main:2', 'showplace:Main:x', 'showplace:Gone:', 'place', 'showplace:Board:1', 'place', 'command:Edit.StepUndo', 'place',
+						 'showplace:Main:2', 'showplace:Main:x', 'showplace:Gone:', 'place', 'showplace:Board:1', 'place', 'command:Edit.StepUndo', 'place', 'message',
 						 'showplace:Main:', 'place']),
 		[r'^Place: Main \(Main\)$', r'^Show place Main:1: shown$', r'^Place: Main 1:U2 \(Board\)$', r'^Show place Main:1/1: shown$',
 		 r'^Place: Main 1:U2/1:U3 \(Gate\)$', r'^Show place Main:1/0: gone$', r'^Show place Main:2: gone$', r'^Show place Main:x: gone$',
 		 r'^Show place Gone:: gone$', r'^Place: Main 1:U2/1:U3 \(Gate\)$', r'^Show place Board:1: shown$', r'^Place: Board 1:U3 \(Gate\)$',
-		 r'^Place: Board \(Board\)$', r'^Show place Main:: shown$', r'^Place: Main \(Main\)$'],
+		 r'^Place: Main \(Main\)$', r'^Message: Ctrl\+Alt\+Z again to undo the change in Main\.$', r'^Show place Main:: shown$', r'^Place: Main \(Main\)$'],
 		[r'Unknown check step', r'ERROR']),
 	#The Simulation pane: the circuit simulated and its instances, nested, the place edited selected with its parents
 	#opened; a double click on a node edits its instance there.
@@ -105,6 +105,17 @@ CHECKS = [
 	('tab-circuit-gone', ','.join(['new', 'load:../Checks/Nested.xml', 'newtab:Spare:', 'newtab:Main:1', 'activatetab:0', 'tabs',
 								   'command:Edit.Undo', 'command:Edit.Undo', 'command:Edit.Undo', 'place', 'tabs']),
 		[r'^Tabs: 3$', r'^Tab 1: Spare \[Spare\]$', r'^Place: Main \(Main\)$', r'^Tabs: 2$', r'^Tab 0: Main \[Main\] \*$', r'^Tab 1: Main \[Main\]$'],
+		[r'Unknown check step', r'ERROR']),
+	#Undo never undoes what can't be seen: a change made where the editor isn't is shown by the first press, which says
+	#so, and undone by the second; one made where it is is undone at once.  Redo too.
+	('undo-out-of-view', ','.join(['load:../Checks/Nested.xml', 'gotopick:0:u12 and:0', 'command:Edit.Delete', 'showplace:Main:', 'command:Edit.Undo',
+								   'place', 'message', 'goto:0:u12', 'command:Edit.Undo', 'place', 'message', 'goto:0:u12', 'showplace:Main:',
+								   'command:Edit.Redo', 'place', 'message', 'command:Edit.Redo', 'goto:0:u12', 'command:Edit.Undo', 'place', 'message']),
+		[r'^Command Edit\.Delete: run$', r'^Command Edit\.Undo: run$', r'^Place: Main 0:U1/1:U3 \(Gate\)$',
+		 r'^Message: Ctrl\+Z again to undo the change in Gate in U3\.$', r'^Go to 0 \[u12\]: 0$', r'^Command Edit\.Undo: run$',
+		 r'^Place: Main 0:U1/1:U3 \(Gate\)$', r'^Message: $', r'^Go to 0 \[u12\]: 2$', r'^Command Edit\.Redo: run$', r'^Place: Main 0:U1/1:U3 \(Gate\)$',
+		 r'^Message: Ctrl\+Shift\+Z again to redo the change in Gate in U3\.$', r'^Command Edit\.Redo: run$', r'^Go to 0 \[u12\]: 0$',
+		 r'^Command Edit\.Undo: run$', r'^Place: Main 0:U1/1:U3 \(Gate\)$', r'^Message: $'],
 		[r'Unknown check step', r'ERROR']),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',

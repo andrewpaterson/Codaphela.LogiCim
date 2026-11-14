@@ -443,7 +443,7 @@ Ptr<CStatusBar> CLogicimWindowContent::CreateStatusBar(void)
 	mpImportBar->SetDesiredSize(100, 4);
 	mpImportBar->SetAlignment(CSH_Left, CSV_Center);
 	pBar->Append(mpImportBar);
-	mpImportInfo = pBar->AddMessageField();  //The space left over, before the pointer and zoom.
+	mpMessageInfo = pBar->AddMessageField();  //The space left over, before the pointer and zoom.
 	mpMouseXInfo = AddStatusField(pBar, 56);
 	mpMouseYInfo = AddStatusField(pBar, 56);
 	mpZoomInfo = AddStatusField(pBar, 44);

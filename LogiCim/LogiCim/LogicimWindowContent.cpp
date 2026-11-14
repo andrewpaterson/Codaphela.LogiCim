@@ -169,6 +169,8 @@ void CLogicimWindowContent::Init(void)
 	mszChooserSelected.Init();
 	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
 	mcGoTo.Init(&mpLogicimCircuit);
+	mcUndo.Init(this);
+	mbUndoStep = false;
 
 	PostInit();
 }
@@ -220,6 +222,8 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpNewTabItem);
 	M_Pointer(mpTreeMenu);
 	U_Unknown(CLogicimGoTo, mcGoTo);
+	U_Unknown(CRevealingUndo, mcUndo);
+	U_Bool(mbUndoStep);
 	M_Pointer(mpGoToDialog);
 	U_Unknown(SCircuitPlace, msTreeMenuPlace);
 	M_Pointer(mpSubcircuitInfo);
@@ -228,7 +232,7 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMouseXInfo);
 	M_Pointer(mpMouseYInfo);
 	M_Pointer(mpZoomInfo);
-	M_Pointer(mpImportInfo);
+	M_Pointer(mpMessageInfo);
 	M_Pointer(mpImportBar);
 	M_Pointer(mpLogicimCircuit);
 	M_Pointer(mpDialog);
@@ -385,6 +389,7 @@ void CLogicimWindowContent::Free(void)
 	mszSimulationName.Kill();
 	mcHistory.Kill();
 	mcGoTo.Kill();
+	mcUndo.Kill();
 	msTreeMenuPlace.Kill();
 	mszSimulationShape.Kill();
 	mszSubcircuitShape.Kill();
@@ -416,6 +421,7 @@ void CLogicimWindowContent::UpdateInfo(void)
 	CChars	sz;
 
 	mbUpdatingInfo = true;
+	mpMessageInfo->SetText("");  //What undo said is said again by undo, after it updates the info.
 	ListSubcircuits();
 	ListSimulation();
 	FollowSubcircuitCommands();
@@ -950,13 +956,11 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 // Ctrl+Z, or the menu's Undo, goes back to before the last change that
 // wasn't only to the selection; bStep (Ctrl+Alt+Z) goes back one change.
 // The simulation goes back with the circuit, but keeps running or paused.
+// A change made somewhere not in view is shown by the first press and
+// undone by the second (see PressUndo).
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::Undo(bool bStep)
-{
-	mpLogicimCircuit->GetEditor()->Undo(bStep);
-	UpdateInfo();
-}
+void CLogicimWindowContent::Undo(bool bStep) { PressUndo(false, bStep); }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -964,11 +968,7 @@ void CLogicimWindowContent::Undo(bool bStep)
 // Ctrl+Shift+Z, or the menu's Redo; bStep is Ctrl+Alt+Shift+Z.  As Undo.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::Redo(bool bStep)
-{
-	mpLogicimCircuit->GetEditor()->Redo(bStep);
-	UpdateInfo();
-}
+void CLogicimWindowContent::Redo(bool bStep) { PressUndo(true, bStep); }
 
 
 //////////////////////////////////////////////////////////////////////////

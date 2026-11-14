@@ -257,7 +257,8 @@ bool CLogicimApp::Check(const char* szSteps)
 // activatetab:<n> and closetab:<n> do to tab n (from 0) what clicking it
 // and its close cross do.  goto:<tab>:<pattern> prints what Go To's tab
 // (0 Components, 1 Nets, 2 Subcircuits) finds; gotopick:<tab>:<pattern>:
-// <n> goes to its nth result (from 0).
+// <n> goes to its nth result (from 0).  message: the status bar's
+// message.
 // keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
@@ -326,6 +327,10 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (strncmp(szStep, "gotopick:", 9) == 0)
 	{
 		GoToStep(&szStep[9], true);
+	}
+	else if (StringCompare(szStep, "message") == 0)
+	{
+		printf("Message: %s\n", mpContent->GetMessage());
 	}
 	else if (StringCompare(szStep, "tabs") == 0)
 	{

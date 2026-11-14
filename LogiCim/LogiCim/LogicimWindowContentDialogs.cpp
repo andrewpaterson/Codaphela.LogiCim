@@ -1019,7 +1019,7 @@ void CLogicimWindowContent::ShowImportProgress(const char* szBoard, const char* 
 	szText.Append(szBoard);
 	szText.Append(": ");
 	szText.Append(szStage);
-	mpImportInfo->SetText(szText.Text());
+	mpMessageInfo->SetText(szText.Text());
 	szText.Kill();
 	mpImportBar->SetProgress((int64)uiStep, (int64)uiSteps);
 	mpWindow->PaintNow();
@@ -1099,7 +1099,7 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 	cProgress.Init(this);
 	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Separator));
 	bResult = mpLogicimCircuit->ImportKicadSchematic(szFilename, &cProgress);
-	mpImportInfo->SetText("");
+	mpMessageInfo->SetText("");
 	mpImportBar->SetFraction(0);
 	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Panel));
 	if (bResult)

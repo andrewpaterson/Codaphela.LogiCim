@@ -45,6 +45,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/KeymapPage.h"
 #include "WindowLib/TreeContainer.h"
 #include "LogicimGoTo.h"
+#include "WindowLib/RevealingUndo.h"
 #include "LogicimNavigationHistory.h"
 
 
@@ -131,7 +132,7 @@ public:
 //The dialogs (a component's properties, a new subcircuit, a new simulation) are native windows shown modally.
 //
 //The content is an object; keep it under the root, see Setup.  It holds the window, its widgets and LogiCim's circuit.
-class CLogicimWindowContent : public CObject, public CDockManagerListener, public CCircuitEditorListener
+class CLogicimWindowContent : public CObject, public CDockManagerListener, public CCircuitEditorListener, public CRevealingUndoHost
 {
 CONSTRUCTABLE(CLogicimWindowContent);
 DESTRUCTABLE(CLogicimWindowContent);
@@ -180,7 +181,7 @@ protected:
 	Ptr<CLabel>				mpMouseXInfo;
 	Ptr<CLabel>				mpMouseYInfo;
 	Ptr<CLabel>				mpZoomInfo;
-	Ptr<CLabel>				mpImportInfo;  //A KiCad import's board and step while it's imported, empty otherwise.
+	Ptr<CLabel>				mpMessageInfo;  //A KiCad import's board and step while it's imported, or what Undo would undo; empty otherwise.
 	Ptr<CProgressBar>		mpImportBar;  //How far through the board's steps it is, the panel's colour otherwise.
 
 	Ptr<CLogicimCircuit>			mpLogicimCircuit;
@@ -193,6 +194,8 @@ protected:
 	CChars							mszChooserSelected;  //The component last chosen.
 	CLogicimNavigationHistory		mcHistory;
 	CLogicimGoTo					mcGoTo;  //What Go To finds.
+	CRevealingUndo					mcUndo;  //Undo that shows a change out of view before undoing it.
+	bool							mbUndoStep;  //The undo being pressed is Ctrl+Alt+Z's (or redo's), a step at a time.
 	Ptr<CGoToDialog>				mpGoToDialog;  //While it's shown.  //The places Back and Forward go to.
 	bool							mbNavigating;  //While Back or Forward moves, so the move isn't recorded as one.
 	CChars							mszSimulationName;  //As New Simulation named it, empty for the circuit simulated's.
@@ -238,6 +241,12 @@ public:
 	void				DocumentSelected(CDockPane* pcPane) override;
 	void				OpenInNewTab(SCircuitPlace* psPlace);
 	void				ProjectChanged(void) override;
+	bool				IsUndoShown(bool bRedo) override;
+	bool				ShowUndo(bool bRedo) override;
+	bool				DoUndo(bool bRedo) override;
+	void				AppendUndoState(CChars* pszDest) override;
+	void				AppendUndoWhere(bool bRedo, CChars* pszDest) override;
+	char*				GetMessage(void);
 	void				ActivateCanvas(CCircuitCanvas* pcCanvas);
 	size				NumTabs(void);
 	size				GetActiveTab(void);
@@ -332,6 +341,7 @@ protected:
 	void					RequestGoTo(void);
 	void					ShowGoToDialog(void);
 	void					CentreOnSelection(void);
+	void					PressUndo(bool bRedo, bool bStep);
 	Ptr<CTreeContainer>		CreateTree(void);
 	void					ListSimulation(void);
 	void					AddInstanceNodes(int32 iParent, CCircuitView* pcCircuit, const char* szPath);

@@ -276,3 +276,131 @@ void CLogicimWindowContent::CentreOnSelection(void)
 	}
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Undo or redo pressed: through the revealing undo, which shows a change
+// out of view before undoing it, saying so in the status bar with the
+// keys that undo it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::PressUndo(bool bRedo, bool bStep)
+{
+	CChars			szKeys;
+	CChars			szMessage;
+	Ptr<CCommand>	pCommand;
+
+	pCommand = mpCommands->Find(bStep ? (bRedo ? "Edit.StepRedo" : "Edit.StepUndo") : (bRedo ? "Edit.Redo" : "Edit.Undo"));
+	szKeys.Init();
+	if (pCommand.IsNotNull())
+	{
+		pCommand->AppendKeysText(&szKeys, mpWindow->GetComponentInput());
+	}
+	szMessage.Init();
+	mbUndoStep = bStep;
+	mcUndo.Press(bRedo, szKeys.Text(), &szMessage);
+	mpMessageInfo->SetText(szMessage.Text());
+	szMessage.Kill();
+	szKeys.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The change the next undo (or redo) would undo is in view if it was made
+// in the place edited, or if that place is gone (then there's nowhere to
+// show it, and it's undone as it is).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::IsUndoShown(bool bRedo)
+{
+	SCircuitPlace	sChange;
+	SCircuitPlace	sHere;
+	CCircuitView*	pcTop;
+	CChars			szPath;
+	bool			bShown;
+
+	sChange.Init();
+	sHere.Init();
+	bShown = true;
+	if (mpLogicimCircuit->GetEditor()->GetUndoPlace(bRedo, mbUndoStep, &sChange))
+	{
+		GetPlace(&sHere);
+		pcTop = mpLogicimCircuit->GetEditor()->GetCircuits()->Get(sChange.szCircuit.Text());
+		szPath.Init();
+		bShown = sHere.IsSameView(&sChange) || (pcTop == NULL) || !ResolveInstancePath(pcTop, sChange.szPath.Text(), &szPath);
+		szPath.Kill();
+	}
+	sHere.Kill();
+	sChange.Kill();
+	return bShown;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The editor goes to where the change was made (a step for Back).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::ShowUndo(bool bRedo)
+{
+	SCircuitPlace	sChange;
+	bool			bResult;
+
+	sChange.Init();
+	bResult = mpLogicimCircuit->GetEditor()->GetUndoPlace(bRedo, mbUndoStep, &sChange) && ShowPlace(&sChange);
+	sChange.Kill();
+	return bResult;
+}
+
+
+bool CLogicimWindowContent::DoUndo(bool bRedo)
+{
+	bool	bResult;
+
+	bResult = bRedo ? mpLogicimCircuit->GetEditor()->Redo(mbUndoStep) : mpLogicimCircuit->GetEditor()->Undo(mbUndoStep);
+	UpdateInfo();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The undo history's position and the place edited: a second press is
+// only a second press if neither has changed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::AppendUndoState(CChars* pszDest)
+{
+	SCircuitPlace	sHere;
+
+	pszDest->Append((int64)mpLogicimCircuit->GetEditor()->GetUndoStack()->GetCurrentId());
+	pszDest->Append(' ');
+	sHere.Init();
+	GetPlace(&sHere);
+	sHere.Print(pszDest);
+	sHere.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// "in Board in U2": as the change's place's tab would be titled.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::AppendUndoWhere(bool bRedo, CChars* pszDest)
+{
+	SCircuitPlace	sChange;
+
+	sChange.Init();
+	if (mpLogicimCircuit->GetEditor()->GetUndoPlace(bRedo, mbUndoStep, &sChange))
+	{
+		pszDest->Append("in ");
+		AppendTabTitle(&sChange, pszDest);
+	}
+	sChange.Kill();
+}
+
+
+char* CLogicimWindowContent::GetMessage(void) { return mpMessageInfo->GetText(); }
+

@@ -152,4 +152,16 @@ Places that change (2026-11-14)
   left (fitted when it's next edited) if an instance on it went; closed if its circuit went, the first tab instead
   going to the top of the circuit simulated.  Back and Forward still skip places that are gone.
 
+Undo that doesn't bounce (2026-11-14)
+-------------------------------------
+
+- Moving (choosing a circuit, entering or leaving an instance, a tab, Back, Forward, Go To) isn't a change to undo.
+  Each undo snapshot is where its change was made; undoing a change goes back there (CCircuitEditor::GetUndoPlace,
+  EnterPlace).
+- Undo and redo go through WindowLib's CRevealingUndo: a change made where the editor is is undone at once; one made
+  elsewhere is shown by the first press, the status bar saying "Ctrl+Z again to undo the change in Gate in U3", and
+  undone by the second, if nothing changed in between.  "In view" is the place: the same circuit along the same path.
+- The HCP65 IDE can use the same class: its CTextArea editors would say whether the next undo's lines are on screen,
+  scroll to them, and undo.  It isn't wired in yet.
+
 Nothing is left open.
