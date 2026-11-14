@@ -51,8 +51,11 @@ class CFamilyVoltageConfigurationStore;
 //fixed number of pin positions (SetPinPositions), as a board's edge connector does: then a pin's weight is its position
 //along the side from 0, a position without a pin is left empty and the side is as long as all its positions.
 //
-//SaveXML writes a <Circuit> element (with a type attribute if it has a type name, and leftPositions, rightPositions,
-//topPositions and bottomPositions for the sides with fixed positions) holding an element per component (in the order
+//The keys that place an instance of the circuit are the project's, kept with it as the application writes them
+//(SetPlaceKeys): LogiCim's are "<context>:<keys>" separated by semicolons.
+//
+//SaveXML writes a <Circuit> element (with a type attribute if it has a type name, leftPositions, rightPositions,
+//topPositions and bottomPositions for the sides with fixed positions, and placeKeys if it has any) holding an element per component (in the order
 //they were added) and then a <Trace> per wire.  LoadXML adds what such an element holds to the circuit
 //view.  Instances of subcircuits in it are loaded without their subcircuits, which are found by type name afterwards
 //(see CCircuitViews).
@@ -63,6 +66,7 @@ protected:
 	CArrayComponentViewPtr	mapcComponents;
 	CArrayTraceViewPtr		mapcTraces;
 	int32					maiPinPositions[4];  //Left, right, top and bottom: the side's fixed pin positions, 0 if its pins are in order.
+	CChars					mszPlaceKeys;
 
 public:
 	void				Init(void);
@@ -99,6 +103,8 @@ public:
 	char*				GetTypeName(void);
 	void				SetPinPositions(EPinAlignment eSide, int32 iPositions);
 	int32				GetPinPositions(EPinAlignment eSide);
+	void				SetPlaceKeys(const char* szKeys);
+	char*				GetPlaceKeys(void);
 
 	void				SaveXML(CXMLWriter* pcWriter);
 	bool				LoadXML(CMarkupTag* pcCircuitTag);

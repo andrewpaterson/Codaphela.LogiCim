@@ -44,6 +44,7 @@ void CCircuitView::Init(void)
 	size	i;
 
 	mszTypeName.Init();
+	mszPlaceKeys.Init();
 	mapcComponents.Init();
 	mapcTraces.Init();
 	for (i = 0; i < 4; i++)
@@ -76,6 +77,7 @@ void CCircuitView::Kill(void)
 		SafeKill(pcComponent);
 	}
 	mapcComponents.Kill();
+	mszPlaceKeys.Kill();
 	mszTypeName.Kill();
 }
 
@@ -765,6 +767,10 @@ void CCircuitView::SaveXML(CXMLWriter* pcWriter)
 			pcWriter->Attribute(gaszPinPositionsAttributes[i], maiPinPositions[i]);
 		}
 	}
+	if (!mszPlaceKeys.Empty())
+	{
+		pcWriter->Attribute("placeKeys", mszPlaceKeys.Text());
+	}
 	for (i = 0; i < mapcComponents.NumElements(); i++)
 	{
 		mapcComponents.GetPtr(i)->SaveXML(pcWriter);
@@ -800,6 +806,16 @@ int32 CCircuitView::GetPinPositions(EPinAlignment eSide)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The keys that place an instance of the circuit, as the application
+// writes them; empty for none.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::SetPlaceKeys(const char* szKeys) { mszPlaceKeys.Set(StrEmpty(szKeys) ? "" : szKeys); }
+char* CCircuitView::GetPlaceKeys(void) { return mszPlaceKeys.Text(); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Stops at the first element it can't read; what was read before it stays
 // in the circuit view.
 //
@@ -822,6 +838,7 @@ bool CCircuitView::LoadXML(CMarkupTag* pcCircuitTag)
 	{
 		mszTypeName.Set(szTypeName);
 	}
+	SetPlaceKeys(pcCircuitTag->GetStringAttribute("placeKeys"));
 	for (i = 0; i < 4; i++)
 	{
 		if ((pcCircuitTag->GetStringAttribute(gaszPinPositionsAttributes[i]) != NULL) && (!pcCircuitTag->GetInt32Attribute(gaszPinPositionsAttributes[i], &maiPinPositions[i]) || (maiPinPositions[i] < 0)))

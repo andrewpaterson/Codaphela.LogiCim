@@ -1501,6 +1501,49 @@ void TestSubcircuitPinPositions(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The keys that place a subcircuit are kept with it, as the application
+// wrote them, and a circuit without any says nothing of them.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSubcircuitPlaceKeys(void)
+{
+	SSubcircuitTest		sTest;
+	CCircuitView*		pcBoard;
+	CCircuitView*		pcTop;
+	CCircuitViews		cLoaded;
+	CXMLWriter			cText;
+	CFileUtil			cFileUtil;
+
+	sTest.Init();
+	pcBoard = sTest.cCircuits.Add("Board");
+	pcTop = sTest.cCircuits.Add("Top");
+	AssertString("", pcBoard->GetPlaceKeys());
+	pcBoard->SetPlaceKeys("Circuit:Shift+B;Global:Control+Alt+B");
+	AssertString("Circuit:Shift+B;Global:Control+Alt+B", pcBoard->GetPlaceKeys());
+
+	cText.Init();
+	SaveCircuitsXML(&sTest.cCircuits, pcTop, NULL, &cText);
+	AssertTrue(strstr(cText.GetText(), "<Circuit type=\"Board\" placeKeys=\"Circuit:Shift+B;Global:Control+Alt+B\"/>") != NULL);
+	AssertTrue(strstr(cText.GetText(), "<Circuit type=\"Top\"/>") != NULL);
+	cText.Kill();
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitsFile(&sTest.cCircuits, pcTop, NULL, "Output" _FS_ "PlaceKeys.xml"));
+	cLoaded.Init();
+	AssertTrue(LoadCircuitsFile(&cLoaded, "Top", NULL, NULL, "Output" _FS_ "PlaceKeys.xml"));
+	AssertString("Circuit:Shift+B;Global:Control+Alt+B", cLoaded.Get("Board")->GetPlaceKeys());
+	AssertString("", cLoaded.Get("Top")->GetPlaceKeys());
+	cLoaded.Kill();
+	cFileUtil.Delete("Output" _FS_ "PlaceKeys.xml");
+
+	pcBoard->SetPlaceKeys(NULL);
+	AssertString("", pcBoard->GetPlaceKeys());
+	sTest.Kill(true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A view's import box holds the text it draws outside its bounding box: a
 // pin's name is past the end of its box.
 //
@@ -1559,6 +1602,7 @@ void TestSubcircuits(void)
 	TestSubcircuitLayoutRender();
 	TestSubcircuitPinSpacing();
 	TestSubcircuitPinPositions();
+	TestSubcircuitPlaceKeys();
 	TestComponentImportBoundingBox();
 
 	DataMemoryKill();
