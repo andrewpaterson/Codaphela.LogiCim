@@ -244,7 +244,6 @@ public:
 	bool				IsUndoShown(bool bRedo) override;
 	bool				ShowUndo(bool bRedo) override;
 	bool				DoUndo(bool bRedo) override;
-	void				AppendUndoState(CChars* pszDest) override;
 	void				AppendUndoWhere(bool bRedo, CChars* pszDest) override;
 	char*				GetMessage(void);
 	void				ActivateCanvas(CCircuitCanvas* pcCanvas);

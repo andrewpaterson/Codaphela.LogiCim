@@ -366,25 +366,6 @@ bool CLogicimWindowContent::DoUndo(bool bRedo)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The undo history's position and the place edited: a second press is
-// only a second press if neither has changed.
-//
-//////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::AppendUndoState(CChars* pszDest)
-{
-	SCircuitPlace	sHere;
-
-	pszDest->Append((int64)mpLogicimCircuit->GetEditor()->GetUndoStack()->GetCurrentId());
-	pszDest->Append(' ');
-	sHere.Init();
-	GetPlace(&sHere);
-	sHere.Print(pszDest);
-	sHere.Kill();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // "in Board in U2": as the change's place's tab would be titled.
 //
 //////////////////////////////////////////////////////////////////////////
