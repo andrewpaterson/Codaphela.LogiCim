@@ -33,12 +33,14 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 //A side of an instance's pins grouped by anchour, as Logicim's PinViewLists: each group sorted by weight and then
 //name (and then the order the pins are in their circuit), the centre group spread out from the middle and the
 //positive group reversed.  The pin size is the pins and a space between groups; the extended size has a space at
-//each end too.
+//each end too.  A side with fixed positions (see CCircuitView::SetPinPositions) has all its pins in the negative
+//group, each at its weight's position, and its pin size is all its positions.
 struct SPinSide
 {
 	CArrayTemplatePtr<CPinView>		apcNegative;
 	CArrayTemplatePtr<CPinView>		apcCentre;
 	CArrayTemplatePtr<CPinView>		apcPositive;
+	int								iPositions;  //The side's fixed pin positions, 0 if its pins are in order.
 	int								iPinSize;
 	int								iExtendedSize;
 
@@ -208,6 +210,7 @@ void SPinSide::Init(CCircuitView* pcCircuit, EPinAlignment eAlignment, int iSpac
 	apcNegative.Init();
 	apcCentre.Init();
 	apcPositive.Init();
+	iPositions = pcCircuit->GetPinPositions(eAlignment);
 
 	apcPins.Init();
 	GetCircuitPinViews(pcCircuit, &apcPins);
@@ -216,7 +219,7 @@ void SPinSide::Init(CCircuitView* pcCircuit, EPinAlignment eAlignment, int iSpac
 		pcPin = apcPins.GetPtr(i);
 		if (pcPin->GetAlignment() == eAlignment)
 		{
-			if (pcPin->GetAnchour() == PAN_Negative)
+			if ((iPositions > 0) || (pcPin->GetAnchour() == PAN_Negative))
 			{
 				apcNegative.Add(pcPin);
 			}
@@ -237,6 +240,13 @@ void SPinSide::Init(CCircuitView* pcCircuit, EPinAlignment eAlignment, int iSpac
 	SortPinViews(&apcPositive);
 	OrderCentrePinViews(&apcCentre);
 	ReversePinViews(&apcPositive);
+
+	if (iPositions > 0)
+	{
+		iPinSize = iSpacing * iPositions;
+		iExtendedSize = iPinSize + iSpacing + 1;
+		return;
+	}
 
 	iGroups = 0;
 	iGroups += (apcNegative.NumElements() > 0) ? 1 : 0;
@@ -303,8 +313,25 @@ static int AddPinOffsets(CArrayPinOffset* pasOffsets, int iOffset, int iSpacing,
 //////////////////////////////////////////////////////////////////////////
 static void CalculatePinOffsets(CArrayPinOffset* pasOffsets, SPinSide* psSide, int iOffset, int iOpposite, int iSpacing)
 {
-	int		iMissing;
-	int		iLastNegative;
+	int				iMissing;
+	int				iLastNegative;
+	size			i;
+	SPinOffset*		psOffset;
+	int				iPosition;
+
+	//Fixed positions: each pin at its weight's, as the negative pins are when there's one at every position.
+	if (psSide->iPositions > 0)
+	{
+		for (i = 0; i < psSide->apcNegative.NumElements(); i++)
+		{
+			iPosition = psSide->apcNegative.GetPtr(i)->GetWeight();
+			iPosition = (iPosition < 0) ? 0 : ((iPosition >= psSide->iPositions) ? psSide->iPositions - 1 : iPosition);
+			psOffset = pasOffsets->Add();
+			psOffset->pcPin = psSide->apcNegative.GetPtr(i);
+			psOffset->iOffset = iOffset + iSpacing * (iPosition + 1);
+		}
+		return;
+	}
 
 	iMissing = (iOpposite - iOffset) - psSide->iPinSize;
 	iLastNegative = AddPinOffsets(pasOffsets, iOffset + iSpacing, iSpacing, &psSide->apcNegative);

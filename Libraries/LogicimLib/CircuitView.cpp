@@ -31,15 +31,25 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "CircuitView.h"
 
 
+//The attributes of a side's fixed pin positions, in the order of PA_Left on.
+static const char*	gaszPinPositionsAttributes[4] = { "leftPositions", "rightPositions", "topPositions", "bottomPositions" };
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
 void CCircuitView::Init(void)
 {
+	size	i;
+
 	mszTypeName.Init();
 	mapcComponents.Init();
 	mapcTraces.Init();
+	for (i = 0; i < 4; i++)
+	{
+		maiPinPositions[i] = 0;
+	}
 }
 
 
@@ -748,6 +758,13 @@ void CCircuitView::SaveXML(CXMLWriter* pcWriter)
 	{
 		pcWriter->Attribute("type", mszTypeName.Text());
 	}
+	for (i = 0; i < 4; i++)
+	{
+		if (maiPinPositions[i] > 0)
+		{
+			pcWriter->Attribute(gaszPinPositionsAttributes[i], maiPinPositions[i]);
+		}
+	}
 	for (i = 0; i < mapcComponents.NumElements(); i++)
 	{
 		mapcComponents.GetPtr(i)->SaveXML(pcWriter);
@@ -757,6 +774,27 @@ void CCircuitView::SaveXML(CXMLWriter* pcWriter)
 		mapcTraces.GetPtr(i)->SaveXML(pcWriter);
 	}
 	pcWriter->End();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The side's fixed pin positions (see the class), 0 to show its pins in
+// their order.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::SetPinPositions(EPinAlignment eSide, int32 iPositions)
+{
+	if ((eSide >= PA_Left) && (eSide <= PA_Bottom))
+	{
+		maiPinPositions[eSide - PA_Left] = (iPositions > 0) ? iPositions : 0;
+	}
+}
+
+
+int32 CCircuitView::GetPinPositions(EPinAlignment eSide)
+{
+	return ((eSide >= PA_Left) && (eSide <= PA_Bottom)) ? maiPinPositions[eSide - PA_Left] : 0;
 }
 
 
@@ -773,6 +811,7 @@ bool CCircuitView::LoadXML(CMarkupTag* pcCircuitTag)
 	CComponentView*		pcComponent;
 	CTraceView*			pcTrace;
 	char*				szTypeName;
+	size				i;
 
 	if (!pcCircuitTag->Is("Circuit"))
 	{
@@ -782,6 +821,13 @@ bool CCircuitView::LoadXML(CMarkupTag* pcCircuitTag)
 	if (szTypeName != NULL)
 	{
 		mszTypeName.Set(szTypeName);
+	}
+	for (i = 0; i < 4; i++)
+	{
+		if ((pcCircuitTag->GetStringAttribute(gaszPinPositionsAttributes[i]) != NULL) && (!pcCircuitTag->GetInt32Attribute(gaszPinPositionsAttributes[i], &maiPinPositions[i]) || (maiPinPositions[i] < 0)))
+		{
+			return gcLogger.Error2(__METHOD__, " Circuit [", mszTypeName.Text(), "] needs a whole number of pin positions [", gaszPinPositionsAttributes[i], "], 0 or more.", NULL);
+		}
 	}
 
 	pcTag = pcCircuitTag->GetTag(&sIter);

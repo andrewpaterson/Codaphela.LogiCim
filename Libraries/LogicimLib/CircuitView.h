@@ -25,6 +25,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "ComponentView.h"
 #include "TraceView.h"
 #include "TraceLines.h"
+#include "ValueView.h"
 
 
 class CCircuitSimulation;
@@ -46,8 +47,13 @@ class CFamilyVoltageConfigurationStore;
 //DestroyComponent takes removed views' components out of the running simulation, and then the simulation is wired
 //again (see CCircuitWiring::Rewire).
 //
-//SaveXML writes a <Circuit> element (with a type attribute if it has a type name) holding an element per component
-//(in the order they were added) and then a <Trace> per wire.  LoadXML adds what such an element holds to the circuit
+//An instance of the circuit shows its pins on its sides in their order (their weights).  A side can instead have a
+//fixed number of pin positions (SetPinPositions), as a board's edge connector does: then a pin's weight is its position
+//along the side from 0, a position without a pin is left empty and the side is as long as all its positions.
+//
+//SaveXML writes a <Circuit> element (with a type attribute if it has a type name, and leftPositions, rightPositions,
+//topPositions and bottomPositions for the sides with fixed positions) holding an element per component (in the order
+//they were added) and then a <Trace> per wire.  LoadXML adds what such an element holds to the circuit
 //view.  Instances of subcircuits in it are loaded without their subcircuits, which are found by type name afterwards
 //(see CCircuitViews).
 class CCircuitView : public CCircuitInstanceView
@@ -56,6 +62,7 @@ protected:
 	CChars					mszTypeName;
 	CArrayComponentViewPtr	mapcComponents;
 	CArrayTraceViewPtr		mapcTraces;
+	int32					maiPinPositions[4];  //Left, right, top and bottom: the side's fixed pin positions, 0 if its pins are in order.
 
 public:
 	void				Init(void);
@@ -90,6 +97,8 @@ public:
 	void				AppendDescription(CChars* psz);
 	void				SetTypeName(const char* szTypeName);
 	char*				GetTypeName(void);
+	void				SetPinPositions(EPinAlignment eSide, int32 iPositions);
+	int32				GetPinPositions(EPinAlignment eSide);
 
 	void				SaveXML(CXMLWriter* pcWriter);
 	bool				LoadXML(CMarkupTag* pcCircuitTag);

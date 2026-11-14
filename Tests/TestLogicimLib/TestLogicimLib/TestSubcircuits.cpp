@@ -1420,6 +1420,87 @@ void TestSubcircuitPinSpacing(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A side with fixed pin positions (as a board's edge connector has) puts
+// each pin at its weight's position, leaving the positions without pins
+// empty, so pins on the left and right with the same position are level
+// and the side is as long as all its positions.  The positions are kept
+// in its file; a side without them isn't written.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSubcircuitPinPositions(void)
+{
+	SSubcircuitTest				sTest;
+	Ptr<CCircuitFonts>			pFonts;
+	CCircuitView*				pcBoard;
+	CCircuitView*				pcTop;
+	CSubcircuitInstanceView*	pcFixed;
+	CSubcircuitInstanceView*	pcLoaded;
+	CCircuitViews				cLoaded;
+	CXMLWriter					cText;
+	CFileUtil					cFileUtil;
+	int32						iInOrderHeight;
+
+	sTest.Init();
+	pFonts = LoadTestCircuitFonts();
+	pcBoard = sTest.cCircuits.Add("Board");
+	AddTestPin(pcBoard, 0, 0, "A", PA_Left, PAN_Negative)->SetSubcircuitAppearance(PA_Left, PAN_Negative, 0, false, false);
+	AddTestPin(pcBoard, 0, 3, "B", PA_Left, PAN_Negative)->SetSubcircuitAppearance(PA_Left, PAN_Negative, 3, false, false);
+	AddTestPin(pcBoard, 0, 6, "C", PA_Left, PAN_Negative)->SetSubcircuitAppearance(PA_Left, PAN_Negative, 7, false, false);
+	AddTestPin(pcBoard, 9, 0, "X", PA_Right, PAN_Negative)->SetSubcircuitAppearance(PA_Right, PAN_Negative, 1, false, false);
+	AddTestPin(pcBoard, 9, 3, "Y", PA_Right, PAN_Centre)->SetSubcircuitAppearance(PA_Right, PAN_Centre, 7, false, false);
+	AssertInt(0, pcBoard->GetPinPositions(PA_Left));
+	pcTop = sTest.cCircuits.Add("Top");
+
+	//In order, the left side's three pins are next to each other.
+	pcFixed = NewMalloc<CSubcircuitInstanceView>();
+	pcFixed->Init(0, 0, ROT_East, "U1", "", pcBoard, &pFonts, 2);
+	AssertInt(2, GetPinPosition(pcFixed, "B").y - GetPinPosition(pcFixed, "A").y);
+	iInOrderHeight = pcFixed->GetLayout()->sBox.sMaximum.y - pcFixed->GetLayout()->sBox.sMinimum.y;
+	SafeKill(pcFixed);
+
+	pcBoard->SetPinPositions(PA_Left, 10);
+	pcBoard->SetPinPositions(PA_Right, 10);
+	AssertInt(10, pcBoard->GetPinPositions(PA_Left));
+	AssertInt(0, pcBoard->GetPinPositions(PA_Top));
+	pcFixed = NewMalloc<CSubcircuitInstanceView>();
+	pcFixed->Init(0, 0, ROT_East, "U1", "", pcBoard, &pFonts, 2);
+	pcTop->Add(pcFixed);
+	AssertInt(6, GetPinPosition(pcFixed, "B").y - GetPinPosition(pcFixed, "A").y);
+	AssertInt(8, GetPinPosition(pcFixed, "C").y - GetPinPosition(pcFixed, "B").y);
+	AssertInt(2, GetPinPosition(pcFixed, "X").y - GetPinPosition(pcFixed, "A").y);
+	AssertInt(GetPinPosition(pcFixed, "C").y, GetPinPosition(pcFixed, "Y").y);
+	AssertTrue(GetPinPosition(pcFixed, "X").x != GetPinPosition(pcFixed, "A").x);
+	AssertTrue((pcFixed->GetLayout()->sBox.sMaximum.y - pcFixed->GetLayout()->sBox.sMinimum.y) >= 2 * 10);
+	AssertTrue((pcFixed->GetLayout()->sBox.sMaximum.y - pcFixed->GetLayout()->sBox.sMinimum.y) > iInOrderHeight);
+
+	cText.Init();
+	SaveCircuitsXML(&sTest.cCircuits, pcTop, NULL, &cText);
+	AssertTrue(strstr(cText.GetText(), "<Circuit type=\"Board\" leftPositions=\"10\" rightPositions=\"10\">") != NULL);
+	AssertTrue(strstr(cText.GetText(), "topPositions") == NULL);
+	AssertTrue(strstr(cText.GetText(), "<Circuit type=\"Top\">") != NULL);
+	cText.Kill();
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitsFile(&sTest.cCircuits, pcTop, NULL, "Output" _FS_ "PinPositions.xml"));
+	cLoaded.Init();
+	AssertTrue(LoadCircuitsFile(&cLoaded, "Top", NULL, NULL, "Output" _FS_ "PinPositions.xml"));
+	AssertInt(10, cLoaded.Get("Board")->GetPinPositions(PA_Left));
+	AssertInt(10, cLoaded.Get("Board")->GetPinPositions(PA_Right));
+	AssertInt(0, cLoaded.Get("Board")->GetPinPositions(PA_Bottom));
+	pcLoaded = (CSubcircuitInstanceView*)cLoaded.Get("Top")->GetComponent(0);
+	AssertInt(GetPinPosition(pcFixed, "C").y, GetPinPosition(pcLoaded, "C").y);
+	AssertInt(GetPinPosition(pcFixed, "X").y, GetPinPosition(pcLoaded, "X").y);
+	cLoaded.Kill();
+	cFileUtil.Delete("Output" _FS_ "PinPositions.xml");
+
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
+	sTest.Kill(true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A view's import box holds the text it draws outside its bounding box: a
 // pin's name is past the end of its box.
 //
@@ -1477,6 +1558,7 @@ void TestSubcircuits(void)
 	TestSubcircuitFileRoundTrip();
 	TestSubcircuitLayoutRender();
 	TestSubcircuitPinSpacing();
+	TestSubcircuitPinPositions();
 	TestComponentImportBoundingBox();
 
 	DataMemoryKill();
