@@ -1,0 +1,123 @@
+Navigation Plan: Trees, Tabs, Back and Forward, Go To
+=====================================================
+
+Moving around a LogiCim project with WindowLib's parts from the HCP65 IDE: the Simulation and Subcircuits panes as
+trees (CTreeContainer), circuits open in tabs (the dock's document panes), Back and Forward through the places visited,
+and Go To (CGoToDialog).  Items 3 to 6 of the list of what to bring over from the IDE (1 dock panes, 2 Settings'
+Keymap, are done).
+
+
+Decided (user, 2026-11-14)
+--------------------------
+
+- The Simulation Tree replaces the placeholder Simulations pane: a dockable tree of the simulated circuit's
+  instances, nested; activating a node enters that instance.  View > Simulation Tree shows it.
+- The Subcircuits pane is a tree of what uses what: at the top the circuits nothing else uses (Main), under each
+  circuit the distinct circuits it uses, so one used in several places appears under each.  Choosing one edits it,
+  as the list does now.
+- A tab is a place: a top circuit, the instance path into it and the zoom and centre.  There is one editor, one
+  simulation and one undo history: the active tab moves the editor there.  A tab inside the circuit simulated keeps
+  its simulation; a tab on another top circuit restarts the simulation on it, as choosing it in Subcircuits does.
+- The open tabs are saved in the project file.
+- Go To finds each instance in the simulation: U12 inside both Audio Boards is two results, and choosing one enters
+  that instance path and selects it, its live state showing.
+- Back and Forward step through moves between places (entering or leaving a subcircuit, choosing a circuit, switching
+  tab, a tree's node, Go To), each place coming back with the zoom and centre it had.  Zooming and panning aren't
+  steps.  Keys Ctrl+Alt+Left and Ctrl+Alt+Right, as the IDE's.
+
+
+Design
+------
+
+A place (SLogicimPlace): the top circuit's type name, the instance path into it as the editor writes it
+(CCircuitEditor::GetInstancePathText, "12/3", each instance's index in the circuit before it), the zoom and the
+centre.  CLogicimWindowContent::ShowPlace(place) is the one way to move the editor: Simulate the top circuit if it
+isn't the one simulated, else LeaveInstances; enter each instance on the path (CCircuitEditor::FindInstancePath);
+set the viewport.  It fails, changing nothing, for a place that's gone (a circuit removed, a path whose instance
+isn't there after an edit or an undo); Back, Forward and the saved tabs skip such places.
+
+The editor is the only thing that edits.  Each tab has its own canvas and canvas draw (its own viewport); the active
+tab's canvas is the editor's.  A canvas that's visible but not active (the dock split in two) draws its own place:
+CCircuitCanvasDraw paints a given circuit and view path, with the simulation's state if its place is in the circuit
+simulated, without it otherwise.
+
+Undo restores the editor's circuit and path with the snapshot: the active tab follows it there (its place changes),
+and that's a step for Back.  Tabs aren't in undo snapshots: loading a snapshot leaves them as they are.
+
+The trees are made again only when what they show changed (as ListSubcircuits does): the circuits, or the simulated
+circuit's instances.  A big import has thousands of instances, so the Simulation tree's nodes below the top are
+made as they are opened if making them all is too slow (CTreeContainer has no lazy nodes yet: added if needed).
+
+
+Plan
+----
+
+Each numbered step is built, checked and committed on its own (LogiCim on main, CommonLibraries on master).  Checks
+are LogiCim's (LogicimChecks.py) with new check steps, TestWindowLib for anything in WindowLib, and TestLogicimLib
+for anything in LogicimLib; the real panes are tried on the isolated X server.
+
+1. Places
+   1.1 SLogicimPlace, and CLogicimWindowContent::GetPlace and ShowPlace as above; EnterSubcircuit, LeaveSubcircuit
+       and SubcircuitSelected go through ShowPlace.
+   1.2 CCircuitEditor (LogicimLib) can enter a path from its top in one call, if FindInstancePath and EnterInstance
+       don't already make it one; TestLogicimLib.
+   1.3 Check steps: place (prints the current place), showplace:<top>:<path>.  Checks: a nested project's places,
+       a gone place refused.
+
+2. The Simulation tree
+   2.1 The Simulations pane becomes the Simulation pane: a CTreeContainer, its top the circuit simulated, under each
+       circuit its subcircuit instances in the circuit's order, each "U3 (Audio Board)", its node's data the
+       instance's index.  The pane's ID changes; a saved layout that has the old one lays the new one out as its
+       default.
+   2.2 It follows the editor: the current place's node selected and its parents opened.
+   2.3 Activating a node (a double click, or enter) shows its place; a click only selects.
+   2.4 View > Simulation Tree shows and activates the pane (View.SimulationTree runs, no longer logged); View >
+       Simulations goes.  New Simulation... is left as it is.
+   2.5 Check step simtree (prints the tree, the selected node marked); checks on a nested project.
+   2.6 Commit.
+
+3. The Subcircuits tree
+   3.1 The Subcircuits pane becomes a CTreeContainer: the circuits nothing uses at the top, under each the distinct
+       circuits it uses, sorted as the project lists them.
+   3.2 Choosing a node edits that circuit, as now; the edited circuit's first node selected.
+   3.3 Check step subcircuits (prints the tree); checks; commit.
+
+4. Back and Forward
+   4.1 CLogicimNavigationHistory: places back and forward (at most 50), a move recording the place left (with its
+       zoom and centre as they were) and clearing forward.  The IDE's CIDENavigationHistory is about files and lines,
+       so LogiCim's is its own.
+   4.2 Commands Navigate.Back and Navigate.Forward (Ctrl+Alt+Left, Ctrl+Alt+Right), in the View menu and the toolbar,
+       off when there's nothing to go to.
+   4.3 Places that are gone are skipped.
+   4.4 Check steps back, forward and history; checks; commit.
+
+5. Tabs
+   5.1 Each tab a dock document pane holding its own CCircuitCanvas and draw; the "Circuit" pane is the first.  The
+       active pane's place is the editor's (CDockManagerListener::ActivePaneChanged shows it); its title is the
+       place's circuit, with its instance ("Counter in U3").
+   5.2 Open in New Tab: on a subcircuit instance's canvas menu, and on the Simulation and Subcircuits trees' nodes
+       (a menu, or a middle click).  Otherwise moves happen in the active tab.  Tabs close, except the last.
+   5.3 A visible tab that isn't active draws its own place (CCircuitCanvasDraw given a circuit and view path).
+   5.4 Undo moving the editor moves the active tab's place.
+   5.5 Saved in the project: <Editor> holds a <Tab> per tab (top circuit, path, zoom, centre) and which is active;
+       written by Save, read by Load, not by undo.  A tab doesn't make a change to save: it's written next time.
+       TestLogicimLib for the Editor element (LogicimLib).
+   5.6 Check steps tabs, newtab, activatetab:<n>, closetab:<n>; checks; commit.
+
+6. Go To
+   6.1 Navigate.GoTo (Ctrl+N), a CGoToDialog with tabs: Components (every component instance in the simulation by
+       name, "U12" with "Main > U3 > U1" after it), Nets (tunnels and labels by name, each instance) and Subcircuits
+       (circuits by type name, edited at their top).
+   6.2 Its searcher walks the simulated circuit's instances, as the Simulation tree does; CNameMatcher matches.
+   6.3 Choosing a result shows its place (a step for Back), selects the component and centres on it.
+   6.4 Check step goto:<tab>:<text> (prints the results) and gotopick:<n>; checks; commit.
+
+7. Finish
+   7.1 This note's status; every check and test passing.
+
+
+Open
+----
+
+- Whether the Simulation tree needs lazy nodes for big imports (decided when step 2 is tried on the HCP65 project).
+- Whether a component's Go To row should also find it by type ("74HC00") as well as by name.
