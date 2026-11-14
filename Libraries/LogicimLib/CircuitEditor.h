@@ -20,6 +20,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __CIRCUIT_EDITOR_H__
 #define __CIRCUIT_EDITOR_H__
+#include "CircuitPlace.h"
 #include "CircuitViews.h"
 #include "CircuitFonts.h"
 #include "CircuitSelection.h"
@@ -172,6 +173,8 @@ protected:
 	Ptr<CCircuitFonts>					mpFonts;
 	CCircuitSelection					mcSelection;
 	CUndoStack							mcUndo;
+	CArrayCircuitPlace					masTabs;  //An application's tabs, kept with the project (SetTabs).
+	size								muiActiveTab;
 	CCircuitEdit*						mpcEdit;
 	CComponentView*						mpcNextUnit;
 	ERotation							meCreationRotation;
@@ -232,6 +235,9 @@ public:
 	bool				CanUndo(bool bStep = false);
 	bool				CanRedo(bool bStep = false);
 	CUndoStack*			GetUndoStack(void);
+	void				SetTabs(CArrayCircuitPlace* pasTabs, size uiActive);
+	CArrayCircuitPlace*	GetTabs(void);
+	size				GetActiveTab(void);
 
 	void				Paint(CCircuitPainter* pcPainter);
 
@@ -245,6 +251,7 @@ public:
 	bool				EnterInstance(CComponentView* pcInstance);
 	bool				LeaveInstance(void);
 	bool				EnterInstancePath(const char* szPath);
+	CViewPath*			GetInstanceViewPath(const char* szPath);
 	void				GetInstancePathText(CChars* psz);
 	CCircuitView*		FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath);
 	void				LeaveInstances(void);
@@ -314,6 +321,7 @@ protected:
 	bool				Rewire(CArrayComponentViewPtr* papcDetachedComponents = NULL, CArrayTraceViewPtr* papcDetachedTraces = NULL);
 	void				KillProject(bool bFreeing = false);
 	bool				LoadUndo(size uiIndex);
+	void				SaveTabsXML(CXMLWriter* pcWriter);
 	void				KillSimulation(bool bFreeing = false);
 };
 

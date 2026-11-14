@@ -1,3 +1,4 @@
+#include "BaseLib/TextFile.h"
 #include <math.h>
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/GlobalDataTypesIO.h"
@@ -1457,6 +1458,69 @@ void TestCircuitEditorEnterInstance(void)
 	AssertTrue(sTest.pEditor->EnterInstancePath(""));
 	AssertFalse(sTest.pEditor->IsInInstance());
 	AssertString("Main", sTest.pEditor->GetCircuit()->GetTypeName());
+
+	sTest.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An application's tabs are saved and loaded with the project, but undo
+// leaves them as they are, and setting them isn't a change.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestCircuitEditorTabs(void)
+{
+	SEditorTest			sTest;
+	CArrayCircuitPlace	asTabs;
+	SCircuitPlace*		psTab;
+	CFileUtil			cFileUtil;
+	CTextFile			cFile;
+	size				uiSnapshots;
+
+	sTest.Init(true);
+	AddEditorInverterSubcircuit(&sTest.pEditor, &sTest.pFonts);
+	sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	AssertSize(0, sTest.pEditor->GetTabs()->NumElements());
+
+	asTabs.Init();
+	psTab = asTabs.Add();
+	psTab->Init("Main", NULL);
+	psTab->sPosition.Init(12.5, -3);
+	psTab->fZoom = 2;
+	psTab = asTabs.Add();
+	psTab->Init("Main", "0/1");
+	uiSnapshots = sTest.pEditor->GetUndoStack()->NumSnapshots();
+	sTest.pEditor->SetTabs(&asTabs, 1);
+	AssertSize(uiSnapshots, sTest.pEditor->GetUndoStack()->NumSnapshots());
+	ClearCircuitPlaces(&asTabs);
+	asTabs.Kill();
+	AssertSize(2, sTest.pEditor->GetTabs()->NumElements());
+	AssertSize(1, sTest.pEditor->GetActiveTab());
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(sTest.pEditor->Save("Output" _FS_ "Tabs.xml"));
+	cFile.Init();
+	AssertTrue(cFile.Read("Output" _FS_ "Tabs.xml"));
+	AssertTrue(strstr(cFile.Text(), "activeTab=\"1\"") != NULL);
+	AssertTrue(strstr(cFile.Text(), "<Tab circuit=\"Main\" x=\"12.5\" y=\"-3\" zoom=\"2\"/>") != NULL);
+	AssertTrue(strstr(cFile.Text(), "<Tab circuit=\"Main\" path=\"0/1\" x=\"0\" y=\"0\" zoom=\"0\"/>") != NULL);
+	cFile.Kill();
+
+	//Undo keeps the tabs as they are now; loading the file brings back its own.
+	AssertTrue(sTest.pEditor->Simulate("Inverter"));
+	sTest.pEditor->SetTabs(sTest.pEditor->GetTabs(), 0);
+	AssertSize(2, sTest.pEditor->GetTabs()->NumElements());
+	AssertTrue(sTest.pEditor->Undo(true));
+	AssertSize(2, sTest.pEditor->GetTabs()->NumElements());
+	AssertSize(0, sTest.pEditor->GetActiveTab());
+	AssertTrue(sTest.pEditor->Load("Output" _FS_ "Tabs.xml"));
+	AssertSize(2, sTest.pEditor->GetTabs()->NumElements());
+	AssertSize(1, sTest.pEditor->GetActiveTab());
+	AssertString("0/1", sTest.pEditor->GetTabs()->Get(1)->szPath.Text());
+	AssertTrue(sTest.pEditor->GetTabs()->Get(0)->fZoom == 2);
+	cFileUtil.Delete("Output" _FS_ "Tabs.xml");
 
 	sTest.Kill();
 }
@@ -3572,6 +3636,7 @@ void TestCircuitEditor(void)
 	TestCircuitEditorRouteWire();
 	TestCircuitEditorSubcircuit();
 	TestCircuitEditorEnterInstance();
+	TestCircuitEditorTabs();
 	TestCircuitEditorComponentLibraries();
 	TestCircuitEditorPlaceEveryComponent();
 	TestCircuitEditorPlaceUnits();

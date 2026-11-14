@@ -136,6 +136,7 @@ void CCircuitEditor::SaveXML(CXMLWriter* pcWriter)
 			pcWriter->End();
 		}
 	}
+	SaveTabsXML(pcWriter);
 	pcWriter->End();
 	mpcCircuits->SaveXML(pcWriter);
 	if (mpSimulation.IsNotNull())
@@ -144,6 +145,59 @@ void CCircuitEditor::SaveXML(CXMLWriter* pcWriter)
 	}
 	pcWriter->End();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The application's tabs in <Editor>: a <Tab> each, and which is active
+// if there's more than one.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::SaveTabsXML(CXMLWriter* pcWriter)
+{
+	size			i;
+	SCircuitPlace*	psTab;
+
+	if (masTabs.NumElements() > 1)
+	{
+		pcWriter->Attribute("activeTab", (int64)muiActiveTab);
+	}
+	for (i = 0; i < masTabs.NumElements(); i++)
+	{
+		psTab = masTabs.Get(i);
+		pcWriter->Begin("Tab");
+		pcWriter->Attribute("circuit", psTab->szCircuit.Text());
+		if (!psTab->szPath.Empty())
+		{
+			pcWriter->Attribute("path", psTab->szPath.Text());
+		}
+		pcWriter->Attribute("x", psTab->sPosition.x);
+		pcWriter->Attribute("y", psTab->sPosition.y);
+		pcWriter->Attribute("zoom", psTab->fZoom);
+		pcWriter->End();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An application's tabs (copies of pasTabs, uiActive the one active),
+// saved and loaded with the project but not undone: undoing leaves them
+// as they are.  Setting them isn't a change to the project.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::SetTabs(CArrayCircuitPlace* pasTabs, size uiActive)
+{
+	if (pasTabs != &masTabs)
+	{
+		CopyCircuitPlaces(&masTabs, pasTabs);
+	}
+	muiActiveTab = (uiActive < masTabs.NumElements()) ? uiActive : 0;
+}
+
+
+CArrayCircuitPlace* CCircuitEditor::GetTabs(void) { return &masTabs; }
+size CCircuitEditor::GetActiveTab(void) { return muiActiveTab; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -171,7 +225,8 @@ bool CCircuitEditor::Load(const char* szFilename)
 
 
 //What a project's <Editor> says: the circuit being edited and the path into it, the creation rotation and mirroring,
-//and the selection as indices of components and traces in the circuit.  The strings point into the tag.
+//the selection as indices of components and traces in the circuit, and the application's tabs.  The strings point
+//into the tag.
 struct SCircuitEditorXML
 {
 	char*					szCircuit;
@@ -180,6 +235,8 @@ struct SCircuitEditorXML
 	bool					bMirrored;
 	CArrayTemplate<int64>	aiComponents;
 	CArrayTemplate<int64>	aiTraces;
+	CArrayCircuitPlace		asTabs;
+	int64					iActiveTab;
 
 	void	Init(void);
 	void	Kill(void);
@@ -199,6 +256,8 @@ void SCircuitEditorXML::Init(void)
 	bMirrored = false;
 	aiComponents.Init();
 	aiTraces.Init();
+	asTabs.Init();
+	iActiveTab = 0;
 }
 
 
@@ -208,9 +267,14 @@ void SCircuitEditorXML::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void SCircuitEditorXML::Kill(void)
 {
+	ClearCircuitPlaces(&asTabs);
+	asTabs.Kill();
 	aiTraces.Kill();
 	aiComponents.Kill();
 }
+
+
+static bool LoadCircuitEditorTabXML(CMarkupTag* pcTabTag, const char* szSource, SCircuitPlace* psDest);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -263,7 +327,45 @@ static bool LoadCircuitEditorXML(CMarkupTag* pcEditorTag, const char* szSource, 
 		}
 		pcTag = pcEditorTag->GetNextTag(&sIter);
 	}
+
+	pcTag = pcEditorTag->GetTag("Tab", &sIter);
+	while (pcTag != NULL)
+	{
+		bResult &= LoadCircuitEditorTabXML(pcTag, szSource, psEditor->asTabs.Add());
+		pcTag = pcEditorTag->GetNextTag(&sIter);
+	}
+	if ((pcEditorTag->GetStringAttribute("activeTab") != NULL) && (!pcEditorTag->GetInt64Attribute("activeTab", &psEditor->iActiveTab) || (psEditor->iActiveTab < 0) || ((size)psEditor->iActiveTab >= psEditor->asTabs.NumElements())))
+	{
+		bResult = gcLogger.Error2(__METHOD__, " [", szSource, "] has an activeTab that isn't one of its tabs.", NULL);
+	}
 	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A <Tab>, into psDest (not initialised): its circuit, the path into it
+// (empty for its top), and the canvas's position and zoom (0 to fit).
+// The circuit and path are found when the tab is shown, not here.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool LoadCircuitEditorTabXML(CMarkupTag* pcTabTag, const char* szSource, SCircuitPlace* psDest)
+{
+	float64	fX;
+	float64	fY;
+
+	psDest->Init(pcTabTag->GetStringAttribute("circuit"), pcTabTag->GetStringAttribute("path"));
+	fX = 0;
+	fY = 0;
+	if (psDest->szCircuit.Empty() ||
+		((pcTabTag->GetStringAttribute("x") != NULL) && !pcTabTag->GetFloat64Attribute("x", &fX)) ||
+		((pcTabTag->GetStringAttribute("y") != NULL) && !pcTabTag->GetFloat64Attribute("y", &fY)) ||
+		((pcTabTag->GetStringAttribute("zoom") != NULL) && (!pcTabTag->GetFloat64Attribute("zoom", &psDest->fZoom) || (psDest->fZoom < 0))))
+	{
+		return gcLogger.Error2(__METHOD__, " [", szSource, "] has a [Tab] without a circuit, or with a position or zoom that isn't a number.", NULL);
+	}
+	psDest->sPosition.Init(fX, fY);
+	return true;
 }
 
 
@@ -415,6 +517,8 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	mpSimulation = pSimulation;
 	meCreationRotation = sEditor.eRotation;
 	mbCreationMirrored = sEditor.bMirrored;
+	CopyCircuitPlaces(&masTabs, &sEditor.asTabs);
+	muiActiveTab = (size)sEditor.iActiveTab;
 	for (i = 0; i < sEditor.aiComponents.NumElements(); i++)
 	{
 		mcSelection.Add(mpcCircuit->GetComponent((size)*sEditor.aiComponents.Get(i)));
@@ -503,14 +607,17 @@ bool CCircuitEditor::CanRedo(bool bStep)
 //////////////////////////////////////////////////////////////////////////
 //
 // Loads the snapshot at uiIndex and makes it the undo stack's current
-// one.  A part's next unit waiting to be placed is dropped.
+// one.  A part's next unit waiting to be placed is dropped; the tabs are
+// kept as they are.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::LoadUndo(size uiIndex)
 {
-	CMarkup		cMarkup;
-	CMarkupTag*	pcRoot;
-	bool		bResult;
+	CMarkup				cMarkup;
+	CMarkupTag*			pcRoot;
+	bool				bResult;
+	CArrayCircuitPlace	asTabs;
+	size				uiActiveTab;
 
 	if (uiIndex == ARRAY_ELEMENT_NOT_FOUND)
 	{
@@ -520,10 +627,16 @@ bool CCircuitEditor::LoadUndo(size uiIndex)
 	DiscardEdit();
 	SafeKill(mpcNextUnit);
 
+	asTabs.Init();
+	CopyCircuitPlaces(&asTabs, &masTabs);
+	uiActiveTab = muiActiveTab;
 	cMarkup.Init();
 	pcRoot = ReadCircuitTextRoot(&cMarkup, mcUndo.Get(uiIndex), "Undo", "Circuits");
 	bResult = (pcRoot != NULL) && LoadXML(pcRoot, "Undo");
 	cMarkup.Kill();
+	SetTabs(&asTabs, uiActiveTab);
+	ClearCircuitPlaces(&asTabs);
+	asTabs.Kill();
 	if (bResult)
 	{
 		mcUndo.MoveTo(uiIndex);
@@ -560,6 +673,31 @@ void CCircuitEditor::GetInstancePathText(CChars* psz)
 		psz->Append((int64)pcCircuit->FindComponentIndex(pcInstance));
 		pcCircuit = mpcViewPath->Get(i)->GetInstanceCircuitView();
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The simulation's view path at the end of szPath (empty for the top) in
+// the circuit simulated, for drawing it as simulated there; NULL if
+// there's no such path.
+//
+//////////////////////////////////////////////////////////////////////////
+CViewPath* CCircuitEditor::GetInstanceViewPath(const char* szPath)
+{
+	CArrayTemplatePtr<CCircuitInstanceView>	apcPath;
+	CCircuitView*							pcTop;
+	CViewPath*								pcViewPath;
+
+	pcTop = GetTopCircuit();
+	if (pcTop == NULL)
+	{
+		return NULL;
+	}
+	apcPath.Init();
+	pcViewPath = (StrEmpty(szPath) || (FindInstancePath(pcTop, szPath, &apcPath) != NULL)) ? GetCircuitEditorViewPath(mpcCircuits, pcTop, &apcPath) : NULL;
+	apcPath.Kill();
+	return pcViewPath;
 }
 
 

@@ -62,6 +62,8 @@ void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, Ptr<CCir
 	mpFonts = pFonts;
 	mcSelection.Init();
 	mcUndo.Init();
+	masTabs.Init();
+	muiActiveTab = 0;
 	mpcEdit = NULL;
 	mpcNextUnit = NULL;
 	meCreationRotation = ROT_East;
@@ -91,6 +93,8 @@ void CCircuitEditor::Free(void)
 {
 	SafeKill(mpcNextUnit);
 	KillProject(true);
+	ClearCircuitPlaces(&masTabs);
+	masTabs.Kill();
 	mcUndo.Kill();
 	mapcLeadRoutes.Kill();
 	masLiftedLeads.Kill();
@@ -116,6 +120,8 @@ void CCircuitEditor::Class(void)
 	M_Pointer(mpFonts);
 	U_Unknown(CCircuitSelection, mcSelection);
 	U_Unknown(CUndoStack, mcUndo);
+	U_Unknown(CArrayCircuitPlace, masTabs);
+	U_Size(muiActiveTab);
 	U_Pointer(mpcEdit);
 	U_Pointer(mpcNextUnit);
 	U_Enum(meCreationRotation);

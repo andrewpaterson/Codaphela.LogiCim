@@ -2,24 +2,24 @@
 
 Copyright (c) 2026 Andrew Paterson
 
-This file is part of The Codaphela Project: Codaphela LogiCim
+This file is part of The Codaphela Project: Codaphela LogicimLib
 
-Codaphela LogiCim is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
+Codaphela LogicimLib is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Codaphela LogiCim is distributed in the hope that it will be useful,
+Codaphela LogicimLib is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GNU Lesser General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/StringHelper.h"
-#include "LogicimPlace.h"
+#include "CircuitPlace.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 // Nowhere: no circuit, fitted when shown.
 //
 //////////////////////////////////////////////////////////////////////////
-void SLogicimPlace::Init(void)
+void SCircuitPlace::Init(void)
 {
 	Init(NULL, NULL);
 }
@@ -39,7 +39,7 @@ void SLogicimPlace::Init(void)
 // fitted to the canvas when it's shown.
 //
 //////////////////////////////////////////////////////////////////////////
-void SLogicimPlace::Init(const char* szCircuit, const char* szPath)
+void SCircuitPlace::Init(const char* szCircuit, const char* szPath)
 {
 	this->szCircuit.Init(StrEmpty(szCircuit) ? "" : szCircuit);
 	this->szPath.Init(StrEmpty(szPath) ? "" : szPath);
@@ -48,14 +48,14 @@ void SLogicimPlace::Init(const char* szCircuit, const char* szPath)
 }
 
 
-void SLogicimPlace::Kill(void)
+void SCircuitPlace::Kill(void)
 {
 	szPath.Kill();
 	szCircuit.Kill();
 }
 
 
-void SLogicimPlace::Copy(SLogicimPlace* psSource)
+void SCircuitPlace::Copy(SCircuitPlace* psSource)
 {
 	szCircuit.Set(psSource->szCircuit.Text());
 	szPath.Set(psSource->szPath.Text());
@@ -70,7 +70,7 @@ void SLogicimPlace::Copy(SLogicimPlace* psSource)
 // zoomed.
 //
 //////////////////////////////////////////////////////////////////////////
-bool SLogicimPlace::IsSameView(SLogicimPlace* psOther)
+bool SCircuitPlace::IsSameView(SCircuitPlace* psOther)
 {
 	return szCircuit.Equals(psOther->szCircuit.Text()) && szPath.Equals(psOther->szPath.Text());
 }
@@ -81,7 +81,7 @@ bool SLogicimPlace::IsSameView(SLogicimPlace* psOther)
 // For checking: "Main 0/1", or "Main" at the top.
 //
 //////////////////////////////////////////////////////////////////////////
-void SLogicimPlace::Print(CChars* pszDest)
+void SCircuitPlace::Print(CChars* pszDest)
 {
 	pszDest->Append(szCircuit.Text());
 	if (!szPath.Empty())
@@ -89,5 +89,43 @@ void SLogicimPlace::Print(CChars* pszDest)
 		pszDest->Append(" ");
 		pszDest->Append(szPath.Text());
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// pasDest (initialised) has copies of pasSource's places, and none of its
+// own.  They mustn't be the same array.
+//
+//////////////////////////////////////////////////////////////////////////
+void CopyCircuitPlaces(CArrayCircuitPlace* pasDest, CArrayCircuitPlace* pasSource)
+{
+	size			i;
+	SCircuitPlace*	psPlace;
+
+	ClearCircuitPlaces(pasDest);
+	for (i = 0; i < pasSource->NumElements(); i++)
+	{
+		psPlace = pasDest->Add();
+		psPlace->Init();
+		psPlace->Copy(pasSource->Get(i));
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each place killed and taken out; the array can still be added to.
+//
+//////////////////////////////////////////////////////////////////////////
+void ClearCircuitPlaces(CArrayCircuitPlace* pasPlaces)
+{
+	size	i;
+
+	for (i = 0; i < pasPlaces->NumElements(); i++)
+	{
+		pasPlaces->Get(i)->Kill();
+	}
+	pasPlaces->ReInit();
 }
 
