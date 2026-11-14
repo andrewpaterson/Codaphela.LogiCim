@@ -116,6 +116,7 @@ public:
 	virtual void					Kill(void);
 
 	virtual const char*				GetType(void) =0;
+	virtual void					AppendPartName(CChars* pszDest);
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies) =0;
 	virtual bool					MakesComponent(void);
 	virtual const char*				GetConnectionName(void);

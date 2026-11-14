@@ -92,6 +92,7 @@ public:
 			bool					SetInstanceCircuitView(CCircuitView* pcInstanceCircuitView);
 
 	virtual const char*				GetType(void);
+	virtual void					AppendPartName(CChars* pszDest);
 	virtual const char*				GetXMLName(void);
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
