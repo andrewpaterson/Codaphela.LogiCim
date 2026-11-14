@@ -343,6 +343,41 @@ def CheckKeymap(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#A subcircuit's placing keys are the project's: read with it (one another command has is dropped without saying), given
+#in the component chooser as a change that can be undone, and saved with it.  The keymap doesn't keep them.
+def CheckSubcircuitKeys(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szProject = os.path.join(szDirectory, 'Project.xml')
+		szSaved = os.path.join(szDirectory, 'Saved.xml')
+		szKeymap = os.path.join(szDirectory, 'Keymap.xml')
+		with open(szProject, 'w') as cFile:
+			cFile.write('<?xml version="1.0" encoding="UTF-8"?>\n<Logicim version="2">\n  <Editor circuit="Main" rotation="East"/>\n  <Circuits>\n'
+						'    <Circuit type="Main"/>\n    <Circuit type="Half Adder" placeKeys="Circuit:Shift+H;Circuit:Shift+A;Global:Control+Alt+H"/>\n'
+						'  </Circuits>\n</Logicim>\n')
+		asEnv = {'LOGICIM_KEYMAP': szKeymap, 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml'), 'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml'),
+				 'LOGICIM_CHOOSER_EDITS': 'select:Half Adder;show;add:Shift+J;show'}
+		bPassed = Check(szExecutable, 'subcircuit-keys', ','.join(['load:' + szProject, 'keys:Circuit:Shift+H', 'keys:Circuit:Shift+A', 'keys:Global:Control+Alt+H', 'modified',
+																	'chooser', 'modified', 'keys:Circuit:Shift+J', 'command:Edit.Undo', 'keys:Circuit:Shift+J',
+																	'command:Edit.Redo', 'save:' + szSaved, 'commands']),
+			[r'^Keys Shift\+H in Circuit: Place\.Subcircuit\.Half Adder$', r'^Keys Shift\+A in Circuit: Place\.AndGate$',
+			 r'^Keys Control\+Alt\+H in Global: Place\.Subcircuit\.Half Adder$', r'^Modified: no$',
+			 r'^Chooser: Half Adder Shortcut: Shift\+H \(Circuit\), Ctrl\+Alt\+H$', r'^Chooser: Shift\+J is free\.$',
+			 r'^Chooser: Half Adder Shortcut: Shift\+H \(Circuit\), Ctrl\+Alt\+H, Shift\+J \(Circuit\)$', r'^Chooser: closed$', r'^Modified: yes$',
+			 r'^Keys Shift\+J in Circuit: Place\.Subcircuit\.Half Adder$', r'^Command Edit\.Undo: run$', r'^Keys Shift\+J in Circuit: none$',
+			 r'^Command Edit\.Redo: run$', r'^Command: Place\.Subcircuit\.Main$', r'^Command: Place\.Subcircuit\.Half Adder \[Control\+Alt\+H\] bound$'],
+			[r'Unknown check step', r'NOT BOUND', r'not run'], asEnv)
+		if bPassed and not ('placeKeys="Circuit:Shift+H;Global:Control+Alt+H;Circuit:Shift+J"' in open(szSaved).read()):
+			print('FAIL subcircuit-keys\n    the saved project hasn\'t the keys')
+			bPassed = False
+		if bPassed and ('Half Adder' in open(szKeymap).read()):
+			print('FAIL subcircuit-keys\n    the keymap kept a subcircuit\'s keys')
+			bPassed = False
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -362,6 +397,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('keymap' in aszNames):
 		if not CheckKeymap(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('subcircuit-keys' in aszNames):
+		if not CheckSubcircuitKeys(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('dock-layout' in aszNames):
 		if not CheckDockLayout(szExecutable):

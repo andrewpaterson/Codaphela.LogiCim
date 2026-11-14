@@ -711,8 +711,8 @@ Ptr<CComponent> CLogicimComponentChooser::CreateShortcut(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The command that places the row's component, NULL for a library's row
-// or a subcircuit's.
+// The command that places the row's component or subcircuit, NULL for a
+// library's row.
 //
 //////////////////////////////////////////////////////////////////////////
 CCommand* CLogicimComponentChooser::GetRowCommand(int32 iRow)
@@ -721,11 +721,11 @@ CCommand* CLogicimComponentChooser::GetRowCommand(int32 iRow)
 	Ptr<CCommand>		pCommand;
 
 	psRow = GetRow(iRow);
-	if ((psRow == NULL) || (psRow->iEntry < 0) || (psRow->iLibrary == (int)NumComponentLibraries()))
+	if ((psRow == NULL) || (psRow->iEntry < 0))
 	{
 		return NULL;
 	}
-	pCommand = FindLogicimPlaceCommand(mpcCommands, GetComponentLibrary(psRow->iLibrary)->asEntries[psRow->iEntry].szXMLName);
+	pCommand = FindLogicimPlaceCommand(mpcCommands, GetRowName(iRow), psRow->iLibrary == (int)NumComponentLibraries());
 	return &pCommand;
 }
 

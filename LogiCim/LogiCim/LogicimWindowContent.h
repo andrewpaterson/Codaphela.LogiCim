@@ -104,6 +104,7 @@ class CLogicimWindowContent;
 #define LOGICIM_CIRCUIT_PANE		"Circuit"
 #define LOGICIM_SUBCIRCUITS_PANE	"Subcircuits"
 #define LOGICIM_SIMULATIONS_PANE	"Simulations"
+#define LOGICIM_PLACE_SUBCIRCUIT	"Place.Subcircuit."  //Before a subcircuit's type name, its Place command's name.
 #define LOGICIM_CIRCUIT_CONTEXT		"Circuit"  //The keys over the circuit canvas, where bare letters place and turn components.
 
 
@@ -236,6 +237,10 @@ public:
 	bool				OpenRecentProject(size uiIndex);
 	void				ClearRecentProjects(void);
 	void				ListSubcircuits(void);
+	void				FollowSubcircuitCommands(void);
+	bool				FollowSubcircuitCommand(CCircuitView* pcCircuit);
+	bool				KeepSubcircuitKeys(void);
+	void				PlaceSubcircuitCommand(CCommand* pcCommand);
 
 protected:
 	Ptr<CFont>				GenerateFont(const char* szFontFilename, const char* szName, float32 fPixelSize, EColourOrder eOrder);
@@ -297,7 +302,9 @@ protected:
 };
 
 
-Ptr<CCommand>	FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szXMLName);
+Ptr<CCommand>	FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szName, bool bSubcircuit);
+void			ReadPlaceKeys(const char* szText, CCommandKeyList* pcKeys);
+void			WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText);
 
 
 #endif // __LOGICIM_WINDOW_CONTENT_H__

@@ -770,12 +770,14 @@ void CLogicimWindowContent::ShowSettingsDialog(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The commands' keys, as the Keymap page left them, bound and written to
-// the user's file.
+// The commands' keys, as the Keymap page or the component chooser left
+// them, bound and written to the user's file, the subcircuits' to the
+// project.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::KeepKeymap(void)
 {
+	KeepSubcircuitKeys();
 	mpCommands->BindKeys(mpWindow->GetComponentInput());
 	if (mszKeymapFile.Empty())
 	{

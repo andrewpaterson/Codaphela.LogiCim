@@ -59,8 +59,9 @@ typedef CArrayTemplate<SLogicimChooserRow>	CArrayLogicimChooserRow;
 //them, their libraries opened; clearing it closes them again.  A double click on a component (or enter, or OK)
 //chooses it.
 //
-//Above the preview is the selected component's shortcut, its Place command's keys, which Add Shortcut and Remove change
-//there and then, as Settings' Keymap would (see CKeyGiver): whoever shows the chooser binds and keeps them (KeysChanged).
+//Above the preview is the selected component's shortcut, its Place command's keys (a subcircuit's are the project's),
+//which Add Shortcut and Remove change there and then, as Settings' Keymap would (see CKeyGiver): whoever shows the
+//chooser binds and keeps them (KeysChanged).
 class CLogicimComponentChooser : public CObject, public CKeyCaptureDescriber
 {
 CONSTRUCTABLE(CLogicimComponentChooser);

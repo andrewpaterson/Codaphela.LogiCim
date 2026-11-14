@@ -358,6 +358,7 @@ void CLogicimWindowContent::UpdateInfo(void)
 	CChars	sz;
 
 	ListSubcircuits();
+	FollowSubcircuitCommands();
 
 	sz.Init("Subcircuit: ");
 	sz.Append(GetListItemText(mpSubcircuits, &maSubcircuitLabels));
@@ -622,28 +623,29 @@ void CLogicimWindowContent::AddCircuitKeys(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The command that places the library component of that XML name: an
-// action's (Add Splitter) or its own Place.<XML name>.  NULL if there's
-// no such component.
+// The command that places the library component of that XML name (an
+// action's, as Add Splitter, or its own Place.<XML name>), or with
+// bSubcircuit an instance of the subcircuit of that type name
+// (Place.Subcircuit.<type name>).  NULL if there's none.
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CCommand> FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szXMLName)
+Ptr<CCommand> FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szName, bool bSubcircuit)
 {
-	int		i;
-	CChars	szName;
+	int				i;
+	CChars			szCommand;
 	Ptr<CCommand>	pCommand;
 
-	for (i = 0; i < NUM_LOGICIM_ACTIONS; i++)
+	for (i = 0; !bSubcircuit && (i < NUM_LOGICIM_ACTIONS); i++)
 	{
-		if (StringCompare(gasLogicimActions[i].szPlaced, szXMLName) == 0)
+		if (StringCompare(gasLogicimActions[i].szPlaced, szName) == 0)
 		{
 			return pcCommands->Find(gasLogicimActions[i].szCommand);
 		}
 	}
-	szName.Init("Place.");
-	szName.Append(szXMLName);
-	pCommand = pcCommands->Find(szName.Text());
-	szName.Kill();
+	szCommand.Init(bSubcircuit ? LOGICIM_PLACE_SUBCIRCUIT : "Place.");
+	szCommand.Append(szName);
+	pCommand = pcCommands->Find(szCommand.Text());
+	szCommand.Kill();
 	return pCommand;
 }
 

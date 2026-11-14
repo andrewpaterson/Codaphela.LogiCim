@@ -103,6 +103,243 @@ void CLogicimWindowContent::ListSubcircuits(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A Place.Subcircuit.<type name> command for each of the project's
+// circuits, with the keys the project keeps with it (see
+// CCircuitView::SetPlaceKeys), as the circuits change: after a load, an
+// undo, a new subcircuit.  A key another command already has there is
+// dropped, from the project too, without saying.  Kept by the project,
+// not the keymap.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::FollowSubcircuitCommands(void)
+{
+	CCircuitViews*		pcCircuits;
+	Ptr<CCommand>		pCommand;
+	size				i;
+	bool				bChanged;
+
+	if (mpLogicimCircuit.IsNull() || (mpLogicimCircuit->GetEditor()->GetCircuits() == NULL))
+	{
+		return;
+	}
+	pcCircuits = mpLogicimCircuit->GetEditor()->GetCircuits();
+	bChanged = false;
+
+	//The commands of circuits that have gone.
+	for (i = mpCommands->NumCommands(); i > 0; i--)
+	{
+		pCommand = mpCommands->GetCommand(i - 1);
+		if ((strncmp(pCommand->GetName(), LOGICIM_PLACE_SUBCIRCUIT, strlen(LOGICIM_PLACE_SUBCIRCUIT)) == 0) && (pcCircuits->Get(&pCommand->GetName()[strlen(LOGICIM_PLACE_SUBCIRCUIT)]) == NULL))
+		{
+			mpCommands->Remove(pCommand->GetName(), mpWindow->GetComponentInput());
+			bChanged = true;
+		}
+	}
+
+	for (i = 0; i < pcCircuits->NumCircuits(); i++)
+	{
+		bChanged |= FollowSubcircuitCommand(pcCircuits->Get(i));
+	}
+
+	if (bChanged && (mpWindow->GetComponentInput() != NULL))
+	{
+		mpCommands->BindKeys(mpWindow->GetComponentInput());
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// pcCircuit's command, made if it has none, with the project's keys for
+// it.  True if either changed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::FollowSubcircuitCommand(CCircuitView* pcCircuit)
+{
+	Ptr<CCommand>		pCommand;
+	CCommandKeyList		cKeys;
+	CCommandKeyList		cKept;
+	CChars				szName;
+	CChars				szText;
+	size				i;
+	size				j;
+	bool				bChanged;
+	bool				bTaken;
+
+	bChanged = false;
+	pCommand = FindLogicimPlaceCommand(&mpCommands, pcCircuit->GetTypeName(), true);
+	if (pCommand.IsNull())
+	{
+		szName.Init(LOGICIM_PLACE_SUBCIRCUIT);
+		szName.Append(pcCircuit->GetTypeName());
+		szText.Init("Add ");
+		szText.Append(pcCircuit->GetTypeName());
+		pCommand = mpCommands->Add(szName.Text(), szText.Text(), "", Ptr<CImageCel>(), this, &CLogicimWindowContent::PlaceSubcircuitCommand);
+		pCommand->SetContext(LOGICIM_CIRCUIT_CONTEXT);
+		pCommand->AllowContext(COMPONENT_INPUT_GLOBAL_CONTEXT);
+		pCommand->SetKeptByKeymap(false);
+		szText.Kill();
+		szName.Kill();
+		bChanged = true;
+	}
+
+	cKeys.Init();
+	ReadPlaceKeys(pcCircuit->GetPlaceKeys(), &cKeys);
+	if (!pCommand->GetKeyList()->HasSameKeys(&cKeys))
+	{
+		cKept.Init();
+		for (i = 0; i < cKeys.NumKeys(); i++)
+		{
+			bTaken = false;
+			for (j = 0; !bTaken && (j < mpCommands->NumCommands()); j++)
+			{
+				bTaken = (mpCommands->GetCommand(j) != pCommand) && mpCommands->GetCommand(j)->GetKeyList()->Contains(cKeys.GetContext(i), cKeys.GetKeys(i));
+			}
+			if (!bTaken && pCommand->IsContextAllowed(cKeys.GetContext(i)))
+			{
+				cKept.Add(cKeys.GetContext(i), cKeys.GetKeys(i));
+			}
+		}
+		pCommand->SetKeys(&cKept);
+		if (cKept.NumKeys() != cKeys.NumKeys())
+		{
+			szText.Init();
+			WritePlaceKeys(&cKept, &szText);
+			pcCircuit->SetPlaceKeys(szText.Text());
+			szText.Kill();
+		}
+		cKept.Kill();
+		bChanged = true;
+	}
+	cKeys.Kill();
+	return bChanged;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The subcircuits' commands' keys, as Settings' Keymap or the component
+// chooser left them, go into the project as a change that can be undone.
+// True if any had changed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::KeepSubcircuitKeys(void)
+{
+	CCircuitViews*	pcCircuits;
+	CCircuitView*	pcCircuit;
+	Ptr<CCommand>	pCommand;
+	CChars			szText;
+	size			i;
+	bool			bChanged;
+
+	if (mpLogicimCircuit.IsNull() || (mpLogicimCircuit->GetEditor()->GetCircuits() == NULL))
+	{
+		return false;
+	}
+	pcCircuits = mpLogicimCircuit->GetEditor()->GetCircuits();
+	bChanged = false;
+	for (i = 0; i < pcCircuits->NumCircuits(); i++)
+	{
+		pcCircuit = pcCircuits->Get(i);
+		pCommand = FindLogicimPlaceCommand(&mpCommands, pcCircuit->GetTypeName(), true);
+		if (pCommand.IsNotNull())
+		{
+			szText.Init();
+			WritePlaceKeys(pCommand->GetKeyList(), &szText);
+			if (!szText.Equals(pcCircuit->GetPlaceKeys()))
+			{
+				pcCircuit->SetPlaceKeys(szText.Text());
+				bChanged = true;
+			}
+			szText.Kill();
+		}
+	}
+	if (bChanged)
+	{
+		mpLogicimCircuit->GetEditor()->PushUndo(false);
+		UpdateInfo();
+	}
+	return bChanged;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Place.Subcircuit.<type name>: an instance of it, as Add Component would
+// place it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::PlaceSubcircuitCommand(CCommand* pcCommand)
+{
+	PlaceComponent(&pcCommand->GetName()[strlen(LOGICIM_PLACE_SUBCIRCUIT)], true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A project's keys for placing a subcircuit (see CCircuitView::
+// SetPlaceKeys): "<context>:<keys>" separated by semicolons.  Keys
+// without a context are over the circuit.
+//
+//////////////////////////////////////////////////////////////////////////
+void ReadPlaceKeys(const char* szText, CCommandKeyList* pcKeys)
+{
+	CArrayChars	aszKeys;
+	CChars		szContext;
+	char*		sz;
+	char*		szColon;
+	size		i;
+
+	aszKeys.Init();
+	aszKeys.Split(StrEmpty(szText) ? "" : szText, ';');
+	for (i = 0; i < aszKeys.NumElements(); i++)
+	{
+		sz = aszKeys.GetText(i);
+		if (StrEmpty(sz))
+		{
+			continue;
+		}
+		szColon = strchr(sz, ':');
+		szContext.Init();
+		if (szColon != NULL)
+		{
+			szContext.Append(sz, szColon - sz);
+		}
+		else
+		{
+			szContext.Append(LOGICIM_CIRCUIT_CONTEXT);
+		}
+		pcKeys->Add(szContext.Text(), (szColon != NULL) ? &szColon[1] : sz);
+		szContext.Kill();
+	}
+	aszKeys.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// As ReadPlaceKeys reads them, each with its context.
+//
+//////////////////////////////////////////////////////////////////////////
+void WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText)
+{
+	size	i;
+
+	for (i = 0; i < pcKeys->NumKeys(); i++)
+	{
+		if (i > 0)
+		{
+			pszText->Append(";");
+		}
+		pszText->Append(pcKeys->GetContext(i));
+		pszText->Append(":");
+		pszText->Append(pcKeys->GetKeys(i));
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The subcircuit chosen in the list is edited, with a simulation of its
 // own (see CCircuitEditor::Simulate), and zoomed to fit.
 //
