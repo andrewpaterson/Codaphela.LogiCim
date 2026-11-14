@@ -44,6 +44,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/SettingsDialog.h"
 #include "WindowLib/KeymapPage.h"
 #include "WindowLib/TreeContainer.h"
+#include "LogicimGoTo.h"
 #include "LogicimNavigationHistory.h"
 
 
@@ -188,7 +189,9 @@ protected:
 	CLogicimSettings				mcSettings;  //Where Load Project and Import KiCad Schematic open.
 	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars							mszChooserSelected;  //The component last chosen.
-	CLogicimNavigationHistory		mcHistory;  //The places Back and Forward go to.
+	CLogicimNavigationHistory		mcHistory;
+	CLogicimGoTo					mcGoTo;  //What Go To finds.
+	Ptr<CGoToDialog>				mpGoToDialog;  //While it's shown.  //The places Back and Forward go to.
 	bool							mbNavigating;  //While Back or Forward moves, so the move isn't recorded as one.
 	CChars							mszSimulationName;  //As New Simulation named it, empty for the circuit simulated's.
 	int								miSimulationCount;
@@ -260,6 +263,9 @@ public:
 	void				GetPlace(SCircuitPlace* psDest);
 	bool				ShowPlace(SCircuitPlace* psPlace);
 	bool				GoBack(void);
+	void				SearchGoTo(size uiTab, const char* szPattern, CGoToItems* pcDest);
+	SLogicimGoToTarget*	GetGoToTarget(SGoToItem* psItem);
+	bool				GoToTarget(SLogicimGoToTarget* psTarget);
 	bool				GoForward(void);
 	bool				CanGoBack(void);
 	bool				CanGoForward(void);
@@ -318,6 +324,9 @@ protected:
 	void					RecordLeft(SCircuitPlace* psLeft);
 	void					NavigateBack(void);
 	void					NavigateForward(void);
+	void					RequestGoTo(void);
+	void					ShowGoToDialog(void);
+	void					CentreOnSelection(void);
 	Ptr<CTreeContainer>		CreateTree(void);
 	void					ListSimulation(void);
 	void					AddInstanceNodes(int32 iParent, CCircuitView* pcCircuit, const char* szPath);

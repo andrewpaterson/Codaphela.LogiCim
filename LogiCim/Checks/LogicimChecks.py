@@ -28,7 +28,7 @@ CHECKS = [
 	('menus-and-buttons', 'menus,buttons',
 		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Settings\.\.\. \[File\.Settings\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
-		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulation Tree \[View\.SimulationTree\] Back \[View\.Back\] Forward \[View\.Forward\]$',
+		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulation Tree \[View\.SimulationTree\] Back \[View\.Back\] Forward \[View\.Forward\] Go To\.\.\. \[View\.GoTo\]$',
 		 r'^Menu Simulation: ',
 		 r'^Menu Place: ',
 		 r'^Menu Window: New Tab \[Window\.NewTab\] Reset Window Layout \[Window\.ResetLayout\]$',
@@ -80,6 +80,17 @@ CHECKS = [
 		 r'^History: back \[Main 0, Main\] forward \[Board\]$', r'^History: back \[Main 0/1, Main 0, Main\] forward \[\]$',
 		 r'^Command View\.Forward: not run$', r'^History: back \[\] forward \[\]$',
 		 r'^Command: View\.Back \[Control\+Alt\+Cursor Left\] bound$', r'^Command: View\.Forward \[Control\+Alt\+Cursor Right\] bound$'],
+		[r'Unknown check step', r'ERROR']),
+	#Go To: every component in the circuit simulated and its instances, by name or by what it is (a 74 series part's
+	#number, a subcircuit's circuit), with where it is; nets (tunnels and labels) by name; circuits by name.  Going to a
+	#component enters the instance it's in and selects it, a step for Back.
+	('go-to', ','.join(['load:../Checks/Nested.xml', 'goto:0:u12', 'goto:0:and', 'goto:0:board', 'goto:1:', 'goto:2:g', 'gotopick:0:u12:1', 'place',
+						'history', 'gotopick:2:spare:0', 'place', 'goto:0:74lvc00', 'gotopick:0:zzz:0', 'commands']),
+		[r'^Go to 0 \[u12\]: 2$', r'^Go to result: U12 AND Gate \[Main > U1 > U3\]$', r'^Go to result: U12 AND Gate \[Main > U2 > U3\]$',
+		 r'^Go to 0 \[and\]: 2$', r'^Go to 0 \[board\]: 2$', r'^Go to result: U1 Board \[Main\]$', r'^Go to 1 \[\]: 3$', r'^Go to result: CLK \[Main\]$',
+		 r'^Go to result: DATA \[Main > U1\]$', r'^Go to 2 \[g\]: 1$', r'^Go to result: Gate \[\]$', r'^Go to 0 \[u12\] 1: gone to$',
+		 r'^Place: Main 1/1 \(Gate\)$', r'^History: back \[Main\] forward \[\]$', r'^Go to 2 \[spare\] 0: gone to$', r'^Place: Spare \(Spare\)$',
+		 r'^Go to 0 \[74lvc00\]: 1$', r'^Go to result: IC8 74LVC00 \[Spare\]$', r'^Go to 0 \[zzz\] 0: none$', r'^Command: View\.GoTo \[Control\+N\] bound$'],
 		[r'Unknown check step', r'ERROR']),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',

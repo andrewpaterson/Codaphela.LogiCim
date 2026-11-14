@@ -255,7 +255,9 @@ bool CLogicimApp::Check(const char* szSteps)
 // and Forward go to, the next first.  tabs: each tab's title, the one
 // edited marked; newtab:<circuit>:<path> opens a place in a new tab;
 // activatetab:<n> and closetab:<n> do to tab n (from 0) what clicking it
-// and its close cross do.
+// and its close cross do.  goto:<tab>:<pattern> prints what Go To's tab
+// (0 Components, 1 Nets, 2 Subcircuits) finds; gotopick:<tab>:<pattern>:
+// <n> goes to its nth result (from 0).
 // keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
@@ -316,6 +318,14 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "simtree") == 0)
 	{
 		PrintTree("Simulation", mpContent->GetSimulationTree());
+	}
+	else if (strncmp(szStep, "goto:", 5) == 0)
+	{
+		GoToStep(&szStep[5], false);
+	}
+	else if (strncmp(szStep, "gotopick:", 9) == 0)
+	{
+		GoToStep(&szStep[9], true);
 	}
 	else if (StringCompare(szStep, "tabs") == 0)
 	{
@@ -518,6 +528,51 @@ bool CLogicimApp::SelectTreeNode(Ptr<CTreeContainer> pTree, const char* szNode)
 
 	iNode = (int32)atoi(szNode);
 	return (iNode >= 0) && (iNode < pTree->NumNodes()) && pTree->SelectNode(iNode);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szStep is <tab>:<pattern>, or with bPick <tab>:<pattern>:<n>.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::GoToStep(const char* szStep, bool bPick)
+{
+	CGoToItems		cItems;
+	CChars			szPattern;
+	const char*		szColon;
+	const char*		szEnd;
+	size			uiTab;
+	size			uiPick;
+	size			i;
+	SGoToItem*		psItem;
+
+	uiTab = (size)atoi(szStep);
+	szColon = strchr(szStep, ':');
+	szColon = (szColon != NULL) ? &szColon[1] : "";
+	szEnd = bPick ? strrchr(szColon, ':') : NULL;
+	szPattern.Init();
+	szPattern.Append(szColon, (szEnd != NULL) ? (szEnd - szColon) : strlen(szColon));
+	uiPick = (szEnd != NULL) ? (size)atoi(&szEnd[1]) : 0;
+
+	cItems.Init();
+	mpContent->SearchGoTo(uiTab, szPattern.Text(), &cItems);
+	if (!bPick)
+	{
+		printf("Go to %d [%s]: %d\n", (int)uiTab, szPattern.Text(), (int)cItems.NumItems());
+		for (i = 0; i < cItems.NumItems(); i++)
+		{
+			psItem = cItems.Get(i);
+			printf("Go to result: %s [%s]\n", psItem->szName.Text(), psItem->szLocation.Text());
+		}
+	}
+	else
+	{
+		psItem = (uiPick < cItems.NumItems()) ? cItems.Get(uiPick) : NULL;
+		printf("Go to %d [%s] %d: %s\n", (int)uiTab, szPattern.Text(), (int)uiPick, mpContent->GoToTarget(mpContent->GetGoToTarget(psItem)) ? "gone to" : "none");
+	}
+	cItems.Kill();
+	szPattern.Kill();
 }
 
 

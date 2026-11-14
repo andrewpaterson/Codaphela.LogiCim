@@ -242,6 +242,7 @@
     <ClCompile Include="LogicimCircuit.cpp" />
     <ClCompile Include="LogicimComponentChooser.cpp" />
     <ClCompile Include="LogicimSettings.cpp" />
+    <ClCompile Include="LogicimGoTo.cpp" />
     <ClCompile Include="LogicimWindowContentTabs.cpp" />
     <ClCompile Include="LogicimNavigationHistory.cpp" />
     <ClCompile Include="LogicimWindowContentTrees.cpp" />
@@ -260,6 +261,7 @@
     <ClInclude Include="LogicimCircuit.h" />
     <ClInclude Include="LogicimComponentChooser.h" />
     <ClInclude Include="LogicimSettings.h" />
+    <ClInclude Include="LogicimGoTo.h" />
     <ClInclude Include="LogicimNavigationHistory.h" />
     <ClInclude Include="LogicimWindowContent.h" />
     <ClInclude Include="LogicimWindowContentInternal.h" />

@@ -67,6 +67,7 @@ protected:
 	void	PrintPlace(void);
 	void	PrintHistory(void);
 	void	PrintTabs(void);
+	void	GoToStep(const char* szStep, bool bPick);
 	void	NewTab(const char* szStep);
 	void	ReadPlaceStep(const char* szStep, SCircuitPlace* psDest);
 	bool	SelectTreeNode(Ptr<CTreeContainer> pTree, const char* szNode);

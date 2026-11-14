@@ -17,6 +17,7 @@
       <AndGate name="U12" x="10" y="0" rotation="East" family="LVC" explicitPowerPorts="false" inputCount="2" inputWidth="1"/>
     </Circuit>
     <Circuit type="Spare">
+      <Logic74Package name="IC8" x="20" y="0" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" pinSpacing="2"/>
       <Pin name="B" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
     </Circuit>
   </Circuits>

@@ -166,6 +166,7 @@ void CLogicimWindowContent::Init(void)
 	mszKeymapFile.Init();
 	mszChooserSelected.Init();
 	mpLogicimCircuit = OMalloc<CLogicimCircuit>();
+	mcGoTo.Init(&mpLogicimCircuit);
 
 	PostInit();
 }
@@ -214,6 +215,8 @@ void CLogicimWindowContent::Class(void)
 	U_Size(muiTabsMade);
 	M_Pointer(mpNewTabItem);
 	M_Pointer(mpTreeMenu);
+	U_Unknown(CLogicimGoTo, mcGoTo);
+	M_Pointer(mpGoToDialog);
 	U_Unknown(SCircuitPlace, msTreeMenuPlace);
 	M_Pointer(mpSubcircuitInfo);
 	M_Pointer(mpSimulationInfo);
@@ -376,6 +379,7 @@ void CLogicimWindowContent::Free(void)
 	mszChooserSelected.Kill();
 	mszSimulationName.Kill();
 	mcHistory.Kill();
+	mcGoTo.Kill();
 	msTreeMenuPlace.Kill();
 	mszSimulationShape.Kill();
 	mszSubcircuitShape.Kill();
@@ -561,7 +565,8 @@ void CLogicimWindowContent::EditProperties(void)
 // subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent
 // Projects and Settings (Control+Alt+S, as IntelliJ IDEA's), Window's
 // Reset Window Layout, View's tool windows and View's Back and Forward
-// (Ctrl+Alt+Left and Right, as the HCP65 IDE's) have no buttons.  Then a
+// (Ctrl+Alt+Left and Right, as the HCP65 IDE's) and Go To (Ctrl+N) have
+// no buttons.  Then a
 // command to place each library component, and the keys over the circuit
 // (see AddCircuitKeys).
 //
@@ -592,6 +597,7 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
 	mpCommands->Add("Edit.Move", "Move", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::Move);
 	mpCommands->Add("View.Back", "Back", "Control+Alt+Cursor Left", Ptr<CImageCel>(), this, &CLogicimWindowContent::NavigateBack)->SetEnabledCheck(this, &CLogicimWindowContent::CanGoBack);
+	mpCommands->Add("View.GoTo", "Go To...", "Control+N", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestGoTo);
 	mpCommands->Add("View.Forward", "Forward", "Control+Alt+Cursor Right", Ptr<CImageCel>(), this, &CLogicimWindowContent::NavigateForward)->SetEnabledCheck(this, &CLogicimWindowContent::CanGoForward);
 	AddPlaceCommands();
 	AddCircuitKeys();

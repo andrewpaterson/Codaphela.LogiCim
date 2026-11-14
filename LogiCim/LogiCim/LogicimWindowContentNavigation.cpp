@@ -166,3 +166,113 @@ bool CLogicimWindowContent::CanGoBack(void) { return mcHistory.Num(true) > 0; }
 bool CLogicimWindowContent::CanGoForward(void) { return mcHistory.Num(false) > 0; }
 CLogicimNavigationHistory* CLogicimWindowContent::GetHistory(void) { return &mcHistory; }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// View, Go To: a dialog can't be shown from the keys or a menu item's
+// input action, so it's shown at the next tick.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::RequestGoTo(void)
+{
+	mpWindow->Post(this, &CLogicimWindowContent::ShowGoToDialog);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Go To, as the HCP65 IDE's: Components, Nets and Subcircuits tabs, the
+// result chosen gone to.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowGoToDialog(void)
+{
+	mpGoToDialog = OMalloc<CGoToDialog>(mpWindow, &msDialogLook, "Go To", &mcGoTo, mpFontColours->GetFont(mpTheme->GetColour(TC_BrightText)));
+	mpGoToDialog->AddTab("Components", mpCommands->Find("View.GoTo"));
+	mpGoToDialog->AddTab("Nets");
+	mpGoToDialog->AddTab("Subcircuits");
+	mpGoToDialog->Start(LGT_Components, "");
+	if (mpGoToDialog->Show())
+	{
+		GoToTarget(mcGoTo.GetTarget(mpGoToDialog->GetChosen()));
+	}
+	mpGoToDialog = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// What Go To's tab finds for the pattern, best first; the targets are
+// the searcher's until it next searches (GetGoToTarget).
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::SearchGoTo(size uiTab, const char* szPattern, CGoToItems* pcDest)
+{
+	CNameMatcher	cMatcher;
+
+	cMatcher.Init(szPattern);
+	mcGoTo.GoToSearch(uiTab, &cMatcher, pcDest);
+	pcDest->Sort();
+	cMatcher.Kill();
+}
+
+
+SLogicimGoToTarget* CLogicimWindowContent::GetGoToTarget(SGoToItem* psItem) { return mcGoTo.GetTarget(psItem); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The editor goes to a Go To result (a step for Back): a component is
+// selected and centred on, in the instance it was found in; a subcircuit
+// is edited at its top.  False if it's gone.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::GoToTarget(SLogicimGoToTarget* psTarget)
+{
+	SCircuitPlace	sPlace;
+	CCircuitEditor*	pcEditor;
+	bool			bResult;
+
+	if (psTarget == NULL)
+	{
+		return false;
+	}
+	sPlace.Init(psTarget->szCircuit.Text(), psTarget->szPath.Text());
+	bResult = ShowPlace(&sPlace);
+	sPlace.Kill();
+	pcEditor = mpLogicimCircuit->GetEditor();
+	if (bResult && (psTarget->uiComponent != ARRAY_ELEMENT_NOT_FOUND))
+	{
+		bResult = psTarget->uiComponent < pcEditor->GetCircuit()->NumComponents();
+		if (bResult)
+		{
+			pcEditor->SelectOnly(pcEditor->GetCircuit()->GetComponent(psTarget->uiComponent));
+			CentreOnSelection();
+		}
+	}
+	UpdateInfo();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The canvas scrolls, its zoom as it is, so the selection is in its
+// middle.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::CentreOnSelection(void)
+{
+	SFloat64Bounds		sBox;
+	CCircuitViewport*	pcViewport;
+	float64				fScale;
+
+	if (mpLogicimCircuit->GetEditor()->GetSelection()->GetBoundingBox(&sBox))
+	{
+		pcViewport = mpCircuit->GetCircuitDraw()->GetViewport();
+		fScale = pcViewport->GetPixelsPerGrid();
+		pcViewport->SetPosition(-(sBox.sMinimum.x + sBox.sMaximum.x) / 2 * fScale, -(sBox.sMinimum.y + sBox.sMaximum.y) / 2 * fScale);
+		mpCircuit->Invalidate();
+	}
+}
+
