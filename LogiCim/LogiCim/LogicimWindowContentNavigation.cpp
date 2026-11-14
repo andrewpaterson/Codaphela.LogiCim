@@ -73,7 +73,7 @@ bool CLogicimWindowContent::ShowPlace(SCircuitPlace* psPlace)
 		return false;
 	}
 	apcPath.Init();
-	bPath = psPlace->szPath.Empty() || (pcEditor->FindInstancePath(pcTop, psPlace->szPath.Text(), &apcPath) != NULL);
+	bPath = psPlace->szPath.Empty() || (FindInstancePath(pcTop, psPlace->szPath.Text(), &apcPath) != NULL);
 	apcPath.Kill();
 	if (!bPath)
 	{

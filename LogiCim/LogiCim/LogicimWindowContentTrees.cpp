@@ -264,11 +264,7 @@ void CLogicimWindowContent::AddInstanceNodes(int32 iParent, CCircuitView* pcCirc
 		if (pcSubcircuit != NULL)
 		{
 			szChildPath.Init(szPath);
-			if (!StrEmpty(szPath))
-			{
-				szChildPath.Append('/');
-			}
-			szChildPath.Append((int64)i);
+			AppendInstancePathStep(&szChildPath, i, pcCircuit->GetComponent(i)->GetName());
 			szText.Init(pcCircuit->GetComponent(i)->GetName());
 			szText.Append(" (");
 			szText.Append(pcSubcircuit->GetTypeName());
@@ -307,23 +303,32 @@ void CLogicimWindowContent::SimulationNodeActivated(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// For checking: selects the node of the instance at szPath and activates
+// For checking: selects the node of the instance at szPath (see
+// InstancePath.h, its steps' names left out or not) and activates
 // it, as a double click does.  False if there's no such node.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimWindowContent::ActivateSimulationNode(const char* szPath)
 {
-	int32	iNode;
+	int32			iNode;
+	CChars			szResolved;
+	CCircuitView*	pcTop;
+	bool			bFound;
 
-	for (iNode = 0; iNode < mpSimulationTree->NumNodes(); iNode++)
+	pcTop = mpLogicimCircuit->GetEditor()->GetTopCircuit();
+	szResolved.Init();
+	bFound = (pcTop != NULL) && ResolveInstancePath(pcTop, szPath, &szResolved);
+	for (iNode = 0; bFound && (iNode < mpSimulationTree->NumNodes()); iNode++)
 	{
-		if (StringCompare(maszSimulationPaths.GetText((size)mpSimulationTree->GetNodeData(iNode)), szPath) == 0)
+		if (szResolved.Equals(maszSimulationPaths.GetText((size)mpSimulationTree->GetNodeData(iNode))))
 		{
 			mpSimulationTree->SelectNode(iNode);
 			mpSimulationTree->Activate();
+			szResolved.Kill();
 			return true;
 		}
 	}
+	szResolved.Kill();
 	return false;
 }
 

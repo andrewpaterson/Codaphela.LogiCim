@@ -301,7 +301,7 @@ CCircuitView* CCircuitCanvasDraw::FindOwnPlace(CViewPath** ppcViewPath, CCircuit
 		return NULL;
 	}
 	apcPath.Init();
-	pcCircuit = msOwnPlace.szPath.Empty() ? pcTop : pcEditor->FindInstancePath(pcTop, msOwnPlace.szPath.Text(), &apcPath);
+	pcCircuit = msOwnPlace.szPath.Empty() ? pcTop : FindInstancePath(pcTop, msOwnPlace.szPath.Text(), &apcPath);
 	apcPath.Kill();
 	if ((pcCircuit != NULL) && (pcTop == pcEditor->GetTopCircuit()))
 	{

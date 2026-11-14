@@ -137,11 +137,7 @@ void CLogicimGoTo::SearchCircuit(size uiTab, CNameMatcher* pcMatcher, CGoToItems
 		if (pcSubcircuit != NULL)
 		{
 			szChildPath.Init(szPath);
-			if (!StrEmpty(szPath))
-			{
-				szChildPath.Append('/');
-			}
-			szChildPath.Append((int64)i);
+			AppendInstancePathStep(&szChildPath, i, pcComponent->GetName());
 			szChildLocation.Init(szLocation);
 			szChildLocation.Append(" > ");
 			szChildLocation.Append(pcComponent->GetName());

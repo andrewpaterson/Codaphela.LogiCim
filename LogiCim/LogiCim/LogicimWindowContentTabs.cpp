@@ -21,7 +21,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/StringHelper.h"
 #include "StandardLib/Objects.h"
 #include "LogicimLib/CircuitEditor.h"
-#include "LogicimLib/SubcircuitInstanceView.h"
 #include "LogicimWindowContent.h"
 
 
@@ -383,10 +382,10 @@ void CLogicimWindowContent::AppendTabTitle(SCircuitPlace* psPlace, CChars* pszDe
 	pcEditor = mpLogicimCircuit->GetEditor();
 	pcTop = (pcEditor->GetCircuits() != NULL) ? pcEditor->GetCircuits()->Get(psPlace->szCircuit.Text()) : NULL;
 	apcPath.Init();
-	pcCircuit = ((pcTop != NULL) && !psPlace->szPath.Empty()) ? pcEditor->FindInstancePath(pcTop, psPlace->szPath.Text(), &apcPath) : NULL;
+	pcCircuit = ((pcTop != NULL) && !psPlace->szPath.Empty()) ? FindInstancePath(pcTop, psPlace->szPath.Text(), &apcPath) : NULL;
 	if (pcCircuit != NULL)
 	{
-		pcInstance = (CComponentView*)(CSubcircuitInstanceView*)apcPath.GetPtr(apcPath.NumElements() - 1);
+		pcInstance = GetInstanceComponent(apcPath.GetPtr(apcPath.NumElements() - 1));
 		pszDest->Append(pcCircuit->GetTypeName());
 		pszDest->Append(" in ");
 		pszDest->Append(pcInstance->GetName());
@@ -419,11 +418,7 @@ void CLogicimWindowContent::OpenInstanceInNewTab(CComponentView* pcInstance)
 	}
 	sPlace.Init();
 	GetPlace(&sPlace);
-	if (!sPlace.szPath.Empty())
-	{
-		sPlace.szPath.Append('/');
-	}
-	sPlace.szPath.Append((int64)uiIndex);
+	AppendInstancePathStep(&sPlace.szPath, uiIndex, pcInstance->GetName());
 	sPlace.fZoom = 0;
 	OpenInNewTab(&sPlace);
 	sPlace.Kill();
