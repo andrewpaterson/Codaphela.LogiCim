@@ -160,6 +160,15 @@ enum EEditTransform
 //change that only changed the selection is marked so: Undo and Redo skip it, as if it were part of the change before
 //or after it, and stepping (as Logicim does) doesn't.
 //
+//What's told when the project changes: after each change saved for undo (an edit, a move into an instance, a change
+//of selection) and after an undo or redo, so an application's views of the circuits can follow them.
+class CCircuitEditorListener
+{
+public:
+	virtual void	ProjectChanged(void) = 0;
+};
+
+
 //The editor is an object; keep it under the root.  It holds its simulation and fonts.
 class CCircuitEditor : public CObject
 {
@@ -175,6 +184,7 @@ protected:
 	CCircuitSelection					mcSelection;
 	CUndoStack							mcUndo;
 	CArrayCircuitPlace					masTabs;  //An application's tabs, kept with the project (SetTabs).
+	CCircuitEditorListener*				mpcListener;  //Not held, NULL for none.
 	size								muiActiveTab;
 	CCircuitEdit*						mpcEdit;
 	CComponentView*						mpcNextUnit;
@@ -236,6 +246,7 @@ public:
 	bool				CanUndo(bool bStep = false);
 	bool				CanRedo(bool bStep = false);
 	CUndoStack*			GetUndoStack(void);
+	void				SetListener(CCircuitEditorListener* pcListener);
 	void				SetTabs(CArrayCircuitPlace* pasTabs, size uiActive);
 	CArrayCircuitPlace*	GetTabs(void);
 	size				GetActiveTab(void);
@@ -322,6 +333,7 @@ protected:
 	void				KillProject(bool bFreeing = false);
 	bool				LoadUndo(size uiIndex);
 	void				SaveTabsXML(CXMLWriter* pcWriter);
+	void				TellProjectChanged(void);
 	void				KillSimulation(bool bFreeing = false);
 };
 

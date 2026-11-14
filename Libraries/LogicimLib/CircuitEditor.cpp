@@ -64,6 +64,7 @@ void CCircuitEditor::Init(CFamilyVoltageConfigurationStore* pcFamilies, Ptr<CCir
 	mcUndo.Init();
 	masTabs.Init();
 	muiActiveTab = 0;
+	mpcListener = NULL;
 	mpcEdit = NULL;
 	mpcNextUnit = NULL;
 	meCreationRotation = ROT_East;
@@ -122,6 +123,7 @@ void CCircuitEditor::Class(void)
 	U_Unknown(CUndoStack, mcUndo);
 	U_Unknown(CArrayCircuitPlace, masTabs);
 	U_Size(muiActiveTab);
+	U_Pointer(mpcListener);
 	U_Pointer(mpcEdit);
 	U_Pointer(mpcNextUnit);
 	U_Enum(meCreationRotation);

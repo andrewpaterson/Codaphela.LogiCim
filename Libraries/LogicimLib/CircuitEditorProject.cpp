@@ -552,6 +552,24 @@ void CCircuitEditor::PushUndo(bool bSelectionOnly)
 	SaveXML(&cWriter);
 	mcUndo.Push(cWriter.GetText(), bSelectionOnly);
 	cWriter.Kill();
+	TellProjectChanged();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The listener, if there is one, as the editor keeps it (SetListener).
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::SetListener(CCircuitEditorListener* pcListener) { mpcListener = pcListener; }
+
+
+void CCircuitEditor::TellProjectChanged(void)
+{
+	if (mpcListener != NULL)
+	{
+		mpcListener->ProjectChanged();
+	}
 }
 
 
@@ -640,6 +658,7 @@ bool CCircuitEditor::LoadUndo(size uiIndex)
 	if (bResult)
 	{
 		mcUndo.MoveTo(uiIndex);
+		TellProjectChanged();
 	}
 	return bResult;
 }
