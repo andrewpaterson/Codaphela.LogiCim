@@ -44,6 +44,7 @@
     <ClCompile Include="CircuitTextMarkupParser.cpp" />
     <ClCompile Include="CircuitView.cpp" />
     <ClCompile Include="CircuitPlace.cpp" />
+    <ClCompile Include="InstancePath.cpp" />
     <ClCompile Include="CircuitViewport.cpp" />
     <ClCompile Include="ComponentShapes.cpp" />
     <ClCompile Include="ComponentSpriteCache.cpp" />
@@ -105,6 +106,7 @@
     <ClInclude Include="CircuitTextMarkupParser.h" />
     <ClInclude Include="CircuitView.h" />
     <ClInclude Include="CircuitPlace.h" />
+    <ClInclude Include="InstancePath.h" />
     <ClInclude Include="CircuitViewport.h" />
     <ClInclude Include="Bounds.h" />
     <ClInclude Include="ComponentShapes.h" />

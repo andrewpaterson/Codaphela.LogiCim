@@ -647,34 +647,28 @@ bool CCircuitEditor::LoadUndo(size uiIndex)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The path into the instance entered, as each instance's index in the
-// circuit before it ("12/3").
+// The path into the instance entered (see InstancePath.h), empty at the
+// top.
 //
 //////////////////////////////////////////////////////////////////////////
 void CCircuitEditor::GetInstancePathText(CChars* psz)
 {
-	size				i;
-	CCircuitView*		pcCircuit;
-	CComponentView*		pcInstance;
+	size							i;
+	CArrayCircuitInstanceViewPtr	apcPath;
 
 	if (mpcViewPath == NULL)
 	{
 		return;
 	}
 	//The path's first view is the top circuit itself; the instances follow it.
-	pcCircuit = mpcViewPath->GetTop()->GetCircuitView();
+	apcPath.Init();
 	for (i = 1; i < mpcViewPath->Length(); i++)
 	{
-		pcInstance = (CComponentView*)(CSubcircuitInstanceView*)mpcViewPath->Get(i);
-		if (i > 1)
-		{
-			psz->Append('/');
-		}
-		psz->Append((int64)pcCircuit->FindComponentIndex(pcInstance));
-		pcCircuit = mpcViewPath->Get(i)->GetInstanceCircuitView();
+		apcPath.Add(mpcViewPath->Get(i));
 	}
+	AppendInstancePathText(psz, mpcViewPath->GetTop()->GetCircuitView(), &apcPath);
+	apcPath.Kill();
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -740,43 +734,3 @@ bool CCircuitEditor::EnterInstancePath(const char* szPath)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-// The circuit at the end of the path of instance indices from pcTop, and
-// the instances, NULL if the path doesn't follow instances.
-//
-//////////////////////////////////////////////////////////////////////////
-CCircuitView* CCircuitEditor::FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath)
-{
-	CCircuitView*			pcCircuit;
-	const char*				sz;
-	char*					szEnd;
-	long					lIndex;
-	CComponentView*			pcComponent;
-	CCircuitInstanceView*	pcInstanceView;
-
-	pcCircuit = pcTop;
-	sz = szPath;
-	while (*sz != '\0')
-	{
-		lIndex = strtol(sz, &szEnd, 10);
-		if ((szEnd == sz) || (lIndex < 0) || ((size)lIndex >= pcCircuit->NumComponents()))
-		{
-			return NULL;
-		}
-		pcComponent = pcCircuit->GetComponent((size)lIndex);
-		pcInstanceView = pcComponent->GetCircuitInstanceView();
-		if ((pcInstanceView == NULL) || (pcInstanceView->GetInstanceCircuitView() == NULL))
-		{
-			return NULL;
-		}
-		papcPath->Add(pcInstanceView);
-		pcCircuit = pcInstanceView->GetInstanceCircuitView();
-		sz = (*szEnd == '/') ? szEnd + 1 : szEnd;
-		if ((*szEnd != '/') && (*szEnd != '\0'))
-		{
-			return NULL;
-		}
-	}
-	return pcCircuit;
-}

@@ -93,6 +93,9 @@
     <ClCompile Include="CircuitPlace.cpp">
       <Filter>Source\View</Filter>
     </ClCompile>
+    <ClCompile Include="InstancePath.cpp">
+      <Filter>Source\View</Filter>
+    </ClCompile>
     <ClCompile Include="ViewPath.cpp">
       <Filter>Source\View</Filter>
     </ClCompile>
@@ -273,6 +276,9 @@
       <Filter>Source\View</Filter>
     </ClInclude>
     <ClInclude Include="CircuitPlace.h">
+      <Filter>Source\View</Filter>
+    </ClInclude>
+    <ClInclude Include="InstancePath.h">
       <Filter>Source\View</Filter>
     </ClInclude>
     <ClInclude Include="ViewPath.h">

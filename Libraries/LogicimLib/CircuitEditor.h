@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CIRCUIT_EDITOR_H__
 #define __CIRCUIT_EDITOR_H__
 #include "CircuitPlace.h"
+#include "InstancePath.h"
 #include "CircuitViews.h"
 #include "CircuitFonts.h"
 #include "CircuitSelection.h"
@@ -253,7 +254,6 @@ public:
 	bool				EnterInstancePath(const char* szPath);
 	CViewPath*			GetInstanceViewPath(const char* szPath);
 	void				GetInstancePathText(CChars* psz);
-	CCircuitView*		FindInstancePath(CCircuitView* pcTop, const char* szPath, CArrayTemplatePtr<CCircuitInstanceView>* papcPath);
 	void				LeaveInstances(void);
 	CComponentView*		GetComponentAt(SFloat64Vec2 sPosition);
 	void				SelectOnly(CComponentView* pcComponent);

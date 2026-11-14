@@ -16,6 +16,7 @@
 #include "LogicimLib/BufferView.h"
 #include "LogicimLib/SubcircuitInstanceView.h"
 #include "LogicimLib/CircuitViews.h"
+#include "LogicimLib/InstancePath.h"
 #include "LogicimLib/CircuitFile.h"
 #include "TestLib/Assert.h"
 #include "TestLogicimRender.h"
@@ -1501,6 +1502,109 @@ void TestSubcircuitPinPositions(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+//
+//////////////////////////////////////////////////////////////////////////
+static CSubcircuitInstanceView* AddTestInstance(CCircuitView* pcCircuit, CCircuitView* pcSubcircuit, const char* szName, Ptr<CCircuitFonts> pFonts)
+{
+	CSubcircuitInstanceView*	pcInstance;
+
+	pcInstance = NewMalloc<CSubcircuitInstanceView>();
+	pcInstance->Init((int32)pcCircuit->NumComponents() * 10, 0, ROT_East, szName, "", pcSubcircuit, &pFonts, 2);
+	pcCircuit->Add(pcInstance);
+	return pcInstance;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+static void AssertResolvedPath(const char* szExpected, bool bWhole, CCircuitView* pcTop, const char* szPath)
+{
+	CChars	szResolved;
+
+	szResolved.Init();
+	AssertBool(bWhole, ResolveInstancePath(pcTop, szPath, &szResolved));
+	AssertString(szExpected, szResolved.Text());
+	szResolved.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A path of instances names each by its index and its name, and finds it
+// by its name: after a component before it goes, after its name is the
+// only one left of two; by its index between instances of the same name,
+// or in a path without names.  Resolving a path gives it as it is now, as
+// far down as it goes.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSubcircuitInstancePaths(void)
+{
+	SSubcircuitTest					sTest;
+	Ptr<CCircuitFonts>				pFonts;
+	CCircuitView*					pcTop;
+	CCircuitView*					pcBoard;
+	CCircuitView*					pcGate;
+	CSubcircuitInstanceView*		pcFirst;
+	CSubcircuitInstanceView*		pcGateInstance;
+	CArrayCircuitInstanceViewPtr	apcPath;
+	CChars							szPath;
+
+	sTest.Init();
+	pFonts = LoadTestCircuitFonts();
+	pcGate = sTest.cCircuits.Add("Gate");
+	AddTestPin(pcGate, 0, 0, "A", PA_Left, PAN_Negative);
+	pcBoard = sTest.cCircuits.Add("Board");
+	AddTestPin(pcBoard, 0, 0, "IN", PA_Left, PAN_Negative);
+	pcGateInstance = AddTestInstance(pcBoard, pcGate, "U3", pFonts);
+	pcTop = sTest.cCircuits.Add("Main");
+	pcFirst = AddTestInstance(pcTop, pcBoard, "U1", pFonts);
+	AddTestInstance(pcTop, pcBoard, "U2/A", pFonts);
+	AddTestInstance(pcTop, pcBoard, "U9", pFonts);
+	AddTestInstance(pcTop, pcBoard, "U9", pFonts);
+
+	//Written with names, a slash in one escaped.
+	szPath.Init();
+	AppendInstancePathStep(&szPath, 1, "U2/A");
+	AppendInstancePathStep(&szPath, 1, "U3");
+	AssertString("1:U2\\/A/1:U3", szPath.Text());
+	apcPath.Init();
+	AssertPointer(pcGate, FindInstancePath(pcTop, szPath.Text(), &apcPath));
+	AssertSize(2, apcPath.NumElements());
+	AssertPointer((CCircuitInstanceView*)pcGateInstance, apcPath.GetPtr(1));
+	szPath.Clear();
+	AppendInstancePathText(&szPath, pcTop, &apcPath);
+	AssertString("1:U2\\/A/1:U3", szPath.Text());
+	apcPath.Kill();
+	szPath.Kill();
+
+	//Found by name, wherever it is now; by index between two of a name, or without names.
+	AssertResolvedPath("1:U2\\/A/1:U3", true, pcTop, "7:U2\\/A/1:U3");
+	AssertResolvedPath("3:U9", true, pcTop, "3:U9");
+	AssertResolvedPath("2:U9", true, pcTop, "0:U9");
+	AssertResolvedPath("0:U1/1:U3", true, pcTop, "0/1");
+	AssertResolvedPath("", true, pcTop, "");
+
+	//U1 goes: U2/A is found by name at its new index; a path through U1 goes as far as it can, which is nowhere.
+	AssertTrue(pcTop->Remove(pcFirst));
+	SafeKill(pcFirst);
+	AssertResolvedPath("0:U2\\/A/1:U3", true, pcTop, "1:U2\\/A/1:U3");
+	AssertResolvedPath("", false, pcTop, "0:U1/1:U3");
+	AssertResolvedPath("0:U2\\/A", false, pcTop, "1:U2\\/A/1:U8");
+	apcPath.Init();
+	AssertNull(FindInstancePath(pcTop, "0:U1", &apcPath));
+	AssertNull(FindInstancePath(pcTop, "x", &apcPath));
+	apcPath.Kill();
+
+	KillTestCircuitFonts(&pFonts);
+	pFonts = NULL;
+	sTest.Kill(true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The keys that place a subcircuit are kept with it, as the application
 // wrote them, and a circuit without any says nothing of them.
 //
@@ -1603,6 +1707,7 @@ void TestSubcircuits(void)
 	TestSubcircuitPinSpacing();
 	TestSubcircuitPinPositions();
 	TestSubcircuitPlaceKeys();
+	TestSubcircuitInstancePaths();
 	TestComponentImportBoundingBox();
 
 	DataMemoryKill();
