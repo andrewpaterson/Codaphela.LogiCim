@@ -29,7 +29,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LOGICIM_SETTINGS_DIRECTORY		"LogiCim"
 #define LOGICIM_SETTINGS_FILE			"Settings.xml"
-#define LOGICIM_RECENT_FILE				"RecentFiles.xml"
+#define LOGICIM_RECENT_FILE				"RecentProjects.xml"
 #define LOGICIM_SETTINGS_TAG			"LogicimSettings"
 #define LOGICIM_FILES_TAG				"Files"
 #define LOGICIM_KICAD_IMPORT_ATTRIBUTE	"KicadImport"
@@ -199,7 +199,7 @@ void CLogicimSettings::ReadRecent(const char* szFile)
 	mcRecent.Clear();
 	if (!mszRecentFile.Empty() && cFileUtil.Exists(szFile) && !mcRecent.Read(szFile))
 	{
-		gcLogger.Warning2(__METHOD__, " Recent files [", szFile, "] couldn't be read.", NULL);
+		gcLogger.Warning2(__METHOD__, " Recent projects [", szFile, "] couldn't be read.", NULL);
 	}
 }
 
@@ -217,7 +217,7 @@ bool CLogicimSettings::WriteRecent(void)
 	}
 	if (!mcRecent.Write(mszRecentFile.Text()))
 	{
-		gcLogger.Warning2(__METHOD__, " Recent files [", mszRecentFile.Text(), "] couldn't be written.", NULL);
+		gcLogger.Warning2(__METHOD__, " Recent projects [", mszRecentFile.Text(), "] couldn't be written.", NULL);
 		return false;
 	}
 	return true;
@@ -313,7 +313,7 @@ static void GetLogicimUserFile(CChars* pszDest, const char* szFile, const char* 
 //////////////////////////////////////////////////////////////////////////
 //
 // The user's settings (Settings.xml, LOGICIM_SETTINGS) and recent
-// projects (RecentFiles.xml, LOGICIM_RECENT).
+// projects (RecentProjects.xml, LOGICIM_RECENT).
 //
 //////////////////////////////////////////////////////////////////////////
 void GetLogicimSettingsFile(CChars* pszDest) { GetLogicimUserFile(pszDest, LOGICIM_SETTINGS_FILE, "LOGICIM_SETTINGS"); }

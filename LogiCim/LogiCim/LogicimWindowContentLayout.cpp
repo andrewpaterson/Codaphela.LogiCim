@@ -166,8 +166,8 @@ void CLogicimWindowContent::AddMenuActions(Ptr<CMenuContainer> pMenu, ELogicimAc
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Load and Save Project, Recent Files (see ShowRecentMenu) and Clear
-// Recent Files, then Import KiCad Schematic and Exit.
+// Load and Save Project, Recent Projects (see ShowRecentMenu) and Clear
+// Recent Projects, then Import KiCad Schematic and Exit.
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CMenuContainer> CLogicimWindowContent::CreateFileMenu(void)
@@ -178,8 +178,8 @@ Ptr<CMenuContainer> CLogicimWindowContent::CreateFileMenu(void)
 
 	pMenu = CreateMenu(aeProject, sizeof(aeProject) / sizeof(ELogicimAction));
 	mpRecentMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
-	pMenu->AddItem("Recent Files", NULL, mpRecentMenu);
-	pMenu->AddItem(mpCommands->Find("File.ClearRecentFiles"));
+	pMenu->AddItem("Recent Projects", NULL, mpRecentMenu);
+	pMenu->AddItem(mpCommands->Find("File.ClearRecentProjects"));
 	AddMenuActions(pMenu, aeRest, sizeof(aeRest) / sizeof(ELogicimAction));
 	ShowRecentMenu();
 	return pMenu;

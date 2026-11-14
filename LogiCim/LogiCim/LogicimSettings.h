@@ -26,8 +26,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //What LogiCim keeps of how the user left it, between runs: the KiCad schematic last imported and the project last
 //loaded, where Import KiCad Schematic and Load Project open, and the projects loaded or saved last (File, Recent
-//Files).  They're kept in the user's own files (see GetLogicimSettingsFile and GetLogicimRecentFile), written as soon
-//as one changes.  With no file they're kept only while LogiCim runs.
+//Projects).  They're kept in the user's own files (see GetLogicimSettingsFile and GetLogicimRecentFile), written as
+//soon as one changes.  With no file they're kept only while LogiCim runs.
 class CLogicimSettings
 {
 protected:

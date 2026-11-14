@@ -121,7 +121,7 @@ protected:
 	Ptr<CCommandSet>		mpCommands;  //The actions' commands, the window's.
 	Ptr<CMenuBar>			mpMenuBar;
 	Ptr<CMenuContainer>		mpCanvasMenu;  //The circuit canvas's right button menu, filled as it opens.
-	Ptr<CMenuContainer>		mpRecentMenu;  //File, Recent Files: an item for each recent project, or one saying there are none.
+	Ptr<CMenuContainer>		mpRecentMenu;  //File, Recent Projects: an item for each recent project, or one saying there are none.
 	Ptr<CMenuItem>			mpEnterItem;
 	Ptr<CMenuItem>			mpPropertiesItem;
 	Ptr<CListContainer>		mpSubcircuits;
@@ -191,8 +191,8 @@ public:
 	void				PrepareCanvasMenu(SFloat64Vec2 sGrid);
 	void				CanvasMenuItemClicked(CMenuItem* pcItem);
 	void				ReadSettings(void);
-	bool				OpenRecentFile(size uiIndex);
-	void				ClearRecentFiles(void);
+	bool				OpenRecentProject(size uiIndex);
+	void				ClearRecentProjects(void);
 	void				ListSubcircuits(void);
 
 protected:
@@ -207,8 +207,8 @@ protected:
 	Ptr<CMenuContainer>		CreateFileMenu(void);
 	void					ShowRecentMenu(void);
 	void					RecentItemClicked(CMenuItem* pcItem);
-	void					OpenQueuedRecentFile(void);
-	void					QueueClearRecentFiles(void);
+	void					OpenQueuedRecentProject(void);
+	void					QueueClearRecentProjects(void);
 	Ptr<CToolbar>			CreateToolbar(void);
 	Ptr<CToolbar>			CreateToolStrip(ELogicimAction* aeActions, int iNumActions, bool bVertical);
 	Ptr<CComponent>			CreateEditor(void);

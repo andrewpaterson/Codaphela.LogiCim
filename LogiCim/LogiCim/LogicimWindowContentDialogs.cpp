@@ -556,7 +556,7 @@ void CLogicimWindowContent::ShowRecentMenu(void)
 	mpRecentMenu->RemoveAllItems();
 	if (pcRecent->NumFiles() == 0)
 	{
-		mpRecentMenu->AddItem("(No recent files)")->SetEnabled(false);
+		mpRecentMenu->AddItem("(No recent projects)")->SetEnabled(false);
 		return;
 	}
 	szText.Init();
@@ -583,17 +583,17 @@ void CLogicimWindowContent::ShowRecentMenu(void)
 void CLogicimWindowContent::RecentItemClicked(CMenuItem* pcItem)
 {
 	muiQueuedRecent = (size)pcItem->GetTag();
-	mpWindow->Post(this, &CLogicimWindowContent::OpenQueuedRecentFile);
+	mpWindow->Post(this, &CLogicimWindowContent::OpenQueuedRecentProject);
 }
 
 
-void CLogicimWindowContent::OpenQueuedRecentFile(void)
+void CLogicimWindowContent::OpenQueuedRecentProject(void)
 {
 	size	uiIndex;
 
 	uiIndex = muiQueuedRecent;
 	muiQueuedRecent = MAX_SIZE;
-	OpenRecentFile(uiIndex);
+	OpenRecentProject(uiIndex);
 }
 
 
@@ -604,7 +604,7 @@ void CLogicimWindowContent::OpenQueuedRecentFile(void)
 // couldn't be loaded, or there isn't one.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimWindowContent::OpenRecentFile(size uiIndex)
+bool CLogicimWindowContent::OpenRecentProject(size uiIndex)
 {
 	CFileUtil	cFileUtil;
 	CChars		szFilename;
@@ -629,17 +629,17 @@ bool CLogicimWindowContent::OpenRecentFile(size uiIndex)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// File, Clear Recent Files: done at the next tick, not while the menu
-// that holds Recent Files is handling the click.
+// File, Clear Recent Projects: done at the next tick, not while the menu
+// that holds Recent Projects is handling the click.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::QueueClearRecentFiles(void)
+void CLogicimWindowContent::QueueClearRecentProjects(void)
 {
-	mpWindow->Post(this, &CLogicimWindowContent::ClearRecentFiles);
+	mpWindow->Post(this, &CLogicimWindowContent::ClearRecentProjects);
 }
 
 
-void CLogicimWindowContent::ClearRecentFiles(void)
+void CLogicimWindowContent::ClearRecentProjects(void)
 {
 	mcSettings.ClearRecent();
 	ShowRecentMenu();

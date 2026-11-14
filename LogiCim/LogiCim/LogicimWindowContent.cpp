@@ -457,7 +457,7 @@ void CLogicimWindowContent::EditProperties(void)
 // A command for each action, run by its menu items, tool buttons and
 // keys, then the keys with no menu item: Ctrl+Alt+Z and Ctrl+Alt+Shift+Z
 // undo and redo a change at a time, and Alt+Backspace leaves the
-// subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent Files
+// subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent Projects
 // has no button.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -480,7 +480,7 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Edit.StepUndo", "Undo Step", "Control+Alt+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepUndo);
 	mpCommands->Add("Edit.StepRedo", "Redo Step", "Control+Alt+Shift+Z", Ptr<CImageCel>(), this, &CLogicimWindowContent::StepRedo);
 	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
-	mpCommands->Add("File.ClearRecentFiles", "Clear Recent Files", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentFiles);
+	mpCommands->Add("File.ClearRecentProjects", "Clear Recent Projects", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentProjects);
 }
 
 
