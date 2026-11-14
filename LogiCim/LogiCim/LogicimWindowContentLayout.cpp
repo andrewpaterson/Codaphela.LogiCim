@@ -166,13 +166,13 @@ void CLogicimWindowContent::AddMenuActions(Ptr<CMenuContainer> pMenu, ELogicimAc
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Load and Save Project, Recent Projects (see ShowRecentMenu) and Clear
+// New, Load and Save Project, Recent Projects (see ShowRecentMenu) and Clear
 // Recent Projects, then Import KiCad Schematic and Exit.
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CMenuContainer> CLogicimWindowContent::CreateFileMenu(void)
 {
-	ELogicimAction			aeProject[] = { LA_LoadProject, LA_SaveProject };
+	ELogicimAction			aeProject[] = { LA_NewProject, LA_LoadProject, LA_SaveProject };
 	ELogicimAction			aeRest[] = { LA_Separator, LA_ImportKicadSchematic, LA_Separator, LA_Exit };
 	Ptr<CMenuContainer>		pMenu;
 
@@ -227,12 +227,13 @@ Ptr<CCanvas> CLogicimWindowContent::CreateLine(int32 iWidth, int32 iHeight, ARGB
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Logicim's toolbar: load and save, the simulation, then rotate and flip.
+// Logicim's toolbar: new, load and save, the simulation, then rotate and
+// flip.
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CToolbar> CLogicimWindowContent::CreateToolbar(void)
 {
-	ELogicimAction	aeActions[] = { LA_LoadProject, LA_SaveProject, LA_Separator,
+	ELogicimAction	aeActions[] = { LA_NewProject, LA_LoadProject, LA_SaveProject, LA_Separator,
 									LA_NewSimulation, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed, LA_Separator,
 									LA_RotateLeft, LA_RotateRight, LA_FlipHorizontally, LA_FlipVertically };
 

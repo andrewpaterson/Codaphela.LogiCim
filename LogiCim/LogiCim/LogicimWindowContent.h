@@ -44,6 +44,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
 enum ELogicimAction
 {
+	LA_NewProject,
 	LA_LoadProject,
 	LA_SaveProject,
 	LA_NewSimulation,
@@ -175,6 +176,7 @@ public:
 	void				Tick(int64 iUpdateTimeInMilliseconds);
 	bool				ImportKicadSchematic(const char* szFilename);
 	bool				ImportChosenKicadSchematic(const char* szFilename);
+	bool				NewProject(void);
 	bool				LoadProject(const char* szFilename);
 	bool				SaveProject(const char* szFilename);
 	char*				GetProjectDialogStart(bool bSave);

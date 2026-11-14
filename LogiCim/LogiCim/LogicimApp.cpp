@@ -243,7 +243,7 @@ bool CLogicimApp::Check(const char* szSteps)
 // circuit's zoom.  load:<file>, save:<file> and import:<file> do what
 // Load Project, Save Project and Import KiCad Schematic do with the file
 // chosen.  files: the project's file and where each of those opens.
-// recent: File, Recent Projects' items.  openrecent:<n> loads the nth (1
+// new does what New Project does.  recent: File, Recent Projects' items.  openrecent:<n> loads the nth (1
 // the latest) as its item does, and clearrecent does what Clear Recent
 // Files does.
 //
@@ -275,6 +275,10 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "zoom") == 0)
 	{
 		printf("Zoom: %.2f\n", mpContent->GetZoom());
+	}
+	else if (StringCompare(szStep, "new") == 0)
+	{
+		printf("New project: %s\n", mpContent->NewProject() ? "made" : "not made");
 	}
 	else if (strncmp(szStep, "load:", 5) == 0)
 	{

@@ -216,9 +216,6 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 	CCircuitViews				cCircuits;
 	CKicadSchemBoardImporter	cImporter;
 	CCircuitView*				pcTop;
-	CXMLWriter					cWriter;
-	CMarkup						cMarkup;
-	CMarkupTag*					pcRoot;
 	bool						bResult;
 
 	cVariables.Init();
@@ -226,31 +223,75 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 	cCircuits.Init();
 	cImporter.Init(&cCircuits, mpEditor->GetFonts(), &cVariables);
 	pcTop = cImporter.Import(szFilename);
-	bResult = pcTop != NULL;
+	bResult = (pcTop != NULL) && LoadCircuits(&cCircuits, pcTop, szFilename);
 	if (bResult)
 	{
-		cWriter.Init();
-		SaveCircuitsXML(&cCircuits, pcTop, NULL, &cWriter);
-		cMarkup.Init();
-		pcRoot = ReadCircuitTextRoot(&cMarkup, cWriter.GetText(), szFilename, "Circuits");
-		bResult = (pcRoot != NULL) && mpEditor->LoadXML(pcRoot, szFilename);
-		cMarkup.Kill();
-		cWriter.Kill();
-		if (bResult)
+		mszFilename.Set(szFilename);
+		if (mszFilename.EndsWith(".kicad_sch"))
 		{
-			mpEditor->PushUndo(false);
-			mszFilename.Set(szFilename);
-			if (mszFilename.EndsWith(".kicad_sch"))
-			{
-				mszFilename.RemoveFromEnd(10);
-			}
-			mszFilename.Append(".xml");
+			mszFilename.RemoveFromEnd(10);
 		}
+		mszFilename.Append(".xml");
 	}
 
 	cImporter.Kill();
 	cCircuits.Kill();
 	cVariables.Kill();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Replaces the project with a new one, an empty "Main" circuit being
+// simulated as LogiCim starts with, which hasn't a file yet.  It's loaded
+// as a project is loaded, so it can be undone back to the old one.  If
+// it can't be made the project is left as it was.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::NewProject(void)
+{
+	CCircuitViews	cCircuits;
+	CCircuitView*	pcTop;
+	bool			bResult;
+
+	cCircuits.Init();
+	pcTop = cCircuits.Add(LOGICIM_MAIN_CIRCUIT);
+	bResult = (pcTop != NULL) && LoadCircuits(&cCircuits, pcTop, "New Project");
+	if (bResult)
+	{
+		mszFilename.Clear();
+	}
+	cCircuits.Kill();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuits, with pcTop simulated, in place of the project's, loaded
+// as a project is loaded so it can be undone.  szSource names them in
+// errors.  If they can't be loaded the project is left as it was.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::LoadCircuits(CCircuitViews* pcCircuits, CCircuitView* pcTop, const char* szSource)
+{
+	CXMLWriter	cWriter;
+	CMarkup		cMarkup;
+	CMarkupTag*	pcRoot;
+	bool		bResult;
+
+	cWriter.Init();
+	SaveCircuitsXML(pcCircuits, pcTop, NULL, &cWriter);
+	cMarkup.Init();
+	pcRoot = ReadCircuitTextRoot(&cMarkup, cWriter.GetText(), szSource, "Circuits");
+	bResult = (pcRoot != NULL) && mpEditor->LoadXML(pcRoot, szSource);
+	cMarkup.Kill();
+	cWriter.Kill();
+	if (bResult)
+	{
+		mpEditor->PushUndo(false);
+	}
 	return bResult;
 }
 

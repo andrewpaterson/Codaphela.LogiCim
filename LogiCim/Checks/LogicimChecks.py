@@ -10,7 +10,7 @@ import os, re, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOGICIM_DIR = os.path.join(HERE, '..', 'LogiCim')
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-NUM_ACTIONS = 40	#ELogicimAction's actions, each a command, with the three commands that only have keys and Clear Recent Projects.
+NUM_ACTIONS = 41	#ELogicimAction's actions, each a command, with the three commands that only have keys and Clear Recent Projects.
 
 #Each check: its name, its LOGICIM_CHECK steps, the lines (regular expressions) its output must have, in order, and
 #lines it mustn't have.
@@ -26,7 +26,7 @@ CHECKS = [
 		 r'^Command: Circuit\.LeaveSubcircuit \[Alt\+Backspace\] bound$'],
 		[r'NOT BOUND']),
 	('menus-and-buttons', 'menus,buttons',
-		[r'^Menu File: Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Exit \[File\.Exit\]$',
+		[r'^Menu File: New Project \[File\.NewProject\] Load Project \[File\.LoadProject\] Save Project \[File\.SaveProject\] Recent Projects \[none\] Clear Recent Projects \[File\.ClearRecentProjects\] Import KiCad Schematic\.\.\. \[File\.ImportKicadSchematic\] Exit \[File\.Exit\]$',
 		 r'^Menu Edit: Undo \[Edit\.Undo\] Redo \[Edit\.Redo\] ',
 		 r'^Menu View: ',
 		 r'^Menu Simulation: ',
@@ -165,6 +165,44 @@ def CheckRecentProjects(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#File, New Project: the project loaded is closed and an empty "Main" circuit, without a file, edited in its place;
+#Load Project still opens where it did and the recent projects stay.  Undo goes back to the old project.
+def CheckNewProject(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szProject = os.path.join(szDirectory, 'FlipFlop.xml')
+		szEmpty = os.path.join(szDirectory, 'Empty.xml')
+		szUndone = os.path.join(szDirectory, 'Undone.xml')
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szProject)
+		asEnv = {'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml'), 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml')}
+		E = re.escape
+
+		bPassed = Check(szExecutable, 'new-project', ','.join(['load:' + szProject, 'new', 'files', 'recent', 'save:' + szEmpty, 'command:Edit.Undo', 'save:' + szUndone]),
+			[r'loaded$', r'^New project: made$',
+			 r'^Project file: \[\]$', r'^Load Project opens: \[%s\]$' % E(szProject),
+			 r'^Recent Projects: 1$', r'^Recent: \[1 %s\]$' % E(szProject),
+			 r'saved$', r'^Command Edit\.Undo: run$', r'saved$'],
+			[r'Unknown check step'], asEnv)
+		aszProblems = []
+		if os.path.exists(szEmpty):
+			szText = open(szEmpty).read()
+			if (re.findall(r'<Circuit ', szText) != ['<Circuit ']) or ('<Circuit type="Main"/>' not in szText):
+				aszProblems.append('the new project is not one empty Main circuit:\n' + szText)
+		else:
+			aszProblems.append('the new project was not saved')
+		if not os.path.exists(szUndone) or (open(szUndone).read().count('<Component') != open(szProject).read().count('<Component')):
+			aszProblems.append('Undo did not go back to the project loaded')
+		if aszProblems:
+			print('FAIL new-project-saved')
+			for szProblem in aszProblems:
+				print('    ' + szProblem)
+			return False
+		print('pass new-project-saved')
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -181,6 +219,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('remembered-files' in aszNames):
 		if not CheckRememberedFiles(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('new-project' in aszNames):
+		if not CheckNewProject(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('recent-projects' in aszNames):
 		if not CheckRecentProjects(szExecutable):

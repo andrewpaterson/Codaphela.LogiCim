@@ -55,6 +55,7 @@ public:
 	bool				Save(const char* szFilename);
 	bool				Load(const char* szFilename);
 	bool				ImportKicadSchematic(const char* szFilename);
+	bool				NewProject(void);
 
 	CCircuitEditor*		GetEditor(void);
 	CCircuitColours*	GetColours(void);
@@ -64,6 +65,7 @@ public:
 
 protected:
 	bool				CreateSimulation(void);
+	bool				LoadCircuits(CCircuitViews* pcCircuits, CCircuitView* pcTop, const char* szSource);
 };
 
 

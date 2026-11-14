@@ -470,6 +470,28 @@ char* CLogicimWindowContent::GetProjectDialogStart(bool bSave)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// File, New Project: the old project is closed and an empty one, without
+// a file, is edited in its place.  Where Load Project opens, and the
+// recent projects, aren't changed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::NewProject(void)
+{
+	bool	bResult;
+
+	bResult = mpLogicimCircuit->NewProject();
+	if (bResult)
+	{
+		gcLogger.Info("New project.");
+		Zoom(1.0f);
+	}
+	UpdateInfo();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // As Load Project does with the file chosen: Load Project opens on it
 // from now on, if it was loaded.
 //

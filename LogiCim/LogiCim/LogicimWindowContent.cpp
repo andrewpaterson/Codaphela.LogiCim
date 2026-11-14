@@ -54,6 +54,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 //In ELogicimAction's order.  Undo, Redo and Delete are the circuit canvas's keys' commands too, so they show them.
 SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 {
+	{ "File.NewProject", "New Project", NULL, CIC_Ignored, "new_generic", LDG_None, NULL },
 	{ "File.LoadProject", "Load Project", NULL, CIC_Ignored, "directory_open", LDG_LoadProject, NULL },
 	{ "File.SaveProject", "Save Project", NULL, CIC_Ignored, "save", LDG_SaveProject, NULL },
 	{ "Simulation.New", "New Simulation...", NULL, CIC_Ignored, "new_simulation", LDG_NewSimulation, NULL },
@@ -602,6 +603,9 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 		break;
 	case LA_ZoomFitSelection:
 		ZoomToFit(true);
+		break;
+	case LA_NewProject:
+		NewProject();
 		break;
 	case LA_Exit:
 		mpWindow->Stop();
