@@ -783,6 +783,33 @@ void CLogicimWindowContent::ClearRecentProjects(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A KiCad import's step, shown in the status bar ("Importing Selector
+// 12bit: Placing") with how far through the board's steps it
+// is, and the window painted then: the import doesn't stop for the
+// window's loop.  Input waits until it's done.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps)
+{
+	CChars	szText;
+
+	szText.Init("Importing ");
+	szText.Append(szBoard);
+	szText.Append(": ");
+	szText.Append(szStage);
+	mpImportInfo->SetText(szText.Text());
+	szText.Kill();
+	mpImportBar->SetProgress((int64)uiStep, (int64)uiSteps);
+	mpWindow->PaintNow();
+}
+
+
+void CLogicimImportProgress::Init(CLogicimWindowContent* pcContent) { mpcContent = pcContent; }
+void CLogicimImportProgress::Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) { mpcContent->ShowImportProgress(szBoard, szStage, uiStep, uiSteps); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Asks for a KiCad schematic and replaces the project with the circuit
 // made from it (see CLogicimCircuit::ImportKicadSchematic).  Saving the
 // project then offers the schematic's name as an .xml file.  The imported
@@ -843,9 +870,16 @@ void CLogicimWindowContent::SetStartupImport(const char* szFilename)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 {
-	bool	bResult;
+	bool					bResult;
+	CLogicimImportProgress	cProgress;
 
-	bResult = mpLogicimCircuit->ImportKicadSchematic(szFilename);
+	//The progress is shown in the status bar as it goes; it's cleared after.
+	cProgress.Init(this);
+	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Separator));
+	bResult = mpLogicimCircuit->ImportKicadSchematic(szFilename, &cProgress);
+	mpImportInfo->SetText("");
+	mpImportBar->SetFraction(0);
+	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Panel));
 	if (bResult)
 	{
 		gcLogger.Info2("Imported [", szFilename, "].", NULL);

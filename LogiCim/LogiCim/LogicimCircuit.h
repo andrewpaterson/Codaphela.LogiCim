@@ -25,6 +25,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimLib/CircuitEditor.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "BaseLib/ArrayTemplate.h"
+#include "KicadImporterLib/KicadSchemImportProgress.h"
 
 
 //Where a project starts in the editor's undo stack (made, loaded or imported), its file and the state it was saved
@@ -70,7 +71,7 @@ public:
 	bool				Run(int64 iTimeForward);
 	bool				Save(const char* szFilename);
 	bool				Load(const char* szFilename);
-	bool				ImportKicadSchematic(const char* szFilename);
+	bool				ImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress = NULL);
 	bool				NewProject(void);
 
 	CCircuitEditor*		GetEditor(void);

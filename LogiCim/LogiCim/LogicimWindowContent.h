@@ -39,6 +39,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "CircuitCanvas.h"
 #include "LogicimCircuit.h"
 #include "LogicimSettings.h"
+#include "WindowLib/ProgressBar.h"
 
 
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
@@ -93,6 +94,19 @@ enum ELogicimAction
 class CDialog;
 class CFileChooser;
 class CLogicimComponentChooser;
+class CLogicimWindowContent;
+
+
+//Shows a KiCad import's progress in the content's status bar as it goes (see ShowImportProgress).
+class CLogicimImportProgress : public CKicadSchemImportProgress
+{
+protected:
+	CLogicimWindowContent*	mpcContent;
+
+public:
+	void	Init(CLogicimWindowContent* pcContent);
+	void	Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) override;
+};
 
 
 //LogiCim's window, laid out like Logicim's in IntelliJ IDEA's new UI dark style.  From the top: the menu bar, the
@@ -137,6 +151,8 @@ protected:
 	Ptr<CLabel>				mpMouseXInfo;
 	Ptr<CLabel>				mpMouseYInfo;
 	Ptr<CLabel>				mpZoomInfo;
+	Ptr<CLabel>				mpImportInfo;  //A KiCad import's board and step while it's imported, empty otherwise.
+	Ptr<CProgressBar>		mpImportBar;  //How far through the board's steps it is, the panel's colour otherwise.
 
 	Ptr<CLogicimCircuit>			mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.
@@ -176,6 +192,7 @@ public:
 	void				Tick(int64 iUpdateTimeInMilliseconds);
 	bool				ImportKicadSchematic(const char* szFilename);
 	bool				ImportChosenKicadSchematic(const char* szFilename);
+	void				ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps);
 	bool				NewProject(void);
 	bool				LoadProject(const char* szFilename);
 	bool				SaveProject(const char* szFilename);

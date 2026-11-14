@@ -214,12 +214,13 @@ bool CLogicimCircuit::Load(const char* szFilename)
 // Schematic property, found through KiCad's path variables), and the
 // boards drawn on those, and the placeholder subcircuits made for its
 // parts, and loads them as a project is loaded so the import can be
-// undone.  The project's file is the schematic's name as an .xml file
+// undone.  pcProgress (NULL for none) is told each board's steps.  The
+// project's file is the schematic's name as an .xml file
 // beside it ("Audio Board.xml"), not yet written.  If it can't be
 // imported the project is left as it was.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
+bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress)
 {
 	CKicadPathVariables			cVariables;
 	CCircuitViews				cCircuits;
@@ -232,6 +233,7 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename)
 	cVariables.LoadKicadCommon();
 	cCircuits.Init();
 	cImporter.Init(&cCircuits, mpEditor->GetFonts(), &cVariables);
+	cImporter.SetProgress(pcProgress);
 	pcTop = cImporter.Import(szFilename);
 	bResult = (pcTop != NULL) && LoadCircuits(&cCircuits, pcTop, szFilename);
 	if (bResult)
