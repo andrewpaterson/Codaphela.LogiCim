@@ -203,6 +203,42 @@ def CheckNewProject(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#Whether the project has changes (which closing it asks to save) and its file follow undo and redo: an edit changes it,
+#undoing back to where it was loaded or saved leaves it unchanged, and undoing back past a project's start (a load or
+#New Project) goes back to the project before it with its file.
+def CheckProjectChanges(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szA = os.path.join(szDirectory, 'A.xml')
+		szB = os.path.join(szDirectory, 'B.xml')
+		szSaved = os.path.join(szDirectory, 'A2.xml')
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szA)		#Loads with a component selected.
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szB)
+		asEnv = {'LOGICIM_RECENT': os.path.join(szDirectory, 'RecentProjects.xml'), 'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml')}
+		E = re.escape
+
+		bPassed = Check(szExecutable, 'project-changes', ','.join(['modified', 'load:' + szA, 'modified', 'command:Edit.Delete', 'modified',
+			'command:Edit.Undo', 'modified', 'command:Edit.Redo', 'modified', 'save:' + szSaved, 'modified', 'command:Edit.Undo', 'modified',
+			'command:Edit.Redo', 'modified', 'new', 'modified']),
+			[r'^Modified: no$', r'loaded$', r'^Modified: no$', r'^Command Edit\.Delete: run$', r'^Modified: yes$',
+			 r'^Command Edit\.Undo: run$', r'^Modified: no$', r'^Command Edit\.Redo: run$', r'^Modified: yes$',
+			 r'saved$', r'^Modified: no$', r'^Command Edit\.Undo: run$', r'^Modified: yes$', r'^Command Edit\.Redo: run$', r'^Modified: no$',
+			 r'^New project: made$', r'^Modified: no$'],
+			[r'Unknown check step', r'not run'], asEnv)
+		bPassed = Check(szExecutable, 'project-undo-file', ','.join(['load:' + szA, 'save:' + szSaved, 'load:' + szB, 'files',
+			'command:Edit.Undo', 'files', 'modified', 'command:Edit.Redo', 'files', 'new', 'files', 'command:Edit.Undo', 'files', 'command:Edit.Redo', 'files']),
+			[r'^Project file: \[%s\]$' % E(szB),
+			 r'^Command Edit\.Undo: run$', r'^Project file: \[%s\]$' % E(szSaved), r'^Save Project opens: \[%s\]$' % E(szSaved), r'^Modified: no$',
+			 r'^Command Edit\.Redo: run$', r'^Project file: \[%s\]$' % E(szB),
+			 r'^New project: made$', r'^Project file: \[\]$',
+			 r'^Command Edit\.Undo: run$', r'^Project file: \[%s\]$' % E(szB),
+			 r'^Command Edit\.Redo: run$', r'^Project file: \[\]$'],
+			[r'Unknown check step', r'not run'], asEnv) and bPassed
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -219,6 +255,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('remembered-files' in aszNames):
 		if not CheckRememberedFiles(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('project-changes' in aszNames):
+		if not CheckProjectChanges(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('new-project' in aszNames):
 		if not CheckNewProject(szExecutable):
