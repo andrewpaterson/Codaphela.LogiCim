@@ -43,6 +43,7 @@ void CCircuitCanvasDraw::Init(CLogicimCircuit* pcCircuit)
 	mpDestImage = NULL;
 	mcViewport.Init(0, 0);
 	mbGrid = true;
+	mbPreviewOnly = false;
 	PostInit();
 }
 
@@ -56,6 +57,7 @@ void CCircuitCanvasDraw::Class(void)
 	CCanvasDraw::Class();
 	U_Pointer(mpcCircuit);
 	U_Pointer(mpcPreview);
+	U_Bool(mbPreviewOnly);
 	M_Pointer(mpMap);
 	M_Pointer(mpSprites);
 	M_Pointer(mpSpriteCache);
@@ -124,6 +126,12 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 		FitPreview(sSize);
 		mpcPreview->Paint(&cPainter);
 	}
+	else if (mbPreviewOnly)
+	{
+		//Nothing previewed (a library's row is chosen): only the background.
+		cPainter.InitImage(pImage, &mcViewport, &mpMap, &mpSprites, pcColours, mpcCircuit->GetFonts(), NULL, NULL);
+		cPainter.PaintBackground();
+	}
 	else
 	{
 		//The grid's tiles cover the canvas, background and all, so nothing is drawn under them.
@@ -167,6 +175,7 @@ bool CCircuitCanvasDraw::IsGrid(void) { return mbGrid; }
 float32 CCircuitCanvasDraw::GetGridSpacing(void) { return (float32)mcViewport.GetPixelsPerGrid(); }
 CCircuitViewport* CCircuitCanvasDraw::GetViewport(void) { return &mcViewport; }
 void CCircuitCanvasDraw::SetPreview(CComponentView* pcPreview) { mpcPreview = pcPreview; }
+void CCircuitCanvasDraw::SetPreviewOnly(bool bPreviewOnly) { mbPreviewOnly = bPreviewOnly; }
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -211,6 +211,7 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 
 	mpPreviewDraw = OMalloc<CCircuitCanvasDraw>(mpcCircuit);
 	mpPreviewDraw->SetGrid(false);
+	mpPreviewDraw->SetPreviewOnly(true);  //A library's row shows nothing, not the project's circuit.
 	mpPreview = OMalloc<CCanvas>(pWindow, mpPreviewDraw);
 	mpPreview->SetAlignment(CSH_Stretch, CSV_Stretch);
 	pBody->AddComponent(mpPreview, 2, 2, 1, 1, 1, 1);

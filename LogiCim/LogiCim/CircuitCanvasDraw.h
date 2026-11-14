@@ -39,7 +39,8 @@ class CComponentView;
 //squares from 2.  Text goes in a sprite map drawn over the geometry map.
 //
 //Given a preview view it draws only that, unsimulated and zoomed to fit the canvas with a grid unit or two around it,
-//as KiCad's symbol chooser previews a symbol.
+//as KiCad's symbol chooser previews a symbol.  A preview draw (SetPreviewOnly) draws only the background without one,
+//never the project's circuit.
 class CCircuitCanvasDraw : public CCanvasDraw
 {
 CONSTRUCTABLE(CCircuitCanvasDraw);
@@ -54,6 +55,7 @@ protected:
 	Ptr<CImage>			mpDestImage;
 	CCircuitViewport	mcViewport;
 	bool				mbGrid;
+	bool				mbPreviewOnly;  //Only ever draws its preview (a chooser's), not the circuit being edited.
 
 public:
 	void				Init(CLogicimCircuit* pcCircuit);
@@ -71,6 +73,7 @@ public:
 	float32				GetGridSpacing(void);
 	CCircuitViewport*	GetViewport(void);
 	void				SetPreview(CComponentView* pcPreview);
+	void				SetPreviewOnly(bool bPreviewOnly);
 
 protected:
 	void				FitPreview(SInt32Vec2 sSize);
