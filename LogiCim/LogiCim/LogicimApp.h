@@ -63,6 +63,7 @@ public:
 protected:
 	bool	CheckStep(const char* szStep);
 	void	PrintCommands(void);
+	void	PrintKeysCommand(const char* szStep);
 	void	PrintMenus(void);
 	void	PrintRecent(void);
 	void	PrintPanes(void);

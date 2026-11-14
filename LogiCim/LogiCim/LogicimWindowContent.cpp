@@ -37,6 +37,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/RoundedBoxCanvasDraw.h"
 #include "WindowLib/ToolTips.h"
 #include "LogicimComponentChooser.h"
+#include "LogicimLib/ComponentLibraries.h"
 #include "WindowLib/FileChooser.h"
 #include "LogicimLib/ComponentProperties.h"
 #include "MicroprocessorLib/LongTime.h"
@@ -95,6 +96,40 @@ SLogicimActionDesc gasLogicimActions[NUM_LOGICIM_ACTIONS] =
 	{ "Edit.Delete", "Delete", NULL, CIC_Delete, "trash", LDG_None, NULL },
 	{ "File.ImportKicadSchematic", "Import KiCad Schematic...", NULL, CIC_Ignored, "import", LDG_ImportKicadSchematic, NULL },
 	{ "File.Exit", "Exit", NULL, CIC_Ignored, "exit", LDG_None, NULL },
+};
+
+
+//The keys over the circuit, as Logicim's KeyInputsFactory's: bare letters, and shifted ones, that type anywhere else.
+struct SLogicimCircuitKeys
+{
+	const char*	szCommand;
+	const char*	szKeys;
+};
+
+
+static SLogicimCircuitKeys gasLogicimCircuitKeys[] =
+{
+	{ "Edit.RotateLeft", "R" },
+	{ "Edit.RotateRight", "Shift+R" },
+	{ "Edit.FlipHorizontally", "X" },
+	{ "Edit.FlipVertically", "Y" },
+	{ "Edit.Properties", "E" },
+	{ "Edit.Properties", "Shift+E" },
+	{ "Edit.Move", "M" },
+	{ "Place.Ground", "G" },
+	{ "Place.Power", "V" },
+	{ "Place.Pin", "P" },
+	{ "Place.Constant", "C" },
+	{ "Place.AndGate", "Shift+A" },
+	{ "Place.OrGate", "Shift+O" },
+	{ "Place.XorGate", "Shift+X" },
+	{ "Place.Inverter", "Shift+N" },
+	{ "Place.Clock", "Shift+C" },
+	{ "Place.Probe", "Shift+P" },
+	{ "Place.Splitter", "Shift+S" },
+	{ "Place.Tunnel", "Shift+T" },
+	{ "Place.Label", "Shift+L" },
+	{ "Place.DTypeFlipFlop", "Shift+F" },
 };
 
 
@@ -482,7 +517,9 @@ void CLogicimWindowContent::EditProperties(void)
 // undo and redo a change at a time, and Alt+Backspace leaves the
 // subcircuit entered, as KiCad's Leave Sheet.  File's Clear Recent
 // Projects and Settings (Control+Alt+S, as IntelliJ IDEA's), Window's
-// Reset Window Layout and View's tool windows have no buttons.
+// Reset Window Layout and View's tool windows have no buttons.  Then a
+// command to place each library component, and the keys over the circuit
+// (see AddCircuitKeys).
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::AddCommands(void)
@@ -509,6 +546,113 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("File.Settings", "Settings...", "Control+Alt+S", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestSettings);
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
 	mpCommands->Add("View.Simulations", "Simulations", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSimulations);
+	mpCommands->Add("Edit.Move", "Move", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::Move);
+	AddPlaceCommands();
+	AddCircuitKeys();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Place.<XML name> for each library component an action doesn't already
+// place (Add Splitter is Place.Splitter), so each can have keys, over the
+// circuit or everywhere.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::AddPlaceCommands(void)
+{
+	SComponentLibrary*	psLibrary;
+	size				uiLibrary;
+	size				uiEntry;
+	int					i;
+	bool				bPlaced;
+	CChars				szName;
+	CChars				szCaption;
+	Ptr<CCommand>		pCommand;
+
+	for (uiLibrary = 0; uiLibrary < NumComponentLibraries(); uiLibrary++)
+	{
+		psLibrary = GetComponentLibrary(uiLibrary);
+		for (uiEntry = 0; uiEntry < psLibrary->uiNumEntries; uiEntry++)
+		{
+			bPlaced = false;
+			for (i = 0; i < NUM_LOGICIM_ACTIONS; i++)
+			{
+				bPlaced |= StringCompare(gasLogicimActions[i].szPlaced, psLibrary->asEntries[uiEntry].szXMLName) == 0;
+			}
+			if (!bPlaced)
+			{
+				szName.Init("Place.");
+				szName.Append(psLibrary->asEntries[uiEntry].szXMLName);
+				szCaption.Init("Add ");
+				szCaption.Append(psLibrary->asEntries[uiEntry].szName);
+				pCommand = mpCommands->Add(szName.Text(), szCaption.Text(), "", Ptr<CImageCel>(), this, &CLogicimWindowContent::PlaceCommand);
+				pCommand->SetContext(LOGICIM_CIRCUIT_CONTEXT);
+				pCommand->AllowContext(COMPONENT_INPUT_GLOBAL_CONTEXT);
+				szCaption.Kill();
+				szName.Kill();
+			}
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The keys over the circuit (gasLogicimCircuitKeys): each command they're
+// for can have keys there too.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::AddCircuitKeys(void)
+{
+	size			i;
+	Ptr<CCommand>	pCommand;
+
+	for (i = 0; i < sizeof(gasLogicimCircuitKeys) / sizeof(gasLogicimCircuitKeys[0]); i++)
+	{
+		pCommand = mpCommands->Find(gasLogicimCircuitKeys[i].szCommand);
+		if (!pCommand->IsContextAllowed(LOGICIM_CIRCUIT_CONTEXT))
+		{
+			pCommand->AllowContext(LOGICIM_CIRCUIT_CONTEXT);
+		}
+		pCommand->AddDefaultKeys(gasLogicimCircuitKeys[i].szKeys, LOGICIM_CIRCUIT_CONTEXT);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit's keys work over it unless a text field has the focus (see
+// CCircuitCanvas::GetKeyContext): the input has to know of them before
+// they're read or bound.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::AddKeyContexts(CComponentInput* pcInput)
+{
+	pcInput->AddContext(LOGICIM_CIRCUIT_CONTEXT, NULL, true);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Place.<XML name>: that component, as Add Component would place it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::PlaceCommand(CCommand* pcCommand)
+{
+	PlaceComponent(&pcCommand->GetName()[strlen("Place.")], false);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Edit, Move: the selection, or the component under the pointer, follows
+// the pointer until a click puts it down.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::Move(void)
+{
+	mpLogicimCircuit->GetEditor()->StartMove();
 }
 
 
@@ -566,7 +710,7 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 	}
 	if (gasLogicimActions[eAction].szPlaced != NULL)
 	{
-		pcEditor->StartPlaceComponent(gasLogicimActions[eAction].szPlaced);
+		PlaceComponent(gasLogicimActions[eAction].szPlaced, false);
 		return;
 	}
 

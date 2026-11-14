@@ -399,45 +399,57 @@ void CLogicimWindowContent::ShowSelectZoomDialog(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Places the component chosen, at the pointer, or at the middle of the
-// circuit if the pointer has never been over it.  The chooser opens again
-// on the library of the component last chosen.
+// The component chosen is placed (see PlaceComponent).  The chooser opens
+// again on the library of the component last chosen.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowComponentChooser(void)
 {
-	CCircuitEditor*			pcEditor;
-	char*					szChosen;
-	bool					bSubcircuit;
-	bool					bPlaced;
-	SFloat64Vec2			sScreen;
-	SFloat64Vec2			sGrid;
-	SInt32Vec2				sSize;
+	char*	szChosen;
+	bool	bSubcircuit;
 
 	mpComponentChooser = OMalloc<CLogicimComponentChooser>(mpWindow, &msDialogLook, &mpLogicimCircuit, mszChooserSelected.Text());
 	if (mpComponentChooser->Show())
 	{
 		szChosen = mpComponentChooser->GetChosen(&bSubcircuit);
 		mszChooserSelected.Set(szChosen);
-		pcEditor = mpLogicimCircuit->GetEditor();
-		bPlaced = bSubcircuit ? pcEditor->StartPlaceSubcircuit(szChosen) : pcEditor->StartPlaceComponent(szChosen);
-		if (!bPlaced)
-		{
-			sSize = mpCircuit->GetActualSize();
-			sScreen.Init(sSize.x / 2, sSize.y / 2);
-			mpCircuit->GetCircuitDraw()->GetViewport()->ScreenToGrid(&sGrid, &sScreen);
-			pcEditor->PointerMoved(sGrid);
-			if (bSubcircuit)
-			{
-				pcEditor->StartPlaceSubcircuit(szChosen);
-			}
-			else
-			{
-				pcEditor->StartPlaceComponent(szChosen);
-			}
-		}
+		PlaceComponent(szChosen, bSubcircuit);
 	}
 	mpComponentChooser = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A component (szName its XML name) or a subcircuit (its type's name)
+// follows the pointer to be placed, from the middle of the circuit if the
+// pointer has never been over it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::PlaceComponent(const char* szName, bool bSubcircuit)
+{
+	CCircuitEditor*	pcEditor;
+	SFloat64Vec2	sScreen;
+	SFloat64Vec2	sGrid;
+	SInt32Vec2		sSize;
+
+	pcEditor = mpLogicimCircuit->GetEditor();
+	if (bSubcircuit ? pcEditor->StartPlaceSubcircuit(szName) : pcEditor->StartPlaceComponent(szName))
+	{
+		return;
+	}
+	sSize = mpCircuit->GetActualSize();
+	sScreen.Init(sSize.x / 2, sSize.y / 2);
+	mpCircuit->GetCircuitDraw()->GetViewport()->ScreenToGrid(&sGrid, &sScreen);
+	pcEditor->PointerMoved(sGrid);
+	if (bSubcircuit)
+	{
+		pcEditor->StartPlaceSubcircuit(szName);
+	}
+	else
+	{
+		pcEditor->StartPlaceComponent(szName);
+	}
 }
 
 

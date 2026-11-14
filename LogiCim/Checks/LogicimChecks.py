@@ -10,13 +10,12 @@ import os, re, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOGICIM_DIR = os.path.join(HERE, '..', 'LogiCim')
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-NUM_ACTIONS = 41	#ELogicimAction's actions, each a command.  The other commands: the three that only have keys, Clear Recent Projects, Settings, Reset Window Layout and the two tool windows'.
 
 #Each check: its name, its LOGICIM_CHECK steps, the lines (regular expressions) its output must have, in order, and
 #lines it mustn't have.
 CHECKS = [
 	('commands', 'commands',
-		[r'^Commands: %d$' % (NUM_ACTIONS + 8),
+		[r'^Commands: [1-9][0-9]*$',	#ELogicimAction's actions, the commands only keys run, and a Place command for each library component no action places.
 		 r'^Command: File\.LoadProject$',
 		 r'^Command: Edit\.FlipHorizontally \[Control\+Shift\+F, H\] bound$',
 		 r'^Command: Edit\.FlipVertically \[Control\+Shift\+F, V\] bound$',
@@ -39,6 +38,19 @@ CHECKS = [
 		[r'^Zoom: 1\.00$', r'^Command View\.ZoomIn: run$', r'^Zoom: 2\.00$', r'^Command View\.ZoomOut: run$',
 		 r'^Command View\.ZoomOut: run$', r'^Zoom: (0\.\d\d|1\.00)$', r'^Command View\.ResetZoom: run$', r'^Zoom: 1\.00$'],
 		[r'Unknown check step', r'not run']),
+	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
+	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',
+		[r'^Command: Edit\.RotateLeft \[R \(Circuit\)\] bound$',
+		 r'^Command: Edit\.FlipHorizontally \[Control\+Shift\+F, H\] bound$',
+		 r'^Command: Place\.Power \[V \(Circuit\)\] bound$',
+		 r'^Command: Edit\.Move \[M \(Circuit\)\] bound$',
+		 r'^Command: Place\.AndGate \[Shift\+A \(Circuit\)\] bound$',
+		 r'^Command: Place\.Logic74Package:00$',
+		 r'^Keys R in Circuit: Edit\.RotateLeft$', r'^Keys Shift\+R in Circuit: Edit\.RotateRight$',
+		 r'^Keys Shift\+A in Circuit: Place\.AndGate$', r'^Keys P in Circuit: Place\.Pin$', r'^Keys M in Circuit: Edit\.Move$',
+		 r'^Keys Control\+Alt\+S in Circuit: File\.Settings$', r'^Keys R in Global: none$',
+		 r'^Command Place\.AndGate: run$'],
+		[r'Unknown check step', r'NOT BOUND', r'not run']),
 ]
 
 

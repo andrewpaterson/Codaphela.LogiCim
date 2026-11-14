@@ -88,6 +88,7 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 		mbInputs = true;
 		mcComponentInput.AddKeyboards();
 		mcComponentInput.AddMice();
+		mpContent->AddKeyContexts(&mcComponentInput);  //Over the circuit, before keys there are read or bound.
 		mpContent->ReadKeymap();  //The keys the user changed, before they're bound.
 		mpWindow->GetCommands()->BindKeys(&mcComponentInput);  //LogiCim's keys, Control+Alt+Z and so on.
 		mpWindow->SetComponentInput(&mcComponentInput);
@@ -244,7 +245,8 @@ bool CLogicimApp::Check(const char* szSteps)
 // commands: every command, its keys and whether the keyboard gives them.
 // menus: each menu's items and their commands.  buttons: how many of the
 // tool buttons run a command.  command:<name> runs one.  zoom: the
-// circuit's zoom.
+// circuit's zoom.  keys:<context>:<keys> says which command those keys
+// run there, a Global one if the context has none.
 //
 // load:<file>, save:<file> and import:<file> do what Load Project, Save
 // Project and Import KiCad Schematic do with the file chosen, and new
@@ -289,6 +291,10 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (strncmp(szStep, "command:", 8) == 0)
 	{
 		printf("Command %s: %s\n", &szStep[8], mpWindow->GetCommands()->Run(&szStep[8]) ? "run" : "not run");
+	}
+	else if (strncmp(szStep, "keys:", 5) == 0)
+	{
+		PrintKeysCommand(&szStep[5]);
 	}
 	else if (StringCompare(szStep, "zoom") == 0)
 	{
@@ -394,6 +400,7 @@ void CLogicimApp::PrintCommands(void)
 	Ptr<CCommandSet>	pCommands;
 	Ptr<CCommand>		pCommand;
 	size				i;
+	const char*			szContext;
 
 	pCommands = mpWindow->GetCommands();
 	printf("Commands: %d\n", (int)pCommands->NumCommands());
@@ -406,9 +413,44 @@ void CLogicimApp::PrintCommands(void)
 		}
 		else
 		{
-			printf("Command: %s [%s] %s\n", pCommand->GetName(), pCommand->GetKeys(), mcComponentInput.IsBound(pCommand->GetKeys()) ? "bound" : "NOT BOUND");
+			printf("Command: %s [%s", pCommand->GetName(), pCommand->GetKeys());
+			szContext = pCommand->HasKeys(pCommand->GetKeys(), COMPONENT_INPUT_GLOBAL_CONTEXT) ? COMPONENT_INPUT_GLOBAL_CONTEXT : pCommand->GetKeysContext(0);  //A menu's keys: its Global keys, else its first.
+			if (StringCompare(szContext, COMPONENT_INPUT_GLOBAL_CONTEXT) != 0)
+			{
+				printf(" (%s)", szContext);
+			}
+			printf("] %s\n", mcComponentInput.IsBound(pCommand->GetKeys(), szContext) ? "bound" : "NOT BOUND");
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szStep is <context>:<keys>.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintKeysCommand(const char* szStep)
+{
+	CChars			szContext;
+	const char*		szColon;
+	Ptr<CCommand>	pCommand;
+
+	szColon = strchr(szStep, ':');
+	if (szColon == NULL)
+	{
+		printf("Keys %s: no context\n", szStep);
+		return;
+	}
+	szContext.Init();
+	szContext.Append(szStep, szColon - szStep);
+	pCommand = mpWindow->GetCommands()->FindKeys(&szColon[1], szContext.Text());
+	if (pCommand.IsNull())
+	{
+		pCommand = mpWindow->GetCommands()->FindKeys(&szColon[1]);
+	}
+	printf("Keys %s in %s: %s\n", &szColon[1], szContext.Text(), pCommand.IsNull() ? "none" : pCommand->GetName());
+	szContext.Kill();
 }
 
 

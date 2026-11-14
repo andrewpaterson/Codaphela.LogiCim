@@ -104,6 +104,7 @@ class CLogicimWindowContent;
 #define LOGICIM_CIRCUIT_PANE		"Circuit"
 #define LOGICIM_SUBCIRCUITS_PANE	"Subcircuits"
 #define LOGICIM_SIMULATIONS_PANE	"Simulations"
+#define LOGICIM_CIRCUIT_CONTEXT		"Circuit"  //The keys over the circuit canvas, where bare letters place and turn components.
 
 
 //Shows a KiCad import's progress in the content's status bar as it goes (see ShowImportProgress).
@@ -206,6 +207,7 @@ public:
 	void				Tick(int64 iUpdateTimeInMilliseconds);
 	bool				ImportKicadSchematic(const char* szFilename);
 	bool				SaveLayout(void);
+	void				AddKeyContexts(CComponentInput* pcInput);
 	void				ReadKeymap(void);
 	bool				ApplyKeymapEdits(const char* szEdits);
 	void				ResetLayout(void);
@@ -270,7 +272,12 @@ protected:
 	Ptr<CLabel>				AddStatusField(Ptr<CStatusBar> pBar, int32 iWidth);
 
 	void					AddCommands(void);
+	void					AddPlaceCommands(void);
+	void					AddCircuitKeys(void);
 	void					ActionCommand(CCommand* pcCommand);
+	void					PlaceCommand(CCommand* pcCommand);
+	void					Move(void);
+	void					PlaceComponent(const char* szName, bool bSubcircuit);
 	void					DoAction(ELogicimAction eAction);
 	void					UpdateInfo(void);
 	void					ShowPropertiesDialog(void);

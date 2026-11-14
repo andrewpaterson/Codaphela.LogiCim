@@ -58,7 +58,6 @@ void CCircuitCanvas::Init(Ptr<CWindow> pWindow, Ptr<CCircuitCanvasDraw> pDraw, C
 	msLastRelease.Init(0, 0);
 	SetCanGetFocus(true);
 	AddInputActions(gaeCircuitCanvasCommands, this, &CCircuitCanvas::CommandAction);
-	AddInputAction(IAF_Printable, NULL, this, &CCircuitCanvas::PrintableAction);
 	AddInputAction(IAF_Wheel, NULL, this, &CCircuitCanvas::WheelAction);
 
 	//Before the context menu's own action (see CLogicimWindowContent::CreateCanvasMenu), so its items are ready when it opens.
@@ -94,12 +93,11 @@ void CCircuitCanvas::CommandAction(SComponentInputEvent* psEvent)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Over the circuit, or with it focused, bare letters place and turn
+// components (see AddCircuitKeys).
 //
 //////////////////////////////////////////////////////////////////////////
-void CCircuitCanvas::PrintableAction(SComponentInputEvent* psEvent)
-{
-	Printable(psEvent->cPrintable, psEvent->bInsert);
-}
+const char* CCircuitCanvas::GetKeyContext(void) { return LOGICIM_CIRCUIT_CONTEXT; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -309,85 +307,6 @@ void CCircuitCanvas::Delete(void)
 void CCircuitCanvas::ClearSelection(void)
 {
 	mpcEditor->StopEdit();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Logicim's keys that are printable.
-//
-//////////////////////////////////////////////////////////////////////////
-void CCircuitCanvas::Printable(char c, bool bInsert)
-{
-	const char*	szXMLName;
-
-	switch (c)
-	{
-	case 'r':
-		mpcEditor->RotateLeft();
-		return;
-	case 'R':
-		mpcEditor->RotateRight();
-		return;
-	case 'x':
-		mpcEditor->FlipHorizontally();
-		return;
-	case 'y':
-		mpcEditor->FlipVertically();
-		return;
-	case 'e':
-	case 'E':
-		mpcContent->EditProperties();
-		return;
-	case 'm':
-		mpcEditor->StartMove();
-		return;
-	case 'g':
-		szXMLName = "Ground";
-		break;
-	case 'v':
-		szXMLName = "PositivePower";
-		break;
-	case 'p':
-		szXMLName = "Pin";
-		break;
-	case 'c':
-		szXMLName = "Constant";
-		break;
-	case 'A':
-		szXMLName = "AndGate";
-		break;
-	case 'O':
-		szXMLName = "OrGate";
-		break;
-	case 'X':
-		szXMLName = "XorGate";
-		break;
-	case 'N':
-		szXMLName = "Inverter";
-		break;
-	case 'C':
-		szXMLName = "Clock";
-		break;
-	case 'P':
-		szXMLName = "Probe";
-		break;
-	case 'S':
-		szXMLName = "Splitter";
-		break;
-	case 'T':
-		szXMLName = "Tunnel";
-		break;
-	case 'L':
-		szXMLName = "Label";
-		break;
-	case 'F':
-		szXMLName = "DTypeFlipFlop";
-		break;
-	default:
-		return;
-	}
-	mpcEditor->StartPlaceComponent(szXMLName);
 }
 
 
