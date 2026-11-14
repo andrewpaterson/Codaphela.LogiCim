@@ -38,6 +38,17 @@ CHECKS = [
 		[r'^Zoom: 1\.00$', r'^Command View\.ZoomIn: run$', r'^Zoom: 2\.00$', r'^Command View\.ZoomOut: run$',
 		 r'^Command View\.ZoomOut: run$', r'^Zoom: (0\.\d\d|1\.00)$', r'^Command View\.ResetZoom: run$', r'^Zoom: 1\.00$'],
 		[r'Unknown check step', r'not run']),
+	#A place is the circuit simulated and the path of instances into it (each instance's index in the circuit before
+	#it); showing one simulates its circuit if it isn't, and enters the path as one step; a place that's gone changes
+	#nothing.  Checks/Nested.xml: Main holds Boards U1 and U2 (0 and 1), each Board a pin (0) and Gate U3 (1).
+	('places', ','.join(['load:../Checks/Nested.xml', 'place', 'showplace:Main:1', 'place', 'showplace:Main:1/1', 'place', 'showplace:Main:1/0',
+						 'showplace:Main:2', 'showplace:Main:x', 'showplace:Gone:', 'place', 'showplace:Board:1', 'place', 'command:Edit.StepUndo', 'place',
+						 'showplace:Main:', 'place']),
+		[r'^Place: Main \(Main\)$', r'^Show place Main:1: shown$', r'^Place: Main 1 \(Board\)$', r'^Show place Main:1/1: shown$',
+		 r'^Place: Main 1/1 \(Gate\)$', r'^Show place Main:1/0: gone$', r'^Show place Main:2: gone$', r'^Show place Main:x: gone$',
+		 r'^Show place Gone:: gone$', r'^Place: Main 1/1 \(Gate\)$', r'^Show place Board:1: shown$', r'^Place: Board 1 \(Gate\)$',
+		 r'^Place: Board \(Board\)$', r'^Show place Main:: shown$', r'^Place: Main \(Main\)$'],
+		[r'Unknown check step', r'ERROR']),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',
 		[r'^Command: Edit\.RotateLeft \[R \(Circuit\)\] bound$',

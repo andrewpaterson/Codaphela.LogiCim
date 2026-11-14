@@ -112,6 +112,8 @@ set(LOGICIM_SOURCES
 	"${LOGICIM_DIR}/LogicimCircuit.cpp"
 	"${LOGICIM_DIR}/LogicimComponentChooser.cpp"
 	"${LOGICIM_DIR}/LogicimSettings.cpp"
+	"${LOGICIM_DIR}/LogicimWindowContentNavigation.cpp"
+	"${LOGICIM_DIR}/LogicimPlace.cpp"
 	"${LOGICIM_DIR}/LogicimWindowContent.cpp"
 	"${LOGICIM_DIR}/LogicimWindowContentLayout.cpp"
 	"${LOGICIM_DIR}/LogicimWindowContentDialogs.cpp"

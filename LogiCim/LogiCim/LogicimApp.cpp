@@ -245,7 +245,9 @@ bool CLogicimApp::Check(const char* szSteps)
 // commands: every command, its keys and whether the keyboard gives them.
 // menus: each menu's items and their commands.  buttons: how many of the
 // tool buttons run a command.  command:<name> runs one.  zoom: the
-// circuit's zoom.  keys:<context>:<keys> says which command those keys
+// circuit's zoom.  place: where the editor is (the circuit simulated and
+// the path into it); showplace:<circuit>:<path> goes there (the path
+// empty for the top).  keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
 // load:<file>, save:<file> and import:<file> do what Load Project, Save
@@ -293,6 +295,14 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (strncmp(szStep, "command:", 8) == 0)
 	{
 		printf("Command %s: %s\n", &szStep[8], mpWindow->GetCommands()->Run(&szStep[8]) ? "run" : "not run");
+	}
+	else if (StringCompare(szStep, "place") == 0)
+	{
+		PrintPlace();
+	}
+	else if (strncmp(szStep, "showplace:", 10) == 0)
+	{
+		ShowPlace(&szStep[10]);
 	}
 	else if (strncmp(szStep, "keys:", 5) == 0)
 	{
@@ -428,6 +438,46 @@ void CLogicimApp::PrintCommands(void)
 			printf("] %s\n", mcComponentInput.IsBound(pCommand->GetKeys(), szContext) ? "bound" : "NOT BOUND");
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintPlace(void)
+{
+	SLogicimPlace	sPlace;
+	CChars			sz;
+
+	sPlace.Init();
+	mpContent->GetPlace(&sPlace);
+	sz.Init();
+	sPlace.Print(&sz);
+	printf("Place: %s (%s)\n", sz.Text(), mpContent->GetLogicimCircuit()->GetEditor()->GetCircuit()->GetTypeName());
+	sz.Kill();
+	sPlace.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szStep is <circuit>:<path>, the circuit's name can have colons.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::ShowPlace(const char* szStep)
+{
+	SLogicimPlace	sPlace;
+	CChars			szCircuit;
+	const char*		szColon;
+
+	szColon = strrchr(szStep, ':');
+	szCircuit.Init();
+	szCircuit.Append(szStep, (szColon != NULL) ? (szColon - szStep) : strlen(szStep));
+	sPlace.Init(szCircuit.Text(), (szColon != NULL) ? &szColon[1] : NULL);
+	printf("Show place %s: %s\n", szStep, mpContent->ShowPlace(&sPlace) ? "shown" : "gone");
+	szCircuit.Kill();
+	sPlace.Kill();
 }
 
 

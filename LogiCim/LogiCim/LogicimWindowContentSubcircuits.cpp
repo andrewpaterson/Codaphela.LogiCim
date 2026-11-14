@@ -341,14 +341,16 @@ void WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The subcircuit chosen in the list is edited, with a simulation of its
-// own (see CCircuitEditor::Simulate), and zoomed to fit.
+// The subcircuit chosen in the list is edited at its top, fitted to the
+// canvas: simulated on its own (see CCircuitEditor::Simulate), unless
+// it's the circuit simulated, which keeps its simulation.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::SubcircuitSelected(void)
 {
 	CCircuitEditor*		pcEditor;
 	char*				szName;
+	SLogicimPlace		sPlace;
 
 	if (mbListingSubcircuits)
 	{
@@ -358,16 +360,9 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 	szName = GetListItemText(mpSubcircuits, &maSubcircuitLabels);
 	if (!StrEmpty(szName) && ((pcEditor->GetCircuit() == NULL) || (StringCompare(pcEditor->GetCircuit()->GetTypeName(), szName) != 0)))
 	{
-		if (pcEditor->IsInInstance() && (StringCompare(pcEditor->GetTopCircuit()->GetTypeName(), szName) == 0))
-		{
-			//Back out to the circuit simulated, keeping its simulation.
-			pcEditor->LeaveInstances();
-		}
-		else
-		{
-			pcEditor->Simulate(szName);
-		}
-		ZoomToFit(false);
+		sPlace.Init(szName, NULL);
+		ShowPlace(&sPlace);
+		sPlace.Kill();
 	}
 	UpdateInfo();
 }

@@ -43,6 +43,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/DockManager.h"
 #include "WindowLib/SettingsDialog.h"
 #include "WindowLib/KeymapPage.h"
+#include "LogicimPlace.h"
 
 
 //What a toolbar button or menu item does.  The buttons and menu items are those of Logicim's window.
@@ -236,6 +237,8 @@ public:
 	void				ReadSettings(void);
 	bool				OpenRecentProject(size uiIndex);
 	void				ClearRecentProjects(void);
+	void				GetPlace(SLogicimPlace* psDest);
+	bool				ShowPlace(SLogicimPlace* psPlace);
 	void				ListSubcircuits(void);
 	void				FollowSubcircuitCommands(void);
 	bool				FollowSubcircuitCommand(CCircuitView* pcCircuit);
