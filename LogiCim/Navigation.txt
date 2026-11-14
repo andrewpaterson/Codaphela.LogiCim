@@ -20,7 +20,8 @@ Decided (user, 2026-11-14)
   its simulation; a tab on another top circuit restarts the simulation on it, as choosing it in Subcircuits does.
 - The open tabs are saved in the project file.
 - Go To finds each instance in the simulation: U12 inside both Audio Boards is two results, and choosing one enters
-  that instance path and selects it, its live state showing.
+  that instance path and selects it, its live state showing.  Components are found by type ("74HC00") as well as by
+  name (2026-11-14).
 - Back and Forward step through moves between places (entering or leaving a subcircuit, choosing a circuit, switching
   tab, a tree's node, Go To), each place coming back with the zoom and centre it had.  Zooming and panning aren't
   steps.  Keys Ctrl+Alt+Left and Ctrl+Alt+Right, as the IDE's.
@@ -106,7 +107,8 @@ for anything in LogicimLib; the real panes are tried on the isolated X server.
 
 6. Go To
    6.1 Navigate.GoTo (Ctrl+N), a CGoToDialog with tabs: Components (every component instance in the simulation by
-       name, "U12" with "Main > U3 > U1" after it), Nets (tunnels and labels by name, each instance) and Subcircuits
+       name or by type, "U12 74HC00" with "Main > U3 > U1" after it, the part matched highlighted; a subcircuit
+       instance's type is its circuit's), Nets (tunnels and labels by name, each instance) and Subcircuits
        (circuits by type name, edited at their top).
    6.2 Its searcher walks the simulated circuit's instances, as the Simulation tree does; CNameMatcher matches.
    6.3 Choosing a result shows its place (a step for Back), selects the component and centres on it.
@@ -120,4 +122,3 @@ Open
 ----
 
 - Whether the Simulation tree needs lazy nodes for big imports (decided when step 2 is tried on the HCP65 project).
-- Whether a component's Go To row should also find it by type ("74HC00") as well as by name.
