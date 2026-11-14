@@ -577,13 +577,28 @@ void CCircuitEditor::TellProjectChanged(void)
 //
 // Ctrl+Z goes back to before the last change that wasn't only to the
 // selection; bStep (Ctrl+Alt+Z) goes back one change, whatever it was.
-// An edit in progress is discarded first.  False if there's nothing to
-// undo or the snapshot couldn't be loaded, when nothing changes.
+// The editor is then where the change undone was made (see
+// GetUndoPlace).  An edit in progress is discarded first.  False if
+// there's nothing to undo or the snapshot couldn't be loaded, when nothing
+// changes.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::Undo(bool bStep)
 {
-	return LoadUndo(mcUndo.FindUndo(bStep));
+	size			uiIndex;
+	SCircuitPlace	sPlace;
+	bool			bResult;
+
+	uiIndex = mcUndo.FindUndo(bStep);
+	sPlace.Init();
+	bResult = (uiIndex != ARRAY_ELEMENT_NOT_FOUND) && ReadUndoPlace(uiIndex + 1, &sPlace) && LoadUndo(uiIndex);
+	if (bResult)
+	{
+		EnterPlace(&sPlace);
+		TellProjectChanged();
+	}
+	sPlace.Kill();
+	return bResult;
 }
 
 
@@ -596,7 +611,12 @@ bool CCircuitEditor::Undo(bool bStep)
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::Redo(bool bStep)
 {
-	return LoadUndo(mcUndo.FindRedo(bStep));
+	if (!LoadUndo(mcUndo.FindRedo(bStep)))
+	{
+		return false;
+	}
+	TellProjectChanged();
+	return true;
 }
 
 
@@ -605,6 +625,88 @@ bool CCircuitEditor::Redo(bool bStep)
 // Not while an edit is in progress.
 //
 //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//
+// Where the change the next undo (or with bRedo, redo) would undo is: the
+// circuit simulated and the path into the circuit it was made in.  False
+// if there's nothing to undo.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::GetUndoPlace(bool bRedo, bool bStep, SCircuitPlace* psDest)
+{
+	if (bRedo)
+	{
+		return CanRedo(bStep) && ReadUndoPlace(mcUndo.FindRedo(bStep), psDest);
+	}
+	return CanUndo(bStep) && ReadUndoPlace(mcUndo.FindUndo(bStep) + 1, psDest);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where the editor was when snapshot uiIndex was saved, just after its
+// change: where the change was made.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::ReadUndoPlace(size uiIndex, SCircuitPlace* psDest)
+{
+	CMarkup		cMarkup;
+	CMarkupTag*	pcRoot;
+	CMarkupTag*	pcEditorTag;
+
+	if (uiIndex >= mcUndo.NumSnapshots())
+	{
+		return false;
+	}
+	cMarkup.Init();
+	pcRoot = ReadCircuitTextRoot(&cMarkup, mcUndo.Get(uiIndex), "Undo", "Circuits");
+	pcEditorTag = (pcRoot != NULL) ? pcRoot->GetTag("Editor") : NULL;
+	if (pcEditorTag != NULL)
+	{
+		psDest->szCircuit.Set(StrEmpty(pcEditorTag->GetStringAttribute("circuit")) ? "" : pcEditorTag->GetStringAttribute("circuit"));
+		psDest->szPath.Set(StrEmpty(pcEditorTag->GetStringAttribute("path")) ? "" : pcEditorTag->GetStringAttribute("path"));
+		psDest->fZoom = 0;
+	}
+	cMarkup.Kill();
+	return pcEditorTag != NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The editor goes to the place's circuit and path, simulating the circuit
+// if it isn't the one simulated; as far down the path as it's there.  If
+// it's there already nothing changes, its selection kept.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::EnterPlace(SCircuitPlace* psPlace)
+{
+	CCircuitView*	pcTop;
+	CChars			szPath;
+	CChars			szHere;
+
+	pcTop = mpcCircuits->Get(psPlace->szCircuit.Text());
+	if (pcTop == NULL)
+	{
+		return;
+	}
+	if ((pcTop != GetTopCircuit()) && !Simulate(psPlace->szCircuit.Text()))
+	{
+		return;
+	}
+	szPath.Init();
+	szHere.Init();
+	ResolveInstancePath(pcTop, psPlace->szPath.Text(), &szPath);
+	GetInstancePathText(&szHere);
+	if (!szPath.Equals(szHere.Text()))
+	{
+		EnterInstancePath(szPath.Text());
+	}
+	szHere.Kill();
+	szPath.Kill();
+}
+
+
 bool CCircuitEditor::CanUndo(bool bStep)
 {
 	return (mpcEdit == NULL) && (mcUndo.FindUndo(bStep) != ARRAY_ELEMENT_NOT_FOUND);
@@ -658,7 +760,6 @@ bool CCircuitEditor::LoadUndo(size uiIndex)
 	if (bResult)
 	{
 		mcUndo.MoveTo(uiIndex);
-		TellProjectChanged();
 	}
 	return bResult;
 }
@@ -718,8 +819,8 @@ CViewPath* CCircuitEditor::GetInstanceViewPath(const char* szPath)
 //
 // Edits the circuit at the end of szPath (as GetInstancePathText writes
 // it, empty for the top) in the circuit simulated, as entering each
-// instance on it would, but as one step to undo.  False, nothing
-// changed, if there's no such path.
+// instance on it would.  False, nothing changed, if there's no such
+// path.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::EnterInstancePath(const char* szPath)
@@ -748,7 +849,6 @@ bool CCircuitEditor::EnterInstancePath(const char* szPath)
 	mpcViewPath = pcViewPath->IsTop() ? NULL : pcViewPath;
 	mpcCircuit = pcCircuit;
 	UpdateHover();
-	PushUndo(true);
 	return true;
 }
 

@@ -1403,6 +1403,8 @@ void TestCircuitEditorEnterInstance(void)
 	CCircuitSimulation*			pcSimulation;
 	CViewPath*					pcTopPath;
 	SFloat64Vec2				sCentre;
+	size						uiSnapshots;
+	SCircuitPlace				sPlace;
 
 	sTest.Init(true);
 	AddEditorInverterSubcircuit(&sTest.pEditor, &sTest.pFonts);
@@ -1443,8 +1445,10 @@ void TestCircuitEditorEnterInstance(void)
 	AssertSize(1, sTest.pEditor->GetSelection()->NumComponents());
 	AssertString("Subcircuit", sTest.pEditor->GetSelection()->GetComponent(0)->GetType());
 
-	//A path entered as one step: its text is the instance's index; one undo comes back out; a path that isn't
-	//there changes nothing.  (Undo above loaded the project again, so the circuits are found by name.)
+	//A path entered in one go: its text is the instance's index (its name too, if it's written); a path that isn't
+	//there changes nothing; moving isn't a change to undo.  (Undo above loaded the project again, so the circuits are
+	//found by name.)
+	uiSnapshots = sTest.pEditor->GetUndoStack()->NumSnapshots();
 	AssertTrue(sTest.pEditor->EnterInstancePath("0"));
 	AssertString("Inverter", sTest.pEditor->GetCircuit()->GetTypeName());
 	AssertString("Main", sTest.pEditor->GetTopCircuit()->GetTypeName());
@@ -1452,12 +1456,26 @@ void TestCircuitEditorEnterInstance(void)
 	AssertFalse(sTest.pEditor->EnterInstancePath("0/0"));
 	AssertFalse(sTest.pEditor->EnterInstancePath("x"));
 	AssertString("Inverter", sTest.pEditor->GetCircuit()->GetTypeName());
-	AssertTrue(sTest.pEditor->Undo(true));
-	AssertFalse(sTest.pEditor->IsInInstance());
-	AssertTrue(sTest.pEditor->EnterInstancePath("0"));
 	AssertTrue(sTest.pEditor->EnterInstancePath(""));
 	AssertFalse(sTest.pEditor->IsInInstance());
 	AssertString("Main", sTest.pEditor->GetCircuit()->GetTypeName());
+	AssertSize(uiSnapshots, sTest.pEditor->GetUndoStack()->NumSnapshots());
+
+	//An edit inside the instance, then moving out: the undo is said to be inside, and undoing it goes back in.
+	AssertTrue(sTest.pEditor->EnterInstancePath("0"));
+	sTest.pEditor->SelectOnly(sTest.pEditor->GetCircuit()->GetComponent(2));
+	sTest.pEditor->Delete();
+	AssertTrue(sTest.pEditor->EnterInstancePath(""));
+	sPlace.Init();
+	AssertTrue(sTest.pEditor->GetUndoPlace(false, false, &sPlace));
+	AssertString("Main", sPlace.szCircuit.Text());
+	AssertTrue(sPlace.szPath.Text()[0] == '0');
+	AssertTrue(sTest.pEditor->Undo());
+	AssertTrue(sTest.pEditor->IsInInstance());
+	AssertString("Inverter", sTest.pEditor->GetCircuit()->GetTypeName());
+	AssertTrue(sTest.pEditor->GetUndoPlace(true, false, &sPlace));
+	AssertTrue(sPlace.szPath.Text()[0] == '0');
+	sPlace.Kill();
 
 	sTest.Kill();
 }
@@ -1510,6 +1528,8 @@ void TestCircuitEditorTabs(void)
 
 	//Undo keeps the tabs as they are now; loading the file brings back its own.
 	AssertTrue(sTest.pEditor->Simulate("Inverter"));
+	sTest.pEditor->SelectOnly(sTest.pEditor->GetCircuit()->GetComponent(0));
+	AssertTrue(sTest.pEditor->Delete());
 	sTest.pEditor->SetTabs(sTest.pEditor->GetTabs(), 0);
 	AssertSize(2, sTest.pEditor->GetTabs()->NumElements());
 	AssertTrue(sTest.pEditor->Undo(true));
@@ -3260,8 +3280,8 @@ void TestCircuitEditorUndoSelections(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // Undoing takes the simulation back to the time it was saved at.
-// Starting to edit another circuit can be undone; the circuit being
-// edited comes back with it.
+// Starting to edit another circuit isn't a change; undoing a change made
+// in the circuit before goes back to it.
 //
 //////////////////////////////////////////////////////////////////////////
 void TestCircuitEditorUndoSimulation(void)
@@ -3273,6 +3293,7 @@ void TestCircuitEditorUndoSimulation(void)
 	SFloat64Vec2		sCentre;
 	int64				iStart;
 	int64				iSettled;
+	SCircuitPlace		sPlace;
 
 	sTest.Init();
 	pcEditor = &sTest.pEditor;
@@ -3299,16 +3320,22 @@ void TestCircuitEditorUndoSimulation(void)
 	AssertLong(iSettled, pcEditor->GetSimulation()->GetTime());
 	AssertInt(TV_High, sTest.GetLevel(3, -2));
 
+	//Going to another circuit isn't a change; undoing the selection made in Main says it's in Main, and goes back there.
 	AssertTrue(pcEditor->Simulate("Other"));
 	AssertString("Other", pcEditor->GetCircuit()->GetTypeName());
-	AssertSize(3, pcUndo->NumSnapshots());
-	AssertFalse(pcUndo->IsSelectionOnly(2));
-	AssertTrue(pcEditor->Undo());
+	AssertSize(2, pcUndo->NumSnapshots());
+	AssertFalse(pcEditor->CanUndo());
+	sPlace.Init();
+	AssertTrue(pcEditor->GetUndoPlace(false, true, &sPlace));
+	AssertString("Main", sPlace.szCircuit.Text());
+	AssertString("", sPlace.szPath.Text());
+	sPlace.Kill();
+	AssertTrue(pcEditor->Undo(true));
 	AssertString("Main", pcEditor->GetCircuit()->GetTypeName());
-	AssertSize(1, pcUndo->GetCurrent());
+	AssertSize(0, pcUndo->GetCurrent());
+	AssertTrue(pcEditor->Redo(true));
+	AssertString("Main", pcEditor->GetCircuit()->GetTypeName());
 	AssertTrue(pcEditor->GetSelection()->Contains(pcEditor->GetCircuit()->GetComponent(1)));
-	AssertTrue(pcEditor->Redo());
-	AssertString("Other", pcEditor->GetCircuit()->GetTypeName());
 
 	sTest.Kill();
 }

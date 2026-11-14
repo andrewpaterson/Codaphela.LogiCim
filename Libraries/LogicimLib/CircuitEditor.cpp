@@ -207,14 +207,13 @@ CCircuitView* CCircuitEditor::AddCircuit(const char* szTypeName)
 //////////////////////////////////////////////////////////////////////////
 //
 // Edits the circuit of the type and simulates it, in a new simulation
-// started afresh; the last one is killed.  Starting to edit a circuit can
-// be undone; simulating the same one again, as a reset does, can't.
+// started afresh; the last one is killed.  Going to another circuit isn't
+// a change to undo, only the project's first snapshot is saved here.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::Simulate(const char* szTypeName)
 {
 	CCircuitView*	pcCircuit;
-	CCircuitView*	pcPrevious;
 
 	pcCircuit = mpcCircuits->Get(szTypeName);
 	if (pcCircuit == NULL)
@@ -225,7 +224,6 @@ bool CCircuitEditor::Simulate(const char* szTypeName)
 	DiscardEdit();
 	mcSelection.Clear();
 	KillSimulation();
-	pcPrevious = GetTopCircuit();
 	mpcViewPath = NULL;
 	mpcCircuit = pcCircuit;
 	mpSimulation = OMalloc<CCircuitSimulation>(szTypeName);
@@ -234,7 +232,7 @@ bool CCircuitEditor::Simulate(const char* szTypeName)
 	{
 		return false;
 	}
-	if ((mcUndo.NumSnapshots() == 0) || (pcCircuit != pcPrevious))
+	if (mcUndo.NumSnapshots() == 0)
 	{
 		PushUndo(false);
 	}

@@ -118,7 +118,6 @@ bool CCircuitEditor::EnterInstance(CComponentView* pcInstance)
 	mpcViewPath = pcChild;
 	mpcCircuit = pcInstanceView->GetInstanceCircuitView();
 	UpdateHover();
-	PushUndo(true);
 	return true;
 }
 
@@ -149,7 +148,6 @@ bool CCircuitEditor::LeaveInstance(void)
 		mcSelection.Add(pcInstance);
 	}
 	UpdateHover();
-	PushUndo(true);
 	return true;
 }
 

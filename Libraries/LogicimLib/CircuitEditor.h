@@ -155,13 +155,15 @@ enum EEditTransform
 //selection, about the pointer.  Components placed afterwards are turned and flipped too.  Flipping horizontally mirrors
 //left to right on the screen and vertically top to bottom, whichever way the components face.
 //
-//Undo and redo are Logicim's: after each change (and a load, and starting to simulate a circuit) the whole project is
-//saved onto an undo stack (see CUndoStack), and undoing or redoing loads one of those again, simulation and all.  A
-//change that only changed the selection is marked so: Undo and Redo skip it, as if it were part of the change before
-//or after it, and stepping (as Logicim does) doesn't.
+//Undo and redo are Logicim's: after each change (and a load) the whole project is saved onto an undo stack (see
+//CUndoStack), and undoing or redoing loads one of those again, simulation and all.  A change that only changed the
+//selection is marked so: Undo and Redo skip it, as if it were part of the change before or after it, and stepping (as
+//Logicim does) doesn't.  Moving (to another circuit, into or out of an instance) isn't a change: each snapshot is where
+//its change was made, and undoing a change goes back there (GetUndoPlace says where, for an application to show it
+//first).
 //
-//What's told when the project changes: after each change saved for undo (an edit, a move into an instance, a change
-//of selection) and after an undo or redo, so an application's views of the circuits can follow them.
+//What's told when the project changes: after each change saved for undo (an edit, a change of selection) and after an
+//undo or redo, so an application's views of the circuits can follow them.
 class CCircuitEditorListener
 {
 public:
@@ -245,6 +247,8 @@ public:
 	bool				Redo(bool bStep = false);
 	bool				CanUndo(bool bStep = false);
 	bool				CanRedo(bool bStep = false);
+	bool				GetUndoPlace(bool bRedo, bool bStep, SCircuitPlace* psDest);
+	void				EnterPlace(SCircuitPlace* psPlace);
 	CUndoStack*			GetUndoStack(void);
 	void				SetListener(CCircuitEditorListener* pcListener);
 	void				SetTabs(CArrayCircuitPlace* pasTabs, size uiActive);
@@ -334,6 +338,7 @@ protected:
 	bool				LoadUndo(size uiIndex);
 	void				SaveTabsXML(CXMLWriter* pcWriter);
 	void				TellProjectChanged(void);
+	bool				ReadUndoPlace(size uiIndex, SCircuitPlace* psDest);
 	void				KillSimulation(bool bFreeing = false);
 };
 
