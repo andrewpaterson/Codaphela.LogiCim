@@ -22,6 +22,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/Canvas.h"
 #include "LogicimLib/CircuitPainter.h"
 #include "LogicimCircuit.h"
+#include "LogicimLib/CircuitEditor.h"
 #include "CircuitCanvasDraw.h"
 
 
@@ -44,6 +45,9 @@ void CCircuitCanvasDraw::Init(CLogicimCircuit* pcCircuit)
 	mcViewport.Init(0, 0);
 	mbGrid = true;
 	mbPreviewOnly = false;
+	msOwnPlace.Init();
+	mbOwnPlace = false;
+	mbFitWhenDrawn = false;
 	PostInit();
 }
 
@@ -65,6 +69,10 @@ void CCircuitCanvasDraw::Class(void)
 	M_Pointer(mpDestImage);
 	U_Unknown(CCircuitViewport, mcViewport);
 	U_Bool(mbGrid);
+	U_Unknown(SCircuitPlace, msOwnPlace);
+	U_Bool(mbOwnPlace);
+	U_Data(SFloat64Bounds, msFitBox);
+	U_Bool(mbFitWhenDrawn);
 }
 
 
@@ -74,6 +82,7 @@ void CCircuitCanvasDraw::Class(void)
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvasDraw::Free(void)
 {
+	msOwnPlace.Kill();
 	mcViewport.Kill();
 	CCanvasDraw::Free();
 }
@@ -92,6 +101,9 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 	CCircuitPainter		cPainter;
 	CCircuitColours*	pcColours;
 	bool				bResult;
+	CCircuitView*		pcOwn;
+	CViewPath*			pcViewPath;
+	CCircuitSimulation*	pcSimulation;
 
 	if (!pCanvas->IsValid())
 	{
@@ -135,14 +147,32 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 	else
 	{
 		//The grid's tiles cover the canvas, background and all, so nothing is drawn under them.
-		cPainter.InitImage(pImage, &mcViewport, &mpMap, &mpSprites, pcColours, mpcCircuit->GetFonts(), mpcCircuit->GetEditor()->GetViewPath(), mpcCircuit->GetEditor()->GetSimulation(), false);
+		pcOwn = mbOwnPlace ? FindOwnPlace(&pcViewPath, &pcSimulation) : NULL;
+		if (!mbOwnPlace)
+		{
+			pcViewPath = mpcCircuit->GetEditor()->GetViewPath();
+			pcSimulation = mpcCircuit->GetEditor()->GetSimulation();
+		}
+		cPainter.InitImage(pImage, &mcViewport, &mpMap, &mpSprites, pcColours, mpcCircuit->GetFonts(), pcViewPath, pcSimulation, false);
+		if (mbFitWhenDrawn)
+		{
+			mbFitWhenDrawn = false;
+			ZoomToFit(&msFitBox);
+		}
 		mpSpriteCache->BeginFrame();
 		cPainter.SetSpriteCache(&mpSpriteCache);
 		if (!mbGrid || !mpGrid->Paint(&cPainter))
 		{
 			cPainter.PaintBackground();
 		}
-		mpcCircuit->GetEditor()->Paint(&cPainter);
+		if (!mbOwnPlace)
+		{
+			mpcCircuit->GetEditor()->Paint(&cPainter);
+		}
+		else if (pcOwn != NULL)
+		{
+			pcOwn->Paint(&cPainter);
+		}
 	}
 	bResult = cPainter.BlitImage();
 	cPainter.Kill();
@@ -219,6 +249,65 @@ void CCircuitCanvasDraw::ZoomAroundCentre(float32 fZoom)
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvasDraw::ZoomToFit(SFloat64Bounds* psBox)
 {
+	if ((mcViewport.GetSize().x <= 0) || (mcViewport.GetSize().y <= 0))
+	{
+		msFitBox = *psBox;
+		mbFitWhenDrawn = true;
+		return;
+	}
 	mcViewport.ZoomToFit(psBox, 1, CIRCUIT_MAXIMUM_ZOOM);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The draw shows psPlace (copied), as a tab that isn't the one edited
+// does; NULL shows the editor again.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitCanvasDraw::SetOwnPlace(SCircuitPlace* psPlace)
+{
+	mbOwnPlace = (psPlace != NULL);
+	if (mbOwnPlace)
+	{
+		msOwnPlace.Copy(psPlace);
+	}
+}
+
+
+SCircuitPlace* CCircuitCanvasDraw::GetOwnPlace(void) { return mbOwnPlace ? &msOwnPlace : NULL; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit at the end of the draw's own place, with the simulation's
+// view path into it if it's in the circuit simulated (NULL, and no
+// simulation, if it isn't).  NULL if the place is gone.
+//
+//////////////////////////////////////////////////////////////////////////
+CCircuitView* CCircuitCanvasDraw::FindOwnPlace(CViewPath** ppcViewPath, CCircuitSimulation** ppcSimulation)
+{
+	CCircuitEditor*							pcEditor;
+	CCircuitView*							pcTop;
+	CCircuitView*							pcCircuit;
+	CArrayTemplatePtr<CCircuitInstanceView>	apcPath;
+
+	*ppcViewPath = NULL;
+	*ppcSimulation = NULL;
+	pcEditor = mpcCircuit->GetEditor();
+	pcTop = (pcEditor->GetCircuits() != NULL) ? pcEditor->GetCircuits()->Get(msOwnPlace.szCircuit.Text()) : NULL;
+	if (pcTop == NULL)
+	{
+		return NULL;
+	}
+	apcPath.Init();
+	pcCircuit = msOwnPlace.szPath.Empty() ? pcTop : pcEditor->FindInstancePath(pcTop, msOwnPlace.szPath.Text(), &apcPath);
+	apcPath.Kill();
+	if ((pcCircuit != NULL) && (pcTop == pcEditor->GetTopCircuit()))
+	{
+		*ppcViewPath = pcEditor->GetInstanceViewPath(msOwnPlace.szPath.Text());
+		*ppcSimulation = (*ppcViewPath != NULL) ? pcEditor->GetSimulation() : NULL;
+	}
+	return pcCircuit;
 }
 

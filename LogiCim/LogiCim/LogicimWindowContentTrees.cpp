@@ -292,7 +292,7 @@ void CLogicimWindowContent::AddInstanceNodes(int32 iParent, CCircuitView* pcCirc
 void CLogicimWindowContent::SimulationNodeActivated(void)
 {
 	int32			iNode;
-	SLogicimPlace	sPlace;
+	SCircuitPlace	sPlace;
 
 	iNode = mpSimulationTree->GetSelectedNode();
 	if ((iNode == TREE_NO_NODE) || (mpLogicimCircuit->GetEditor()->GetTopCircuit() == NULL))

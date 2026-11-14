@@ -20,14 +20,10 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __LOGICIM_NAVIGATION_HISTORY_H__
 #define __LOGICIM_NAVIGATION_HISTORY_H__
-#include "BaseLib/ArrayTemplate.h"
-#include "LogicimPlace.h"
+#include "LogicimLib/CircuitPlace.h"
 
 
 #define LOGICIM_NAVIGATION_HISTORY_SIZE	50  //Places kept back, the oldest forgotten first.
-
-
-typedef CArrayTemplate<SLogicimPlace>	CArrayLogicimPlace;
 
 
 //The places left, for Back, and the places gone back from, for Forward, the latest last.  A move records the place it
@@ -37,23 +33,22 @@ typedef CArrayTemplate<SLogicimPlace>	CArrayLogicimPlace;
 class CLogicimNavigationHistory
 {
 protected:
-	CArrayLogicimPlace	masBack;
-	CArrayLogicimPlace	masForward;
+	CArrayCircuitPlace	masBack;
+	CArrayCircuitPlace	masForward;
 
 public:
 	void	Init(void);
 	void	Kill(void);
 	void	Clear(void);
 
-	void	Record(SLogicimPlace* psLeft);
-	bool	Take(bool bBack, SLogicimPlace* psDest);
-	void	Put(bool bBack, SLogicimPlace* psPlace);
+	void	Record(SCircuitPlace* psLeft);
+	bool	Take(bool bBack, SCircuitPlace* psDest);
+	void	Put(bool bBack, SCircuitPlace* psPlace);
 	size	Num(bool bBack);
 	void	Print(bool bBack, CChars* pszDest);
 
 protected:
-	CArrayLogicimPlace*	GetSide(bool bBack);
-	void				ClearSide(CArrayLogicimPlace* pasPlaces);
+	CArrayCircuitPlace*	GetSide(bool bBack);
 };
 
 

@@ -27,16 +27,24 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimLib/CircuitViewport.h"
 #include "LogicimLib/ComponentSpriteCache.h"
 #include "LogicimLib/CircuitGrid.h"
+#include "LogicimLib/CircuitPlace.h"
 
 
 class CLogicimCircuit;
 class CComponentView;
+class CCircuitView;
+class CViewPath;
+class CCircuitSimulation;
 
 
 //Draws the editor: the background, Logicim's point grid and the circuit with its selection (see CCircuitEditor),
 //through a geometry map.  Grid 0, 0 is at the centre of the canvas and a grid unit is ten pixels at a zoom of one.
 //Like Logicim's the grid isn't drawn when zoomed far out, its dots are lighter from a zoom of 1.5 and become small
 //squares from 2.  Text goes in a sprite map drawn over the geometry map.
+//
+//A tab that isn't the one edited draws its own place (SetOwnPlace): its circuit along its path, as it's simulated if it's
+//in the circuit simulated, without the editor's selection.  A fit asked for before the canvas is first drawn, when its
+//size isn't known, is made as it's drawn.
 //
 //Given a preview view it draws only that, unsimulated and zoomed to fit the canvas with a grid unit or two around it,
 //as KiCad's symbol chooser previews a symbol.  A preview draw (SetPreviewOnly) draws only the background without one,
@@ -56,6 +64,10 @@ protected:
 	CCircuitViewport	mcViewport;
 	bool				mbGrid;
 	bool				mbPreviewOnly;  //Only ever draws its preview (a chooser's), not the circuit being edited.
+	SCircuitPlace		msOwnPlace;
+	bool				mbOwnPlace;  //Draws msOwnPlace, not the editor.
+	SFloat64Bounds		msFitBox;
+	bool				mbFitWhenDrawn;
 
 public:
 	void				Init(CLogicimCircuit* pcCircuit);
@@ -74,9 +86,12 @@ public:
 	CCircuitViewport*	GetViewport(void);
 	void				SetPreview(CComponentView* pcPreview);
 	void				SetPreviewOnly(bool bPreviewOnly);
+	void				SetOwnPlace(SCircuitPlace* psPlace);
+	SCircuitPlace*		GetOwnPlace(void);
 
 protected:
 	void				FitPreview(SInt32Vec2 sSize);
+	CCircuitView*		FindOwnPlace(CViewPath** ppcViewPath, CCircuitSimulation** ppcSimulation);
 };
 
 

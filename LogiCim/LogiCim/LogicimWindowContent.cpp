@@ -154,6 +154,11 @@ void CLogicimWindowContent::Init(void)
 	mszSimulationName.Init();
 	mcHistory.Init();
 	mbNavigating = false;
+	maTabPanes.Init();
+	maTabCanvases.Init();
+	muiActiveTab = 0;
+	muiTabsMade = 1;
+	msTreeMenuPlace.Init();
 	mcSettings.Init();
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
@@ -203,6 +208,13 @@ void CLogicimWindowContent::Class(void)
 	U_Unknown(CLogicimNavigationHistory, mcHistory);
 	U_Bool(mbNavigating);
 	M_Pointer(mpCircuit);
+	M_Embedded(maTabPanes);
+	M_Embedded(maTabCanvases);
+	U_Size(muiActiveTab);
+	U_Size(muiTabsMade);
+	M_Pointer(mpNewTabItem);
+	M_Pointer(mpTreeMenu);
+	U_Unknown(SCircuitPlace, msTreeMenuPlace);
 	M_Pointer(mpSubcircuitInfo);
 	M_Pointer(mpSimulationInfo);
 	M_Pointer(mpViewPathInfo);
@@ -340,6 +352,10 @@ void CLogicimWindowContent::Free(void)
 	{
 		mpSubcircuitTree->GetSelectionEvent()->Remove(this);
 	}
+	if (mpTreeMenu.IsNotNull())
+	{
+		mpTreeMenu->GetItemClickEvent()->Remove(this);
+	}
 	if (mpCanvasMenu.IsNotNull())
 	{
 		mpCanvasMenu->GetItemClickEvent()->Remove(this);
@@ -360,6 +376,7 @@ void CLogicimWindowContent::Free(void)
 	mszChooserSelected.Kill();
 	mszSimulationName.Kill();
 	mcHistory.Kill();
+	msTreeMenuPlace.Kill();
 	mszSimulationShape.Kill();
 	mszSubcircuitShape.Kill();
 	maszSimulationPaths.Kill();
@@ -382,10 +399,7 @@ void CLogicimWindowContent::UpdateInfo(void)
 	sz.Append(GetEditedCircuitName());
 	mpSubcircuitInfo->SetText(sz.Text());
 	sz.Kill();
-	if (mpCircuitPane.IsNotNull())
-	{
-		mpCircuitPane->SetTitle(GetEditedCircuitName());
-	}
+	UpdateTabTitles();
 
 	sz.Init("Simulation: ");
 	if (!mszSimulationName.Empty())
@@ -519,7 +533,10 @@ void CLogicimWindowContent::ShowZoom(void)
 
 	sz.Init("Z ");
 	AppendTenths(&sz, mpCircuit->GetCircuitDraw()->GetZoom());
-	mpZoomInfo->SetText(sz.Text());
+	if (!sz.Equals(mpZoomInfo->GetText()))
+	{
+		mpZoomInfo->SetText(sz.Text());
+	}
 	sz.Kill();
 }
 
@@ -570,6 +587,7 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
 	mpCommands->Add("File.ClearRecentProjects", "Clear Recent Projects", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentProjects);
 	mpCommands->Add("Window.ResetLayout", "Reset Window Layout", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ResetLayout);
+	mpCommands->Add("Window.NewTab", "New Tab", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::NewTab);
 	mpCommands->Add("File.Settings", "Settings...", "Control+Alt+S", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestSettings);
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
 	mpCommands->Add("Edit.Move", "Move", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::Move);
@@ -865,6 +883,9 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 	SFloat64Vec2	sCentre;
 	SFloat64Bounds	sBox;
 	float64			fSize;
+
+	//A canvas fitted as it was first drawn (a new tab's) zoomed after its zoom was shown.
+	ShowZoom();
 
 	//Once the window is laid out, so the import is zoomed to fit the canvas.
 	if (!mszStartupImport.Empty())

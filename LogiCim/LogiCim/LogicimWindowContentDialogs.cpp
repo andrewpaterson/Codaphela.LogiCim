@@ -581,6 +581,7 @@ bool CLogicimWindowContent::NewProject(void)
 	if (bResult)
 	{
 		gcLogger.Info("New project.");
+		CloseExtraTabs();
 		mcHistory.Clear();
 		Zoom(1.0f);
 	}
@@ -602,6 +603,7 @@ bool CLogicimWindowContent::LoadProject(const char* szFilename)
 	bResult = mpLogicimCircuit->Load(szFilename);
 	if (bResult)
 	{
+		RestoreTabs();
 		mcHistory.Clear();
 		mcSettings.SetProjectLoad(szFilename);
 		mcSettings.AddRecent(szFilename);
@@ -623,6 +625,7 @@ bool CLogicimWindowContent::SaveProject(const char* szFilename)
 {
 	bool	bResult;
 
+	StoreTabs();
 	bResult = mpLogicimCircuit->Save(szFilename);
 	if (bResult)
 	{
@@ -854,17 +857,6 @@ bool CLogicimWindowContent::ApplyChooserEdits(const char* szEdits)
 void CLogicimWindowContent::ResetLayout(void)
 {
 	mpDock->ResetLayout();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The circuit is the one document and stays open.
-//
-//////////////////////////////////////////////////////////////////////////
-bool CLogicimWindowContent::PaneClosing(CDockPane* pcPane)
-{
-	return pcPane != &mpCircuitPane;
 }
 
 
@@ -1113,6 +1105,7 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 	if (bResult)
 	{
 		gcLogger.Info2("Imported [", szFilename, "].", NULL);
+		CloseExtraTabs();
 		mcHistory.Clear();
 		ZoomToFit(false);
 	}

@@ -252,7 +252,10 @@ bool CLogicimApp::Check(const char* szSteps)
 // selected; simactivate:<path> double clicks the node of that instance.
 // subcircuits: the Subcircuits pane's tree, as simtree; subselect:<n>
 // clicks its nth node (from 0, open or not).  history: the places Back
-// and Forward go to, the next first.
+// and Forward go to, the next first.  tabs: each tab's title, the one
+// edited marked; newtab:<circuit>:<path> opens a place in a new tab;
+// activatetab:<n> and closetab:<n> do to tab n (from 0) what clicking it
+// and its close cross do.
 // keys:<context>:<keys> says which command those keys
 // run there, a Global one if the context has none.
 //
@@ -313,6 +316,23 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "simtree") == 0)
 	{
 		PrintTree("Simulation", mpContent->GetSimulationTree());
+	}
+	else if (StringCompare(szStep, "tabs") == 0)
+	{
+		PrintTabs();
+	}
+	else if (strncmp(szStep, "newtab:", 7) == 0)
+	{
+		NewTab(&szStep[7]);
+	}
+	else if (strncmp(szStep, "activatetab:", 12) == 0)
+	{
+		mpContent->GetDock()->Activate(mpContent->GetTabPane((size)atoi(&szStep[12])));
+		printf("Activated tab %s\n", &szStep[12]);
+	}
+	else if (strncmp(szStep, "closetab:", 9) == 0)
+	{
+		printf("Close tab %s: %s\n", &szStep[9], mpContent->GetDock()->Close(mpContent->GetTabPane((size)atoi(&szStep[9]))) ? "closed" : "kept");
 	}
 	else if (StringCompare(szStep, "history") == 0)
 	{
@@ -505,6 +525,57 @@ bool CLogicimApp::SelectTreeNode(Ptr<CTreeContainer> pTree, const char* szNode)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CLogicimApp::PrintTabs(void)
+{
+	size	i;
+
+	printf("Tabs: %d\n", (int)mpContent->NumTabs());
+	for (i = 0; i < mpContent->NumTabs(); i++)
+	{
+		printf("Tab %d: %s%s\n", (int)i, mpContent->GetTabPane(i)->GetTitle(), (i == mpContent->GetActiveTab()) ? " *" : "");
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// szStep is <circuit>:<path>, as showplace's.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::NewTab(const char* szStep)
+{
+	SCircuitPlace	sPlace;
+
+	ReadPlaceStep(szStep, &sPlace);
+	mpContent->OpenInNewTab(&sPlace);
+	printf("New tab %s\n", szStep);
+	sPlace.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A place from <circuit>:<path>, the circuit's name can have colons;
+// psDest isn't initialised.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimApp::ReadPlaceStep(const char* szStep, SCircuitPlace* psDest)
+{
+	CChars		szCircuit;
+	const char*	szColon;
+
+	szColon = strrchr(szStep, ':');
+	szCircuit.Init();
+	szCircuit.Append(szStep, (szColon != NULL) ? (szColon - szStep) : strlen(szStep));
+	psDest->Init(szCircuit.Text(), (szColon != NULL) ? &szColon[1] : NULL);
+	szCircuit.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CLogicimApp::PrintHistory(void)
 {
 	CChars	szBack;
@@ -526,7 +597,7 @@ void CLogicimApp::PrintHistory(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimApp::PrintPlace(void)
 {
-	SLogicimPlace	sPlace;
+	SCircuitPlace	sPlace;
 	CChars			sz;
 
 	sPlace.Init();
@@ -541,21 +612,15 @@ void CLogicimApp::PrintPlace(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// szStep is <circuit>:<path>, the circuit's name can have colons.
+// szStep is <circuit>:<path> (see ReadPlaceStep).
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimApp::ShowPlace(const char* szStep)
 {
-	SLogicimPlace	sPlace;
-	CChars			szCircuit;
-	const char*		szColon;
+	SCircuitPlace	sPlace;
 
-	szColon = strrchr(szStep, ':');
-	szCircuit.Init();
-	szCircuit.Append(szStep, (szColon != NULL) ? (szColon - szStep) : strlen(szStep));
-	sPlace.Init(szCircuit.Text(), (szColon != NULL) ? &szColon[1] : NULL);
+	ReadPlaceStep(szStep, &sPlace);
 	printf("Show place %s: %s\n", szStep, mpContent->ShowPlace(&sPlace) ? "shown" : "gone");
-	szCircuit.Kill();
 	sPlace.Kill();
 }
 

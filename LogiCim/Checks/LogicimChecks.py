@@ -31,7 +31,7 @@ CHECKS = [
 		 r'^Menu View: .* Subcircuits \[View\.Subcircuits\] Simulation Tree \[View\.SimulationTree\] Back \[View\.Back\] Forward \[View\.Forward\]$',
 		 r'^Menu Simulation: ',
 		 r'^Menu Place: ',
-		 r'^Menu Window: Reset Window Layout \[Window\.ResetLayout\]$',
+		 r'^Menu Window: New Tab \[Window\.NewTab\] Reset Window Layout \[Window\.ResetLayout\]$',
 		 r'^Buttons: [1-9][0-9]* with a command, 0 without$'],
 		[r'(?<!Recent Projects )\[none\]']),	#Recent Projects opens its submenu; every other item runs a command.
 	('run-commands', 'zoom,command:View.ZoomIn,zoom,command:View.ZoomOut,command:View.ZoomOut,zoom,command:View.ResetZoom,zoom',
@@ -436,6 +436,30 @@ def CheckSubcircuitKeys(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#Tabs: each a place of its own, the one edited moving the editor there (a step for Back); the first stays open; the
+#tabs, and which is edited, are saved with the project and come back with it; moving between them isn't a change.
+def CheckTabs(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szSaved = os.path.join(szDirectory, 'Tabs.xml')
+		bPassed = Check(szExecutable, 'tabs', ','.join(['load:../Checks/Nested.xml', 'tabs', 'newtab:Main:1/1', 'tabs', 'place', 'activatetab:0', 'tabs', 'place',
+														'activatetab:1', 'place', 'showplace:Main:0', 'tabs', 'history', 'modified', 'save:' + szSaved,
+														'closetab:0', 'closetab:1', 'tabs', 'place', 'load:' + szSaved, 'tabs', 'place', 'activatetab:0', 'place',
+														'new', 'tabs']),
+			[r'^Tabs: 1$', r'^Tab 0: Main \*$', r'^New tab Main:1/1$', r'^Tabs: 2$', r'^Tab 0: Main$', r'^Tab 1: Gate in U3 \*$', r'^Place: Main 1/1 \(Gate\)$',
+			 r'^Tab 0: Main \*$', r'^Tab 1: Gate in U3$', r'^Place: Main \(Main\)$', r'^Place: Main 1/1 \(Gate\)$', r'^Tab 1: Board in U1 \*$',
+			 r'^History: back \[Main 1/1, Main, Main 1/1, Main\] forward \[\]$', r'^Modified: no$', r'^Close tab 0: kept$', r'^Close tab 1: closed$',
+			 r'^Tabs: 1$', r'^Place: Main \(Main\)$', r'^Tabs: 2$', r'^Tab 1: Board in U1 \*$', r'^Place: Main 0 \(Board\)$', r'^Place: Main \(Main\)$',
+			 r'^Tabs: 1$'],
+			[r'Unknown check step', r'ERROR'])
+		if bPassed and ('activeTab="1"' not in open(szSaved).read()):
+			print('FAIL tabs\n    the saved project hasn\'t its tabs')
+			bPassed = False
+		return bPassed
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 def main():
 	szExecutable = os.path.join(ROOT, 'build', 'LogiCimRelease', 'LogiCim')
 	aszNames = []
@@ -455,6 +479,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('keymap' in aszNames):
 		if not CheckKeymap(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('tabs' in aszNames):
+		if not CheckTabs(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('subcircuit-keys' in aszNames):
 		if not CheckSubcircuitKeys(szExecutable):

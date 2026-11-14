@@ -293,7 +293,7 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 {
 	CCircuitEditor*		pcEditor;
 	char*				szName;
-	SLogicimPlace		sPlace;
+	SCircuitPlace		sPlace;
 	int32				iNode;
 
 	if (mbListingSubcircuits)
@@ -321,7 +321,7 @@ void CLogicimWindowContent::SubcircuitSelected(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::EnterSubcircuit(CComponentView* pcInstance)
 {
-	SLogicimPlace	sLeft;
+	SCircuitPlace	sLeft;
 
 	sLeft.Init();
 	GetPlace(&sLeft);
@@ -342,7 +342,7 @@ void CLogicimWindowContent::EnterSubcircuit(CComponentView* pcInstance)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::LeaveSubcircuit(void)
 {
-	SLogicimPlace	sLeft;
+	SCircuitPlace	sLeft;
 
 	sLeft.Init();
 	GetPlace(&sLeft);
@@ -372,6 +372,7 @@ void CLogicimWindowContent::PrepareCanvasMenu(SFloat64Vec2 sGrid)
 	pcEditor = mpLogicimCircuit->GetEditor();
 	mpCanvasMenu->RemoveAllItems();
 	mpEnterItem = NULL;
+	mpNewTabItem = NULL;
 	mpPropertiesItem = NULL;
 	if (pcEditor->IsEditing())
 	{
@@ -383,6 +384,7 @@ void CLogicimWindowContent::PrepareCanvasMenu(SFloat64Vec2 sGrid)
 	{
 		pcEditor->SelectOnly(pcComponent);
 		mpEnterItem = mpCanvasMenu->AddItem("Enter Sub-circuit");
+		mpNewTabItem = mpCanvasMenu->AddItem("Open in New Tab");
 		mpPropertiesItem = mpCanvasMenu->AddItem("Properties");
 	}
 	else if (pcEditor->IsInInstance())
@@ -404,6 +406,10 @@ void CLogicimWindowContent::CanvasMenuItemClicked(CMenuItem* pcItem)
 	if (pcItem == &mpEnterItem)
 	{
 		EnterSubcircuit(pcEditor->GetSelection()->GetSingleComponent());
+	}
+	else if (pcItem == &mpNewTabItem)
+	{
+		OpenInstanceInNewTab(pcEditor->GetSelection()->GetSingleComponent());
 	}
 	else if (pcItem == &mpPropertiesItem)
 	{

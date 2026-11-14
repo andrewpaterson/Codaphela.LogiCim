@@ -24,6 +24,9 @@
     <ClCompile Include="LogicimSettings.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LogicimWindowContentTabs.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="LogicimNavigationHistory.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -31,9 +34,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="LogicimWindowContentNavigation.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="LogicimPlace.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="LogicimWindowContent.cpp">
@@ -75,9 +75,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimNavigationHistory.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="LogicimPlace.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LogicimWindowContent.h">

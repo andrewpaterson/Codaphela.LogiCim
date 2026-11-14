@@ -73,6 +73,7 @@ void CCircuitCanvas::Init(Ptr<CWindow> pWindow, Ptr<CCircuitCanvasDraw> pDraw, C
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvas::CommandAction(SComponentInputEvent* psEvent)
 {
+	mpcContent->ActivateCanvas(this);
 	switch (psEvent->eCommand)
 	{
 	case CIC_ActivateComponent:	ActivateComponent(psEvent->x, psEvent->y);	break;
@@ -122,6 +123,7 @@ void CCircuitCanvas::WheelAction(SComponentInputEvent* psEvent)
 //////////////////////////////////////////////////////////////////////////
 void CCircuitCanvas::ContextMenuAction(SComponentInputEvent* psEvent)
 {
+	mpcContent->ActivateCanvas(this);
 	mpcContent->PrepareCanvasMenu(ToGrid(psEvent->x, psEvent->y));
 }
 

@@ -208,6 +208,7 @@ Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 	mpMenuBar->AddMenu("Simulation", CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("Place", CreateMenu(aePlace, sizeof(aePlace) / sizeof(ELogicimAction)));
 	pWindowMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
+	pWindowMenu->AddItem(mpCommands->Find("Window.NewTab"));
 	pWindowMenu->AddItem(mpCommands->Find("Window.ResetLayout"));
 	mpMenuBar->AddMenu("Window", pWindowMenu);
 	mpMenuBar->SetAlignment(CSH_Stretch, CSV_Stretch);
@@ -339,25 +340,25 @@ Ptr<CComponent> CLogicimWindowContent::CreateEditor(void)
 	mpSubcircuitTree->GetSelectionEvent()->Add(this, &CLogicimWindowContent::SubcircuitSelected);
 	pSubcircuits = CreateToolWindow(mpSubcircuitTree);
 
-	mpCircuit = OMalloc<CCircuitCanvas>(mpWindow, OMalloc<CCircuitCanvasDraw>(&mpLogicimCircuit), this, mpLogicimCircuit->GetEditor());
-	mpCircuit->SetAlignment(CSH_Stretch, CSV_Stretch);
-
-	//The circuit's draw reads the circuit, which its edits, the simulation and the view change without telling the canvas.
-	mpCircuit->SetDrawnEveryPaint(true);
 	mpCanvasMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
 	mpCanvasMenu->GetItemClickEvent()->Add(this, &CLogicimWindowContent::CanvasMenuItemClicked);
-	mpCircuit->SetContextMenu(mpCanvasMenu);
 	mpSimulationTree = CreateTree();
 	mpSimulationTree->GetActivationEvent()->Add(this, &CLogicimWindowContent::SimulationNodeActivated);
 	pSimulation = CreateToolWindow(mpSimulationTree);
 
+	//The trees' menu is opened on a node, which their own action finds before the menu's opens.
+	mpTreeMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
+	mpTreeMenu->AddItem("Open in New Tab");
+	mpTreeMenu->GetItemClickEvent()->Add(this, &CLogicimWindowContent::TreeMenuItemClicked);
+	mpSimulationTree->AddInputAction(CIC_ContextMenu, this, &CLogicimWindowContent::SimulationTreeMenuAction);
+	mpSimulationTree->SetContextMenu(mpTreeMenu);
+	mpSubcircuitTree->AddInputAction(CIC_ContextMenu, this, &CLogicimWindowContent::SubcircuitTreeMenuAction);
+	mpSubcircuitTree->SetContextMenu(mpTreeMenu);
+
 	mpDock = OMalloc<CDockManager>(mpWindow, mpTheme, Ptr<CFont>());
 	mpDock->SetListener(this);
-	sPlace.InWell();
-	//The circuit's tab has no close cross: it's added hidden, made unclosable, then shown (its tab is made as it's shown).
-	mpCircuitPane = mpDock->AddPane(LOGICIM_CIRCUIT_PANE, "Main", Ptr<CImageCel>(), mpCircuit, DPK_Document, &sPlace, false);
-	mpCircuitPane->SetClosable(false);
-	mpDock->Show(mpCircuitPane);
+	CreateTab(NULL);
+	MakeTabActive(0);
 	sPlace.BesideWell(DS_Left, 200);
 	mpDock->AddPane(LOGICIM_SUBCIRCUITS_PANE, "Subcircuits", Ptr<CImageCel>(), pSubcircuits, DPK_Tool, &sPlace);
 	sPlace.BesideWell(DS_Bottom, 150);

@@ -30,7 +30,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 // before a project is set up.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::GetPlace(SLogicimPlace* psDest)
+void CLogicimWindowContent::GetPlace(SCircuitPlace* psDest)
 {
 	CCircuitEditor*		pcEditor;
 	CCircuitViewport*	pcViewport;
@@ -57,12 +57,12 @@ void CLogicimWindowContent::GetPlace(SLogicimPlace* psDest)
 // place is gone (its circuit, or an instance on its path).
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimWindowContent::ShowPlace(SLogicimPlace* psPlace)
+bool CLogicimWindowContent::ShowPlace(SCircuitPlace* psPlace)
 {
 	CCircuitEditor*							pcEditor;
 	CCircuitView*							pcTop;
 	CArrayTemplatePtr<CCircuitInstanceView>	apcPath;
-	SLogicimPlace							sHere;
+	SCircuitPlace							sHere;
 	bool									bPath;
 	bool									bMoved;
 
@@ -116,7 +116,7 @@ bool CLogicimWindowContent::ShowPlace(SLogicimPlace* psPlace)
 // A move left psLeft, for Back, unless Back or Forward made it.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::RecordLeft(SLogicimPlace* psLeft)
+void CLogicimWindowContent::RecordLeft(SCircuitPlace* psLeft)
 {
 	if (!mbNavigating && !psLeft->szCircuit.Empty())
 	{
@@ -134,8 +134,8 @@ void CLogicimWindowContent::RecordLeft(SLogicimPlace* psLeft)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimWindowContent::Go(bool bBack)
 {
-	SLogicimPlace	sHere;
-	SLogicimPlace	sPlace;
+	SCircuitPlace	sHere;
+	SCircuitPlace	sPlace;
 	bool			bShown;
 
 	sHere.Init();

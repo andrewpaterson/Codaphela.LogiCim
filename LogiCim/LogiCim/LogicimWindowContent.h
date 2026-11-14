@@ -163,7 +163,14 @@ protected:
 	CArrayChars				maszSimulationPaths;  //Each of its nodes' instance path, by the node's data.
 	CChars					mszSimulationShape;  //The instances it shows, to tell when they change.
 	bool					mbListingSubcircuits;  //While the tree is being remade, so its selection isn't an edit.
-	Ptr<CCircuitCanvas>		mpCircuit;
+	Ptr<CCircuitCanvas>		mpCircuit;  //The tab edited's canvas.
+	CArray<CDockPane>		maTabPanes;  //The tabs, the first the Circuit pane, which stays open.
+	CArray<CCircuitCanvas>	maTabCanvases;
+	size					muiActiveTab;
+	size					muiTabsMade;  //For the next tab's pane's ID.
+	Ptr<CMenuItem>			mpNewTabItem;  //The canvas menu's Open in New Tab, on a subcircuit instance.
+	Ptr<CMenuContainer>		mpTreeMenu;  //The trees' menu: Open in New Tab.
+	SCircuitPlace			msTreeMenuPlace;  //The node the trees' menu was opened on.
 	Ptr<CLabel>				mpSubcircuitInfo;
 	Ptr<CLabel>				mpSimulationInfo;
 	Ptr<CLabel>				mpViewPathInfo;
@@ -221,6 +228,14 @@ public:
 	void				ResetLayout(void);
 	Ptr<CDockManager>	GetDock(void);
 	bool				PaneClosing(CDockPane* pcPane) override;
+	void				PaneClosed(CDockPane* pcPane) override;
+	void				ActivePaneChanged(CDockPane* pcPane) override;
+	void				DocumentSelected(CDockPane* pcPane) override;
+	void				OpenInNewTab(SCircuitPlace* psPlace);
+	void				ActivateCanvas(CCircuitCanvas* pcCanvas);
+	size				NumTabs(void);
+	size				GetActiveTab(void);
+	Ptr<CDockPane>		GetTabPane(size uiTab);
 	bool				ImportChosenKicadSchematic(const char* szFilename);
 	void				ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps);
 	bool				NewProject(void);
@@ -242,8 +257,8 @@ public:
 	void				ReadSettings(void);
 	bool				OpenRecentProject(size uiIndex);
 	void				ClearRecentProjects(void);
-	void				GetPlace(SLogicimPlace* psDest);
-	bool				ShowPlace(SLogicimPlace* psPlace);
+	void				GetPlace(SCircuitPlace* psDest);
+	bool				ShowPlace(SCircuitPlace* psPlace);
 	bool				GoBack(void);
 	bool				GoForward(void);
 	bool				CanGoBack(void);
@@ -285,7 +300,22 @@ protected:
 	void					ShowSubcircuits(void);
 	void					ShowSimulationTree(void);
 	bool					Go(bool bBack);
-	void					RecordLeft(SLogicimPlace* psLeft);
+	Ptr<CDockPane>			CreateTab(SCircuitPlace* psPlace);
+	size					FindTab(CDockPane* pcPane);
+	void					SwitchToTab(size uiTab);
+	void					MakeTabActive(size uiTab);
+	void					ShowTabPlace(size uiTab);
+	void					NewTab(void);
+	void					StoreTabs(void);
+	void					RestoreTabs(void);
+	void					CloseExtraTabs(void);
+	void					UpdateTabTitles(void);
+	void					AppendTabTitle(SCircuitPlace* psPlace, CChars* pszDest);
+	void					SimulationTreeMenuAction(SComponentInputEvent* psEvent);
+	void					SubcircuitTreeMenuAction(SComponentInputEvent* psEvent);
+	void					TreeMenuItemClicked(CMenuItem* pcItem);
+	void					OpenInstanceInNewTab(CComponentView* pcInstance);
+	void					RecordLeft(SCircuitPlace* psLeft);
 	void					NavigateBack(void);
 	void					NavigateForward(void);
 	Ptr<CTreeContainer>		CreateTree(void);
@@ -328,6 +358,7 @@ protected:
 CCircuitView*	GetInstanceCircuit(CComponentView* pcComponent);
 bool			CircuitUsesDirectly(CCircuitView* pcCircuit, CCircuitView* pcUsed);
 bool			IsCircuitUsed(CCircuitViews* pcCircuits, CCircuitView* pcCircuit);
+int32			GetTreeNodeAt(Ptr<CTreeContainer> pTree, SComponentInputEvent* psEvent);
 Ptr<CCommand>	FindLogicimPlaceCommand(CCommandSet* pcCommands, const char* szName, bool bSubcircuit);
 void			ReadPlaceKeys(const char* szText, CCommandKeyList* pcKeys);
 void			WritePlaceKeys(CCommandKeyList* pcKeys, CChars* pszText);
