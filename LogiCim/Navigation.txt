@@ -140,8 +140,16 @@ by hand on the isolated X server.  What was built differs from the plan in these
   take no time to notice, so it needs no lazy nodes.
 - The status bar's zoom follows a canvas fitted as it's first drawn (a new tab's), at the next tick.
 
-Open
-----
+Places that change (2026-11-14)
+-------------------------------
 
-- A tab whose place is gone after an edit or undo shows where the editor is when it's next made active; its title
-  says the place's circuit until then.
+- A path names each instance as well as its index ("1:U2/1:U3", InstancePath.h), and finds it by name, so a place
+  still finds its instance after other components in its circuit come and go; by index between two of a name, or in
+  a path written before names ("1/1").
+- The editor tells a listener (CCircuitEditorListener::ProjectChanged) after each change it saves for undo and after
+  each undo or redo; LogiCim's content then updates its panes, tabs and status.  So the trees follow edits too.
+- Each tab that isn't edited then checks its place: its path rewritten as it is now; trimmed to as far down it as is
+  left (fitted when it's next edited) if an instance on it went; closed if its circuit went, the first tab instead
+  going to the top of the circuit simulated.  Back and Forward still skip places that are gone.
+
+Nothing is left open.

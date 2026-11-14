@@ -333,6 +333,65 @@ void CLogicimWindowContent::MakeTabActive(size uiTab)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// After an edit, an undo or a load, each tab that isn't edited still
+// shows a place that's there: its path as it is now (an instance found
+// by name where it's moved to), or as far down it as is left, fitted
+// when it's next edited.  A tab whose circuit has gone closes; the first,
+// which can't, goes to the top of the circuit simulated.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::FollowTabPlaces(void)
+{
+	CCircuitEditor*	pcEditor;
+	CCircuitView*	pcTop;
+	SCircuitPlace*	psPlace;
+	SCircuitPlace	sTop;
+	CChars			szResolved;
+	size			i;
+	size			uiTab;
+
+	pcEditor = mpLogicimCircuit->GetEditor();
+	if (mbFollowingTabs || (pcEditor->GetCircuits() == NULL) || (pcEditor->GetTopCircuit() == NULL))
+	{
+		return;
+	}
+	mbFollowingTabs = true;
+	for (i = maTabCanvases.NumElements(); i > 0; i--)
+	{
+		uiTab = i - 1;
+		psPlace = maTabCanvases.Get(uiTab)->GetCircuitDraw()->GetOwnPlace();
+		if ((uiTab == muiActiveTab) || (psPlace == NULL))
+		{
+			continue;
+		}
+		pcTop = pcEditor->GetCircuits()->Get(psPlace->szCircuit.Text());
+		if ((pcTop == NULL) && (uiTab != 0))
+		{
+			mpDock->Close(maTabPanes.Get(uiTab));
+		}
+		else if (pcTop == NULL)
+		{
+			sTop.Init(pcEditor->GetTopCircuit()->GetTypeName(), NULL);
+			maTabCanvases.Get(uiTab)->GetCircuitDraw()->SetOwnPlace(&sTop);
+			sTop.Kill();
+		}
+		else
+		{
+			szResolved.Init();
+			if (!ResolveInstancePath(pcTop, psPlace->szPath.Text(), &szResolved))
+			{
+				psPlace->fZoom = 0;
+			}
+			psPlace->szPath.Set(szResolved.Text());
+			szResolved.Kill();
+		}
+	}
+	mbFollowingTabs = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Each tab's title: the circuit it shows, with the instance it's entered
 // ("Gate in U3").
 //
@@ -511,4 +570,23 @@ void CLogicimWindowContent::ActivateCanvas(CCircuitCanvas* pcCanvas)
 size CLogicimWindowContent::NumTabs(void) { return maTabPanes.NumElements(); }
 size CLogicimWindowContent::GetActiveTab(void) { return muiActiveTab; }
 Ptr<CDockPane> CLogicimWindowContent::GetTabPane(size uiTab) { return maTabPanes.Get(uiTab); }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Where tab uiTab is: the editor's place for the tab edited, its own for
+// the others.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::GetTabPlace(size uiTab, SCircuitPlace* psDest)
+{
+	if (uiTab == muiActiveTab)
+	{
+		GetPlace(psDest);
+	}
+	else if (maTabCanvases.Get(uiTab)->GetCircuitDraw()->GetOwnPlace() != NULL)
+	{
+		psDest->Copy(maTabCanvases.Get(uiTab)->GetCircuitDraw()->GetOwnPlace());
+	}
+}
 

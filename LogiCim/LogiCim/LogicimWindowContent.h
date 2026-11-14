@@ -131,7 +131,7 @@ public:
 //The dialogs (a component's properties, a new subcircuit, a new simulation) are native windows shown modally.
 //
 //The content is an object; keep it under the root, see Setup.  It holds the window, its widgets and LogiCim's circuit.
-class CLogicimWindowContent : public CObject, public CDockManagerListener
+class CLogicimWindowContent : public CObject, public CDockManagerListener, public CCircuitEditorListener
 {
 CONSTRUCTABLE(CLogicimWindowContent);
 DESTRUCTABLE(CLogicimWindowContent);
@@ -169,6 +169,8 @@ protected:
 	CArray<CCircuitCanvas>	maTabCanvases;
 	size					muiActiveTab;
 	size					muiTabsMade;  //For the next tab's pane's ID.
+	bool					mbFollowingTabs;  //While FollowTabPlaces closes a tab, which updates the info again.
+	bool					mbUpdatingInfo;  //While UpdateInfo runs, as a change it makes tells it again.
 	Ptr<CMenuItem>			mpNewTabItem;  //The canvas menu's Open in New Tab, on a subcircuit instance.
 	Ptr<CMenuContainer>		mpTreeMenu;  //The trees' menu: Open in New Tab.
 	SCircuitPlace			msTreeMenuPlace;  //The node the trees' menu was opened on.
@@ -235,10 +237,12 @@ public:
 	void				ActivePaneChanged(CDockPane* pcPane) override;
 	void				DocumentSelected(CDockPane* pcPane) override;
 	void				OpenInNewTab(SCircuitPlace* psPlace);
+	void				ProjectChanged(void) override;
 	void				ActivateCanvas(CCircuitCanvas* pcCanvas);
 	size				NumTabs(void);
 	size				GetActiveTab(void);
 	Ptr<CDockPane>		GetTabPane(size uiTab);
+	void				GetTabPlace(size uiTab, SCircuitPlace* psDest);
 	bool				ImportChosenKicadSchematic(const char* szFilename);
 	void				ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps);
 	bool				NewProject(void);
@@ -316,6 +320,7 @@ protected:
 	void					RestoreTabs(void);
 	void					CloseExtraTabs(void);
 	void					UpdateTabTitles(void);
+	void					FollowTabPlaces(void);
 	void					AppendTabTitle(SCircuitPlace* psPlace, CChars* pszDest);
 	void					SimulationTreeMenuAction(SComponentInputEvent* psEvent);
 	void					SubcircuitTreeMenuAction(SComponentInputEvent* psEvent);

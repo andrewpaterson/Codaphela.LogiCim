@@ -252,8 +252,8 @@ bool CLogicimApp::Check(const char* szSteps)
 // selected; simactivate:<path> double clicks the node of that instance.
 // subcircuits: the Subcircuits pane's tree, as simtree; subselect:<n>
 // clicks its nth node (from 0, open or not).  history: the places Back
-// and Forward go to, the next first.  tabs: each tab's title, the one
-// edited marked; newtab:<circuit>:<path> opens a place in a new tab;
+// and Forward go to, the next first.  tabs: each tab's title and place,
+// the one edited marked; newtab:<circuit>:<path> opens a place in a new tab;
 // activatetab:<n> and closetab:<n> do to tab n (from 0) what clicking it
 // and its close cross do.  goto:<tab>:<pattern> prints what Go To's tab
 // (0 Components, 1 Nets, 2 Subcircuits) finds; gotopick:<tab>:<pattern>:
@@ -582,12 +582,20 @@ void CLogicimApp::GoToStep(const char* szStep, bool bPick)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimApp::PrintTabs(void)
 {
-	size	i;
+	size			i;
+	SCircuitPlace	sPlace;
+	CChars			szPlace;
 
 	printf("Tabs: %d\n", (int)mpContent->NumTabs());
 	for (i = 0; i < mpContent->NumTabs(); i++)
 	{
-		printf("Tab %d: %s%s\n", (int)i, mpContent->GetTabPane(i)->GetTitle(), (i == mpContent->GetActiveTab()) ? " *" : "");
+		sPlace.Init();
+		szPlace.Init();
+		mpContent->GetTabPlace(i, &sPlace);
+		sPlace.Print(&szPlace);
+		printf("Tab %d: %s [%s]%s\n", (int)i, mpContent->GetTabPane(i)->GetTitle(), szPlace.Text(), (i == mpContent->GetActiveTab()) ? " *" : "");
+		szPlace.Kill();
+		sPlace.Kill();
 	}
 }
 

@@ -92,6 +92,20 @@ CHECKS = [
 		 r'^Place: Main 1:U2/1:U3 \(Gate\)$', r'^History: back \[Main\] forward \[\]$', r'^Go to 2 \[spare\] 0: gone to$', r'^Place: Spare \(Spare\)$',
 		 r'^Go to 0 \[74lvc00\]: 1$', r'^Go to result: IC8 74LVC00 \[Spare\]$', r'^Go to 0 \[zzz\] 0: none$', r'^Command: View\.GoTo \[Control\+N\] bound$'],
 		[r'Unknown check step', r'ERROR']),
+	#A tab that isn't edited follows the project: an instance before its own going moves its path's index (it's found
+	#by name), and undo moves it back; the instance it's inside going trims it to what's left; its circuit going
+	#(undone back past the load) closes it.
+	('tab-places', ','.join(['load:../Checks/Nested.xml', 'newtab:Main:1/1', 'newtab:Main:1', 'activatetab:0', 'gotopick:0:u1 board:0',
+							 'command:Edit.Delete', 'tabs', 'command:Edit.Undo', 'tabs', 'activatetab:2', 'gotopick:0:u3 gate:1', 'command:Edit.Delete',
+							 'activatetab:0', 'tabs']),
+		[r'^Command Edit\.Delete: run$', r'^Tab 1: Gate in U3 \[Main 0:U2/1:U3\]$', r'^Tab 2: Board in U2 \[Main 0:U2\]$',
+		 r'^Command Edit\.Undo: run$', r'^Tab 1: Gate in U3 \[Main 1:U2/1:U3\]$', r'^Tab 2: Board in U2 \[Main 1:U2\]$',
+		 r'^Command Edit\.Delete: run$', r'^Tab 1: Board in U2 \[Main 1:U2\]$', r'^Tab 2: Board in U2 \[Main 1:U2\]$'],
+		[r'Unknown check step', r'ERROR']),
+	('tab-circuit-gone', ','.join(['new', 'load:../Checks/Nested.xml', 'newtab:Spare:', 'newtab:Main:1', 'activatetab:0', 'tabs',
+								   'command:Edit.Undo', 'command:Edit.Undo', 'command:Edit.Undo', 'place', 'tabs']),
+		[r'^Tabs: 3$', r'^Tab 1: Spare \[Spare\]$', r'^Place: Main \(Main\)$', r'^Tabs: 2$', r'^Tab 0: Main \[Main\] \*$', r'^Tab 1: Main \[Main\]$'],
+		[r'Unknown check step', r'ERROR']),
 	#Over the circuit bare and shifted letters are its keys (Logicim's KeyInputsFactory's), and the Global ones still work.
 	('circuit-keys', 'commands,keys:Circuit:R,keys:Circuit:Shift+R,keys:Circuit:Shift+A,keys:Circuit:P,keys:Circuit:M,keys:Circuit:Control+Alt+S,keys:Global:R,command:Place.AndGate',
 		[r'^Command: Edit\.RotateLeft \[R \(Circuit\)\] bound$',
@@ -457,10 +471,10 @@ def CheckTabs(szExecutable):
 														'activatetab:1', 'place', 'showplace:Main:0', 'tabs', 'history', 'modified', 'save:' + szSaved,
 														'closetab:0', 'closetab:1', 'tabs', 'place', 'load:' + szSaved, 'tabs', 'place', 'activatetab:0', 'place',
 														'new', 'tabs']),
-			[r'^Tabs: 1$', r'^Tab 0: Main \*$', r'^New tab Main:1/1$', r'^Tabs: 2$', r'^Tab 0: Main$', r'^Tab 1: Gate in U3 \*$', r'^Place: Main 1:U2/1:U3 \(Gate\)$',
-			 r'^Tab 0: Main \*$', r'^Tab 1: Gate in U3$', r'^Place: Main \(Main\)$', r'^Place: Main 1:U2/1:U3 \(Gate\)$', r'^Tab 1: Board in U1 \*$',
+			[r'^Tabs: 1$', r'^Tab 0: Main \[[^]]*\] \*$', r'^New tab Main:1/1$', r'^Tabs: 2$', r'^Tab 0: Main \[[^]]*\]$', r'^Tab 1: Gate in U3 \[[^]]*\] \*$', r'^Place: Main 1:U2/1:U3 \(Gate\)$',
+			 r'^Tab 0: Main \[[^]]*\] \*$', r'^Tab 1: Gate in U3 \[[^]]*\]$', r'^Place: Main \(Main\)$', r'^Place: Main 1:U2/1:U3 \(Gate\)$', r'^Tab 1: Board in U1 \[[^]]*\] \*$',
 			 r'^History: back \[Main 1:U2/1:U3, Main, Main 1:U2/1:U3, Main\] forward \[\]$', r'^Modified: no$', r'^Close tab 0: kept$', r'^Close tab 1: closed$',
-			 r'^Tabs: 1$', r'^Place: Main \(Main\)$', r'^Tabs: 2$', r'^Tab 1: Board in U1 \*$', r'^Place: Main 0:U1 \(Board\)$', r'^Place: Main \(Main\)$',
+			 r'^Tabs: 1$', r'^Place: Main \(Main\)$', r'^Tabs: 2$', r'^Tab 1: Board in U1 \[[^]]*\] \*$', r'^Place: Main 0:U1 \(Board\)$', r'^Place: Main \(Main\)$',
 			 r'^Tabs: 1$'],
 			[r'Unknown check step', r'ERROR'])
 		if bPassed and ('activeTab="1"' not in open(szSaved).read()):

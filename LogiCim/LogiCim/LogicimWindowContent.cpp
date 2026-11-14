@@ -158,6 +158,8 @@ void CLogicimWindowContent::Init(void)
 	maTabCanvases.Init();
 	muiActiveTab = 0;
 	muiTabsMade = 1;
+	mbFollowingTabs = false;
+	mbUpdatingInfo = false;
 	msTreeMenuPlace.Init();
 	mcSettings.Init();
 	mszStartupImport.Init();
@@ -213,6 +215,8 @@ void CLogicimWindowContent::Class(void)
 	M_Embedded(maTabCanvases);
 	U_Size(muiActiveTab);
 	U_Size(muiTabsMade);
+	U_Bool(mbFollowingTabs);
+	U_Bool(mbUpdatingInfo);
 	M_Pointer(mpNewTabItem);
 	M_Pointer(mpTreeMenu);
 	U_Unknown(CLogicimGoTo, mcGoTo);
@@ -286,6 +290,7 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	{
 		return false;
 	}
+	mpLogicimCircuit->GetEditor()->SetListener(this);
 
 	//The font is white and coloured as it is drawn.
 	pWhite = GenerateFont(szFontFilename, "Inter 13px", 13.0f, cFormat.meOrder);
@@ -389,12 +394,28 @@ void CLogicimWindowContent::Free(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The editor's project changed (an edit, a move, an undo): the panes, tabs
+// and status follow it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ProjectChanged(void)
+{
+	if (!mbUpdatingInfo && mpSubcircuitInfo.IsNotNull())
+	{
+		UpdateInfo();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::UpdateInfo(void)
 {
 	CChars	sz;
 
+	mbUpdatingInfo = true;
 	ListSubcircuits();
 	ListSimulation();
 	FollowSubcircuitCommands();
@@ -403,6 +424,7 @@ void CLogicimWindowContent::UpdateInfo(void)
 	sz.Append(GetEditedCircuitName());
 	mpSubcircuitInfo->SetText(sz.Text());
 	sz.Kill();
+	FollowTabPlaces();
 	UpdateTabTitles();
 
 	sz.Init("Simulation: ");
@@ -428,6 +450,7 @@ void CLogicimWindowContent::UpdateInfo(void)
 	}
 	mpViewPathInfo->SetText(sz.Text());
 	sz.Kill();
+	mbUpdatingInfo = false;
 }
 
 
