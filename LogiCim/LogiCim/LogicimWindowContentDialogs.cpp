@@ -87,9 +87,19 @@ void CLogicimWindowContent::ShowDialog(ELogicimDialog eDialog)
 	{
 		ShowComponentChooser();
 	}
+	else if (eDialog == LDG_NewProject)
+	{
+		if (AskToSaveProject())
+		{
+			NewProject();
+		}
+	}
 	else if (eDialog == LDG_LoadProject)
 	{
-		ShowProjectDialog(false);
+		if (AskToSaveProject())
+		{
+			ShowProjectDialog(false);
+		}
 	}
 	else if (eDialog == LDG_SaveProject)
 	{
@@ -97,7 +107,10 @@ void CLogicimWindowContent::ShowDialog(ELogicimDialog eDialog)
 	}
 	else if (eDialog == LDG_ImportKicadSchematic)
 	{
-		ShowImportKicadDialog();
+		if (AskToSaveProject())
+		{
+			ShowImportKicadDialog();
+		}
 	}
 }
 
@@ -431,24 +444,93 @@ void CLogicimWindowContent::ShowComponentChooser(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // Asks for the project file to load or save with Logicim's file chooser,
-// starting on GetProjectDialogStart's.
+// starting on GetProjectDialogStart's.  False if it was cancelled, or
+// the file couldn't be loaded or saved.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::ShowProjectDialog(bool bSave)
+bool CLogicimWindowContent::ShowProjectDialog(bool bSave)
 {
+	bool	bResult;
+
+	bResult = false;
 	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, bSave ? "Save Project" : "Load Project", bSave, GetProjectDialogStart(bSave), gasProjectFileTypes, sizeof(gasProjectFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
 	if (mpFileChooser->Show())
 	{
 		if (bSave)
 		{
-			SaveProject(mpFileChooser->GetChosen());
+			bResult = SaveProject(mpFileChooser->GetChosen());
 		}
 		else
 		{
-			LoadProject(mpFileChooser->GetChosen());
+			bResult = LoadProject(mpFileChooser->GetChosen());
 		}
 	}
 	mpFileChooser = NULL;
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Before the project is closed (New, Load or Import, or a recent project
+// loaded): if it has changes, asks whether to save them.  Save saves it
+// (to its file, or asks for one if it hasn't one), Don't Save drops them;
+// Cancel, or a save that didn't happen, leaves the project open.  True if
+// the project can be closed.  Show it from a tick, not from input.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::AskToSaveProject(void)
+{
+	CFileUtil	cFileUtil;
+	CChars		szMessage;
+	CChars		szName;
+	CChars		szClicked;
+	char*		szFilename;
+	bool		bSave;
+
+	if (!mpLogicimCircuit->IsModified())
+	{
+		return true;
+	}
+
+	szFilename = mpLogicimCircuit->GetFilename();
+	szMessage.Init("Save changes to ");
+	if (StrEmpty(szFilename))
+	{
+		szMessage.Append("the new project?");
+	}
+	else
+	{
+		szName.Init();
+		cFileUtil.GetFileName(&szName, szFilename);
+		szMessage.Append(szName);
+		szMessage.Append('?');
+		szName.Kill();
+	}
+	mpMessageDialog = OMalloc<CMessageDialog>(mpWindow, &msDialogLook, "Save Changes", szMessage.Text());
+	szMessage.Kill();
+	mpMessageDialog->GetDialog()->SetOKCaption("Save");
+	mpMessageDialog->GetDialog()->AddExtraButton("Don't Save");
+	bSave = mpMessageDialog->Show();
+	szClicked.Init(mpMessageDialog->GetClicked());
+	mpMessageDialog = NULL;
+
+	if (bSave)
+	{
+		szClicked.Kill();
+		szFilename = mpLogicimCircuit->GetFilename();
+		if (StrEmpty(szFilename))
+		{
+			return ShowProjectDialog(true);
+		}
+		szName.Init(szFilename);
+		bSave = SaveProject(szName.Text());
+		szName.Kill();
+		return bSave;
+	}
+	bSave = szClicked.Equals("Don't Save");
+	szClicked.Kill();
+	return bSave;
 }
 
 
@@ -615,7 +697,10 @@ void CLogicimWindowContent::OpenQueuedRecentProject(void)
 
 	uiIndex = muiQueuedRecent;
 	muiQueuedRecent = MAX_SIZE;
-	OpenRecentProject(uiIndex);
+	if (AskToSaveProject())
+	{
+		OpenRecentProject(uiIndex);
+	}
 }
 
 

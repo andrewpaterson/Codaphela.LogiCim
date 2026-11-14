@@ -235,7 +235,8 @@ protected:
 	void					ShowNewSimulationDialog(void);
 	void					ShowSelectZoomDialog(void);
 	void					ShowZoom(void);
-	void					ShowProjectDialog(bool bSave);
+	bool					ShowProjectDialog(bool bSave);
+	bool					AskToSaveProject(void);
 	void					ShowImportKicadDialog(void);
 	void					ShowComponentChooser(void);
 };
