@@ -225,6 +225,11 @@ def CheckProjectChanges(szExecutable):
 			 r'saved$', r'^Modified: no$', r'^Command Edit\.Undo: run$', r'^Modified: yes$', r'^Command Edit\.Redo: run$', r'^Modified: no$',
 			 r'^New project: made$', r'^Modified: no$'],
 			[r'Unknown check step', r'not run'], asEnv)
+		bPassed = Check(szExecutable, 'project-close', ','.join(['close', 'load:' + szA, 'close', 'command:Edit.Delete', 'close',
+			'command:Edit.Undo', 'close']),
+			[r'^Close: closes$', r'loaded$', r'^Close: closes$', r'^Command Edit\.Delete: run$', r'^Close: asks to save$',
+			 r'^Command Edit\.Undo: run$', r'^Close: closes$'],
+			[r'Unknown check step', r'not run'], asEnv) and bPassed
 		bPassed = Check(szExecutable, 'project-undo-file', ','.join(['load:' + szA, 'save:' + szSaved, 'load:' + szB, 'files',
 			'command:Edit.Undo', 'files', 'modified', 'command:Edit.Redo', 'files', 'new', 'files', 'command:Edit.Undo', 'files', 'command:Edit.Redo', 'files']),
 			[r'^Project file: \[%s\]$' % E(szB),

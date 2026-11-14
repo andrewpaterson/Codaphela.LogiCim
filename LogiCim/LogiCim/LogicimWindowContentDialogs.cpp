@@ -691,6 +691,34 @@ void CLogicimWindowContent::RecentItemClicked(CMenuItem* pcItem)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//
+// File, Exit and the window's close button: true if LogiCim can close
+// now.  With changes it asks to save them at the next tick (a dialog
+// can't be shown from the input that exits), and closes itself then
+// unless asked not to.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::RequestExit(void)
+{
+	if (!mpLogicimCircuit->IsModified())
+	{
+		return true;
+	}
+	mpWindow->Post(this, &CLogicimWindowContent::AskToSaveAndExit);
+	return false;
+}
+
+
+void CLogicimWindowContent::AskToSaveAndExit(void)
+{
+	if (AskToSaveProject())
+	{
+		mpWindow->Stop();
+	}
+}
+
+
 void CLogicimWindowContent::OpenQueuedRecentProject(void)
 {
 	size	uiIndex;

@@ -240,6 +240,7 @@ bool CLogicimWindowContent::Setup(Ptr<CWindow> pWindow, SLogicimWindowData* psDa
 	AddCommands();
 	pWindow->SetCommands(mpCommands);
 	pWindow->SetToolTips(OMalloc<CToolTips>(pWindow, mpTheme));
+	pWindow->SetCloseApprover(this, &CLogicimWindowContent::RequestExit);  //The close button asks to save the changes.
 
 	pGrid = OMalloc<CGridContainer>(pWindow);
 	pWindow->SetContainer(pGrid);
@@ -273,6 +274,7 @@ void CLogicimWindowContent::Free(void)
 	if (mpWindow.IsNotNull())
 	{
 		mpWindow->CancelPosted(this);
+		mpWindow->ClearCloseApprover();
 		mpWindow->SetCommands(NULL);
 		mpWindow->SetToolTips(NULL);
 		if (mpPasteHistory.IsNotNull())
@@ -606,7 +608,10 @@ void CLogicimWindowContent::DoAction(ELogicimAction eAction)
 		ZoomToFit(true);
 		break;
 	case LA_Exit:
-		mpWindow->Stop();
+		if (RequestExit())
+		{
+			mpWindow->Stop();
+		}
 		break;
 	default:
 		gcLogger.Info2(gasLogicimActions[eAction].szName, " isn't done yet.", NULL);

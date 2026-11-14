@@ -245,7 +245,8 @@ bool CLogicimApp::Check(const char* szSteps)
 // chosen.  files: the project's file and where each of those opens.
 // new does what New Project does (without asking to save the changes).
 // modified: whether the project has changes, which closing it asks to
-// save.  recent: File, Recent Projects' items.  openrecent:<n> loads the nth (1
+// save.  close: whether the close button (and File, Exit) closes
+// LogiCim at once or asks to save first.  recent: File, Recent Projects' items.  openrecent:<n> loads the nth (1
 // the latest) as its item does, and clearrecent does what Clear Recent
 // Files does.
 //
@@ -281,6 +282,12 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (StringCompare(szStep, "modified") == 0)
 	{
 		printf("Modified: %s\n", mpContent->GetLogicimCircuit()->IsModified() ? "yes" : "no");
+	}
+	else if (StringCompare(szStep, "close") == 0)
+	{
+		//The question is posted for the next tick; a scripted run can't answer it, so it isn't asked.
+		printf("Close: %s\n", mpWindow->ApproveClose() ? "closes" : "asks to save");
+		mpWindow->CancelPosted(&mpContent);
 	}
 	else if (StringCompare(szStep, "new") == 0)
 	{
