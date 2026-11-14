@@ -197,6 +197,7 @@ Ptr<CComponent> CLogicimComponentChooser::CreateBody(void)
 	mpList = OMalloc<CListContainer>(pWindow, psLook->pcTheme);
 	mpList->SetHighlightDraws(OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetColour(TC_ListSelected), 4, &sInsets), OMalloc<CRoundedBoxCanvasDraw>(psLook->pcTheme->GetColour(TC_ListHover), 4, &sInsets));
 	mpList->SetAlignment(CSH_Stretch, CSV_Top);
+	mpList->SetDoubleClickActivates(true);  //A click selects; a double click (or enter) opens a library or chooses a component.
 	mpList->GetSelectionEvent()->Add(this, &CLogicimComponentChooser::SelectionChanged);
 	mpList->GetActivationEvent()->Add(this, &CLogicimComponentChooser::ItemActivated);
 	pScrollPane = OMalloc<CScrollPane>(pWindow, psLook->pcTheme);
