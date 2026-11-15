@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/Logger.h"
+#include "BaseLib/PointerFunctions.h"
 #include "BaseLib/StringHelper.h"
 #include "MicroprocessorLib/CircuitSimulation.h"
 #include "MicroprocessorLib/SubcircuitInstance.h"
@@ -462,6 +463,7 @@ void CSubcircuitInstanceView::Init(int32 x, int32 y, ERotation eRotation, const 
 	mpcInstanceCircuitView = NULL;
 	msLayout = *psLayout;
 	masPins.Init();
+	mszPinsKey.Init();
 }
 
 
@@ -471,6 +473,7 @@ void CSubcircuitInstanceView::Init(int32 x, int32 y, ERotation eRotation, const 
 //////////////////////////////////////////////////////////////////////////
 void CSubcircuitInstanceView::Kill(void)
 {
+	mszPinsKey.Kill();
 	masPins.Kill();
 	mpcInstanceCircuitView = NULL;
 	mszComment.Kill();
@@ -739,6 +742,188 @@ void CSubcircuitInstanceView::LayOut(void)
 		mcShapes.AddText(0, msLayout.fNameY, mszName.Text(), CF_SansSerif, SUBCIRCUIT_TEXT_FONT_SIZE, TA_Centre);
 	}
 	CalculateBounds();
+
+	mszPinsKey.Kill();
+	mszPinsKey.Init();
+	GetPinsKey(&mszPinsKey);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Appends what the layout is made from to psz: the subcircuit's fixed pin
+// positions and, for each of its pins in order, the pin itself and what
+// of it the layout reads.  Read from the subcircuit as it is now, never
+// from masPins, whose pins may have been freed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CSubcircuitInstanceView::GetPinsKey(CChars* psz)
+{
+	CArrayTemplatePtr<CPinView>	apcPins;
+	size						i;
+	CPinView*					pcPin;
+
+	psz->Append(mpcInstanceCircuitView->GetPinPositions(PA_Left));
+	psz->Append(',');
+	psz->Append(mpcInstanceCircuitView->GetPinPositions(PA_Right));
+	psz->Append(',');
+	psz->Append(mpcInstanceCircuitView->GetPinPositions(PA_Top));
+	psz->Append(',');
+	psz->Append(mpcInstanceCircuitView->GetPinPositions(PA_Bottom));
+
+	apcPins.Init();
+	GetCircuitPinViews(mpcInstanceCircuitView, &apcPins);
+	for (i = 0; i < apcPins.NumElements(); i++)
+	{
+		pcPin = apcPins.GetPtr(i);
+		psz->Append(';');
+		psz->Append((size)pcPin);
+		psz->Append(',');
+		psz->Append(pcPin->GetName());
+		psz->Append(',');
+		psz->Append(pcPin->GetBitWidth());
+		psz->Append(',');
+		psz->Append(pcPin->GetWeight());
+		psz->Append(',');
+		psz->Append((int)pcPin->GetAlignment());
+		psz->Append(',');
+		psz->Append((int)pcPin->GetAnchour());
+		psz->Append(',');
+		psz->Append(pcPin->IsInverting() ? '1' : '0');
+		psz->Append(pcPin->IsClockNotch() ? '1' : '0');
+	}
+	apcPins.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the subcircuit's pins have changed since the instance was laid
+// out: one added, taken out or changed.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CSubcircuitInstanceView::PinsChanged(void)
+{
+	CChars	sz;
+	bool	bChanged;
+
+	if (mpcInstanceCircuitView == NULL)
+	{
+		return false;
+	}
+	sz.Init();
+	GetPinsKey(&sz);
+	bChanged = !sz.Equals(mszPinsKey);
+	sz.Kill();
+	return bChanged;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The subcircuit's pin named szPinName, NULL if it has none.
+//
+//////////////////////////////////////////////////////////////////////////
+static CPinView* FindPinView(CArrayTemplatePtr<CPinView>* papcPins, const char* szPinName)
+{
+	size		i;
+	CPinView*	pcPin;
+
+	for (i = 0; i < papcPins->NumElements(); i++)
+	{
+		pcPin = papcPins->GetPtr(i);
+		if (StringCompare(pcPin->GetName(), szPinName) == 0)
+		{
+			return pcPin;
+		}
+	}
+	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Follows the subcircuit's pins after they've changed, as Logicim's
+// instances do, while the simulations run.  In each simulation the
+// instance's ports for a pin taken out, renamed or made wider or narrower
+// are disconnected and freed and those for a new pin added; ports for
+// pins that didn't change stay on their traces.  The instance is then
+// measured and laid out again and its new port views given their ports.
+// The editor rewires afterwards.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CSubcircuitInstanceView::UpdatePins(CCircuitFonts* pcFonts)
+{
+	CArrayTemplatePtr<CPinView>	apcPins;
+	size						i;
+	size						j;
+	SViewPathComponent*			psComponent;
+	CSubcircuitInstance*		pcInstance;
+	CTimeline*					pcTimeline;
+	char*						szPinName;
+	CPinView*					pcPin;
+	CPortView*					pcPortView;
+	bool						bResult;
+
+	if (mpcInstanceCircuitView == NULL)
+	{
+		return false;
+	}
+
+	apcPins.Init();
+	GetCircuitPinViews(mpcInstanceCircuitView, &apcPins);
+	bResult = true;
+	for (i = 0; i < masComponents.NumElements(); i++)
+	{
+		psComponent = masComponents.Get(i);
+		pcInstance = (CSubcircuitInstance*)psComponent->pcComponent;
+		pcTimeline = psComponent->pcCircuitSimulation->GetTimeline();
+		for (j = pcInstance->NumNamedPins(); j > 0; j--)
+		{
+			szPinName = pcInstance->GetPinName(j - 1);
+			pcPin = FindPinView(&apcPins, szPinName);
+			if ((pcPin == NULL) || (pcInstance->GetTracePorts(szPinName)->NumElements() != (size)pcPin->GetBitWidth()))
+			{
+				pcInstance->RemoveTracePorts(szPinName, pcTimeline);
+			}
+		}
+		for (j = 0; j < apcPins.NumElements(); j++)
+		{
+			pcPin = apcPins.GetPtr(j);
+			if (!pcInstance->HasTracePorts(pcPin->GetName()))
+			{
+				if (pcInstance->AddTracePorts(pcPin->GetName(), (size)pcPin->GetBitWidth()) == NULL)
+				{
+					bResult = false;
+				}
+			}
+		}
+	}
+	apcPins.Kill();
+
+	for (i = 0; i < mapcPortViews.NumElements(); i++)
+	{
+		pcPortView = mapcPortViews.GetPtr(i);
+		SafeKill(pcPortView);
+	}
+	mapcPortViews.Kill();
+	mapcPortViews.Init();
+	mcShapes.Clear();
+	masPins.Kill();
+	masPins.Init();
+
+	MeasureLayout(pcFonts, mpcInstanceCircuitView, mszName.Text(), mszComment.Text(), msLayout.iPinSpacing, &msLayout);
+	LayOut();
+
+	for (i = 0; i < masComponents.NumElements(); i++)
+	{
+		psComponent = masComponents.Get(i);
+		for (j = 0; j < mapcPortViews.NumElements(); j++)
+		{
+			bResult &= mapcPortViews.GetPtr(j)->Connect(psComponent->pcViewPath, psComponent->pcCircuitSimulation, psComponent->pcComponent);
+		}
+	}
+	return bResult;
 }
 
 

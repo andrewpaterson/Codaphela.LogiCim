@@ -334,6 +334,7 @@ protected:
 	void				GetEditedPaths(CArrayViewPathPtr* papcViewPaths);
 	void				CreateComponents(CArrayComponentViewPtr* papcComponents);
 	bool				Rewire(CArrayComponentViewPtr* papcDetachedComponents = NULL, CArrayTraceViewPtr* papcDetachedTraces = NULL);
+	void				UpdateInstancePins(void);
 	void				KillProject(bool bFreeing = false);
 	bool				LoadUndo(size uiIndex);
 	void				SaveTabsXML(CXMLWriter* pcWriter);

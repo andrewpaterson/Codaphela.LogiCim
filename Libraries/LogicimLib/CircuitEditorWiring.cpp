@@ -95,9 +95,47 @@ void CCircuitEditor::CreateComponents(CArrayComponentViewPtr* papcComponents)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Lays out again, in every circuit, each instance of the circuit being
+// edited whose pins have changed, and gives it ports for them in its
+// simulations (CSubcircuitInstanceView::UpdatePins).  An instance left as
+// it was would hold the pins taken out after they're freed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::UpdateInstancePins(void)
+{
+	size						i;
+	size						j;
+	CCircuitView*				pcCircuit;
+	CComponentView*				pcComponent;
+	CCircuitInstanceView*		pcInstanceView;
+	CSubcircuitInstanceView*	pcSubcircuitInstance;
+
+	for (i = 0; i < mpcCircuits->NumCircuits(); i++)
+	{
+		pcCircuit = mpcCircuits->Get(i);
+		for (j = 0; j < pcCircuit->NumComponents(); j++)
+		{
+			pcComponent = pcCircuit->GetComponent(j);
+			pcInstanceView = pcComponent->GetCircuitInstanceView();
+			if ((pcInstanceView != NULL) && (pcInstanceView->GetInstanceCircuitView() == mpcCircuit))
+			{
+				pcSubcircuitInstance = (CSubcircuitInstanceView*)pcComponent;
+				if (pcSubcircuitInstance->PinsChanged())
+				{
+					pcSubcircuitInstance->UpdatePins(&mpFonts);
+				}
+			}
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Rewires each simulation of each path through the circuit being edited,
 // once for each simulation's top path.  The detached views (either can be
-// NULL) join nothing, see CCircuitWiring::SetDetached.
+// NULL) join nothing, see CCircuitWiring::SetDetached.  Instances of
+// the circuit follow its pins first (UpdateInstancePins).
 //
 //////////////////////////////////////////////////////////////////////////
 bool CCircuitEditor::Rewire(CArrayComponentViewPtr* papcDetachedComponents, CArrayTraceViewPtr* papcDetachedTraces)
@@ -114,6 +152,8 @@ bool CCircuitEditor::Rewire(CArrayComponentViewPtr* papcDetachedComponents, CArr
 	bool									bDone;
 	CCircuitWiring							cWiring;
 	bool									bResult;
+
+	UpdateInstancePins();
 
 	apcViewPaths.Init();
 	apcTops.Init();

@@ -83,6 +83,7 @@ protected:
 	CCircuitView*				mpcInstanceCircuitView;
 	SSubcircuitInstanceLayout	msLayout;
 	CArraySubcircuitPinView		masPins;
+	CChars						mszPinsKey;  //What the pins were laid out from (see GetPinsKey).
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szComment, CCircuitView* pcInstanceCircuitView, CCircuitFonts* pcFonts, int32 iPinSpacing = 1);
@@ -111,12 +112,15 @@ public:
 			SSubcircuitPinView*		GetPin(size uiIndex);
 			SSubcircuitPinView*		GetPin(const char* szPinName);
 			SSubcircuitPinView*		GetPin(CPinView* pcPin);
+			bool					PinsChanged(void);
+			bool					UpdatePins(CCircuitFonts* pcFonts);
 
 	static	void					MeasureLayout(CCircuitFonts* pcFonts, CCircuitView* pcInstanceCircuitView, const char* szName, const char* szComment, int32 iPinSpacing, SSubcircuitInstanceLayout* psLayout);
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
 			void					LayOut(void);
+			void					GetPinsKey(CChars* psz);
 			void					AddSidePins(SPinSide* psSide, int iOffset, int iOpposite, int iSpacing, int iEdge, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations);
 			void					AddPin(CPinView* pcPin, int32 x, int32 y, int iOutX, int iOutY, ETextAlignment eAlignment, int iRightRotations);
 };

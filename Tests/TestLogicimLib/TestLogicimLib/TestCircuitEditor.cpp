@@ -16,6 +16,7 @@
 #include "MicroprocessorLib/Timeline.h"
 #include "MicroprocessorLib/LogicPort.h"
 #include "MicroprocessorLib/IntegratedCircuit.h"
+#include "MicroprocessorLib/SubcircuitInstance.h"
 #include "LogicimLib/ClockView.h"
 #include "LogicimLib/BufferView.h"
 #include "LogicimLib/Logic74View.h"
@@ -1382,6 +1383,112 @@ void TestCircuitEditorSubcircuit(void)
 	AssertSize(0, pcSimulation->NumInstanceSimulations());
 	AssertSize(uiIntegratedCircuits, pcSimulation->GetCircuit()->NumIntegratedCircuits());
 	AssertSize(0, pcSimulation->GetCircuit()->NumPassives());
+
+	sTest.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An instance follows its subcircuit's pins while it's simulated: a pin
+// deleted, placed or changed inside it changes the instance's pins, port
+// views and simulated ports, those of the pins left alone staying on
+// their traces.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestCircuitEditorInstancePins(void)
+{
+	SEditorTest					sTest;
+	CCircuitView*				pcMain;
+	CCircuitView*				pcInverter;
+	CSubcircuitInstanceView*	pcInstance;
+	CCircuitSimulation*			pcSimulation;
+	CViewPath*					pcTopPath;
+	CSubcircuitInstance*		pcSimulated;
+	CTracePort*					pcInPort;
+	CComponentView*				pcPin;
+	CComponentProperties		cProperties;
+	CChars						szName;
+
+	sTest.Init(true);
+	AddEditorInverterSubcircuit(&sTest.pEditor, &sTest.pFonts);
+	pcInverter = sTest.pEditor->GetCircuits()->Get("Inverter");
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	sTest.PointAt(0, 0);
+	AssertTrue(sTest.pEditor->StartPlaceSubcircuit("Inverter"));
+	sTest.Click(5, 5);
+	sTest.pEditor->StopEdit();
+	pcInstance = (CSubcircuitInstanceView*)pcMain->GetComponent(0);
+	pcSimulation = sTest.pEditor->GetSimulation();
+	pcTopPath = sTest.pEditor->GetViewPath();
+	pcSimulated = (CSubcircuitInstance*)pcInstance->GetComponent(pcTopPath, pcSimulation);
+	AssertNotNull(pcSimulated);
+	AssertSize(2, pcInstance->NumPins());
+	AssertSize(2, pcInstance->NumPortViews());
+	AssertSize(2, pcSimulated->NumNamedPins());
+	pcInPort = pcSimulated->GetTracePorts("In")->GetPtr(0);
+	AssertFalse(pcInstance->PinsChanged());
+
+	//Deleting the Out pin from inside the instance takes it off the instance.
+	AssertTrue(sTest.pEditor->EnterInstance(pcInstance));
+	AssertString("Out", pcInverter->GetComponent(2)->GetName());
+	sTest.pEditor->SelectOnly(pcInverter->GetComponent(2));
+	AssertTrue(sTest.pEditor->Delete());
+	AssertPointer(pcSimulated, pcInstance->GetComponent(pcTopPath, pcSimulation));
+	AssertFalse(pcInstance->PinsChanged());
+	AssertSize(1, pcInstance->NumPins());
+	AssertString("In", pcInstance->GetPin((size)0)->pcPin->GetName());
+	AssertSize(1, pcInstance->NumPortViews());
+	AssertSize(1, pcInstance->GetPortView((size)0)->NumPorts(pcTopPath, pcSimulation));
+	AssertSize(1, pcSimulated->NumNamedPins());
+	AssertTrue(pcSimulated->HasTracePorts("In"));
+	AssertFalse(pcSimulated->HasTracePorts("Out"));
+	AssertPointer(pcInPort, pcSimulated->GetTracePorts("In")->GetPtr(0));
+	AssertPointer(pcInPort, pcInstance->GetPortView((size)0)->GetPort(pcTopPath, pcSimulation, 0));
+
+	//A pin placed inside is added.
+	sTest.PointAt(10, 10);
+	AssertTrue(sTest.pEditor->StartPlaceComponent("Pin"));
+	sTest.Click(10, 10);
+	sTest.pEditor->StopEdit();
+	pcPin = pcInverter->GetComponent(pcInverter->NumComponents() - 1);
+	AssertString("Pin", pcPin->GetType());
+	szName.Init(pcPin->GetName());
+	AssertSize(2, pcInstance->NumPins());
+	AssertSize(2, pcInstance->NumPortViews());
+	AssertSize(2, pcSimulated->NumNamedPins());
+	AssertTrue(pcSimulated->HasTracePorts(szName.Text()));
+	AssertSize(1, pcSimulated->GetTracePorts(szName.Text())->NumElements());
+	AssertNotNull(pcInstance->GetPin(szName.Text()));
+	AssertSize(1, pcInstance->GetPin(szName.Text())->pcPortView->NumPorts(pcTopPath, pcSimulation));
+	AssertPointer(pcInPort, pcSimulated->GetTracePorts("In")->GetPtr(0));
+
+	//Renaming it and making it wider gives it new ports.
+	cProperties.Init();
+	sTest.pEditor->GetProperties(pcPin, &cProperties);
+	AssertTrue(cProperties.SetValue("name", "Q"));
+	AssertTrue(cProperties.SetValue("bitWidth", "4"));
+	pcPin = sTest.pEditor->SetProperties(pcPin, &cProperties, pcPin->GetRotation(), pcPin->IsMirrored());
+	cProperties.Kill();
+	AssertNotNull(pcPin);
+	AssertSize(2, pcInstance->NumPins());
+	AssertSize(2, pcSimulated->NumNamedPins());
+	AssertFalse(pcSimulated->HasTracePorts(szName.Text()));
+	AssertNull(pcInstance->GetPin(szName.Text()));
+	AssertTrue(pcSimulated->HasTracePorts("Q"));
+	AssertSize(4, pcSimulated->GetTracePorts("Q")->NumElements());
+	AssertNotNull(pcInstance->GetPin("Q"));
+	AssertSize(4, pcInstance->GetPin("Q")->pcPortView->NumPorts(pcTopPath, pcSimulation));
+	AssertPointer(pcInPort, pcSimulated->GetTracePorts("In")->GetPtr(0));
+	szName.Kill();
+
+	//Leaving, the instance still works in its own circuit.
+	AssertTrue(sTest.pEditor->LeaveInstance());
+	AssertSize(2, pcInstance->NumPins());
+	AssertTrue(sTest.pEditor->Delete());
+	AssertSize(0, pcMain->NumComponents());
+	AssertSize(0, pcSimulation->NumInstanceSimulations());
 
 	sTest.Kill();
 }
@@ -3663,6 +3770,7 @@ void TestCircuitEditor(void)
 	TestCircuitEditorRouteWire();
 	TestCircuitEditorSubcircuit();
 	TestCircuitEditorEnterInstance();
+	TestCircuitEditorInstancePins();
 	TestCircuitEditorTabs();
 	TestCircuitEditorComponentLibraries();
 	TestCircuitEditorPlaceEveryComponent();
