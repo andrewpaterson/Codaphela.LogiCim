@@ -21,6 +21,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include "BaseLib/LeakDetector.h"
 #include "BaseLib/GlobalMemory.h"
+#include "StandardLib/Objects.h"
 #include "WinGdiLib/WinGDIWindowFactory.h"
 #include "WinInputLib/WinInput.h"
 #include "LogicimApp.h"
@@ -38,23 +39,26 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	InitLogicimGlobals();
 
 	{
-		CWinGDIWindowFactory		cNativeFactory;
+		Ptr<CWinGDIWindowFactory>	pNativeFactory;
 		CWinInput					cWinInput;
 
-		cNativeFactory.Init(&gcMemoryAllocator,
+		//Rooted while LogiCim runs.  Its windows hold it too, so it's freed after the last of them.
+		pNativeFactory = OMalloc<CWinGDIWindowFactory>(&gcMemoryAllocator,
 			hInstance,
 			hPrevInstance,
 			nCmdShow,
 			"LogiCim");
+		ORoot()->Add(pNativeFactory);
 
 		cWinInput.Init(NULL, false);
-		cNativeFactory.SetRawInput(WinRawInputCallback, cWinInput.GetRaw());
+		pNativeFactory->SetRawInput(WinRawInputCallback, cWinInput.GetRaw());
 
-		bResult = RunLogicimApp(&cNativeFactory, &cWinInput, "../../../CommonLibraries/Libraries/WinInputLib/xml");
+		bResult = RunLogicimApp(&pNativeFactory, &cWinInput, "../../../CommonLibraries/Libraries/WinInputLib/xml");
 
-		cNativeFactory.SetRawInput(NULL, NULL);
+		pNativeFactory->SetRawInput(NULL, NULL);
 		cWinInput.Kill();
-		cNativeFactory.Kill();
+		ORoot()->Remove(pNativeFactory);
+		pNativeFactory = NULL;
 	}
 
 	KillLogicimGlobals();

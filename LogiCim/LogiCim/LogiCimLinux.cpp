@@ -19,6 +19,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/GlobalMemory.h"
+#include "StandardLib/Objects.h"
 #include "X11Lib/X11WindowFactory.h"
 #include "X11Lib/X11Input.h"
 #include "LogicimApp.h"
@@ -37,21 +38,25 @@ int main(int argc, char* argv[])
 	InitLogicimGlobals();
 
 	{
-		CX11WindowFactory			cNativeFactory;
+		Ptr<CX11WindowFactory>		pNativeFactory;
 		CX11Input					cX11Input;
 
-		bResult = cNativeFactory.Init(&gcMemoryAllocator, NULL);
+		//Rooted while LogiCim runs.  Its windows hold it too, so it's freed after the last of them.
+		pNativeFactory = OMalloc<CX11WindowFactory>(&gcMemoryAllocator, (const char*)NULL);
+		ORoot()->Add(pNativeFactory);
+		bResult = pNativeFactory->IsOpen();
 		if (bResult)
 		{
 			cX11Input.Init();
-			cNativeFactory.SetInput(&cX11Input);
+			pNativeFactory->SetInput(&cX11Input);
 
-			bResult = RunLogicimApp(&cNativeFactory, &cX11Input, "../../../CommonLibraries/Libraries/WinInputLib/xml");
+			bResult = RunLogicimApp(&pNativeFactory, &cX11Input, "../../../CommonLibraries/Libraries/WinInputLib/xml");
 
-			cNativeFactory.SetInput(NULL);
+			pNativeFactory->SetInput(NULL);
 			cX11Input.Kill();
 		}
-		cNativeFactory.Kill();
+		ORoot()->Remove(pNativeFactory);
+		pNativeFactory = NULL;
 	}
 
 	KillLogicimGlobals();
