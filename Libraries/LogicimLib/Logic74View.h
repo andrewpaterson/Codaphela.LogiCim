@@ -66,8 +66,8 @@ public:
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
 			char*					GetPartType(void);
-			SLogic74Part*			GetPart(void);
-			int						GetUnitCount(void);
+			SLogic74Part*			GetPart(void) const;
+			int						GetUnitCount(void) const;
 			void					GetPartNumber(CChars* psz);
 			void					GetDescription(CChars* psz);
 
@@ -109,10 +109,10 @@ public:
 	virtual CComponentView*			NewNextUnit(void);
 
 			char*					GetPartType(void);
-			SLogic74Part*			GetPart(void);
-			int						GetUnit(void);
-			char					GetUnitLetter(void);
-			int						GetUnitCount(void);
+			SLogic74Part*			GetPart(void) const;
+			int						GetUnit(void) const;
+			char					GetUnitLetter(void) const;
+			int						GetUnitCount(void) const;
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);

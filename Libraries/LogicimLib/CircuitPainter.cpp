@@ -692,12 +692,12 @@ float64 CCircuitPainter::GetTextWidthAdjust(float64 fOffset, float64 fWidth, ETe
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CCircuitViewport* CCircuitPainter::GetViewport(void) { return mpcViewport; }
-CCircuitColours* CCircuitPainter::GetColours(void) { return mpcColours; }
-CCircuitFonts* CCircuitPainter::GetFonts(void) { return mpcFonts; }
-CGeometryMap* CCircuitPainter::GetMap(void) { return mpcMap; }
-CComponentSpriteCache* CCircuitPainter::GetSpriteCache(void) { return mpcSpriteCache; }
-int64 CCircuitPainter::GetTime(void) { return miTime; }
-CViewPath* CCircuitPainter::GetViewPath(void) { return mpcViewPath; }
-CCircuitSimulation* CCircuitPainter::GetCircuitSimulation(void) { return mpcCircuitSimulation; }
+CCircuitViewport* CCircuitPainter::GetViewport(void) const { return mpcViewport; }
+CCircuitColours* CCircuitPainter::GetColours(void) const { return mpcColours; }
+CCircuitFonts* CCircuitPainter::GetFonts(void) const { return mpcFonts; }
+CGeometryMap* CCircuitPainter::GetMap(void) const { return mpcMap; }
+CComponentSpriteCache* CCircuitPainter::GetSpriteCache(void) const { return mpcSpriteCache; }
+int64 CCircuitPainter::GetTime(void) const { return miTime; }
+CViewPath* CCircuitPainter::GetViewPath(void) const { return mpcViewPath; }
+CCircuitSimulation* CCircuitPainter::GetCircuitSimulation(void) const { return mpcCircuitSimulation; }
 

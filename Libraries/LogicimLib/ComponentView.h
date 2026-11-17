@@ -141,20 +141,20 @@ public:
 			void					DestroyComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 			CCircuitComponent*		GetComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 			CCircuitComponent*		GetComponent(CCircuitPainter* pcPainter);
-			size					NumComponents(void);
+			size					NumComponents(void) const;
 
 			void					SetPosition(int32 x, int32 y);
-			SInt32Vec2				GetPosition(void);
+			SInt32Vec2				GetPosition(void) const;
 			void					SetRotation(ERotation eRotation);
-			ERotation				GetRotation(void);
+			ERotation				GetRotation(void) const;
 			void					SetMirrored(bool bMirrored);
-			bool					IsMirrored(void);
+			bool					IsMirrored(void) const;
 			char*					GetName(void);
 			CComponentShapes*		GetShapes(void);
 
 			CPortView*				AddPortView(const char* szPortName, int32 x, int32 y);
 			CPortView*				AddPortView(CArrayChars* paszPortNames, int32 x, int32 y);
-			size					NumPortViews(void);
+			size					NumPortViews(void) const;
 			CPortView*				GetPortView(size uiIndex);
 			CPortView*				GetPortView(const char* szPortName);
 

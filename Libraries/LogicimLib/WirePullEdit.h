@@ -64,10 +64,10 @@ public:
 	void			Paint(CCircuitPainter* pcPainter) override;
 
 	void			Update(int32 x, int32 y);
-	bool			IsEmpty(void);
+	bool			IsEmpty(void) const;
 	void			GetLines(CArrayTraceLine* pasLines);
-	SInt32Vec2		GetFirst(void);
-	SInt32Vec2		GetEnd(void);
+	SInt32Vec2		GetFirst(void) const;
+	SInt32Vec2		GetEnd(void) const;
 };
 
 

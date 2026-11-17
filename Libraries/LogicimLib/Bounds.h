@@ -39,7 +39,7 @@ struct SBoundsTemplate
 	void	Include(V sPoint);
 	void	Include(SBoundsTemplate<V, T>* psBox);
 	void	Move(V sBy);
-	V		GetCentre(void);
+	V		GetCentre(void) const;
 	bool	Contains(V sPoint);
 	bool	Contains(SBoundsTemplate<V, T>* psBox);
 	bool	Overlaps(SBoundsTemplate<V, T>* psBox);
@@ -155,7 +155,7 @@ void SBoundsTemplate<V, T>::Move(V sBy)
 //
 //////////////////////////////////////////////////////////////////////////
 template<class V, class T>
-V SBoundsTemplate<V, T>::GetCentre(void)
+V SBoundsTemplate<V, T>::GetCentre(void) const
 {
 	V	sCentre;
 

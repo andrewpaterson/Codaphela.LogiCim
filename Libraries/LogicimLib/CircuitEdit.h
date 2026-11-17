@@ -78,12 +78,12 @@ public:
 	void				Discard(void);
 	void				Paint(CCircuitPainter* pcPainter);
 
-	bool				HasDiff(void);
-	int					GetRightRotations(void);
-	bool				IsMirrored(void);
-	SInt32Vec2			GetStart(void);
-	SInt32Vec2			GetDiff(void);
-	CCircuitEditor*		GetEditor(void);
+	bool				HasDiff(void) const;
+	int					GetRightRotations(void) const;
+	bool				IsMirrored(void) const;
+	SInt32Vec2			GetStart(void) const;
+	SInt32Vec2			GetDiff(void) const;
+	CCircuitEditor*		GetEditor(void) const;
 	bool				CanTransformComponents(void);
 
 protected:

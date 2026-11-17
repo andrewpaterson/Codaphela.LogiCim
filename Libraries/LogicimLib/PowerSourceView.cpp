@@ -79,7 +79,7 @@ CComponentStateXML* CPowerSourceView::GetComponentStateXML(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float32 CPowerSourceView::GetVoltage(void)
+float32 CPowerSourceView::GetVoltage(void) const
 {
 	return mfVoltage;
 }

@@ -56,7 +56,7 @@ void CCircuitViewport::SetSize(int32 iWidth, int32 iHeight)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SInt32Vec2 CCircuitViewport::GetSize(void)
+SInt32Vec2 CCircuitViewport::GetSize(void) const
 {
 	return msSize;
 }
@@ -78,7 +78,7 @@ void CCircuitViewport::SetPosition(float64 x, float64 y)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SFloat64Vec2 CCircuitViewport::GetPosition(void)
+SFloat64Vec2 CCircuitViewport::GetPosition(void) const
 {
 	return msPosition;
 }
@@ -118,7 +118,7 @@ void CCircuitViewport::SetZoom(float64 fZoom)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float64 CCircuitViewport::GetZoom(void)
+float64 CCircuitViewport::GetZoom(void) const
 {
 	return mfZoom;
 }
@@ -221,7 +221,7 @@ float64 CCircuitViewport::GridToScreenY(float64 y)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float64 CCircuitViewport::GetPixelsPerGrid(void)
+float64 CCircuitViewport::GetPixelsPerGrid(void) const
 {
 	return CIRCUIT_GRID_SCALE * mfZoom;
 }
@@ -257,7 +257,7 @@ float64 CCircuitViewport::GetDefaultLineWidth(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float64 CCircuitViewport::GetCircleRadius(void)
+float64 CCircuitViewport::GetCircleRadius(void) const
 {
 	if (mfZoom < 0.3)
 	{
@@ -272,7 +272,7 @@ float64 CCircuitViewport::GetCircleRadius(void)
 // The radius of the dot drawn on a port and a junction.
 //
 //////////////////////////////////////////////////////////////////////////
-float64 CCircuitViewport::GetConnectionRadius(void)
+float64 CCircuitViewport::GetConnectionRadius(void) const
 {
 	return GetCircleRadius() * 3;
 }

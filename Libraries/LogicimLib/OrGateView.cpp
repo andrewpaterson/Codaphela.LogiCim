@@ -137,7 +137,7 @@ CIntegratedCircuit* COrGateView::CreateIntegratedCircuit(CSubcircuitSimulation* 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool COrGateView::IsExclusive(void)
+bool COrGateView::IsExclusive(void) const
 {
 	return mbExclusive;
 }

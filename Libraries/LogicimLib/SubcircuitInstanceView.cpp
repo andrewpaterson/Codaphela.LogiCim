@@ -1283,7 +1283,7 @@ void CSubcircuitInstanceView::GetPinPortJoins(CArrayPinPortJoin* pasJoins)
 char* CSubcircuitInstanceView::GetTypeName(void) { return mszTypeName.Text(); }
 char* CSubcircuitInstanceView::GetComment(void) { return mszComment.Text(); }
 SSubcircuitInstanceLayout* CSubcircuitInstanceView::GetLayout(void) { return &msLayout; }
-size CSubcircuitInstanceView::NumPins(void) { return masPins.NumElements(); }
+size CSubcircuitInstanceView::NumPins(void) const { return masPins.NumElements(); }
 SSubcircuitPinView* CSubcircuitInstanceView::GetPin(size uiIndex) { return masPins.SafeGet(uiIndex); }
 
 

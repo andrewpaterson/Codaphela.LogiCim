@@ -127,7 +127,7 @@ void CValueView::AddValueText(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SFloat64Vec2 CValueView::GetBoxCentre(void)
+SFloat64Vec2 CValueView::GetBoxCentre(void) const
 {
 	SFloat64Vec2	sCentre;
 
@@ -296,8 +296,8 @@ bool CValueView::LoadValueXML(CMarkupTag* pcTag, SValueViewXML* psValue)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int32 CValueView::GetBitWidth(void) { return miBitWidth; }
-ERadix CValueView::GetRadix(void) { return meRadix; }
+int32 CValueView::GetBitWidth(void) const { return miBitWidth; }
+ERadix CValueView::GetRadix(void) const { return meRadix; }
 void CValueView::GetBox(SInt32Bounds* psBox) { *psBox = msBox; }
 
 
@@ -739,11 +739,11 @@ STraceValue CPinView::ReadPortValue(CCircuitComponent* pcComponent, CPort* pcPor
 //
 //
 //////////////////////////////////////////////////////////////////////////
-EPinAlignment CPinView::GetAlignment(void) { return meAlignment; }
-EPinAnchour CPinView::GetAnchour(void) { return meAnchour; }
-int32 CPinView::GetWeight(void) { return miWeight; }
-bool CPinView::IsInverting(void) { return mbInverting; }
-bool CPinView::IsClockNotch(void) { return mbClockNotch; }
+EPinAlignment CPinView::GetAlignment(void) const { return meAlignment; }
+EPinAnchour CPinView::GetAnchour(void) const { return meAnchour; }
+int32 CPinView::GetWeight(void) const { return miWeight; }
+bool CPinView::IsInverting(void) const { return mbInverting; }
+bool CPinView::IsClockNotch(void) const { return mbClockNotch; }
 
 
 //////////////////////////////////////////////////////////////////////////

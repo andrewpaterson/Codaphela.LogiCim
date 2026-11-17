@@ -79,7 +79,7 @@ public:
 
 	void				SetTransform(SInt32Vec2 sPosition, ERotation eRotation, bool bMirrored);
 	void				SetSpriteCache(CComponentSpriteCache* pcSpriteCache);
-	CComponentSpriteCache*	GetSpriteCache(void);
+	CComponentSpriteCache*	GetSpriteCache(void) const;
 	void				BeginSprite(float64 x = 0, float64 y = 0);
 	void				EndSprite(SComponentSpriteMemo* psMemo = NULL, uint64 uiState = 0);
 	uint64				GetSpriteState(float64 x, float64 y);
@@ -96,13 +96,13 @@ public:
 	void				Text(float64 x, float64 y, const char* szText, ECircuitFont eFont, float64 fFontSize, ETextAlignment eAlignment, int iRelativeRightRotations, ARGB32 sColour);
 	void				CentredText(float64 x, float64 y, const char* szText, ECircuitFont eFont, float64 fFontSize, ARGB32 sColour);
 
-	CCircuitViewport*	GetViewport(void);
-	CCircuitColours*	GetColours(void);
-	CCircuitFonts*		GetFonts(void);
-	CGeometryMap*		GetMap(void);
-	int64				GetTime(void);
-	CViewPath*			GetViewPath(void);
-	CCircuitSimulation*	GetCircuitSimulation(void);
+	CCircuitViewport*	GetViewport(void) const;
+	CCircuitColours*	GetColours(void) const;
+	CCircuitFonts*		GetFonts(void) const;
+	CGeometryMap*		GetMap(void) const;
+	int64				GetTime(void) const;
+	CViewPath*			GetViewPath(void) const;
+	CCircuitSimulation*	GetCircuitSimulation(void) const;
 
 protected:
 	size				NumArcSegments(float64 fRadiusX, float64 fRadiusY, float64 fArcAngle);

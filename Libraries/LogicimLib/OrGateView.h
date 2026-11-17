@@ -38,7 +38,7 @@ public:
 	virtual const char*				GetXMLName(void);
 	virtual bool					InitGate(SLogicGateXML* psGate);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
-			bool					IsExclusive(void);
+			bool					IsExclusive(void) const;
 
 	static	void					AddOrShapes(CComponentShapes* pcShapes, float64 x, float64 y, int iInputCount, bool bExclusive);
 

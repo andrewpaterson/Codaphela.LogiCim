@@ -48,13 +48,13 @@ void STraceLine::Init(SInt32Vec2 sStart, SInt32Vec2 sEnd)
 // A point is neither horizontal nor vertical.
 //
 //////////////////////////////////////////////////////////////////////////
-bool STraceLine::IsHorizontal(void) { return (sStart.y == sEnd.y) && (sStart.x != sEnd.x); }
-bool STraceLine::IsVertical(void) { return (sStart.x == sEnd.x) && (sStart.y != sEnd.y); }
-bool STraceLine::IsPoint(void) { return sStart == sEnd; }
-int32 STraceLine::GetMinimumX(void) { return (sStart.x < sEnd.x) ? sStart.x : sEnd.x; }
-int32 STraceLine::GetMaximumX(void) { return (sStart.x > sEnd.x) ? sStart.x : sEnd.x; }
-int32 STraceLine::GetMinimumY(void) { return (sStart.y < sEnd.y) ? sStart.y : sEnd.y; }
-int32 STraceLine::GetMaximumY(void) { return (sStart.y > sEnd.y) ? sStart.y : sEnd.y; }
+bool STraceLine::IsHorizontal(void) const { return (sStart.y == sEnd.y) && (sStart.x != sEnd.x); }
+bool STraceLine::IsVertical(void) const { return (sStart.x == sEnd.x) && (sStart.y != sEnd.y); }
+bool STraceLine::IsPoint(void) const { return sStart == sEnd; }
+int32 STraceLine::GetMinimumX(void) const { return (sStart.x < sEnd.x) ? sStart.x : sEnd.x; }
+int32 STraceLine::GetMaximumX(void) const { return (sStart.x > sEnd.x) ? sStart.x : sEnd.x; }
+int32 STraceLine::GetMinimumY(void) const { return (sStart.y < sEnd.y) ? sStart.y : sEnd.y; }
+int32 STraceLine::GetMaximumY(void) const { return (sStart.y > sEnd.y) ? sStart.y : sEnd.y; }
 
 
 //////////////////////////////////////////////////////////////////////////

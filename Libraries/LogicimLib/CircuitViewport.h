@@ -45,12 +45,12 @@ public:
 	void			Kill(void);
 
 	void			SetSize(int32 iWidth, int32 iHeight);
-	SInt32Vec2		GetSize(void);
+	SInt32Vec2		GetSize(void) const;
 	void			SetPosition(float64 x, float64 y);
-	SFloat64Vec2	GetPosition(void);
+	SFloat64Vec2	GetPosition(void) const;
 	void			Scroll(float64 fRight, float64 fDown);
 	void			SetZoom(float64 fZoom);
-	float64			GetZoom(void);
+	float64			GetZoom(void) const;
 	void			ZoomAround(float64 fScreenX, float64 fScreenY, float64 fZoom);
 	void			ZoomToFit(SFloat64Bounds* psBox, float64 fBorder, float64 fMaximumZoom);
 
@@ -58,12 +58,12 @@ public:
 	void			ScreenToGrid(SFloat64Vec2* psGrid, SFloat64Vec2* psScreen);
 	float64			GridToScreenX(float64 x);
 	float64			GridToScreenY(float64 y);
-	float64			GetPixelsPerGrid(void);
+	float64			GetPixelsPerGrid(void) const;
 
 	float64			GetLineWidth(float64 fWidth);
 	float64			GetDefaultLineWidth(void);
-	float64			GetCircleRadius(void);
-	float64			GetConnectionRadius(void);
+	float64			GetCircleRadius(void) const;
+	float64			GetConnectionRadius(void) const;
 };
 
 

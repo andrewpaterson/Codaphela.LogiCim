@@ -591,7 +591,7 @@ CCircuitComponent* CComponentView::GetComponent(CCircuitPainter* pcPainter)
 // How many paths and circuit simulations the view has components for.
 //
 //////////////////////////////////////////////////////////////////////////
-size CComponentView::NumComponents(void)
+size CComponentView::NumComponents(void) const
 {
 	return masComponents.NumElements();
 }
@@ -621,7 +621,7 @@ void CComponentView::SetPosition(int32 x, int32 y)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SInt32Vec2 CComponentView::GetPosition(void)
+SInt32Vec2 CComponentView::GetPosition(void) const
 {
 	return msPosition;
 }
@@ -641,7 +641,7 @@ void CComponentView::SetRotation(ERotation eRotation)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-ERotation CComponentView::GetRotation(void)
+ERotation CComponentView::GetRotation(void) const
 {
 	return meRotation;
 }
@@ -661,7 +661,7 @@ void CComponentView::SetMirrored(bool bMirrored)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CComponentView::IsMirrored(void)
+bool CComponentView::IsMirrored(void) const
 {
 	return mbMirrored;
 }
@@ -721,7 +721,7 @@ CPortView* CComponentView::AddPortView(CArrayChars* paszPortNames, int32 x, int3
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CComponentView::NumPortViews(void)
+size CComponentView::NumPortViews(void) const
 {
 	return mapcPortViews.NumElements();
 }

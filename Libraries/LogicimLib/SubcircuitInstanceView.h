@@ -108,7 +108,7 @@ public:
 			char*					GetTypeName(void);
 			char*					GetComment(void);
 			SSubcircuitInstanceLayout*	GetLayout(void);
-			size					NumPins(void);
+			size					NumPins(void) const;
 			SSubcircuitPinView*		GetPin(size uiIndex);
 			SSubcircuitPinView*		GetPin(const char* szPinName);
 			SSubcircuitPinView*		GetPin(CPinView* pcPin);

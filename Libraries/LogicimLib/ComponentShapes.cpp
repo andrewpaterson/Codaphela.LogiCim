@@ -325,7 +325,7 @@ char* CComponentShapes::GetText(size uiShape)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CComponentShapes::NumShapes(void)
+size CComponentShapes::NumShapes(void) const
 {
 	return masShapes.NumElements();
 }

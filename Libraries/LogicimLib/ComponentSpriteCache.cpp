@@ -191,9 +191,9 @@ CImageCel* CComponentSpritePage::AddCel(Ptr<CImage> pSprite, SInt32Vec2 sPositio
 //
 //////////////////////////////////////////////////////////////////////////
 void CComponentSpritePage::Use(uint64 uiFrame) { muiLastFrame = uiFrame; }
-Ptr<CImage> CComponentSpritePage::GetImage(void) { return mpImage; }
-uint64 CComponentSpritePage::GetLastFrame(void) { return muiLastFrame; }
-uint32 CComponentSpritePage::GetGeneration(void) { return muiGeneration; }
+Ptr<CImage> CComponentSpritePage::GetImage(void) const { return mpImage; }
+uint64 CComponentSpritePage::GetLastFrame(void) const { return muiLastFrame; }
+uint32 CComponentSpritePage::GetGeneration(void) const { return muiGeneration; }
 size CComponentSpritePage::NumCels(void) { return maCels.NumElements(); }
 lsize CComponentSpritePage::GetBytes(void) { return (lsize)mpImage->GetPixelByteStride() * mpImage->GetWidth() * mpImage->GetHeight(); }
 
@@ -673,9 +673,9 @@ void CComponentSpriteCache::Clear(void)
 //////////////////////////////////////////////////////////////////////////
 size CComponentSpriteCache::NumSprites(void) { return mcSprites.NumElements(); }
 size CComponentSpriteCache::NumPages(void) { return maPages.NumElements(); }
-lsize CComponentSpriteCache::GetBytes(void) { return muiBytes; }
-size CComponentSpriteCache::NumHits(void) { return muiHits; }
-size CComponentSpriteCache::NumMisses(void) { return muiMisses; }
-size CComponentSpriteCache::NumMemoHits(void) { return muiMemoHits; }
-size CComponentSpriteCache::NumEvictions(void) { return muiEvictions; }
+lsize CComponentSpriteCache::GetBytes(void) const { return muiBytes; }
+size CComponentSpriteCache::NumHits(void) const { return muiHits; }
+size CComponentSpriteCache::NumMisses(void) const { return muiMisses; }
+size CComponentSpriteCache::NumMemoHits(void) const { return muiMemoHits; }
+size CComponentSpriteCache::NumEvictions(void) const { return muiEvictions; }
 CComponentSpritePage* CComponentSpriteCache::GetPage(size uiIndex) { return &maPages.Get(uiIndex); }

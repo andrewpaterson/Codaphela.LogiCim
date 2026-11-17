@@ -45,7 +45,7 @@ public:
 
 	CCircuitView*	Add(const char* szTypeName);
 	CCircuitView*	Get(const char* szTypeName);
-	size			NumCircuits(void);
+	size			NumCircuits(void) const;
 	CCircuitView*	Get(size uiIndex);
 
 	CViewPaths*		GetViewPaths(void);

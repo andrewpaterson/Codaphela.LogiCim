@@ -51,8 +51,8 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
-			float64					GetFrequency(void);
-			bool					IsInverseOut(void);
+			float64					GetFrequency(void) const;
+			bool					IsInverseOut(void) const;
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);

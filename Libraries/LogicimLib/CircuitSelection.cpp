@@ -64,7 +64,7 @@ void CCircuitSelection::Clear(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitSelection::IsEmpty(void)
+bool CCircuitSelection::IsEmpty(void) const
 {
 	return (mapcComponents.NumElements() == 0) && (mapcTraces.NumElements() == 0);
 }
@@ -249,10 +249,10 @@ bool CCircuitSelection::Equals(CCircuitSelection* pcOther)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CCircuitSelection::NumComponents(void) { return mapcComponents.NumElements(); }
+size CCircuitSelection::NumComponents(void) const { return mapcComponents.NumElements(); }
 CComponentView* CCircuitSelection::GetComponent(size uiIndex) { return mapcComponents.SafeGetPtr(uiIndex); }
 CArrayComponentViewPtr* CCircuitSelection::GetComponents(void) { return &mapcComponents; }
-size CCircuitSelection::NumTraces(void) { return mapcTraces.NumElements(); }
+size CCircuitSelection::NumTraces(void) const { return mapcTraces.NumElements(); }
 CTraceView* CCircuitSelection::GetTrace(size uiIndex) { return mapcTraces.SafeGetPtr(uiIndex); }
 CArrayTraceViewPtr* CCircuitSelection::GetTraces(void) { return &mapcTraces; }
 

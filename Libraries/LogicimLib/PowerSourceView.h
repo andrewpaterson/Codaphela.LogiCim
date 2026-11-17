@@ -35,7 +35,7 @@ public:
 
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);
 	virtual CComponentStateXML*		GetComponentStateXML(void);
-			float32					GetVoltage(void);
+			float32					GetVoltage(void) const;
 };
 
 

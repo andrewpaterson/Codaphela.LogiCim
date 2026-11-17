@@ -78,8 +78,8 @@ public:
 	void			SetMinTileWidth(int32 iMinTileWidth);
 	int32			GetTileWidth(void);
 	int32			GetTileHeight(void);
-	size			NumBuilds(void);
-	size			NumTiles(void);
+	size			NumBuilds(void) const;
+	size			NumTiles(void) const;
 
 protected:
 	void			Build(CCircuitViewport* pcViewport, Ptr<CImage> pViewport, int32 iTileWidth, int32 iTileHeight, bool bRepeats);

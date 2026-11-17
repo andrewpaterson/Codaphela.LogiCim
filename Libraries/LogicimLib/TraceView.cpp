@@ -275,10 +275,10 @@ CTrace* CTraceView::GetTrace(CViewPath* pcViewPath, CCircuitSimulation* pcCircui
 //
 //////////////////////////////////////////////////////////////////////////
 void CTraceView::SetJunctions(bool bStart, bool bEnd) { mbStartJunction = bStart; mbEndJunction = bEnd; }
-bool CTraceView::IsStartJunction(void) { return mbStartJunction; }
-bool CTraceView::IsEndJunction(void) { return mbEndJunction; }
-SInt32Vec2 CTraceView::GetStart(void) { return msStart; }
-SInt32Vec2 CTraceView::GetEnd(void) { return msEnd; }
+bool CTraceView::IsStartJunction(void) const { return mbStartJunction; }
+bool CTraceView::IsEndJunction(void) const { return mbEndJunction; }
+SInt32Vec2 CTraceView::GetStart(void) const { return msStart; }
+SInt32Vec2 CTraceView::GetEnd(void) const { return msEnd; }
 
 
 //////////////////////////////////////////////////////////////////////////

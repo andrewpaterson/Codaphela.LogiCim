@@ -188,7 +188,7 @@ void CWirePullEdit::Update(int32 x, int32 y)
 // Nothing has been pulled out yet.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CWirePullEdit::IsEmpty(void)
+bool CWirePullEdit::IsEmpty(void) const
 {
 	return !mbHasMiddle;
 }
@@ -220,7 +220,7 @@ void CWirePullEdit::GetLines(CArrayTraceLine* pasLines)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SInt32Vec2 CWirePullEdit::GetFirst(void)
+SInt32Vec2 CWirePullEdit::GetFirst(void) const
 {
 	return msFirst;
 }
@@ -231,7 +231,7 @@ SInt32Vec2 CWirePullEdit::GetFirst(void)
 // Where the wire ends, its first point if it's empty.
 //
 //////////////////////////////////////////////////////////////////////////
-SInt32Vec2 CWirePullEdit::GetEnd(void)
+SInt32Vec2 CWirePullEdit::GetEnd(void) const
 {
 	if (mbHasSecond)
 	{

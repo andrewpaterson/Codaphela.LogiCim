@@ -450,15 +450,15 @@ bool CCircuitEditor::CanRun(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitEditor::IsEditing(void) { return mpcEdit != NULL; }
-CCircuitViews* CCircuitEditor::GetCircuits(void) { return mpcCircuits; }
-CCircuitView* CCircuitEditor::GetCircuit(void) { return mpcCircuit; }
+bool CCircuitEditor::IsEditing(void) const { return mpcEdit != NULL; }
+CCircuitViews* CCircuitEditor::GetCircuits(void) const { return mpcCircuits; }
+CCircuitView* CCircuitEditor::GetCircuit(void) const { return mpcCircuit; }
 CCircuitSimulation* CCircuitEditor::GetSimulation(void) { return &mpSimulation; }
 CCircuitFonts* CCircuitEditor::GetFonts(void) { return &mpFonts; }
 CUndoStack* CCircuitEditor::GetUndoStack(void) { return &mcUndo; }
 CCircuitSelection* CCircuitEditor::GetSelection(void) { return &mcSelection; }
-CComponentView* CCircuitEditor::GetHover(void) { return mpcHover; }
-CTraceView* CCircuitEditor::GetHoverTrace(void) { return mpcHoverTrace; }
+CComponentView* CCircuitEditor::GetHover(void) const { return mpcHover; }
+CTraceView* CCircuitEditor::GetHoverTrace(void) const { return mpcHoverTrace; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -471,10 +471,10 @@ bool CCircuitEditor::GetHoverConnection(SInt32Vec2* psConnection)
 	*psConnection = msHoverConnection;
 	return mbHoverConnection;
 }
-ERotation CCircuitEditor::GetCreationRotation(void) { return meCreationRotation; }
-bool CCircuitEditor::IsCreationMirrored(void) { return mbCreationMirrored; }
-bool CCircuitEditor::IsControl(void) { return mbControl; }
-bool CCircuitEditor::IsShift(void) { return mbShift; }
+ERotation CCircuitEditor::GetCreationRotation(void) const { return meCreationRotation; }
+bool CCircuitEditor::IsCreationMirrored(void) const { return mbCreationMirrored; }
+bool CCircuitEditor::IsControl(void) const { return mbControl; }
+bool CCircuitEditor::IsShift(void) const { return mbShift; }
 
 
 //////////////////////////////////////////////////////////////////////////

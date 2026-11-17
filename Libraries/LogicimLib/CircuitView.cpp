@@ -400,9 +400,9 @@ void CCircuitView::AddTouchingTraces(STraceLine* psLine, CArrayTraceViewPtr* pap
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CCircuitView::NumComponents(void) { return mapcComponents.NumElements(); }
+size CCircuitView::NumComponents(void) const { return mapcComponents.NumElements(); }
 CComponentView* CCircuitView::GetComponent(size uiIndex) { return mapcComponents.SafeGetPtr(uiIndex); }
-size CCircuitView::NumTraces(void) { return mapcTraces.NumElements(); }
+size CCircuitView::NumTraces(void) const { return mapcTraces.NumElements(); }
 CTraceView* CCircuitView::GetTrace(size uiIndex) { return mapcTraces.SafeGetPtr(uiIndex); }
 
 

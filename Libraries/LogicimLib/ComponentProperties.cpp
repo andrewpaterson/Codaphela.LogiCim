@@ -198,7 +198,7 @@ void CComponentProperties::AddDivider(const char* szName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CComponentProperties::NumProperties(void) { return masProperties.NumElements(); }
+size CComponentProperties::NumProperties(void) const { return masProperties.NumElements(); }
 SComponentProperty* CComponentProperties::Get(size uiIndex) { return masProperties.SafeGet(uiIndex); }
 
 

@@ -198,7 +198,7 @@ public:
 	void			SetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox);
 	bool			Connect(void);
 
-	size			NumConnections(void);
+	size			NumConnections(void) const;
 	bool			IsConnected(size uiIndex);
 	size			NumUnconnected(void);
 

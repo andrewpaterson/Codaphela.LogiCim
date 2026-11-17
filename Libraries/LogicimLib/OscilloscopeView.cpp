@@ -259,11 +259,11 @@ CIntegratedCircuit* COscilloscopeView::CreateIntegratedCircuit(CSubcircuitSimula
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int32 COscilloscopeView::GetInputCount(void) { return miInputCount; }
-int32 COscilloscopeView::GetNumberOfDivsWide(void) { return miNumberOfDivsWide; }
-int32 COscilloscopeView::GetSamplesPerDiv(void) { return miSamplesPerDiv; }
-int32 COscilloscopeView::GetDivHeight(void) { return miDivHeight; }
-float64 COscilloscopeView::GetSampleFrequency(void) { return mfSampleFrequency; }
+int32 COscilloscopeView::GetInputCount(void) const { return miInputCount; }
+int32 COscilloscopeView::GetNumberOfDivsWide(void) const { return miNumberOfDivsWide; }
+int32 COscilloscopeView::GetSamplesPerDiv(void) const { return miSamplesPerDiv; }
+int32 COscilloscopeView::GetDivHeight(void) const { return miDivHeight; }
+float64 COscilloscopeView::GetSampleFrequency(void) const { return mfSampleFrequency; }
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -47,8 +47,8 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
-			int32					GetBitWidth(void);
-			uint32					GetTerminalValue(void);
+			int32					GetBitWidth(void) const;
+			uint32					GetTerminalValue(void) const;
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);

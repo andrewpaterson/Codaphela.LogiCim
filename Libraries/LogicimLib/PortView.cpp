@@ -332,7 +332,7 @@ void CPortView::IncludeBounds(SFloat64Bounds* psBounds)
 // In the owner's grid space, facing East.
 //
 //////////////////////////////////////////////////////////////////////////
-SInt32Vec2 CPortView::GetRelativePosition(void)
+SInt32Vec2 CPortView::GetRelativePosition(void) const
 {
 	return msRelativePosition;
 }
@@ -343,7 +343,7 @@ SInt32Vec2 CPortView::GetRelativePosition(void)
 // In the circuit's grid space.
 //
 //////////////////////////////////////////////////////////////////////////
-SInt32Vec2 CPortView::GetGridPosition(void)
+SInt32Vec2 CPortView::GetGridPosition(void) const
 {
 	SInt32Vec2	sPosition;
 	SInt32Vec2	sOwner;
@@ -361,11 +361,11 @@ SInt32Vec2 CPortView::GetGridPosition(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CPortView::IsInverting(void) { return mbInverting; }
-bool CPortView::IsClock(void) { return mbClock; }
+bool CPortView::IsInverting(void) const { return mbInverting; }
+bool CPortView::IsClock(void) const { return mbClock; }
 SFloat64Vec2* CPortView::GetClockNotch(void) { return masClockNotch; }
 char* CPortView::GetText(void) { return mszText.Text(); }
-size CPortView::NumPortNames(void) { return maszPortNames.NumElements(); }
+size CPortView::NumPortNames(void) const { return maszPortNames.NumElements(); }
 char* CPortView::GetPortName(size uiIndex) { return maszPortNames.GetText(uiIndex); }
-CComponentView* CPortView::GetOwner(void) { return mpcOwner; }
+CComponentView* CPortView::GetOwner(void) const { return mpcOwner; }
 

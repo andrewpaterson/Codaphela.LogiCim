@@ -86,8 +86,8 @@ public:
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 
-			int32					GetBitWidth(void);
-			int32					GetFanOut(void);
+			int32					GetBitWidth(void) const;
+			int32					GetFanOut(void) const;
 			int32					GetSplitIndex(int32 iBit);
 			CPortView*				GetStartPortView(void);
 			CPortView*				GetEndPortView(int32 iFan);
@@ -99,7 +99,7 @@ protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
 			void					InitSplit(int32 x, int32 y, ERotation eRotation, const char* szName, SSplitterParams* psParams, int* aiSplitIndices);
 			SFloat64Vec2			GetFanPosition(int32 iFan, float64 fAlong);
-			SFloat64Vec2			GetStartPosition(void);
+			SFloat64Vec2			GetStartPosition(void) const;
 			SFloat64Vec2			GetBarPosition(void);
 			void					GetFanBits(CArrayInt* paiBits, int32 iFan);
 			void					GetPortNames(CArrayChars* paszStartNames, CArrayChars* paszEndNames);

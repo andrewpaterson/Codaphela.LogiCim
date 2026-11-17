@@ -77,9 +77,9 @@ public:
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily) =0;
 
 			char*					GetFamily(void);
-			bool					IsExplicitPowerPorts(void);
+			bool					IsExplicitPowerPorts(void) const;
 			void					SetImpliedVcc(float32 fImpliedVcc);
-			float32					GetImpliedVcc(void);
+			float32					GetImpliedVcc(void) const;
 	static	bool					LoadIntegratedCircuitXML(CMarkupTag* pcTag, SIntegratedCircuitXML* psIntegratedCircuit);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);

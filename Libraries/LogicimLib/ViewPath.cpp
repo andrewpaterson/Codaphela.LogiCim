@@ -178,7 +178,7 @@ SViewPathSimulation* CViewPath::FindSimulation(CCircuitSimulation* pcCircuitSimu
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CViewPath::NumCircuitSimulations(void)
+size CViewPath::NumCircuitSimulations(void) const
 {
 	return masSimulations.NumElements();
 }
@@ -205,7 +205,7 @@ CCircuitSimulation* CViewPath::GetCircuitSimulation(size uiIndex)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CViewPath::Length(void)
+size CViewPath::Length(void) const
 {
 	return mapcPath.NumElements();
 }
@@ -267,7 +267,7 @@ CCircuitView* CViewPath::GetCircuitView(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CViewPath::IsTop(void)
+bool CViewPath::IsTop(void) const
 {
 	return mapcPath.NumElements() == 1;
 }
@@ -301,7 +301,7 @@ bool CViewPath::EqualsPath(CArrayCircuitInstanceViewPtr* papcPath)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CViewPath* CViewPath::GetPrevious(void)
+CViewPath* CViewPath::GetPrevious(void) const
 {
 	return mpcPrevious;
 }
@@ -373,7 +373,7 @@ bool CViewPath::ContainsCircuitView(CCircuitView* pcCircuitView)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int64 CViewPath::GetID(void)
+int64 CViewPath::GetID(void) const
 {
 	return miID;
 }
@@ -620,7 +620,7 @@ void CViewPaths::RemovePathsThrough(CCircuitInstanceView* pcInstanceView)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CViewPaths::NumViewPaths(void)
+size CViewPaths::NumViewPaths(void) const
 {
 	return mapcViewPaths.NumElements();
 }

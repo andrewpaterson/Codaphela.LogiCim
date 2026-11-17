@@ -151,8 +151,8 @@ CIntegratedCircuit* CCounterView::CreateIntegratedCircuit(CSubcircuitSimulation*
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int32 CCounterView::GetBitWidth(void) { return miBitWidth; }
-uint32 CCounterView::GetTerminalValue(void) { return muiTerminalValue; }
+int32 CCounterView::GetBitWidth(void) const { return miBitWidth; }
+uint32 CCounterView::GetTerminalValue(void) const { return muiTerminalValue; }
 
 
 //////////////////////////////////////////////////////////////////////////

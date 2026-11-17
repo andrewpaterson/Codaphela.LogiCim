@@ -87,9 +87,9 @@ public:
 	CImageCel*		AddCel(Ptr<CImage> pSprite, SInt32Vec2 sPosition);
 	void			Use(uint64 uiFrame);
 
-	Ptr<CImage>		GetImage(void);
-	uint64			GetLastFrame(void);
-	uint32			GetGeneration(void);
+	Ptr<CImage>		GetImage(void) const;
+	uint64			GetLastFrame(void) const;
+	uint32			GetGeneration(void) const;
 	size			NumCels(void);
 	lsize			GetBytes(void);
 };
@@ -141,11 +141,11 @@ public:
 
 	size			NumSprites(void);
 	size			NumPages(void);
-	lsize			GetBytes(void);
-	size			NumHits(void);
-	size			NumMisses(void);
-	size			NumMemoHits(void);
-	size			NumEvictions(void);
+	lsize			GetBytes(void) const;
+	size			NumHits(void) const;
+	size			NumMisses(void) const;
+	size			NumMemoHits(void) const;
+	size			NumEvictions(void) const;
 	CComponentSpritePage*	GetPage(size uiIndex);
 
 protected:

@@ -65,14 +65,14 @@ protected:
 public:
 			void	Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int iInputCount, int iInputWidth, bool bNegated);
 
-			int		GetInputCount(void);
+			int		GetInputCount(void) const;
 	virtual void	GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-			int		GetInputWidth(void);
-			bool	IsNegated(void);
+			int		GetInputWidth(void) const;
+			bool	IsNegated(void) const;
 
 	static	void	CalculatePortOffsets(CArrayInt* paiOffsets, int iInputCount, int iPinSpacing = 1);
 	static	int		GetBodyInputCount(int iInputCount, int iPinSpacing);
-			int		GetPinSpacing(void);
+			int		GetPinSpacing(void) const;
 			void	SetPinSpacing(int iPinSpacing);
 	static	float64	CalculateWidth(int iInputCount);
 	static	void	GetPortNames(CArrayChars* paszNames, const char* szName, int iPortNumber, int iInputWidth, int iInputCount);

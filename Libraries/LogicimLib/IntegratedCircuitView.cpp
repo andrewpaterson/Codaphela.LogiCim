@@ -516,10 +516,10 @@ size CIntegratedCircuitView::AddDetail(float64 y, int32 iWidth, const char* szNa
 //
 //////////////////////////////////////////////////////////////////////////
 char* CIntegratedCircuitView::GetFamily(void) { return mszFamily.Text(); }
-bool CIntegratedCircuitView::IsExplicitPowerPorts(void) { return mbExplicitPowerPorts; }
+bool CIntegratedCircuitView::IsExplicitPowerPorts(void) const { return mbExplicitPowerPorts; }
 CIntegratedCircuitView* CIntegratedCircuitView::GetIntegratedCircuitView(void) { return this; }
 void CIntegratedCircuitView::SetImpliedVcc(float32 fImpliedVcc) { mfImpliedVcc = fImpliedVcc; }
-float32 CIntegratedCircuitView::GetImpliedVcc(void) { return mfImpliedVcc; }
+float32 CIntegratedCircuitView::GetImpliedVcc(void) const { return mfImpliedVcc; }
 CIntegratedCircuit* CIntegratedCircuitView::GetIntegratedCircuit(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation) { return (CIntegratedCircuit*)GetComponent(pcViewPath, pcCircuitSimulation); }
 
 

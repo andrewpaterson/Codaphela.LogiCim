@@ -113,7 +113,7 @@ CCircuitView* CCircuitViews::Get(const char* szTypeName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CCircuitViews::NumCircuits(void) { return mapcCircuits.NumElements(); }
+size CCircuitViews::NumCircuits(void) const { return mapcCircuits.NumElements(); }
 CCircuitView* CCircuitViews::Get(size uiIndex) { return mapcCircuits.SafeGetPtr(uiIndex); }
 CViewPaths* CCircuitViews::GetViewPaths(void) { return &mcViewPaths; }
 CViewPath* CCircuitViews::GetTopPath(CCircuitView* pcCircuit) { return mcViewPaths.GetTop(pcCircuit); }

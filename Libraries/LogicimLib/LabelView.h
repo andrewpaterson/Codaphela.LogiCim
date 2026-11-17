@@ -53,8 +53,8 @@ public:
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 
-			ETextAlignment			GetAlignment(void);
-			bool					IsBold(void);
+			ETextAlignment			GetAlignment(void) const;
+			bool					IsBold(void) const;
 			void					GetBox(SFloat64Bounds* psBox);
 
 	static	void					MeasureBox(CCircuitFonts* pcFonts, const char* szText, ETextAlignment eAlignment, bool bBold, SFloat64Bounds* psBox);

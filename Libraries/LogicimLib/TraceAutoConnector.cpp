@@ -2022,7 +2022,7 @@ bool CTraceAutoConnector::IsVisited(int iState)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CTraceAutoConnector::NumConnections(void) { return masConnections.NumElements(); }
+size CTraceAutoConnector::NumConnections(void) const { return masConnections.NumElements(); }
 bool CTraceAutoConnector::IsConnected(size uiIndex) { return (uiIndex < masConnections.NumElements()) && masConnections.Get(uiIndex)->bConnected; }
 
 

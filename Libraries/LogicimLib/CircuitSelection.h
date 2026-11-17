@@ -50,7 +50,7 @@ public:
 	void				Kill(void);
 
 	void				Clear(void);
-	bool				IsEmpty(void);
+	bool				IsEmpty(void) const;
 	void				Set(CCircuitSelection* pcSource);
 	void				Set(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, CCircuitSelection* pcPrevious, ESelectionMode eMode);
 	void				Add(CComponentView* pcComponent);
@@ -61,10 +61,10 @@ public:
 	bool				Contains(CTraceView* pcTrace);
 	bool				Equals(CCircuitSelection* pcOther);
 
-	size				NumComponents(void);
+	size				NumComponents(void) const;
 	CComponentView*		GetComponent(size uiIndex);
 	CArrayComponentViewPtr*	GetComponents(void);
-	size				NumTraces(void);
+	size				NumTraces(void) const;
 	CTraceView*			GetTrace(size uiIndex);
 	CArrayTraceViewPtr*	GetTraces(void);
 	CComponentView*		GetSingleComponent(void);

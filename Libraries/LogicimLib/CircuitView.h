@@ -82,9 +82,9 @@ public:
 	void				ReplaceWires(CArrayTraceLine* pasLines, CArrayTraceViewPtr* papcSeeds, CArrayTraceViewPtr* papcAdded);
 	void				KillTraces(void);
 
-	size				NumComponents(void);
+	size				NumComponents(void) const;
 	CComponentView*		GetComponent(size uiIndex);
-	size				NumTraces(void);
+	size				NumTraces(void) const;
 	CTraceView*			GetTrace(size uiIndex);
 	size				FindComponentIndex(CComponentView* pcComponent);
 	size				FindTraceIndex(CTraceView* pcTrace);

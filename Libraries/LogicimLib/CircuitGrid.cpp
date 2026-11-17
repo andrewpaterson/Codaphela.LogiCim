@@ -370,5 +370,5 @@ CImageCel* CCircuitGrid::GetCel(int32 iHeight)
 void CCircuitGrid::SetMinTileWidth(int32 iMinTileWidth) { miMinTileWidth = iMinTileWidth; mpTile = NULL; }
 int32 CCircuitGrid::GetTileWidth(void) { return mpTile.IsNotNull() ? (int32)mpTile->GetWidth() : 0; }
 int32 CCircuitGrid::GetTileHeight(void) { return mpTile.IsNotNull() ? (int32)mpTile->GetHeight() : 0; }
-size CCircuitGrid::NumBuilds(void) { return muiBuilds; }
-size CCircuitGrid::NumTiles(void) { return muiTiles; }
+size CCircuitGrid::NumBuilds(void) const { return muiBuilds; }
+size CCircuitGrid::NumTiles(void) const { return muiTiles; }

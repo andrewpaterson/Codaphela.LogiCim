@@ -68,11 +68,11 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
-			int32					GetInputCount(void);
-			int32					GetNumberOfDivsWide(void);
-			int32					GetSamplesPerDiv(void);
-			int32					GetDivHeight(void);
-			float64					GetSampleFrequency(void);
+			int32					GetInputCount(void) const;
+			int32					GetNumberOfDivsWide(void) const;
+			int32					GetSamplesPerDiv(void) const;
+			int32					GetDivHeight(void) const;
+			float64					GetSampleFrequency(void) const;
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);

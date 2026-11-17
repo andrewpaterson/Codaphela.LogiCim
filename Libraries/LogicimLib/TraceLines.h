@@ -32,18 +32,18 @@ struct STraceLine
 
 	void	Init(int32 x0, int32 y0, int32 x1, int32 y1);
 	void	Init(SInt32Vec2 sStart, SInt32Vec2 sEnd);
-	bool	IsHorizontal(void);
-	bool	IsVertical(void);
-	bool	IsPoint(void);
+	bool	IsHorizontal(void) const;
+	bool	IsVertical(void) const;
+	bool	IsPoint(void) const;
 	bool	Contains(SInt32Vec2 sPoint);
 	bool	IsInside(SInt32Vec2 sPoint);
 	bool	Touches(STraceLine* psOther);
 	bool	Overlaps(STraceLine* psOther, bool bEndsCount);
 	void	Extend(STraceLine* psOther);
-	int32	GetMinimumX(void);
-	int32	GetMaximumX(void);
-	int32	GetMinimumY(void);
-	int32	GetMaximumY(void);
+	int32	GetMinimumX(void) const;
+	int32	GetMaximumX(void) const;
+	int32	GetMinimumY(void) const;
+	int32	GetMaximumY(void) const;
 };
 
 

@@ -179,8 +179,8 @@ CIntegratedCircuit* CClockView::CreateIntegratedCircuit(CSubcircuitSimulation* p
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float64 CClockView::GetFrequency(void) { return mfFrequency; }
-bool CClockView::IsInverseOut(void) { return mbInverseOut; }
+float64 CClockView::GetFrequency(void) const { return mfFrequency; }
+bool CClockView::IsInverseOut(void) const { return mbInverseOut; }
 
 
 //////////////////////////////////////////////////////////////////////////

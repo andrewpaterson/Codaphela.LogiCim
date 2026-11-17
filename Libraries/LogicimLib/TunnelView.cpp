@@ -243,7 +243,7 @@ bool CTunnelView::LoadXML(CMarkupTag* pcTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CTunnelView::IsDoubleSided(void) { return mbDoubleSided; }
+bool CTunnelView::IsDoubleSided(void) const { return mbDoubleSided; }
 void CTunnelView::GetBox(SFloat64Bounds* psBox) { *psBox = msBox; }
 
 

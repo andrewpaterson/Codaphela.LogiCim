@@ -250,7 +250,7 @@ void CCircuitEdit::Paint(CCircuitPainter* pcPainter)
 // flipped.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitEdit::HasDiff(void)
+bool CCircuitEdit::HasDiff(void) const
 {
 	return (msDiff.x != 0) || (msDiff.y != 0) || (miRightRotations != 0) || mbMirrored;
 }
@@ -260,10 +260,10 @@ bool CCircuitEdit::HasDiff(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CCircuitEdit::GetRightRotations(void) { return miRightRotations; }
-bool CCircuitEdit::IsMirrored(void) { return mbMirrored; }
-SInt32Vec2 CCircuitEdit::GetStart(void) { return msStart; }
-SInt32Vec2 CCircuitEdit::GetDiff(void) { return msDiff; }
-CCircuitEditor* CCircuitEdit::GetEditor(void) { return mpcEditor; }
+int CCircuitEdit::GetRightRotations(void) const { return miRightRotations; }
+bool CCircuitEdit::IsMirrored(void) const { return mbMirrored; }
+SInt32Vec2 CCircuitEdit::GetStart(void) const { return msStart; }
+SInt32Vec2 CCircuitEdit::GetDiff(void) const { return msDiff; }
+CCircuitEditor* CCircuitEdit::GetEditor(void) const { return mpcEditor; }
 bool CCircuitEdit::CanTransformComponents(void) { return mpcEdit->CanTransformComponents(); }
 

@@ -107,7 +107,7 @@ bool CCircuitFonts::Load(CObjectReader* pcFile)
 // Both families were loaded.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitFonts::HasFamilies(void)
+bool CCircuitFonts::HasFamilies(void) const
 {
 	return mpSansSerif.IsNotNull() && mpMonospaced.IsNotNull();
 }
@@ -175,7 +175,7 @@ SCircuitTextSize CCircuitFonts::Measure(ECircuitFont eFont, float64 fSize, const
 //
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CFontFamily> CCircuitFonts::GetSansSerif(void)
+Ptr<CFontFamily> CCircuitFonts::GetSansSerif(void) const
 {
 	return mpSansSerif;
 }
@@ -185,7 +185,7 @@ Ptr<CFontFamily> CCircuitFonts::GetSansSerif(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CFontFamily> CCircuitFonts::GetMonospaced(void)
+Ptr<CFontFamily> CCircuitFonts::GetMonospaced(void) const
 {
 	return mpMonospaced;
 }
@@ -309,9 +309,9 @@ bool CCircuitTextLine::Layout(CCircuitFonts* pcFonts, ECircuitFont eFont, float3
 //
 //////////////////////////////////////////////////////////////////////////
 char* CCircuitTextLine::GetText(void) { return mszText.Text(); }
-CFont* CCircuitTextLine::GetFont(void) { return mpcFont; }
-int32 CCircuitTextLine::GetWidth(void) { return miWidth; }
-size CCircuitTextLine::NumRuns(void) { return masRuns.NumElements(); }
+CFont* CCircuitTextLine::GetFont(void) const { return mpcFont; }
+int32 CCircuitTextLine::GetWidth(void) const { return miWidth; }
+size CCircuitTextLine::NumRuns(void) const { return masRuns.NumElements(); }
 SCircuitTextRun* CCircuitTextLine::GetRun(size uiIndex) { return masRuns.Get(uiIndex); }
 
 

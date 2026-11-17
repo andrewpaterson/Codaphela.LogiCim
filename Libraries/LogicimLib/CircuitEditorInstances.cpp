@@ -49,7 +49,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 // The top path of the circuit being edited; NULL if there's none.
 //
 //////////////////////////////////////////////////////////////////////////
-CViewPath* CCircuitEditor::GetViewPath(void)
+CViewPath* CCircuitEditor::GetViewPath(void) const
 {
 	if (mpcCircuit == NULL)
 	{
@@ -69,7 +69,7 @@ CViewPath* CCircuitEditor::GetViewPath(void)
 // path into the instance entered starts at.
 //
 //////////////////////////////////////////////////////////////////////////
-CCircuitView* CCircuitEditor::GetTopCircuit(void)
+CCircuitView* CCircuitEditor::GetTopCircuit(void) const
 {
 	if (mpcViewPath != NULL)
 	{
@@ -83,7 +83,7 @@ CCircuitView* CCircuitEditor::GetTopCircuit(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-bool CCircuitEditor::IsInInstance(void)
+bool CCircuitEditor::IsInInstance(void) const
 {
 	return mpcViewPath != NULL;
 }

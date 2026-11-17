@@ -93,22 +93,22 @@ public:
 			bool					RemoveSubcircuitSimulation(CCircuitSimulation* pcCircuitSimulation);
 			bool					ContainsCircuitSimulation(CCircuitSimulation* pcCircuitSimulation);
 			CSubcircuitSimulation*	GetSubcircuitSimulation(CCircuitSimulation* pcCircuitSimulation);
-			size					NumCircuitSimulations(void);
+			size					NumCircuitSimulations(void) const;
 			CCircuitSimulation*		GetCircuitSimulation(size uiIndex);
 
-			size					Length(void);
+			size					Length(void) const;
 			CCircuitInstanceView*	Get(size uiIndex);
 			CCircuitInstanceView*	GetFirst(void);
 			CCircuitInstanceView*	GetLast(void);
 			CCircuitView*			GetCircuitView(void);
-			bool					IsTop(void);
+			bool					IsTop(void) const;
 			bool					EqualsPath(CArrayCircuitInstanceViewPtr* papcPath);
-			CViewPath*				GetPrevious(void);
+			CViewPath*				GetPrevious(void) const;
 			CViewPath*				GetTop(void);
 			CViewPath*				GetChild(CCircuitInstanceView* pcInstanceView);
 			CViewPath*				FindChild(CCircuitInstanceView* pcInstanceView);
 			bool					ContainsCircuitView(CCircuitView* pcCircuitView);
-			int64					GetID(void);
+			int64					GetID(void) const;
 			void					AppendDescription(CChars* psz);
 
 	static	void					ResetNextID(void);
@@ -308,7 +308,7 @@ public:
 	void			GetPathsEndingWith(CCircuitView* pcCircuitView, CArrayViewPathPtr* papcViewPaths);
 	void			RemovePathsThrough(CCircuitInstanceView* pcInstanceView);
 
-	size			NumViewPaths(void);
+	size			NumViewPaths(void) const;
 	CViewPath*		GetViewPath(size uiIndex);
 
 protected:

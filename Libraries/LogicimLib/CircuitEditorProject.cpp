@@ -197,7 +197,7 @@ void CCircuitEditor::SetTabs(CArrayCircuitPlace* pasTabs, size uiActive)
 
 
 CArrayCircuitPlace* CCircuitEditor::GetTabs(void) { return &masTabs; }
-size CCircuitEditor::GetActiveTab(void) { return muiActiveTab; }
+size CCircuitEditor::GetActiveTab(void) const { return muiActiveTab; }
 
 
 //////////////////////////////////////////////////////////////////////////

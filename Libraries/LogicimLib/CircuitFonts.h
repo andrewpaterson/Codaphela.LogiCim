@@ -82,13 +82,13 @@ public:
 	bool				Save(CObjectWriter* pcFile) override;
 	bool				Load(CObjectReader* pcFile) override;
 
-	bool				HasFamilies(void);
+	bool				HasFamilies(void) const;
 
 	Ptr<CFontColours>	GetColours(ECircuitFont eFont, float32 fPixelSize, EFontTurn eTurn);
 	SCircuitTextSize	Measure(ECircuitFont eFont, float64 fSize, const char* szMarkup);
 
-	Ptr<CFontFamily>	GetSansSerif(void);
-	Ptr<CFontFamily>	GetMonospaced(void);
+	Ptr<CFontFamily>	GetSansSerif(void) const;
+	Ptr<CFontFamily>	GetMonospaced(void) const;
 };
 
 
@@ -130,9 +130,9 @@ public:
 	bool				Layout(CCircuitFonts* pcFonts, ECircuitFont eFont, float32 fPixelSize, EFontTurn eTurn, ARGB32 sColour, const char* szMarkup);
 
 	char*				GetText(void);
-	CFont*				GetFont(void);
-	int32				GetWidth(void);
-	size				NumRuns(void);
+	CFont*				GetFont(void) const;
+	int32				GetWidth(void) const;
+	size				NumRuns(void) const;
 	SCircuitTextRun*	GetRun(size uiIndex);
 	int32				GetInkAscent(size uiFirstRun, size uiEndRun);
 	size				FindDecorated(uint8 uiDecoration, size uiFromRun, size* puiEndRun);

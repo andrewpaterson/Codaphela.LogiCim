@@ -126,7 +126,7 @@ public:
 	void				SetBorder(size uiShape, EShapeColour eBorder, ARGB32 sBorder = 0);
 	char*				GetText(size uiShape);
 
-	size				NumShapes(void);
+	size				NumShapes(void) const;
 	SComponentShape*	GetShape(size uiIndex);
 	SFloat64Vec2*		GetPoint(size uiIndex);
 

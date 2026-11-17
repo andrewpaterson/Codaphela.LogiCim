@@ -83,9 +83,9 @@ public:
 
 	virtual void			Paint(CCircuitPainter* pcPainter);
 
-			int32			GetBitWidth(void);
+			int32			GetBitWidth(void) const;
 	virtual void			GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-			ERadix			GetRadix(void);
+			ERadix			GetRadix(void) const;
 			void			GetBox(SInt32Bounds* psBox);
 			void			GetValueText(CChars* psz, CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 
@@ -102,7 +102,7 @@ protected:
 	virtual	void			SaveXMLAttributes(CXMLWriter* pcWriter);
 			void			CreateValuePortViews(const char* szPortName);
 			void			AddValueText(void);
-			SFloat64Vec2	GetBoxCentre(void);
+			SFloat64Vec2	GetBoxCentre(void) const;
 };
 
 
@@ -171,11 +171,11 @@ public:
 	virtual CComponentStateXML*		GetComponentStateXML(void);
 	virtual	STraceValue				ReadPortValue(CCircuitComponent* pcComponent, CPort* pcPort, int64 iTime);
 
-			EPinAlignment			GetAlignment(void);
-			EPinAnchour				GetAnchour(void);
-			int32					GetWeight(void);
-			bool					IsInverting(void);
-			bool					IsClockNotch(void);
+			EPinAlignment			GetAlignment(void) const;
+			EPinAnchour				GetAnchour(void) const;
+			int32					GetWeight(void) const;
+			bool					IsInverting(void) const;
+			bool					IsClockNotch(void) const;
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);

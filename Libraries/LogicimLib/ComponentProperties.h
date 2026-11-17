@@ -99,7 +99,7 @@ public:
 	void				AddChoice(const char* szName, CArrayChars* paszChoices, const char* szChosen);
 	void				AddDivider(const char* szName);
 
-	size				NumProperties(void);
+	size				NumProperties(void) const;
 	SComponentProperty*	Get(size uiIndex);
 	SComponentProperty*	Get(const char* szName);
 	bool				SetValue(const char* szName, const char* szValue);

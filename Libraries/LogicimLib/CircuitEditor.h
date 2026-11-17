@@ -253,17 +253,17 @@ public:
 	void				SetListener(CCircuitEditorListener* pcListener);
 	void				SetTabs(CArrayCircuitPlace* pasTabs, size uiActive);
 	CArrayCircuitPlace*	GetTabs(void);
-	size				GetActiveTab(void);
+	size				GetActiveTab(void) const;
 
 	void				Paint(CCircuitPainter* pcPainter);
 
 	bool				CanRun(void);
-	bool				IsEditing(void);
-	CCircuitViews*		GetCircuits(void);
-	CCircuitView*		GetCircuit(void);
-	CCircuitView*		GetTopCircuit(void);
-	CViewPath*			GetViewPath(void);
-	bool				IsInInstance(void);
+	bool				IsEditing(void) const;
+	CCircuitViews*		GetCircuits(void) const;
+	CCircuitView*		GetCircuit(void) const;
+	CCircuitView*		GetTopCircuit(void) const;
+	CViewPath*			GetViewPath(void) const;
+	bool				IsInInstance(void) const;
 	bool				EnterInstance(CComponentView* pcInstance);
 	bool				LeaveInstance(void);
 	bool				EnterInstancePath(const char* szPath);
@@ -275,13 +275,13 @@ public:
 	CCircuitSimulation*	GetSimulation(void);
 	CCircuitFonts*		GetFonts(void);
 	CCircuitSelection*	GetSelection(void);
-	CComponentView*		GetHover(void);
+	CComponentView*		GetHover(void) const;
 	bool				GetHoverConnection(SInt32Vec2* psConnection);
-	CTraceView*			GetHoverTrace(void);
-	ERotation			GetCreationRotation(void);
-	bool				IsCreationMirrored(void);
-	bool				IsControl(void);
-	bool				IsShift(void);
+	CTraceView*			GetHoverTrace(void) const;
+	ERotation			GetCreationRotation(void) const;
+	bool				IsCreationMirrored(void) const;
+	bool				IsControl(void) const;
+	bool				IsShift(void) const;
 
 	CMoveComponentsEdit*	NewMoveEdit(bool bConnected);
 	void				StartMoveViews(CArrayComponentViewPtr* papcComponents, CArrayTraceViewPtr* papcTraces, bool bNew, bool bConnected, CArrayTraceViewPtr* papcFollowing);

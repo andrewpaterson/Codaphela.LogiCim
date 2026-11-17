@@ -55,7 +55,7 @@ public:
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 
-			bool					IsDoubleSided(void);
+			bool					IsDoubleSided(void) const;
 			void					GetBox(SFloat64Bounds* psBox);
 
 	static	void					MeasureBox(CCircuitFonts* pcFonts, const char* szName, bool bDoubleSided, SFloat64Bounds* psBox);

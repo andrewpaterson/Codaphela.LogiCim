@@ -106,7 +106,7 @@ public:
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 	virtual ELogicBlockKind			GetBlockKind(void);
 
-			ELogicBlockKind			GetKind(void);
+			ELogicBlockKind			GetKind(void) const;
 			SLogicBlockParams*		GetParams(void);
 			CPortView*				GetPortViewByLabel(const char* szLabel, bool bInverted);
 

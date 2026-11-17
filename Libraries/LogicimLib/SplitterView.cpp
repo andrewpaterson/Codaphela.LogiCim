@@ -344,7 +344,7 @@ SFloat64Vec2 CSplitterView::GetFanPosition(int32 iFan, float64 fAlong)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SFloat64Vec2 CSplitterView::GetStartPosition(void)
+SFloat64Vec2 CSplitterView::GetStartPosition(void) const
 {
 	SFloat64Vec2	sPosition;
 
@@ -609,8 +609,8 @@ bool CSplitterView::LoadXML(CMarkupTag* pcTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int32 CSplitterView::GetBitWidth(void) { return miBitWidth; }
-int32 CSplitterView::GetFanOut(void) { return miFanOut; }
+int32 CSplitterView::GetBitWidth(void) const { return miBitWidth; }
+int32 CSplitterView::GetFanOut(void) const { return miFanOut; }
 int32 CSplitterView::GetSplitIndex(int32 iBit) { return maiSplitIndices.GetValue(iBit); }
 CPortView* CSplitterView::GetStartPortView(void) { return GetPortView((size)0); }
 

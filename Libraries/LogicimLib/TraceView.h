@@ -69,10 +69,10 @@ public:
 			size						NumTraces(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 			CTrace*						GetTrace(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex);
 			void				SetJunctions(bool bStart, bool bEnd);
-			bool				IsStartJunction(void);
-			bool				IsEndJunction(void);
-			SInt32Vec2			GetStart(void);
-			SInt32Vec2			GetEnd(void);
+			bool				IsStartJunction(void) const;
+			bool				IsEndJunction(void) const;
+			SInt32Vec2			GetStart(void) const;
+			SInt32Vec2			GetEnd(void) const;
 			void				SetEnds(SInt32Vec2 sStart, SInt32Vec2 sEnd);
 
 protected:

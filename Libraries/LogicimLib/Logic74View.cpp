@@ -503,8 +503,8 @@ bool CLogic74PackageView::InitFromProperties(int32 x, int32 y, ERotation eRotati
 //
 //////////////////////////////////////////////////////////////////////////
 char* CLogic74PackageView::GetPartType(void) { return mszPartType.Text(); }
-SLogic74Part* CLogic74PackageView::GetPart(void) { return msType.psPart; }
-int CLogic74PackageView::GetUnitCount(void) { return msType.iUnitCount; }
+SLogic74Part* CLogic74PackageView::GetPart(void) const { return msType.psPart; }
+int CLogic74PackageView::GetUnitCount(void) const { return msType.iUnitCount; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -834,8 +834,8 @@ bool CLogic74UnitView::InitFromProperties(int32 x, int32 y, ERotation eRotation,
 //
 //////////////////////////////////////////////////////////////////////////
 char* CLogic74UnitView::GetPartType(void) { return mszPartType.Text(); }
-SLogic74Part* CLogic74UnitView::GetPart(void) { return msType.psPart; }
-int CLogic74UnitView::GetUnit(void) { return miUnit; }
-char CLogic74UnitView::GetUnitLetter(void) { return (char)('A' + miUnit); }
-int CLogic74UnitView::GetUnitCount(void) { return (msType.psPart != NULL) ? msType.iUnitCount : 1; }
+SLogic74Part* CLogic74UnitView::GetPart(void) const { return msType.psPart; }
+int CLogic74UnitView::GetUnit(void) const { return miUnit; }
+char CLogic74UnitView::GetUnitLetter(void) const { return (char)('A' + miUnit); }
+int CLogic74UnitView::GetUnitCount(void) const { return (msType.psPart != NULL) ? msType.iUnitCount : 1; }
 

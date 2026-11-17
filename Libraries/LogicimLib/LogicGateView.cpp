@@ -350,9 +350,9 @@ void CLogicGateView::IncludeExtraBounds(SFloat64Bounds* psBounds)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CLogicGateView::GetInputCount(void) { return miInputCount; }
-int CLogicGateView::GetInputWidth(void) { return miInputWidth; }
-bool CLogicGateView::IsNegated(void) { return mbNegated; }
+int CLogicGateView::GetInputCount(void) const { return miInputCount; }
+int CLogicGateView::GetInputWidth(void) const { return miInputWidth; }
+bool CLogicGateView::IsNegated(void) const { return mbNegated; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -375,5 +375,5 @@ void CLogicGateView::GetProperties(CComponentProperties* pcProperties, SComponen
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CLogicGateView::GetPinSpacing(void) { return miPinSpacing; }
+int CLogicGateView::GetPinSpacing(void) const { return miPinSpacing; }
 void CLogicGateView::SetPinSpacing(int iPinSpacing) { miPinSpacing = (iPinSpacing < 1) ? 1 : ((iPinSpacing > LOGIC_GATE_MAX_PIN_SPACING) ? LOGIC_GATE_MAX_PIN_SPACING : iPinSpacing); }

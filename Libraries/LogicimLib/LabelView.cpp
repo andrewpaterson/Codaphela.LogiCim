@@ -195,8 +195,8 @@ bool CLabelView::LoadXML(CMarkupTag* pcTag)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-ETextAlignment CLabelView::GetAlignment(void) { return meAlignment; }
-bool CLabelView::IsBold(void) { return mbBold; }
+ETextAlignment CLabelView::GetAlignment(void) const { return meAlignment; }
+bool CLabelView::IsBold(void) const { return mbBold; }
 void CLabelView::GetBox(SFloat64Bounds* psBox) { *psBox = msBox; }
 
 

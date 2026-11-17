@@ -81,18 +81,18 @@ public:
 	uint64				GetSpriteState(CCircuitPainter* pcPainter, ARGB32 sColour);
 	void				IncludeBounds(SFloat64Bounds* psBounds);
 
-	SInt32Vec2			GetRelativePosition(void);
-	SInt32Vec2			GetGridPosition(void);
-	bool				IsInverting(void);
-	bool				IsClock(void);
+	SInt32Vec2			GetRelativePosition(void) const;
+	SInt32Vec2			GetGridPosition(void) const;
+	bool				IsInverting(void) const;
+	bool				IsClock(void) const;
 	SFloat64Vec2*		GetClockNotch(void);
 	char*				GetText(void);
-	size				NumPortNames(void);
+	size				NumPortNames(void) const;
 	char*				GetPortName(size uiIndex);
 	size				NumPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 	CPort*				GetPort(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, size uiIndex);
 	CArrayPortPtr*		GetPorts(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
-	CComponentView*		GetOwner(void);
+	CComponentView*		GetOwner(void) const;
 };
 
 
