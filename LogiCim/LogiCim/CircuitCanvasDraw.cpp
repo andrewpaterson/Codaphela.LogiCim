@@ -147,6 +147,8 @@ bool CCircuitCanvasDraw::Draw(Ptr<CCanvas> pCanvas)
 	else
 	{
 		//The grid's tiles cover the canvas, background and all, so nothing is drawn under them.
+		pcViewPath = NULL;
+		pcSimulation = NULL;
 		pcOwn = mbOwnPlace ? FindOwnPlace(&pcViewPath, &pcSimulation) : NULL;
 		if (!mbOwnPlace)
 		{
