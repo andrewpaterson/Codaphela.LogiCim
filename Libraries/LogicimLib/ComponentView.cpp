@@ -94,7 +94,7 @@ void CComponentView::SaveXML(CXMLWriter* pcWriter)
 // component; NULL if it keeps none.
 //
 //////////////////////////////////////////////////////////////////////////
-CComponentStateXML* CComponentView::GetComponentStateXML(void)
+CComponentStateXML* CComponentView::GetComponentStateXML(void) const
 {
 	return NULL;
 }

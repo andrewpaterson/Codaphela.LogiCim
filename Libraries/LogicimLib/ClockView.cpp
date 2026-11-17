@@ -116,7 +116,7 @@ const char* CClockView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CClockView::GetXMLName(void)
+const char* CClockView::GetXMLName(void) const
 {
 	return "Clock";
 }

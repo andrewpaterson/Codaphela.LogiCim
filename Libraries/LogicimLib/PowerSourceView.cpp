@@ -69,7 +69,7 @@ CCircuitComponent* CPowerSourceView::CreateComponent(CViewPath* pcViewPath, CCir
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CComponentStateXML* CPowerSourceView::GetComponentStateXML(void)
+CComponentStateXML* CPowerSourceView::GetComponentStateXML(void) const
 {
 	return &gcPassiveStateXML;
 }
@@ -120,7 +120,7 @@ const char* CGroundView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CGroundView::GetXMLName(void)
+const char* CGroundView::GetXMLName(void) const
 {
 	return "Ground";
 }
@@ -209,7 +209,7 @@ const char* CPositivePowerView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CPositivePowerView::GetXMLName(void)
+const char* CPositivePowerView::GetXMLName(void) const
 {
 	return "PositivePower";
 }

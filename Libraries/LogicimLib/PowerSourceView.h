@@ -34,7 +34,7 @@ public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, float32 fVoltage);
 
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);
-	virtual CComponentStateXML*		GetComponentStateXML(void);
+	virtual CComponentStateXML*		GetComponentStateXML(void) const;
 			float32					GetVoltage(void) const;
 };
 
@@ -48,7 +48,7 @@ public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
@@ -70,7 +70,7 @@ public:
 	virtual void					Paint(CCircuitPainter* pcPainter);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);

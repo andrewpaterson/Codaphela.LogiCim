@@ -191,7 +191,7 @@ const char* CTunnelView::GetConnectionName(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CTunnelView::GetXMLName(void)
+const char* CTunnelView::GetXMLName(void) const
 {
 	return "Tunnel";
 }

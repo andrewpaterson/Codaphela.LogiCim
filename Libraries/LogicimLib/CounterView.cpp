@@ -89,7 +89,7 @@ const char* CCounterView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CCounterView::GetXMLName(void)
+const char* CCounterView::GetXMLName(void) const
 {
 	return "Counter";
 }

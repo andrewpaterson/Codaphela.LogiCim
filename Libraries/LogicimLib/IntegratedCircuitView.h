@@ -72,7 +72,7 @@ public:
 	virtual void					Kill(void);
 
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);
-	virtual CComponentStateXML*		GetComponentStateXML(void);
+	virtual CComponentStateXML*		GetComponentStateXML(void) const;
 	virtual CIntegratedCircuitView*	GetIntegratedCircuitView(void);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily) =0;
 

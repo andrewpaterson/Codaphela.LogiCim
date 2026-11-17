@@ -229,7 +229,7 @@ const char* C65C64View::GetType(void)
 // XML names can't start with a digit.
 //
 //////////////////////////////////////////////////////////////////////////
-const char* C65C64View::GetXMLName(void)
+const char* C65C64View::GetXMLName(void) const
 {
 	return "MPU65C64";
 }

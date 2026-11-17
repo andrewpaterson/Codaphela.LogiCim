@@ -1055,7 +1055,7 @@ const char* CSubcircuitInstanceView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CSubcircuitInstanceView::GetXMLName(void)
+const char* CSubcircuitInstanceView::GetXMLName(void) const
 {
 	return "Subcircuit";
 }

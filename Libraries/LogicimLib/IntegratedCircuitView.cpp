@@ -121,7 +121,7 @@ void CIntegratedCircuitView::InitAfterProperties(CComponentProperties* pcPropert
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CComponentStateXML* CIntegratedCircuitView::GetComponentStateXML(void)
+CComponentStateXML* CIntegratedCircuitView::GetComponentStateXML(void) const
 {
 	return &gcIntegratedCircuitStateXML;
 }

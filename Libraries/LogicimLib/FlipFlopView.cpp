@@ -58,7 +58,7 @@ const char* CDTypeFlipFlopView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CDTypeFlipFlopView::GetXMLName(void)
+const char* CDTypeFlipFlopView::GetXMLName(void) const
 {
 	return "DTypeFlipFlop";
 }

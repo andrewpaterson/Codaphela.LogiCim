@@ -208,7 +208,7 @@ const char* CXnorGateView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* COrGateView::GetXMLName(void)
+const char* COrGateView::GetXMLName(void) const
 {
 	return "OrGate";
 }
@@ -228,7 +228,7 @@ bool COrGateView::InitGate(SLogicGateXML* psGate)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CNorGateView::GetXMLName(void)
+const char* CNorGateView::GetXMLName(void) const
 {
 	return "NorGate";
 }
@@ -248,7 +248,7 @@ bool CNorGateView::InitGate(SLogicGateXML* psGate)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CXorGateView::GetXMLName(void)
+const char* CXorGateView::GetXMLName(void) const
 {
 	return "XorGate";
 }
@@ -268,7 +268,7 @@ bool CXorGateView::InitGate(SLogicGateXML* psGate)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CXnorGateView::GetXMLName(void)
+const char* CXnorGateView::GetXMLName(void) const
 {
 	return "XnorGate";
 }

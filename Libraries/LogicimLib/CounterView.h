@@ -40,7 +40,7 @@ public:
 	virtual void					Paint(CCircuitPainter* pcPainter);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);

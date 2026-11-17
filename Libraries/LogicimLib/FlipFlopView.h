@@ -32,7 +32,7 @@ public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitIntegratedCircuit(SIntegratedCircuitXML* psIntegratedCircuit);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);

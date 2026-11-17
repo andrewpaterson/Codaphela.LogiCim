@@ -131,7 +131,7 @@ CCircuitComponent* CLabelView::CreateComponent(CViewPath* pcViewPath, CCircuitSi
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CLabelView::GetXMLName(void)
+const char* CLabelView::GetXMLName(void) const
 {
 	return "Label";
 }

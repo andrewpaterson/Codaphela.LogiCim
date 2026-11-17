@@ -343,7 +343,7 @@ const char* CConstantView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CConstantView::GetXMLName(void)
+const char* CConstantView::GetXMLName(void) const
 {
 	return "Constant";
 }
@@ -446,7 +446,7 @@ const char* CProbeView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CProbeView::GetXMLName(void)
+const char* CProbeView::GetXMLName(void) const
 {
 	return "Probe";
 }
@@ -571,7 +571,7 @@ const char* CPinView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CPinView::GetXMLName(void)
+const char* CPinView::GetXMLName(void) const
 {
 	return "Pin";
 }
@@ -705,7 +705,7 @@ CIntegratedCircuit* CPinView::CreateIntegratedCircuit(CSubcircuitSimulation* pcS
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CComponentStateXML* CPinView::GetComponentStateXML(void)
+CComponentStateXML* CPinView::GetComponentStateXML(void) const
 {
 	return &gcPassiveStateXML;
 }

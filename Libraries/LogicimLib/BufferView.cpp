@@ -142,7 +142,7 @@ const char* CInverterView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CBufferView::GetXMLName(void)
+const char* CBufferView::GetXMLName(void) const
 {
 	return "Buffer";
 }
@@ -173,7 +173,7 @@ bool CBufferView::InitGate(SLogicGateXML* psGate)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CInverterView::GetXMLName(void)
+const char* CInverterView::GetXMLName(void) const
 {
 	return "Inverter";
 }

@@ -115,7 +115,7 @@ public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
@@ -132,7 +132,7 @@ public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, int32 iBitWidth, ERadix eRadix, SInt32Bounds* psBox);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
@@ -160,7 +160,7 @@ public:
 			void					SetSubcircuitAppearance(EPinAlignment eAlignment, EPinAnchour eAnchour, int32 iWeight, bool bInverting, bool bClockNotch);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitValue(SValueViewXML* psValue, CCircuitFonts* pcFonts);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
@@ -168,7 +168,7 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
-	virtual CComponentStateXML*		GetComponentStateXML(void);
+	virtual CComponentStateXML*		GetComponentStateXML(void) const;
 	virtual	STraceValue				ReadPortValue(CCircuitComponent* pcComponent, CPort* pcPort, int64 iTime);
 
 			EPinAlignment			GetAlignment(void) const;

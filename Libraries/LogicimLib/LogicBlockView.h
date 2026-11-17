@@ -98,13 +98,13 @@ public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, ELogicBlockKind eKind, SLogicBlockParams* psParams);
 
 	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void);
+	virtual const char*				GetXMLName(void) const;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
-	virtual ELogicBlockKind			GetBlockKind(void);
+	virtual ELogicBlockKind			GetBlockKind(void) const;
 
 			ELogicBlockKind			GetKind(void) const;
 			SLogicBlockParams*		GetParams(void);
@@ -125,7 +125,7 @@ protected:
 
 
 //A logic block of one kind.
-#define LOGIC_BLOCK_KIND_VIEW(Class, Kind)																	class Class : public CLogicBlockView																			{																												CONSTRUCTABLE(Class);																							public:																												virtual ELogicBlockKind			GetBlockKind(void) { return Kind; }										};
+#define LOGIC_BLOCK_KIND_VIEW(Class, Kind)																	class Class : public CLogicBlockView																			{																												CONSTRUCTABLE(Class);																							public:																												virtual ELogicBlockKind			GetBlockKind(void) const override { return Kind; }										};
 
 
 LOGIC_BLOCK_KIND_VIEW(CRegisterView, LBK_Register)

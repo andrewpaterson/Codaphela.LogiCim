@@ -130,7 +130,7 @@ const char* CNandGateView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CAndGateView::GetXMLName(void)
+const char* CAndGateView::GetXMLName(void) const
 {
 	return "AndGate";
 }
@@ -150,7 +150,7 @@ bool CAndGateView::InitGate(SLogicGateXML* psGate)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CNandGateView::GetXMLName(void)
+const char* CNandGateView::GetXMLName(void) const
 {
 	return "NandGate";
 }

@@ -188,7 +188,7 @@ const char* COscilloscopeView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* COscilloscopeView::GetXMLName(void)
+const char* COscilloscopeView::GetXMLName(void) const
 {
 	return "Oscilloscope";
 }

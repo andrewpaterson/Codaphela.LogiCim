@@ -218,7 +218,7 @@ const char* CW65C816View::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CW65C816View::GetXMLName(void)
+const char* CW65C816View::GetXMLName(void) const
 {
 	return "W65C816";
 }

@@ -476,7 +476,7 @@ CCircuitComponent* CSplitterView::CreateComponent(CViewPath* pcViewPath, CCircui
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CComponentStateXML* CSplitterView::GetComponentStateXML(void)
+CComponentStateXML* CSplitterView::GetComponentStateXML(void) const
 {
 	return &gcPassiveStateXML;
 }
@@ -496,7 +496,7 @@ const char* CSplitterView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CSplitterView::GetXMLName(void)
+const char* CSplitterView::GetXMLName(void) const
 {
 	return "Splitter";
 }

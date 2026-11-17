@@ -423,7 +423,7 @@ const char* CLogic74PackageView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CLogic74PackageView::GetXMLName(void)
+const char* CLogic74PackageView::GetXMLName(void) const
 {
 	return "Logic74Package";
 }
@@ -731,7 +731,7 @@ const char* CLogic74UnitView::GetType(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-const char* CLogic74UnitView::GetXMLName(void)
+const char* CLogic74UnitView::GetXMLName(void) const
 {
 	return "Logic74Unit";
 }

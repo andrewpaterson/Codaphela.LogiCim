@@ -126,7 +126,7 @@ public:
 	virtual CComponentView*			NewNextUnit(void);
 	virtual void					Paint(CCircuitPainter* pcPainter);
 
-	virtual const char*				GetXMLName(void) =0;
+	virtual const char*				GetXMLName(void) const =0;
 	virtual bool					LoadXML(CMarkupTag* pcTag) =0;
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
@@ -135,7 +135,7 @@ public:
 			bool					LoadXMLMirrored(CMarkupTag* pcTag);
 	virtual bool					LoadXMLAfterInit(CMarkupTag* pcTag);
 	virtual void					InitAfterProperties(CComponentProperties* pcProperties);
-	virtual CComponentStateXML*		GetComponentStateXML(void);
+	virtual CComponentStateXML*		GetComponentStateXML(void) const;
 
 			void					DisconnectComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
 			void					DestroyComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation);
