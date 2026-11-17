@@ -401,6 +401,6 @@ void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CK
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) { return mcModel.GetCircuit(); }
+CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) const { return mcModel.GetCircuit(); }
 SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
 CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }

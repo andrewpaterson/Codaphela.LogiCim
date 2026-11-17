@@ -786,7 +786,7 @@ void SKicadSchemLogicimBusRun::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size SKicadSchemLogicimBusRun::NumTaps(void)
+size SKicadSchemLogicimBusRun::NumTaps(void) const
 {
 	return pauiTaps->NumElements();
 }
@@ -1074,8 +1074,8 @@ bool CKicadSchemLogicimBuses::IsSplitterPin(CPortView* pcPortView)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemLogicimBuses::NumSplitters(void) { return masSplitters.NumElements(); }
+size CKicadSchemLogicimBuses::NumSplitters(void) const { return masSplitters.NumElements(); }
 SKicadSchemLogicimSplitter* CKicadSchemLogicimBuses::GetSplitter(size uiIndex) { return masSplitters.SafeGet(uiIndex); }
-size CKicadSchemLogicimBuses::NumSplitterPairs(void) { return masSplitterPairs.NumElements(); }
+size CKicadSchemLogicimBuses::NumSplitterPairs(void) const { return masSplitterPairs.NumElements(); }
 SKicadSchemLogicimSplitterPair* CKicadSchemLogicimBuses::GetSplitterPair(size uiIndex) { return masSplitterPairs.SafeGet(uiIndex); }
 

@@ -179,7 +179,7 @@ void SKicadSchemLogicPins::AddPin(CKicadSchemLibPin* pcPin, const char* szIndex,
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size SKicadSchemLogicPins::NumPins(void)
+size SKicadSchemLogicPins::NumPins(void) const
 {
 	return asPins.NumElements();
 }

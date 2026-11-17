@@ -77,7 +77,7 @@ struct SKicadSchemLogicimBusRun
 
 	void				Init(CKicadSchemBus* pcBus, CArraySize* pauiTaps);
 	void				Kill(void);
-	size				NumTaps(void);
+	size				NumTaps(void) const;
 	SKicadSchemBusTap*	GetTap(size uiIndex);
 };
 
@@ -106,9 +106,9 @@ public:
 	void							AddBuses(void);
 
 	bool							IsSplitterPin(CPortView* pcPortView);
-	size							NumSplitters(void);
+	size							NumSplitters(void) const;
 	SKicadSchemLogicimSplitter*		GetSplitter(size uiIndex);
-	size							NumSplitterPairs(void);
+	size							NumSplitterPairs(void) const;
 	SKicadSchemLogicimSplitterPair*	GetSplitterPair(size uiIndex);
 
 protected:

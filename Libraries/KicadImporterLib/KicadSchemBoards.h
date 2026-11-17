@@ -55,7 +55,7 @@ public:
 	CPinView*	GetPin(const char* szNumber);
 
 	char*		GetReference(void);
-	size		NumPins(void);
+	size		NumPins(void) const;
 	size		NumCircuitPins(void);
 };
 
@@ -78,7 +78,7 @@ public:
 
 	CKicadSchemBoardConnector*	AddConnector(const char* szReference, size uiNumPins);
 	CKicadSchemBoardConnector*	FindConnector(size uiNumSymbolPins);
-	size						NumConnectors(void);
+	size						NumConnectors(void) const;
 	CKicadSchemBoardConnector*	GetConnector(size uiIndex);
 
 	void						SetCircuit(CCircuitView* pcCircuit);
@@ -87,9 +87,9 @@ public:
 	void						SetCounts(SKicadSchemLogicimCounts* psCounts);
 
 	char*						GetSchematic(void);
-	CCircuitView*				GetCircuit(void);
-	bool						IsConverting(void);
-	bool						IsLaidOut(void);
+	CCircuitView*				GetCircuit(void) const;
+	bool						IsConverting(void) const;
+	bool						IsLaidOut(void) const;
 	SKicadSchemLogicimCounts*	GetCounts(void);
 };
 
@@ -126,7 +126,7 @@ public:
 	CCircuitView*		Import(const char* szSchematic);
 	CKicadSchemBoard*	GetBoard(const char* szSchematic, const char* szDrawnIn) override;
 
-	size				NumBoards(void);
+	size				NumBoards(void) const;
 	CKicadSchemBoard*	GetBoard(size uiIndex);
 	CKicadSchemBoard*	GetBoardForCircuit(CCircuitView* pcCircuit);
 

@@ -180,7 +180,7 @@ public:
 	void							Kill(void);
 
 	void							SetCircuit(CCircuitView* pcCircuit);
-	CCircuitView*					GetCircuit(void);
+	CCircuitView*					GetCircuit(void) const;
 
 	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol);
 	void							AddTerminal(CKicadSchemSubnet* pcSubnet, SFloat64Vec2* psKicadPosition, CPortView* pcPortView, size uiItem, bool bBus = false);
@@ -188,11 +188,11 @@ public:
 	void							RemoveItems(CArrayInt* paiRemoved);
 	void							AttachItem(size uiItem, CPortView* pcTo);
 
-	size							NumItems(void);
+	size							NumItems(void) const;
 	SKicadSchemLogicimItem*			GetItem(size uiIndex);
-	size							NumTerminals(void);
+	size							NumTerminals(void) const;
 	SKicadSchemLogicimTerminal*		GetTerminal(size uiIndex);
-	size							NumConnections(void);
+	size							NumConnections(void) const;
 	SKicadSchemLogicimConnection*	GetConnection(size uiIndex);
 
 	size							FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet);

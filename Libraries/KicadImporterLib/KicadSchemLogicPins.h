@@ -50,7 +50,7 @@ struct SKicadSchemLogicPins
 	void					Init(void);
 	void					Kill(void);
 	void					AddPin(CKicadSchemLibPin* pcPin, const char* szIndex, const char* szLetters, bool bNegated, SFloat64Vec2* psPosition);
-	size					NumPins(void);
+	size					NumPins(void) const;
 	SKicadSchemLogicPin*	GetPin(size uiIndex);
 };
 

@@ -86,7 +86,7 @@ CPinView* CKicadSchemBoardConnector::GetPin(const char* szNumber)
 //
 //////////////////////////////////////////////////////////////////////////
 char* CKicadSchemBoardConnector::GetReference(void) { return mszReference.Text(); }
-size CKicadSchemBoardConnector::NumPins(void) { return muiNumPins; }
+size CKicadSchemBoardConnector::NumPins(void) const { return muiNumPins; }
 size CKicadSchemBoardConnector::NumCircuitPins(void) { return mcPins.NumElements(); }
 
 
@@ -186,15 +186,15 @@ void CKicadSchemBoard::SetCounts(SKicadSchemLogicimCounts* psCounts)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemBoard::NumConnectors(void) { return mapcConnectors.NumElements(); }
+size CKicadSchemBoard::NumConnectors(void) const { return mapcConnectors.NumElements(); }
 CKicadSchemBoardConnector* CKicadSchemBoard::GetConnector(size uiIndex) { return mapcConnectors.SafeGetPtr(uiIndex); }
 void CKicadSchemBoard::SetCircuit(CCircuitView* pcCircuit) { mpcCircuit = pcCircuit; }
 void CKicadSchemBoard::SetConverting(bool bConverting) { mbConverting = bConverting; }
 void CKicadSchemBoard::SetLaidOut(void) { mbLaidOut = true; }
 char* CKicadSchemBoard::GetSchematic(void) { return mszSchematic.Text(); }
-CCircuitView* CKicadSchemBoard::GetCircuit(void) { return mpcCircuit; }
-bool CKicadSchemBoard::IsConverting(void) { return mbConverting; }
-bool CKicadSchemBoard::IsLaidOut(void) { return mbLaidOut; }
+CCircuitView* CKicadSchemBoard::GetCircuit(void) const { return mpcCircuit; }
+bool CKicadSchemBoard::IsConverting(void) const { return mbConverting; }
+bool CKicadSchemBoard::IsLaidOut(void) const { return mbLaidOut; }
 SKicadSchemLogicimCounts* CKicadSchemBoard::GetCounts(void) { return &msCounts; }
 
 
@@ -415,5 +415,5 @@ CKicadSchemBoard* CKicadSchemBoardImporter::GetBoardForCircuit(CCircuitView* pcC
 //
 //
 //////////////////////////////////////////////////////////////////////////
-size CKicadSchemBoardImporter::NumBoards(void) { return mapcBoards.NumElements(); }
+size CKicadSchemBoardImporter::NumBoards(void) const { return mapcBoards.NumElements(); }
 CKicadSchemBoard* CKicadSchemBoardImporter::GetBoard(size uiIndex) { return mapcBoards.SafeGetPtr(uiIndex); }

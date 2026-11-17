@@ -359,10 +359,10 @@ void CKicadSchemLogicimModel::RemoveItems(CArrayInt* paiRemoved)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CCircuitView* CKicadSchemLogicimModel::GetCircuit(void) { return mpcCircuit; }
-size CKicadSchemLogicimModel::NumItems(void) { return masItems.NumElements(); }
-size CKicadSchemLogicimModel::NumTerminals(void) { return masTerminals.NumElements(); }
-size CKicadSchemLogicimModel::NumConnections(void) { return masConnections.NumElements(); }
+CCircuitView* CKicadSchemLogicimModel::GetCircuit(void) const { return mpcCircuit; }
+size CKicadSchemLogicimModel::NumItems(void) const { return masItems.NumElements(); }
+size CKicadSchemLogicimModel::NumTerminals(void) const { return masTerminals.NumElements(); }
+size CKicadSchemLogicimModel::NumConnections(void) const { return masConnections.NumElements(); }
 SKicadSchemLogicimConnection* CKicadSchemLogicimModel::GetConnection(size uiIndex) { return masConnections.SafeGet(uiIndex); }
 
 

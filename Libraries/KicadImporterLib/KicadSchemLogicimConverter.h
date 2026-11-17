@@ -160,7 +160,7 @@ public:
 	void							SetProgress(CKicadSchemImportProgress* pcProgress);
 	bool							Convert(const char* szTypeName);
 
-	CCircuitView*					GetCircuit(void);
+	CCircuitView*					GetCircuit(void) const;
 	SKicadSchemLogicimCounts*		GetCounts(void);
 	CKicadSchemLogicimModel*		GetModel(void);
 
