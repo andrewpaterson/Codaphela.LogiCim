@@ -199,10 +199,10 @@ void CCircuitCanvasDraw::SetZoom(float32 fZoom)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float32 CCircuitCanvasDraw::GetZoom(void) { return (float32)mcViewport.GetZoom(); }
+float32 CCircuitCanvasDraw::GetZoom(void) const { return (float32)mcViewport.GetZoom(); }
 void CCircuitCanvasDraw::SetGrid(bool bGrid) { mbGrid = bGrid; }
-bool CCircuitCanvasDraw::IsGrid(void) { return mbGrid; }
-float32 CCircuitCanvasDraw::GetGridSpacing(void) { return (float32)mcViewport.GetPixelsPerGrid(); }
+bool CCircuitCanvasDraw::IsGrid(void) const { return mbGrid; }
+float32 CCircuitCanvasDraw::GetGridSpacing(void) const { return (float32)mcViewport.GetPixelsPerGrid(); }
 CCircuitViewport* CCircuitCanvasDraw::GetViewport(void) { return &mcViewport; }
 void CCircuitCanvasDraw::SetPreview(CComponentView* pcPreview) { mpcPreview = pcPreview; }
 void CCircuitCanvasDraw::SetPreviewOnly(bool bPreviewOnly) { mbPreviewOnly = bPreviewOnly; }

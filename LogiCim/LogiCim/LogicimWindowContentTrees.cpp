@@ -144,7 +144,7 @@ const char* CLogicimWindowContent::GetEditedCircuitName(void)
 }
 
 
-Ptr<CTreeContainer> CLogicimWindowContent::GetSubcircuitTree(void) { return mpSubcircuitTree; }
+Ptr<CTreeContainer> CLogicimWindowContent::GetSubcircuitTree(void) const { return mpSubcircuitTree; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -333,7 +333,7 @@ bool CLogicimWindowContent::ActivateSimulationNode(const char* szPath)
 }
 
 
-Ptr<CTreeContainer> CLogicimWindowContent::GetSimulationTree(void) { return mpSimulationTree; }
+Ptr<CTreeContainer> CLogicimWindowContent::GetSimulationTree(void) const { return mpSimulationTree; }
 
 
 //////////////////////////////////////////////////////////////////////////

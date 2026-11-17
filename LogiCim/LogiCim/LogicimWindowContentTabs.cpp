@@ -568,7 +568,7 @@ void CLogicimWindowContent::ActivateCanvas(CCircuitCanvas* pcCanvas)
 
 
 size CLogicimWindowContent::NumTabs(void) { return maTabPanes.NumElements(); }
-size CLogicimWindowContent::GetActiveTab(void) { return muiActiveTab; }
+size CLogicimWindowContent::GetActiveTab(void) const { return muiActiveTab; }
 Ptr<CDockPane> CLogicimWindowContent::GetTabPane(size uiTab) { return maTabPanes.Get(uiTab); }
 
 

@@ -77,12 +77,12 @@ public:
 	bool				Draw(Ptr<CCanvas> pCanvas) override;
 
 	void				SetZoom(float32 fZoom);
-	float32				GetZoom(void);
+	float32				GetZoom(void) const;
 	void				ZoomAroundCentre(float32 fZoom);
 	void				ZoomToFit(SFloat64Bounds* psBox);
 	void				SetGrid(bool bGrid);
-	bool				IsGrid(void);
-	float32				GetGridSpacing(void);
+	bool				IsGrid(void) const;
+	float32				GetGridSpacing(void) const;
 	CCircuitViewport*	GetViewport(void);
 	void				SetPreview(CComponentView* pcPreview);
 	void				SetPreviewOnly(bool bPreviewOnly);

@@ -975,10 +975,10 @@ void CLogicimWindowContent::Redo(bool bStep) { PressUndo(true, bStep); }
 //
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) { return mpTheme; }
+Ptr<CWindowTheme> CLogicimWindowContent::GetTheme(void) const { return mpTheme; }
 CLogicimSettings* CLogicimWindowContent::GetSettings(void) { return &mcSettings; }
-Ptr<CDockManager> CLogicimWindowContent::GetDock(void) { return mpDock; }
+Ptr<CDockManager> CLogicimWindowContent::GetDock(void) const { return mpDock; }
 CLogicimCircuit* CLogicimWindowContent::GetLogicimCircuit(void) { return &mpLogicimCircuit; }
-Ptr<CMenuContainer> CLogicimWindowContent::GetRecentMenu(void) { return mpRecentMenu; }
-Ptr<CMenuBar> CLogicimWindowContent::GetMenuBar(void) { return mpMenuBar; }
+Ptr<CMenuContainer> CLogicimWindowContent::GetRecentMenu(void) const { return mpRecentMenu; }
+Ptr<CMenuBar> CLogicimWindowContent::GetMenuBar(void) const { return mpMenuBar; }
 float32 CLogicimWindowContent::GetZoom(void) { return mpCircuit->GetCircuitDraw()->GetZoom(); }

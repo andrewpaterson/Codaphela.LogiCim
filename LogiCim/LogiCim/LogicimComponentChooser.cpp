@@ -293,7 +293,7 @@ void CLogicimComponentChooser::FindSubcircuits(void)
 // The libraries, and the subcircuits as the last.
 //
 //////////////////////////////////////////////////////////////////////////
-int CLogicimComponentChooser::NumLibraries(void)
+int CLogicimComponentChooser::NumLibraries(void) const
 {
 	return (int)NumComponentLibraries() + 1;
 }

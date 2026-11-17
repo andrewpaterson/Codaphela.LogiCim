@@ -234,7 +234,7 @@ public:
 	bool				ApplyKeymapEdits(const char* szEdits);
 	bool				ApplyChooserEdits(const char* szEdits);
 	void				ResetLayout(void);
-	Ptr<CDockManager>	GetDock(void);
+	Ptr<CDockManager>	GetDock(void) const;
 	bool				PaneClosing(CDockPane* pcPane) override;
 	void				PaneClosed(CDockPane* pcPane) override;
 	void				ActivePaneChanged(CDockPane* pcPane) override;
@@ -248,7 +248,7 @@ public:
 	char*				GetMessage(void);
 	void				ActivateCanvas(CCircuitCanvas* pcCanvas);
 	size				NumTabs(void);
-	size				GetActiveTab(void);
+	size				GetActiveTab(void) const;
 	Ptr<CDockPane>		GetTabPane(size uiTab);
 	void				GetTabPlace(size uiTab, SCircuitPlace* psDest);
 	bool				ImportChosenKicadSchematic(const char* szFilename);
@@ -258,11 +258,11 @@ public:
 	bool				SaveProject(const char* szFilename);
 	char*				GetProjectDialogStart(bool bSave);
 	void				SetStartupImport(const char* szFilename);
-	Ptr<CWindowTheme>	GetTheme(void);
+	Ptr<CWindowTheme>	GetTheme(void) const;
 	CLogicimSettings*	GetSettings(void);
 	CLogicimCircuit*	GetLogicimCircuit(void);
-	Ptr<CMenuContainer>	GetRecentMenu(void);
-	Ptr<CMenuBar>	GetMenuBar(void);
+	Ptr<CMenuContainer>	GetRecentMenu(void) const;
+	Ptr<CMenuBar>	GetMenuBar(void) const;
 	float32			GetZoom(void);
 	void				SubcircuitSelected(void);
 	void				EnterSubcircuit(CComponentView* pcInstance);
@@ -282,8 +282,8 @@ public:
 	bool				CanGoBack(void);
 	bool				CanGoForward(void);
 	CLogicimNavigationHistory*	GetHistory(void);
-	Ptr<CTreeContainer>	GetSimulationTree(void);
-	Ptr<CTreeContainer>	GetSubcircuitTree(void);
+	Ptr<CTreeContainer>	GetSimulationTree(void) const;
+	Ptr<CTreeContainer>	GetSubcircuitTree(void) const;
 	bool				ActivateSimulationNode(const char* szPath);
 	void				ListSubcircuits(void);
 	void				FollowSubcircuitCommands(void);

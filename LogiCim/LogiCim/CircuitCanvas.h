@@ -62,7 +62,7 @@ public:
 	void						Init(Ptr<CWindow> pWindow, Ptr<CCircuitCanvasDraw> pDraw, CLogicimWindowContent* pcContent, CCircuitEditor* pcEditor);
 	void						Class(void) override;
 
-	Ptr<CCircuitCanvasDraw>		GetCircuitDraw(void);
+	Ptr<CCircuitCanvasDraw>		GetCircuitDraw(void) const;
 
 	void						MovedOver(int x, int y) override;
 	const char*					GetKeyContext(void) override;

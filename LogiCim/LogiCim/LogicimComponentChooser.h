@@ -115,7 +115,7 @@ public:
 protected:
 	Ptr<CComponent>		CreateBody(void);
 	void				FindSubcircuits(void);
-	int					NumLibraries(void);
+	int					NumLibraries(void) const;
 	int					NumEntries(int iLibrary);
 	const char*			GetLibraryName(int iLibrary);
 	const char*			GetEntryName(int iLibrary, int iEntry);

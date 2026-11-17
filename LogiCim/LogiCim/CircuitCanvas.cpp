@@ -358,5 +358,5 @@ void CCircuitCanvas::UpdateModifiers(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-Ptr<CCircuitCanvasDraw> CCircuitCanvas::GetCircuitDraw(void) { return mpCircuitDraw; }
+Ptr<CCircuitCanvasDraw> CCircuitCanvas::GetCircuitDraw(void) const { return mpCircuitDraw; }
 
