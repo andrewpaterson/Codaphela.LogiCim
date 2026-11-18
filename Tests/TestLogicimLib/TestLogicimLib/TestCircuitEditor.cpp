@@ -3670,7 +3670,6 @@ static size CountEditorObjects(const char* szClassName)
 		}
 		oi = gcObjects.IterateMemory(&sIter);
 	}
-	sIter.Kill();
 	p = NULL;
 	return uiCount;
 }
