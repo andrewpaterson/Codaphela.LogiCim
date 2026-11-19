@@ -897,6 +897,7 @@ void TestKicadSchemLogicimBoardsJobs(void)
 		ThreadSleep(1);
 	}
 	pcTop = cImporter.End();
+	cJobs.Wait();  //Its threads have done their jobs: they are joined.
 	AssertNotNull(pcTop);
 	AssertNull(cImporter.End());
 	AssertSize(13, cImporter.NumBoards());
