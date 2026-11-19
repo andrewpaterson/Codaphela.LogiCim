@@ -1,5 +1,5 @@
 # Linux build of LogiCim (BaseLib + StandardLib + SupportLib + InputLib +
-# WindowLib + X11Lib + MicroprocessorLib + LogicimLib + KicadImporterLib + LogiCim's window
+# WindowLib + X11Lib + MicroprocessorLib + ThreadLib + LogicimLib + KicadImporterLib + LogiCim's window
 # sources).
 #
 # 64-bit only: there is no 32-bit libX11 installed.  Needs libx11-dev.
@@ -39,6 +39,7 @@ set(INPUTLIB_DIR "${COMMON_DIR}/InputLib")
 set(WINDOWLIB_DIR "${COMMON_DIR}/WindowLib")
 set(X11LIB_DIR "${COMMON_DIR}/X11Lib")
 set(MICROPROCESSORLIB_DIR "${COMMON_DIR}/MicroprocessorLib")
+set(THREADLIB_DIR "${COMMON_DIR}/ThreadLib")
 set(LOGICIMLIB_DIR "${LOGICIM_ROOT}/Libraries/LogicimLib")
 set(KICADLIB_DIR "${COMMON_DIR}/KicadLib")
 set(KICADIMPORTERLIB_DIR "${LOGICIM_ROOT}/Libraries/KicadImporterLib")
@@ -99,6 +100,7 @@ vcxproj_sources(WINDOWLIB_SOURCES "${WINDOWLIB_DIR}/WindowLib.vcxproj")
 
 vcxproj_sources(X11LIB_SOURCES "${X11LIB_DIR}/X11Lib.vcxproj")
 vcxproj_sources(MICROPROCESSORLIB_SOURCES "${MICROPROCESSORLIB_DIR}/MicroprocessorLib.vcxproj")
+vcxproj_sources(THREADLIB_SOURCES "${THREADLIB_DIR}/ThreadLib.vcxproj")
 vcxproj_sources(LOGICIMLIB_SOURCES "${LOGICIMLIB_DIR}/LogicimLib.vcxproj")
 vcxproj_sources(KICADLIB_SOURCES "${KICADLIB_DIR}/KicadLib.vcxproj")
 
@@ -185,6 +187,9 @@ target_link_libraries(X11Lib PUBLIC WindowLib InputLib SupportLib StandardLib Ba
 
 add_library(MicroprocessorLib STATIC ${MICROPROCESSORLIB_SOURCES})
 target_link_libraries(MicroprocessorLib PUBLIC StandardLib BaseLib)
+
+add_library(ThreadLib STATIC ${THREADLIB_SOURCES})
+target_link_libraries(ThreadLib PUBLIC BaseLib)
 add_library(LogicimLib STATIC ${LOGICIMLIB_SOURCES})
 target_link_libraries(LogicimLib PUBLIC SupportLib MicroprocessorLib StandardLib BaseLib)
 # The KiCad schematic reader (CommonLibraries); KicadImporterLib makes Logicim circuits from what it reads.
@@ -195,4 +200,4 @@ add_library(KicadImporterLib STATIC ${KICADIMPORTERLIB_SOURCES})
 target_link_libraries(KicadImporterLib PUBLIC KicadLib LogicimLib SupportLib MicroprocessorLib StandardLib BaseLib)
 add_executable(LogiCim ${LOGICIM_SOURCES})
 target_include_directories(LogiCim PRIVATE "${LOGICIM_DIR}")
-target_link_libraries(LogiCim PRIVATE X11Lib WindowLib InputLib KicadImporterLib KicadLib LogicimLib MicroprocessorLib SupportLib StandardLib BaseLib)
+target_link_libraries(LogiCim PRIVATE X11Lib WindowLib InputLib KicadImporterLib KicadLib LogicimLib MicroprocessorLib ThreadLib SupportLib StandardLib BaseLib)

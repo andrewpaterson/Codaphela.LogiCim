@@ -21,6 +21,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __LOGICIM_WINDOW_CONTENT_H__
 #define __LOGICIM_WINDOW_CONTENT_H__
 #include "BaseLib/ArrayInt.h"
+#include "BaseLib/Chars.h"
+#include "BaseLib/Mutex.h"
 #include "SupportLib/Font.h"
 #include "SupportLib/FontColours.h"
 #include "WindowLib/Window.h"
@@ -112,15 +114,26 @@ class CLogicimWindowContent;
 #define LOGICIM_CIRCUIT_CONTEXT		"Circuit"  //The keys over the circuit canvas, where bare letters place and turn components.
 
 
-//Shows a KiCad import's progress in the content's status bar as it goes (see ShowImportProgress).
+#define LOGICIM_IMPORT_SHOW_MS	15	//Between looks at how a KiCad import is going, while its circuits are laid out.
+
+
+//Keeps how a KiCad import is going for the content to show in its status bar (see ShowImportProgress): the step last
+//told, how many boards there are so far and how many steps have been told.  The steps are told by the threads that lay
+//the boards' circuits out, several at once, and read by the window's, so they are kept under a mutex.
 class CLogicimImportProgress : public CKicadSchemImportProgress
 {
 protected:
-	CLogicimWindowContent*	mpcContent;
+	CMutex	mcMutex;
+	CChars	mszBoard;
+	CChars	mszStage;
+	int64	miBoards;
+	int64	miSteps;
 
 public:
-	void	Init(CLogicimWindowContent* pcContent);
+	void	Init(void);
+	void	Kill(void);
 	void	Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) override;
+	void	Get(CChars* pszText, int64* piDone, int64* piTotal);  //pszText is initialised.
 };
 
 
@@ -252,7 +265,7 @@ public:
 	Ptr<CDockPane>		GetTabPane(size uiTab);
 	void				GetTabPlace(size uiTab, SCircuitPlace* psDest);
 	bool				ImportChosenKicadSchematic(const char* szFilename);
-	void				ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps);
+	void				ShowImportProgress(CLogicimImportProgress* pcProgress);
 	bool				NewProject(void);
 	bool				LoadProject(const char* szFilename);
 	bool				SaveProject(const char* szFilename);

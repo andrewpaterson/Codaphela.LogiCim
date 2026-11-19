@@ -18,6 +18,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <stdlib.h>
+#include "BaseLib/Atomic.h"
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/PointerFunctions.h"
 #include "BaseLib/FileUtil.h"
@@ -26,6 +28,29 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicimConverter.h"
 #include "KicadSchemBoards.h"
+
+
+struct SKicadSchemBoardConversion
+{
+	CKicadSchemFile					cFile;
+	CKicadSchemNetlist				cNetlist;
+	CKicadSchemLogicimConverter		cConverter;
+	CKicadSchemBoardImporter*		pcImporter;  //Told when the circuit has been laid out.
+
+	void	Kill(void);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void SKicadSchemBoardConversion::Kill(void)
+{
+	cConverter.Kill();
+	cNetlist.Kill();
+	cFile.Kill();
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -98,6 +123,7 @@ void CKicadSchemBoard::Init(const char* szSchematic)
 {
 	mszSchematic.Init(szSchematic);
 	mpcCircuit = NULL;
+	mpsConversion = NULL;
 	mapcConnectors.Init();
 	mbConverting = false;
 	mbLaidOut = false;
@@ -189,6 +215,8 @@ void CKicadSchemBoard::SetCounts(SKicadSchemLogicimCounts* psCounts)
 size CKicadSchemBoard::NumConnectors(void) const { return mapcConnectors.NumElements(); }
 CKicadSchemBoardConnector* CKicadSchemBoard::GetConnector(size uiIndex) { return mapcConnectors.SafeGetPtr(uiIndex); }
 void CKicadSchemBoard::SetCircuit(CCircuitView* pcCircuit) { mpcCircuit = pcCircuit; }
+void CKicadSchemBoard::SetConversion(SKicadSchemBoardConversion* psConversion) { mpsConversion = psConversion; }
+SKicadSchemBoardConversion* CKicadSchemBoard::GetConversion(void) const { return mpsConversion; }
 void CKicadSchemBoard::SetConverting(bool bConverting) { mbConverting = bConverting; }
 void CKicadSchemBoard::SetLaidOut(void) { mbLaidOut = true; }
 char* CKicadSchemBoard::GetSchematic(void) { return mszSchematic.Text(); }
@@ -211,6 +239,9 @@ void CKicadSchemBoardImporter::Init(CCircuitViews* pcCircuits, CCircuitFonts* pc
 	mpcVariables = pcVariables;
 	mapcBoards.Init();
 	mpcProgress = NULL;
+	mpcJobs = NULL;
+	mpcTop = NULL;
+	miLayingOut = 0;
 }
 
 
@@ -228,7 +259,19 @@ void CKicadSchemBoardImporter::SetProgress(CKicadSchemImportProgress* pcProgress
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The circuits keep what was made.
+// With pcJobs each board's circuit is laid out as a job of theirs (see the
+// class); with NULL, on the thread that calls Begin.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemBoardImporter::SetJobs(CJobs* pcJobs)
+{
+	mpcJobs = pcJobs;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuits keep what was made.  An import begun is ended first.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemBoardImporter::Kill(void)
@@ -236,6 +279,7 @@ void CKicadSchemBoardImporter::Kill(void)
 	size				i;
 	CKicadSchemBoard*	pcBoard;
 
+	End();
 	for (i = 0; i < mapcBoards.NumElements(); i++)
 	{
 		pcBoard = mapcBoards.GetPtr(i);
@@ -256,10 +300,118 @@ void CKicadSchemBoardImporter::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemBoardImporter::Import(const char* szSchematic)
 {
-	CKicadSchemBoard*	pcBoard;
+	Begin(szSchematic);
+	return End();
+}
 
-	pcBoard = GetBoard(szSchematic, NULL);
-	return (pcBoard != NULL) ? pcBoard->GetCircuit() : NULL;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+static void KicadSchemBoardLayOutJob(void* pvConversion)
+{
+	SKicadSchemBoardConversion*	psConversion;
+
+	psConversion = (SKicadSchemBoardConversion*)pvConversion;
+	psConversion->cConverter.LayOut();
+	psConversion->pcImporter->LaidOut();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Builds the board's circuit and those of the boards it draws, and has
+// every circuit built laid out: by the jobs, or with none here and now.
+// False if it, or a board it draws, can't be made; the circuits that were
+// built are laid out all the same.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemBoardImporter::Begin(const char* szSchematic)
+{
+	CSerialJobs					cSerialJobs;
+	CJobs*						pcJobs;
+	SKicadSchemBoardConversion*	psConversion;
+	size						i;
+
+	mpcTop = GetBoard(szSchematic, NULL);
+
+	//Counted before any is given, so that the count isn't seen at nothing while there are more to give.
+	for (i = 0; i < mapcBoards.NumElements(); i++)
+	{
+		if (mapcBoards.GetPtr(i)->GetConversion() != NULL)
+		{
+			AtomicAdd(&miLayingOut, 1);
+		}
+	}
+	pcJobs = (mpcJobs != NULL) ? mpcJobs : &cSerialJobs;
+	for (i = 0; i < mapcBoards.NumElements(); i++)
+	{
+		psConversion = mapcBoards.GetPtr(i)->GetConversion();
+		if (psConversion != NULL)
+		{
+			pcJobs->Run(KicadSchemBoardLayOutJob, psConversion);
+		}
+	}
+	return mpcTop != NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemBoardImporter::LaidOut(void)
+{
+	AtomicAdd(&miLayingOut, -1);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Every circuit given to be laid out has been.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemBoardImporter::IsDone(void)
+{
+	return AtomicLoad(&miLayingOut) == 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Waits for the circuits to be laid out, and gives the circuit of the
+// board the import began with: NULL if it couldn't be made, or if none
+// was begun.
+//
+//////////////////////////////////////////////////////////////////////////
+CCircuitView* CKicadSchemBoardImporter::End(void)
+{
+	size						i;
+	CKicadSchemBoard*			pcBoard;
+	SKicadSchemBoardConversion*	psConversion;
+	CCircuitView*				pcCircuit;
+
+	if ((mpcJobs != NULL) && !IsDone())
+	{
+		mpcJobs->Wait();
+	}
+	for (i = 0; i < mapcBoards.NumElements(); i++)
+	{
+		pcBoard = mapcBoards.GetPtr(i);
+		psConversion = pcBoard->GetConversion();
+		if (psConversion != NULL)
+		{
+			pcBoard->SetCounts(psConversion->cConverter.GetCounts());
+			pcBoard->SetConversion(NULL);
+			psConversion->Kill();
+			free(psConversion);
+		}
+	}
+
+	pcCircuit = (mpcTop != NULL) ? mpcTop->GetCircuit() : NULL;
+	mpcTop = NULL;
+	return pcCircuit;
 }
 
 
@@ -309,16 +461,15 @@ CKicadSchemBoard* CKicadSchemBoardImporter::GetBoard(const char* szSchematic, co
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Loads the schematic and makes its circuit, which makes the boards it
-// draws first.
+// Loads the schematic and builds its circuit, which builds those of the
+// boards it draws first.  What it was built from is kept with the board
+// until the circuit has been laid out (Begin and End).
 //
 //////////////////////////////////////////////////////////////////////////
 CKicadSchemBoard* CKicadSchemBoardImporter::Convert(const char* szFullPath)
 {
 	CKicadSchemBoard*				pcBoard;
-	CKicadSchemFile					cFile;
-	CKicadSchemNetlist				cNetlist;
-	CKicadSchemLogicimConverter		cConverter;
+	SKicadSchemBoardConversion*		psConversion;
 	CChars							szTypeName;
 	bool							bResult;
 
@@ -332,29 +483,30 @@ CKicadSchemBoard* CKicadSchemBoardImporter::Convert(const char* szFullPath)
 	{
 		mpcProgress->Progress(szTypeName.Text(), "Reading", KICAD_SCHEM_IMPORT_STEP_READ, KICAD_SCHEM_IMPORT_STEPS);
 	}
-	cFile.Init();
-	bResult = cFile.Load((char*)szFullPath);
-	cNetlist.Init(&cFile);
-	bResult = bResult && cNetlist.Build();
-	cConverter.Init(&cFile, &cNetlist, mpcCircuits, mpcFonts);
-	cConverter.SetBoards(pcBoard, this);
-	cConverter.SetProgress(mpcProgress);
-	bResult = bResult && cConverter.Convert(szTypeName.Text());
+	psConversion = NewMalloc<SKicadSchemBoardConversion>();
+	psConversion->pcImporter = this;
+	psConversion->cFile.Init();
+	bResult = psConversion->cFile.Load((char*)szFullPath);
+	psConversion->cNetlist.Init(&psConversion->cFile);
+	bResult = bResult && psConversion->cNetlist.Build();
+	psConversion->cConverter.Init(&psConversion->cFile, &psConversion->cNetlist, mpcCircuits, mpcFonts);
+	psConversion->cConverter.SetBoards(pcBoard, this);
+	psConversion->cConverter.SetProgress(mpcProgress);
+	bResult = bResult && psConversion->cConverter.Build(szTypeName.Text());
 	if (bResult)
 	{
-		pcBoard->SetCircuit(cConverter.GetCircuit());
-		pcBoard->SetCounts(cConverter.GetCounts());
+		pcBoard->SetCircuit(psConversion->cConverter.GetCircuit());
+		pcBoard->SetConversion(psConversion);
 	}
 	else
 	{
 		gcLogger.Error2(__METHOD__, " Board schematic [", szFullPath, "] couldn't be imported.", NULL);
+		psConversion->Kill();
+		free(psConversion);
 	}
 	pcBoard->SetConverting(false);
 
-	cConverter.Kill();
 	szTypeName.Kill();
-	cNetlist.Kill();
-	cFile.Kill();
 	return bResult ? pcBoard : NULL;
 }
 

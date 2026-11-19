@@ -159,6 +159,8 @@ public:
 	void							SetBoards(CKicadSchemBoard* pcBoard, CKicadSchemBoardSource* pcBoardSource);
 	void							SetProgress(CKicadSchemImportProgress* pcProgress);
 	bool							Convert(const char* szTypeName);
+	bool							Build(const char* szTypeName);
+	void							LayOut(void);
 
 	CCircuitView*					GetCircuit(void) const;
 	SKicadSchemLogicimCounts*		GetCounts(void);

@@ -5,6 +5,8 @@
 #include "BaseLib/DataMemory.h"
 #include "BaseLib/Chars.h"
 #include "BaseLib/ArrayInt.h"
+#include "BaseLib/Jobs.h"
+#include "BaseLib/NativeThread.h"
 #include "StandardLib/Objects.h"
 #include "LogicimLib/CircuitFile.h"
 #include "LogicimLib/CircuitFonts.h"
@@ -726,9 +728,10 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The progress told: every board read first and done last, its steps in
-// order, and the boards drawn on the Audio Board made while its parts
-// are.
+// The progress told: the Audio Board read first, every board read and
+// done with its steps in order, the boards drawn on the Audio Board built
+// (as far as their wires are found) while its parts are made, and no
+// circuit placed until every one has been built.
 //
 //////////////////////////////////////////////////////////////////////////
 static void AssertKicadSchemImportProgress(CKicadSchemTestProgress* pcProgress, CKicadSchemBoardImporter* pcImporter)
@@ -742,6 +745,8 @@ static void AssertKicadSchemImportProgress(CKicadSchemTestProgress* pcProgress, 
 	size		uiPartsAt;
 	size		uiBusesAt;
 	size		uiInner;
+	size		uiLastWires;
+	size		uiFirstPlace;
 	CChars		szProblems;
 
 	AssertTrue(pcProgress->maszBoards.NumElements() > 0);
@@ -749,7 +754,6 @@ static void AssertKicadSchemImportProgress(CKicadSchemTestProgress* pcProgress, 
 	AssertString("Audio Board", pcProgress->maszBoards.GetText(0));
 	AssertInt(KICAD_SCHEM_IMPORT_STEP_READ, pcProgress->maiSteps.GetValue(0));
 	AssertString("Reading", pcProgress->maszStages.GetText(0));
-	AssertString("Audio Board", pcProgress->maszBoards.GetText(pcProgress->maszBoards.NumElements() - 1));
 	AssertInt(KICAD_SCHEM_IMPORT_STEP_DONE, pcProgress->maiSteps.GetValue(pcProgress->maiSteps.NumElements() - 1));
 
 	szProblems.Init();
@@ -783,7 +787,7 @@ static void AssertKicadSchemImportProgress(CKicadSchemTestProgress* pcProgress, 
 	AssertString("", szProblems.Text());
 	szProblems.Kill();
 
-	//The other boards are made between the Audio Board's parts and buses steps.
+	//The other boards are built between the Audio Board's parts and buses steps.
 	uiPartsAt = MAX_SIZE;
 	uiBusesAt = MAX_SIZE;
 	for (i = 0; i < pcProgress->maszBoards.NumElements(); i++)
@@ -804,9 +808,111 @@ static void AssertKicadSchemImportProgress(CKicadSchemTestProgress* pcProgress, 
 	uiInner = 0;
 	for (i = uiPartsAt + 1; i < uiBusesAt; i++)
 	{
-		uiInner += (pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_DONE) ? 1 : 0;
+		uiInner += (pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_WIRES) ? 1 : 0;
 	}
 	AssertSize(pcImporter->NumBoards() - 1, uiInner);
+
+	//Every circuit is built before any is laid out.
+	uiLastWires = 0;
+	uiFirstPlace = MAX_SIZE;
+	for (i = 0; i < pcProgress->maiSteps.NumElements(); i++)
+	{
+		if (pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_WIRES)
+		{
+			uiLastWires = i;
+		}
+		else if ((pcProgress->maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_PLACE) && (uiFirstPlace == MAX_SIZE))
+		{
+			uiFirstPlace = i;
+		}
+	}
+	AssertTrue(uiLastWires < uiFirstPlace);
+}
+
+
+#define TEST_KICAD_SCHEM_JOBS	32
+
+
+//Each job on a thread of its own, started as it's given: Wait joins them.
+class CKicadSchemTestJobs : public CJobs
+{
+public:
+	CNativeThread	macThreads[TEST_KICAD_SCHEM_JOBS];
+	int				miThreads;
+
+	void Init(void) { miThreads = 0; }
+	void Run(JobFunction fJob, void* pvData) override
+	{
+		macThreads[miThreads].Init();
+		macThreads[miThreads].Start(fJob, pvData);
+		miThreads++;
+	}
+	void Wait(void) override
+	{
+		int	i;
+
+		for (i = 0; i < miThreads; i++)
+		{
+			macThreads[i].Join();
+			macThreads[i].Kill();
+		}
+		miThreads = 0;
+	}
+	int NumThreads(void) override { return TEST_KICAD_SCHEM_JOBS; }
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The boards' circuits laid out each on a thread of its own, all at once
+// (Begin, IsDone and End), are the circuits laid out one after another on
+// this thread: saved, the same file byte for byte as the one expected of
+// TestKicadSchemLogicimBoards.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestKicadSchemLogicimBoardsJobs(void)
+{
+	Ptr<CCircuitFonts>			pFonts;
+	CKicadSchemTestJobs			cJobs;
+	CKicadPathVariables			cVariables;
+	CCircuitViews				cCircuits;
+	CKicadSchemBoardImporter	cImporter;
+	CCircuitView*				pcTop;
+	CFileUtil					cFileUtil;
+
+	ObjectsInit();
+	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
+	ORoot()->Add(pFonts);
+
+	cJobs.Init();
+	cVariables.Init();
+	cVariables.Set("_658_COMPUTER_", "Input");
+	cCircuits.Init();
+	cImporter.Init(&cCircuits, &pFonts, &cVariables);
+	cImporter.SetJobs(&cJobs);
+	AssertTrue(cImporter.IsDone());
+	AssertTrue(cImporter.Begin("${_658_COMPUTER_}/Kicad/Computer/Audio/Audio Board/Audio Board.kicad_sch"));
+	while (!cImporter.IsDone())
+	{
+		ThreadSleep(1);
+	}
+	pcTop = cImporter.End();
+	AssertNotNull(pcTop);
+	AssertNull(cImporter.End());
+	AssertSize(13, cImporter.NumBoards());
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitsFile(&cCircuits, pcTop, NULL, "Output" _FS_ "Audio Board Jobs.xml"));
+	AssertFile("Input" _FS_ "Logicim" _FS_ "Audio Board.xml", "Output" _FS_ "Audio Board Jobs.xml");
+
+	cImporter.Kill();
+	cCircuits.Kill();
+	cVariables.Kill();
+	ORoot()->Remove(pFonts);
+	pFonts = NULL;
+	ORoot()->RemoveAll();
+	ObjectsFlush();
+	ObjectsKill(false);
 }
 
 
@@ -1006,6 +1112,7 @@ void TestKicadSchemLogicim(void)
 	TestKicadSchemLogicimConvert();
 	TestKicadPathVariables();
 	TestKicadSchemLogicimBoards();
+	TestKicadSchemLogicimBoardsJobs();
 
 	DataMemoryKill();
 	DataIOKill();

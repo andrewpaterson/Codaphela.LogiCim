@@ -18,14 +18,25 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <stdlib.h>
 #include "BaseLib/XMLWriter.h"
 #include "BaseLib/Markup.h"
 #include "StandardLib/Objects.h"
 #include "StandardLib/ObjectReader.h"
 #include "StandardLib/ObjectWriter.h"
 #include "LogicimLib/CircuitFile.h"
+#include "BaseLib/ConstructorCall.h"
 #include "KicadImporterLib/KicadSchemBoards.h"
 #include "LogicimCircuit.h"
+
+
+struct SLogicimKicadImport
+{
+	CKicadPathVariables			cVariables;
+	CCircuitViews				cCircuits;
+	CKicadSchemBoardImporter	cImporter;
+	CChars						szFilename;  //The schematic's.
+};
 
 
 #define LOGICIM_MAIN_CIRCUIT		"Main"
@@ -43,6 +54,8 @@ void CLogicimCircuit::Init(void)
 	mcColours.InitDark();
 	mcFamilies.Init();
 	masProjects.Init();
+	mpcJobs = NULL;
+	mpsImport = NULL;
 
 	PostInit();
 }
@@ -58,17 +71,25 @@ void CLogicimCircuit::Class(void)
 	M_Pointer(mpEditor);
 	U_Unknown(CCircuitColours, mcColours);
 	U_Unknown(CArrayLogicimProjectStart, masProjects);
+	U_Pointer(mpcJobs);
+	U_Pointer(mpsImport);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 // The editor is freed with this.  It only points to the families, it
-// doesn't use them as it's freed.
+// doesn't use them as it's freed.  An import still going is waited for
+// and thrown away.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimCircuit::Free(void)
 {
+	if (mpsImport != NULL)
+	{
+		mpsImport->cImporter.End();
+		KillImport();
+	}
 	KillProjects();
 	mcFamilies.Kill();
 	mcColours.Kill();
@@ -209,6 +230,18 @@ bool CLogicimCircuit::Load(const char* szFilename)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// With pcJobs an import's circuits are laid out on their threads; with
+// NULL, on the thread that begins the import.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::SetJobs(CJobs* pcJobs)
+{
+	mpcJobs = pcJobs;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Converts the KiCad schematic to a circuit named as its file ("Audio
 // Board"), with a circuit for each board drawn on it (a symbol with a
 // Schematic property, found through KiCad's path variables), and the
@@ -222,24 +255,76 @@ bool CLogicimCircuit::Load(const char* szFilename)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress)
 {
-	CKicadPathVariables			cVariables;
-	CCircuitViews				cCircuits;
-	CKicadSchemBoardImporter	cImporter;
-	CCircuitView*				pcTop;
-	bool						bResult;
-	CChars						szProject;
+	BeginImportKicadSchematic(szFilename, pcProgress);
+	return EndImportKicadSchematic();
+}
 
-	cVariables.Init();
-	cVariables.LoadKicadCommon();
-	cCircuits.Init();
-	cImporter.Init(&cCircuits, mpEditor->GetFonts(), &cVariables);
-	cImporter.SetProgress(pcProgress);
-	pcTop = cImporter.Import(szFilename);
-	bResult = (pcTop != NULL) && LoadCircuits(&cCircuits, pcTop, szFilename);
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Builds the schematic's circuits and has them laid out (see
+// CKicadSchemBoardImporter): with jobs their threads lay them out from
+// here on, and tell pcProgress their steps, until
+// IsImportKicadSchematicDone.  The project isn't touched until
+// EndImportKicadSchematic, which there must be whatever this returns.
+// False if the circuits couldn't be built, or an import is going already.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::BeginImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress)
+{
+	if (mpsImport != NULL)
+	{
+		return gcLogger.Error2(__METHOD__, " A KiCad schematic is being imported already.", NULL);
+	}
+
+	mpsImport = NewMalloc<SLogicimKicadImport>();
+	mpsImport->szFilename.Init(szFilename);
+	mpsImport->cVariables.Init();
+	mpsImport->cVariables.LoadKicadCommon();
+	mpsImport->cCircuits.Init();
+	mpsImport->cImporter.Init(&mpsImport->cCircuits, mpEditor->GetFonts(), &mpsImport->cVariables);
+	mpsImport->cImporter.SetProgress(pcProgress);
+	mpsImport->cImporter.SetJobs(mpcJobs);
+	return mpsImport->cImporter.Begin(szFilename);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Every circuit of the import begun has been laid out: ending it won't
+// wait.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::IsImportKicadSchematicDone(void)
+{
+	return (mpsImport == NULL) || mpsImport->cImporter.IsDone();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Waits for the import's circuits to be laid out and loads them in place
+// of the project's.  False, with the project as it was, if they couldn't
+// be made or loaded, or no import was begun.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::EndImportKicadSchematic(void)
+{
+	CCircuitView*	pcTop;
+	bool			bResult;
+	CChars			szProject;
+
+	if (mpsImport == NULL)
+	{
+		return false;
+	}
+
+	pcTop = mpsImport->cImporter.End();
+	bResult = (pcTop != NULL) && LoadCircuits(&mpsImport->cCircuits, pcTop, mpsImport->szFilename.Text());
 	if (bResult)
 	{
 		//As imported it has no changes: it can be imported again.
-		szProject.Init(szFilename);
+		szProject.Init(mpsImport->szFilename.Text());
 		if (szProject.EndsWith(".kicad_sch"))
 		{
 			szProject.RemoveFromEnd(10);
@@ -248,11 +333,23 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename, CKicadSchemIm
 		StartProject(szProject.Text());
 		szProject.Kill();
 	}
-
-	cImporter.Kill();
-	cCircuits.Kill();
-	cVariables.Kill();
+	KillImport();
 	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::KillImport(void)
+{
+	mpsImport->cImporter.Kill();
+	mpsImport->cCircuits.Kill();
+	mpsImport->cVariables.Kill();
+	mpsImport->szFilename.Kill();
+	free(mpsImport);
+	mpsImport = NULL;
 }
 
 

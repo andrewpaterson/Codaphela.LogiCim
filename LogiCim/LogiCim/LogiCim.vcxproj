@@ -285,6 +285,9 @@
     <ProjectReference Include="..\..\..\CommonLibraries\Libraries\MicroprocessorLib\MicroprocessorLib.vcxproj">
       <Project>{0bf6f66e-80b2-44cf-897c-0f305aaf6af0}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\CommonLibraries\Libraries\ThreadLib\ThreadLib.vcxproj">
+      <Project>{7269d64f-994a-4233-9add-bad415a07b64}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\CommonLibraries\Libraries\InputLib\InputLib.vcxproj">
       <Project>{2f64aa34-f1cc-43fe-90ee-90e66824ee55}</Project>
     </ProjectReference>

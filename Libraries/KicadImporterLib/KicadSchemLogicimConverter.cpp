@@ -107,6 +107,24 @@ void CKicadSchemLogicimConverter::SetBoards(CKicadSchemBoard* pcBoard, CKicadSch
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 {
+	if (!Build(szTypeName))
+	{
+		return false;
+	}
+	LayOut();
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The circuit's parts, buses and the wires to make, with the boards the
+// sheet draws: all of the circuit that the other circuits, the fonts and
+// the boards are asked for, or changed by.  What's left is its own (LayOut).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::Build(const char* szTypeName)
+{
 	size			i;
 	CCircuitView*	pcCircuit;
 
@@ -136,11 +154,23 @@ bool CKicadSchemLogicimConverter::Convert(const char* szTypeName)
 	mcPlacer.GroupConnectorPins();
 	mcWiring.AddConnections();
 	mcPlacer.FindAlignments();
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The built circuit's components placed and wired, and its knots
+// untangled: nearly all of the time a circuit takes to make, and nothing
+// but the circuit is read or changed by it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::LayOut(void)
+{
 	PlaceAndRoute();
 	ReportProgress("Untangling", KICAD_SCHEM_IMPORT_STEP_UNTANGLE);
 	mcPlacer.Explode();
 	ReportProgress("Done", KICAD_SCHEM_IMPORT_STEP_DONE);
-	return true;
 }
 
 

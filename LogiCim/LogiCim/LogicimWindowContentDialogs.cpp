@@ -22,6 +22,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include "BaseLib/Logger.h"
 #include "BaseLib/FileUtil.h"
+#include "BaseLib/NativeThread.h"
 #include "BaseLib/StringHelper.h"
 #include "StandardLib/Objects.h"
 #include "StandardLib/ObjectReader.h"
@@ -1005,29 +1006,87 @@ void CLogicimWindowContent::ClearRecentProjects(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A KiCad import's step, shown in the status bar ("Importing Selector
-// 12bit: Placing") with how far through the board's steps it
-// is, and the window painted then: the import doesn't stop for the
-// window's loop.  Input waits until it's done.
+// How a KiCad import is going, shown in the status bar: the step last
+// told ("Importing Selector 12bit: Placing") and how many of the boards'
+// steps have been told, and the window painted then, as the import doesn't
+// stop for the window's loop.  Input waits until it's done.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::ShowImportProgress(const char* szBoard, const char* szStage, size uiStep, size uiSteps)
+void CLogicimWindowContent::ShowImportProgress(CLogicimImportProgress* pcProgress)
 {
 	CChars	szText;
+	int64	iDone;
+	int64	iTotal;
 
-	szText.Init("Importing ");
-	szText.Append(szBoard);
-	szText.Append(": ");
-	szText.Append(szStage);
+	pcProgress->Get(&szText, &iDone, &iTotal);
 	mpMessageInfo->SetText(szText.Text());
 	szText.Kill();
-	mpImportBar->SetProgress((int64)uiStep, (int64)uiSteps);
+	mpImportBar->SetProgress(iDone, iTotal);
 	mpWindow->PaintNow();
 }
 
 
-void CLogicimImportProgress::Init(CLogicimWindowContent* pcContent) { mpcContent = pcContent; }
-void CLogicimImportProgress::Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) { mpcContent->ShowImportProgress(szBoard, szStage, uiStep, uiSteps); }
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimImportProgress::Init(void)
+{
+	mcMutex.Init();
+	mszBoard.Init();
+	mszStage.Init();
+	miBoards = 0;
+	miSteps = 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimImportProgress::Kill(void)
+{
+	mszStage.Kill();
+	mszBoard.Kill();
+	mcMutex.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A board is counted when it's read, which is its first step.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimImportProgress::Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps)
+{
+	mcMutex.Lock();
+	mszBoard.Set(szBoard);
+	mszStage.Set(szStage);
+	miBoards += (uiStep == KICAD_SCHEM_IMPORT_STEP_READ) ? 1 : 0;
+	miSteps++;
+	mcMutex.Unlock();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The step last told, as the status bar says it, and the steps told of
+// all that the boards so far could have (a board whose circuit is placed
+// in fewer tries than it might be has fewer, so every step told is short
+// of them all until the import is done).
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimImportProgress::Get(CChars* pszText, int64* piDone, int64* piTotal)
+{
+	mcMutex.Lock();
+	pszText->Init("Importing ");
+	pszText->Append(mszBoard.Text());
+	pszText->Append(": ");
+	pszText->Append(mszStage.Text());
+	*piDone = miSteps;
+	*piTotal = miBoards * KICAD_SCHEM_IMPORT_STEPS;
+	mcMutex.Unlock();
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1095,10 +1154,18 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 	bool					bResult;
 	CLogicimImportProgress	cProgress;
 
-	//The progress is shown in the status bar as it goes; it's cleared after.
-	cProgress.Init(this);
+	//The progress is shown in the status bar as the circuits are laid out, on other threads; it's cleared after.
+	cProgress.Init();
 	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Separator));
-	bResult = mpLogicimCircuit->ImportKicadSchematic(szFilename, &cProgress);
+	mpLogicimCircuit->BeginImportKicadSchematic(szFilename, &cProgress);
+	ShowImportProgress(&cProgress);
+	while (!mpLogicimCircuit->IsImportKicadSchematicDone())
+	{
+		ThreadSleep(LOGICIM_IMPORT_SHOW_MS);
+		ShowImportProgress(&cProgress);
+	}
+	bResult = mpLogicimCircuit->EndImportKicadSchematic();
+	cProgress.Kill();
 	mpMessageInfo->SetText("");
 	mpImportBar->SetFraction(0);
 	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Panel));

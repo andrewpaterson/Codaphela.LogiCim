@@ -37,8 +37,10 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 //Told how a KiCad import is going, between its steps: the board being made (its circuit's type name), what's being
 //done to it and how far through its steps (uiStep of KICAD_SCHEM_IMPORT_STEPS) it is.  A board drawn on another is
-//made in the middle of the other's parts step, so the boards' steps nest.  The import doesn't stop for it: an
-//application uses it to show the progress (painting its window, say).
+//built (read, its parts and buses made and its wires found) in the middle of the other's parts step, so those steps
+//nest; the boards' circuits are placed and untangled once every one is built, and where the importer has jobs
+//(CKicadSchemBoardImporter::SetJobs) those steps are told by the jobs' threads, several boards' at once.  The import
+//doesn't stop for it: an application uses it to show the progress.
 class CKicadSchemImportProgress
 {
 public:

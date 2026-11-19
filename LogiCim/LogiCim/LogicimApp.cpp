@@ -25,10 +25,16 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/GlobalMemory.h"
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "StandardLib/Objects.h"
+#include "ThreadLib/WorkerThreadJobs.h"
 #include "WindowLib/ClearCanvasDraw.h"
 #include "WindowLib/MenuBar.h"
 #include "LogicimWindowTick.h"
 #include "LogicimApp.h"
+
+
+//The threads a KiCad import lays its boards' circuits out on, one for each the hardware runs at once.  They touch no
+//object: a circuit being laid out is plain data of the import's own (KicadImporterLib's CKicadSchemBoardImporter).
+static CWorkerThreadJobs	gcLogicimJobs;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,6 +85,7 @@ bool CLogicimApp::Setup(CNativeWindowFactory* pcNativeFactory, CNativeInput* pcN
 	mbValid = mpContent->Setup(mpWindow, &msData, "Resources/InterVariable.ttf", "Resources/Icons", "Resources/PropagationTimes.csv", "Resources/Fonts");
 	if (mbValid)
 	{
+		mpContent->GetLogicimCircuit()->SetJobs(&gcLogicimJobs);
 		pBackground->SetColour(mpContent->GetTheme()->GetColour(TC_Panel));
 		mpInput = OMalloc<CInput>((CNativeInput*)NULL);
 		mbValid = mpInput->Read((char*)szInputDirectory);
@@ -181,7 +188,8 @@ bool CLogicimApp::Run(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The logger, types, memory and objects LogiCim runs with.
+// The logger, types, memory and objects LogiCim runs with, and the
+// threads a KiCad import's circuits are laid out on (gcLogicimJobs).
 //
 //////////////////////////////////////////////////////////////////////////
 void InitLogicimGlobals(void)
@@ -192,6 +200,7 @@ void InitLogicimGlobals(void)
 	MemoryInit();
 	DataIOInit();
 	ObjectsInit();
+	gcLogicimJobs.Init();
 }
 
 
@@ -203,6 +212,7 @@ void KillLogicimGlobals(void)
 {
 	ObjectsFlush();
 	ObjectsKill();
+	gcLogicimJobs.Kill();
 	DataIOKill();
 	MemoryKill();
 	TypeConverterKill();

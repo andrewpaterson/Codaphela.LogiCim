@@ -25,6 +25,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "LogicimLib/CircuitEditor.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "BaseLib/ArrayTemplate.h"
+#include "BaseLib/Jobs.h"
 #include "KicadImporterLib/KicadSchemImportProgress.h"
 
 
@@ -41,12 +42,21 @@ struct SLogicimProjectStart
 typedef CArrayTemplate<SLogicimProjectStart>	CArrayLogicimProjectStart;
 
 
+//What a KiCad schematic is imported with, from when the import begins to when it ends (LogicimCircuit.cpp).
+struct SLogicimKicadImport;
+
+
 //LogiCim's editor and the circuits in it.  It starts with an empty "Main" circuit, simulated on its top view path.  A
 //project loaded, or a KiCad schematic imported (see CKicadSchemLogicimConverter), replaces it.  It is an object held by the window's
 //content; Setup makes the editor.  It knows the project's file: the one it was loaded from or saved to, or after an import the
 //schematic's name as an .xml file beside it; empty until there's one.  Undo goes back past a project's start to the
 //project before it, so each project's start is kept (masProjects) and the project, its file and whether it has changes
 //are those of the start the current snapshot comes after.
+//
+//An import is begun and ended (BeginImportKicadSchematic, EndImportKicadSchematic; ImportKicadSchematic is both).
+//Between the two the boards' circuits are laid out, which is nearly all of its time: by the jobs' threads if it has
+//jobs (SetJobs), as many at once as they have, while the caller's thread is free to show how it's going until
+//IsImportKicadSchematicDone.  The project is only replaced by End.
 class CLogicimCircuit : public CObject
 {
 CONSTRUCTABLE(CLogicimCircuit);
@@ -56,6 +66,8 @@ protected:
 	Ptr<CCircuitEditor>					mpEditor;  //It holds the circuit fonts.
 	CCircuitColours						mcColours;
 	CArrayLogicimProjectStart			masProjects;  //The projects in the undo stack, the oldest first.
+	CJobs*								mpcJobs;  //What lays an import's circuits out, NULL for the importing thread.
+	SLogicimKicadImport*				mpsImport;  //While a KiCad schematic is being imported.
 
 public:
 	void				Init(void);
@@ -71,7 +83,11 @@ public:
 	bool				Run(int64 iTimeForward);
 	bool				Save(const char* szFilename);
 	bool				Load(const char* szFilename);
+	void				SetJobs(CJobs* pcJobs);  //They outlive this.
 	bool				ImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress = NULL);
+	bool				BeginImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress = NULL);
+	bool				IsImportKicadSchematicDone(void);
+	bool				EndImportKicadSchematic(void);
 	bool				NewProject(void);
 
 	CCircuitEditor*		GetEditor(void);
@@ -84,6 +100,7 @@ public:
 protected:
 	bool				CreateSimulation(void);
 	bool				LoadCircuits(CCircuitViews* pcCircuits, CCircuitView* pcTop, const char* szSource);
+	void				KillImport(void);
 	void				StartProject(const char* szFilename);
 	SLogicimProjectStart*	GetProject(void);
 	size				GetChangeId(void);

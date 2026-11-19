@@ -23,6 +23,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemImportProgress.h"
 #include "BaseLib/Chars.h"
 #include "BaseLib/ArrayChars.h"
+#include "BaseLib/Jobs.h"
 #include "BaseLib/ArrayTemplatePtr.h"
 #include "BaseLib/MapStringTemplate.h"
 #include "LogicimLib/CircuitViews.h"
@@ -60,6 +61,11 @@ public:
 };
 
 
+//A board's schematic, its netlist and the converter making its circuit of them, kept from when the circuit is built
+//to when it's laid out.
+struct SKicadSchemBoardConversion;
+
+
 //A board made into a Logicim circuit from its own schematic, and its connectors.  Another board that has it drawn
 //as a symbol joins the symbol's pins to the circuit's pins of the connector the symbol stands for, by pin number.
 class CKicadSchemBoard
@@ -67,6 +73,7 @@ class CKicadSchemBoard
 protected:
 	CChars											mszSchematic;  //The schematic's full path.
 	CCircuitView*									mpcCircuit;
+	SKicadSchemBoardConversion*						mpsConversion;  //Until its circuit is laid out.
 	CArrayTemplatePtr<CKicadSchemBoardConnector>	mapcConnectors;
 	bool											mbConverting;
 	bool											mbLaidOut;
@@ -82,6 +89,8 @@ public:
 	CKicadSchemBoardConnector*	GetConnector(size uiIndex);
 
 	void						SetCircuit(CCircuitView* pcCircuit);
+	void						SetConversion(SKicadSchemBoardConversion* psConversion);
+	SKicadSchemBoardConversion*	GetConversion(void) const;
 	void						SetConverting(bool bConverting);
 	void						SetLaidOut(void);
 	void						SetCounts(SKicadSchemLogicimCounts* psCounts);
@@ -109,6 +118,16 @@ public:
 //named as its schematic's file ("Audio Clock"), with its connectors' pins as the circuit's pins, so each symbol drawn
 //for it is an instance of it.  Boards are made before the boards that draw them; a board that draws itself, however
 //far down, fails.
+//
+//An import is in two parts.  Begin builds every board's circuit (CKicadSchemLogicimConverter::Build), in that order,
+//on the caller's thread: it is quick, and it is all of an import that asks the other circuits, the boards and the
+//fonts for anything, or changes them.  Then each circuit is laid out (LayOut), which is nearly all of an import's time
+//and reads and changes nothing but the circuit: with jobs (SetJobs) each board's is a job, so as many are laid out at
+//once as the jobs have threads, and what's imported is the same whichever finishes first.  IsDone says when every one
+//has been, and End waits for that and gives the top board's circuit.  Import is Begin and End.
+//
+//With jobs a board's layout steps are told (SetProgress) by the thread that lays it out, so several boards' steps
+//come at once, from threads that aren't the caller's: what's told must be ready for that.
 class CKicadSchemBoardImporter : public CKicadSchemBoardSource
 {
 protected:
@@ -117,13 +136,21 @@ protected:
 	CKicadPathVariables*				mpcVariables;
 	CArrayTemplatePtr<CKicadSchemBoard>	mapcBoards;
 	CKicadSchemImportProgress*			mpcProgress;  //Told each board's steps, NULL for none.
+	CJobs*								mpcJobs;  //What lays the circuits out, NULL for the caller's thread.
+	CKicadSchemBoard*					mpcTop;  //The board Begin was given, NULL if it couldn't be built.
+	int32								miLayingOut;  //Circuits given to be laid out that haven't been yet.  The jobs' threads count it down.
 
 public:
 	void				Init(CCircuitViews* pcCircuits, CCircuitFonts* pcFonts, CKicadPathVariables* pcVariables);
 	void				Kill(void);
 	void				SetProgress(CKicadSchemImportProgress* pcProgress);
+	void				SetJobs(CJobs* pcJobs);  //They outlive the import.
 
 	CCircuitView*		Import(const char* szSchematic);
+	bool				Begin(const char* szSchematic);
+	bool				IsDone(void);
+	CCircuitView*		End(void);
+	void				LaidOut(void);  //A job's: its circuit is laid out.
 	CKicadSchemBoard*	GetBoard(const char* szSchematic, const char* szDrawnIn) override;
 
 	size				NumBoards(void) const;
