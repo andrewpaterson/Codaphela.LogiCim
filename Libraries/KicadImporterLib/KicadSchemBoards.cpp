@@ -242,6 +242,7 @@ void CKicadSchemBoardImporter::Init(CCircuitViews* pcCircuits, CCircuitFonts* pc
 	mpcJobs = NULL;
 	mpcTop = NULL;
 	miLayingOut = 0;
+	miStop = 0;
 }
 
 
@@ -380,9 +381,33 @@ bool CKicadSchemBoardImporter::IsDone(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The circuits being laid out, and those still waiting to be, stop at
+// their next step: IsDone is true soon, though not yet, and End won't wait
+// long.  Any thread may call it, one telling the progress too.  The
+// importer stays cancelled.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemBoardImporter::Cancel(void)
+{
+	AtomicStore(&miStop, 1);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemBoardImporter::IsCancelled(void)
+{
+	return AtomicLoad(&miStop) != 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Waits for the circuits to be laid out, and gives the circuit of the
-// board the import began with: NULL if it couldn't be made, or if none
-// was begun.
+// board the import began with: NULL if it couldn't be made, if the import
+// was cancelled, or if none was begun.
 //
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemBoardImporter::End(void)
@@ -409,7 +434,7 @@ CCircuitView* CKicadSchemBoardImporter::End(void)
 		}
 	}
 
-	pcCircuit = (mpcTop != NULL) ? mpcTop->GetCircuit() : NULL;
+	pcCircuit = ((mpcTop != NULL) && !IsCancelled()) ? mpcTop->GetCircuit() : NULL;
 	mpcTop = NULL;
 	return pcCircuit;
 }
@@ -492,6 +517,7 @@ CKicadSchemBoard* CKicadSchemBoardImporter::Convert(const char* szFullPath)
 	psConversion->cConverter.Init(&psConversion->cFile, &psConversion->cNetlist, mpcCircuits, mpcFonts);
 	psConversion->cConverter.SetBoards(pcBoard, this);
 	psConversion->cConverter.SetProgress(mpcProgress);
+	psConversion->cConverter.SetStop(&miStop);
 	bResult = bResult && psConversion->cConverter.Build(szTypeName.Text());
 	if (bResult)
 	{

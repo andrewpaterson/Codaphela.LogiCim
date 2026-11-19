@@ -19,6 +19,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 ** ------------------------------------------------------------------------ **/
 #include <math.h>
+#include "BaseLib/Atomic.h"
 #include "LogicimLib/TraceAutoConnector.h"
 #include "KicadSchemLogicimPlacer.h"
 
@@ -49,6 +50,7 @@ void CKicadSchemLogicimPlacer::Init(CCircuitFonts* pcFonts, CKicadSchemLogicimMo
 	masMembers.Init();
 	maiItemMember.Init();
 	mfSpread = 1.0;
+	mpiStop = NULL;
 }
 
 
@@ -72,10 +74,32 @@ void CKicadSchemLogicimPlacer::Kill(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// See the class, Stopping.  NULL for a layout that's never stopped.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimPlacer::SetStop(int32* piStop)
+{
+	mpiStop = piStop;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimPlacer::IsStopped(void)
+{
+	return (mpiStop != NULL) && (AtomicLoad(mpiStop) != 0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Explodes the dense areas while that wires as well and leaves fewer
 // knots over the dense areas' limit, as many times as
 // KICAD_SCHEM_LOGICIM_EXPLODE_PASSES.  If exploding them all is worse,
-// exploding just the densest is tried before giving up.
+// exploding just the densest is tried before giving up.  Stopped, no more
+// are exploded.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimPlacer::Explode(void)
@@ -93,7 +117,7 @@ void CKicadSchemLogicimPlacer::Explode(void)
 	uiExcess = FindDenseAreas(&asCentres);
 	mpsCounts->uiExcessKnotsBefore = uiExcess;
 	bOnlyDensest = false;
-	for (uiPass = 0; (uiPass < KICAD_SCHEM_LOGICIM_EXPLODE_PASSES) && (asCentres.NumElements() > 0); uiPass++)
+	for (uiPass = 0; (uiPass < KICAD_SCHEM_LOGICIM_EXPLODE_PASSES) && (asCentres.NumElements() > 0) && !IsStopped(); uiPass++)
 	{
 		GetOffsets(&asOffsets);
 		while (bOnlyDensest && (asCentres.NumElements() > 1))

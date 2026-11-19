@@ -38,6 +38,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "WindowLib/StatusBar.h"
 #include "LogicimWindowData.h"
 #include "WindowLib/MessageDialog.h"
+#include "WindowLib/ProgressDialog.h"
 #include "CircuitCanvas.h"
 #include "LogicimCircuit.h"
 #include "LogicimSettings.h"
@@ -114,12 +115,9 @@ class CLogicimWindowContent;
 #define LOGICIM_CIRCUIT_CONTEXT		"Circuit"  //The keys over the circuit canvas, where bare letters place and turn components.
 
 
-#define LOGICIM_IMPORT_SHOW_MS	15	//Between looks at how a KiCad import is going, while its circuits are laid out.
-
-
-//Keeps how a KiCad import is going for the content to show in its status bar (see ShowImportProgress): the step last
-//told, how many boards there are so far and how many steps have been told.  The steps are told by the threads that lay
-//the boards' circuits out, several at once, and read by the window's, so they are kept under a mutex.
+//Keeps how a KiCad import is going for the content to show (see ShowImportProgress): the step last told, how many
+//boards there are so far and how many steps have been told.  The steps are told by the threads that lay the boards'
+//circuits out, several at once, and read by the window's, so they are kept under a mutex.
 class CLogicimImportProgress : public CKicadSchemImportProgress
 {
 protected:
@@ -132,6 +130,7 @@ protected:
 public:
 	void	Init(void);
 	void	Kill(void);
+	void	Reset(void);  //Nothing told yet: another import begins.
 	void	Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) override;
 	void	Get(CChars* pszText, int64* piDone, int64* piTotal);  //pszText is initialised.
 };
@@ -143,6 +142,10 @@ public:
 //left and the simulations' tool window below its circuit canvas.
 //
 //The dialogs (a component's properties, a new subcircuit, a new simulation) are native windows shown modally.
+//
+//A KiCad schematic's circuits are laid out on other threads (see CLogicimCircuit), which is most of an import.  While
+//they are, a progress dialog over the window says which board and step was last told and how far along the import is,
+//as the status bar does, and its Cancel gives the import up, leaving the project as it was.
 //
 //The content is an object; keep it under the root, see Setup.  It holds the window, its widgets and LogiCim's circuit.
 class CLogicimWindowContent : public CObject, public CDockManagerListener, public CCircuitEditorListener, public CRevealingUndoHost
@@ -202,6 +205,8 @@ protected:
 	Ptr<CMessageDialog>				mpMessageDialog;  //The message being shown, NULL when none is.
 	Ptr<CLogicimComponentChooser>	mpComponentChooser;
 	Ptr<CFileChooser>				mpFileChooser;
+	Ptr<CProgressDialog>			mpImportDialog;  //While a KiCad schematic's circuits are laid out, if the window is shown.
+	CLogicimImportProgress			mcImportProgress;  //How the import is going, or the last one went.
 	CLogicimSettings				mcSettings;  //Where Load Project and Import KiCad Schematic open.
 	CChars							mszStartupImport;  //A KiCad schematic to import at the first tick (LOGICIM_IMPORT), empty for none.
 	CChars							mszChooserSelected;  //The component last chosen.
@@ -240,7 +245,7 @@ public:
 	bool				CanRedo(void);
 	void				ShowDialog(ELogicimDialog eDialog);
 	void				Tick(int64 iUpdateTimeInMilliseconds);
-	bool				ImportKicadSchematic(const char* szFilename);
+	bool				ImportKicadSchematic(const char* szFilename, bool bCancel = false);
 	bool				SaveLayout(void);
 	void				AddKeyContexts(CComponentInput* pcInput);
 	void				ReadKeymap(void);
@@ -264,8 +269,7 @@ public:
 	size				GetActiveTab(void) const;
 	Ptr<CDockPane>		GetTabPane(size uiTab);
 	void				GetTabPlace(size uiTab, SCircuitPlace* psDest);
-	bool				ImportChosenKicadSchematic(const char* szFilename);
-	void				ShowImportProgress(CLogicimImportProgress* pcProgress);
+	bool				ImportChosenKicadSchematic(const char* szFilename, bool bCancel = false);
 	bool				NewProject(void);
 	bool				LoadProject(const char* szFilename);
 	bool				SaveProject(const char* szFilename);
@@ -387,6 +391,9 @@ protected:
 	bool					RequestExit(void);
 	void					AskToSaveAndExit(void);
 	void					ShowImportKicadDialog(void);
+	bool					ShowImportProgressDialog(void);
+	void					ShowImportProgress(void);
+	void					ImportTick(void);
 	void					ShowComponentChooser(void);
 };
 

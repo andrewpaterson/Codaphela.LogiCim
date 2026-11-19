@@ -126,6 +126,10 @@ public:
 //once as the jobs have threads, and what's imported is the same whichever finishes first.  IsDone says when every one
 //has been, and End waits for that and gives the top board's circuit.  Import is Begin and End.
 //
+//An import begun can be cancelled (Cancel): each circuit's layout stops at its next step (see
+//CKicadSchemLogicimConverter), which is soon, and End gives no circuit, then or after.  What was made is in the
+//circuits all the same, some of it not laid out: they, and the importer, are for whoever owns them to throw away.
+//
 //With jobs a board's layout steps are told (SetProgress) by the thread that lays it out, so several boards' steps
 //come at once, from threads that aren't the caller's: what's told must be ready for that.
 class CKicadSchemBoardImporter : public CKicadSchemBoardSource
@@ -139,6 +143,7 @@ protected:
 	CJobs*								mpcJobs;  //What lays the circuits out, NULL for the caller's thread.
 	CKicadSchemBoard*					mpcTop;  //The board Begin was given, NULL if it couldn't be built.
 	int32								miLayingOut;  //Circuits given to be laid out that haven't been yet.  The jobs' threads count it down.
+	int32								miStop;  //Not zero once the import is cancelled.  The jobs' threads read it.
 
 public:
 	void				Init(CCircuitViews* pcCircuits, CCircuitFonts* pcFonts, CKicadPathVariables* pcVariables);
@@ -149,6 +154,8 @@ public:
 	CCircuitView*		Import(const char* szSchematic);
 	bool				Begin(const char* szSchematic);
 	bool				IsDone(void);
+	void				Cancel(void);
+	bool				IsCancelled(void);
 	CCircuitView*		End(void);
 	void				LaidOut(void);  //A job's: its circuit is laid out.
 	CKicadSchemBoard*	GetBoard(const char* szSchematic, const char* szDrawnIn) override;

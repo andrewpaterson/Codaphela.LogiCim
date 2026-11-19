@@ -96,6 +96,10 @@ typedef CArrayTemplate<SKicadSchemLogicimGroupMember>		CArrayKicadSchemLogicimGr
 //supplies on their pins, splitters beside their components and components a straight wire joins lined up, moved clear
 //of each other.  A connector's pins stay together in its rows and columns (see GroupConnectorPins).  Dense areas are
 //exploded and rewired.
+//
+//Stopping: laying a circuit out is long, and whoever asked for it may not want it any more.  Once *piStop (SetStop)
+//isn't zero, which another thread may make it (AtomicStore), IsStopped says so and no more areas are exploded; the
+//circuit is left as it is by then, to be thrown away.
 class CKicadSchemLogicimPlacer
 {
 protected:
@@ -109,10 +113,13 @@ protected:
 	CArrayKicadSchemLogicimGroupMember	masMembers;
 	CArrayInt							maiItemMember;  //Each item's index in masMembers, -1 if it isn't a connector's pin.
 	float64								mfSpread;
+	int32*								mpiStop;  //Not zero to stop early; NULL for never.
 
 public:
 	void		Init(CCircuitFonts* pcFonts, CKicadSchemLogicimModel* pcModel, CKicadSchemLogicimBuses* pcBuses, CKicadSchemLogicimWiring* pcWiring, SKicadSchemLogicimCounts* psCounts);
 	void		Kill(void);
+	void		SetStop(int32* piStop);
+	bool		IsStopped(void);
 
 	void		AttachItems(void);
 	void		MeasureImportBoxes(void);

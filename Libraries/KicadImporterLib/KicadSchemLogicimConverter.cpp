@@ -162,15 +162,45 @@ bool CKicadSchemLogicimConverter::Build(const char* szTypeName)
 //
 // The built circuit's components placed and wired, and its knots
 // untangled: nearly all of the time a circuit takes to make, and nothing
-// but the circuit is read or changed by it.
+// but the circuit is read or changed by it.  Stopped (SetStop), the steps
+// it hasn't got to are skipped and it isn't told as done.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::LayOut(void)
 {
 	PlaceAndRoute();
-	ReportProgress("Untangling", KICAD_SCHEM_IMPORT_STEP_UNTANGLE);
-	mcPlacer.Explode();
-	ReportProgress("Done", KICAD_SCHEM_IMPORT_STEP_DONE);
+	if (!IsStopped())
+	{
+		ReportProgress("Untangling", KICAD_SCHEM_IMPORT_STEP_UNTANGLE);
+		mcPlacer.Explode();
+	}
+	if (!IsStopped())
+	{
+		ReportProgress("Done", KICAD_SCHEM_IMPORT_STEP_DONE);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Once *piStop isn't zero, which another thread may make it (AtomicStore),
+// LayOut stops at its next step (see the class).  NULL, as it is to begin
+// with, for a layout that's never stopped.  It isn't held.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::SetStop(int32* piStop)
+{
+	mcPlacer.SetStop(piStop);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsStopped(void)
+{
+	return mcPlacer.IsStopped();
 }
 
 
@@ -202,17 +232,25 @@ void CKicadSchemLogicimConverter::ReportProgress(const char* szStage, size uiSte
 //////////////////////////////////////////////////////////////////////////
 //
 // Placed at fSpread and wired, told as the next placing step (the last
-// placing step once there have been as many as there are).
+// placing step once there have been as many as there are).  Gives how
+// many connections couldn't be wired.  A stopped layout isn't placed
+// again: it has as many unwired as it had.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::PlaceAndRouteAt(float64 fSpread, size* puiPass)
+size CKicadSchemLogicimConverter::PlaceAndRouteAt(float64 fSpread, size* puiPass)
 {
 	size	uiStep;
+
+	if (IsStopped())
+	{
+		return msCounts.uiUnconnected;
+	}
 
 	uiStep = KICAD_SCHEM_IMPORT_STEP_PLACE + ((*puiPass < KICAD_SCHEM_IMPORT_PLACE_STEPS) ? *puiPass : KICAD_SCHEM_IMPORT_PLACE_STEPS - 1);
 	ReportProgress("Placing", uiStep);
 	(*puiPass)++;
 	mcPlacer.Place(fSpread);
+	return mcWiring.Route();
 }
 
 
@@ -235,11 +273,9 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 	size	uiPass;
 
 	uiPass = 0;
-	PlaceAndRouteAt(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM, &uiPass);
-	uiFirstUnconnected = mcWiring.Route();
+	uiFirstUnconnected = PlaceAndRouteAt(KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM, &uiPass);
 	fClosest = KICAD_SCHEM_LOGICIM_SPREAD_MAXIMUM;
-	PlaceAndRouteAt(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM, &uiPass);
-	msCounts.uiUnconnected = mcWiring.Route();
+	msCounts.uiUnconnected = PlaceAndRouteAt(KICAD_SCHEM_LOGICIM_SPREAD_MINIMUM, &uiPass);
 	if (msCounts.uiUnconnected <= uiFirstUnconnected)
 	{
 		return;
@@ -250,8 +286,7 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 	for (i = 0; i < KICAD_SCHEM_LOGICIM_SPREAD_HALVINGS; i++)
 	{
 		fSpread = (fClosest + fWorse) / 2;
-		PlaceAndRouteAt(fSpread, &uiPass);
-		msCounts.uiUnconnected = mcWiring.Route();
+		msCounts.uiUnconnected = PlaceAndRouteAt(fSpread, &uiPass);
 		if (msCounts.uiUnconnected > uiFirstUnconnected)
 		{
 			fWorse = fSpread;
@@ -265,8 +300,7 @@ void CKicadSchemLogicimConverter::PlaceAndRoute(void)
 	}
 	if (!bRouted)
 	{
-		PlaceAndRouteAt(fClosest, &uiPass);
-		msCounts.uiUnconnected = mcWiring.Route();
+		msCounts.uiUnconnected = PlaceAndRouteAt(fClosest, &uiPass);
 	}
 }
 

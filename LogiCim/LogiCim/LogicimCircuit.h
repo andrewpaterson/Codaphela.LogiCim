@@ -56,7 +56,9 @@ struct SLogicimKicadImport;
 //An import is begun and ended (BeginImportKicadSchematic, EndImportKicadSchematic; ImportKicadSchematic is both).
 //Between the two the boards' circuits are laid out, which is nearly all of its time: by the jobs' threads if it has
 //jobs (SetJobs), as many at once as they have, while the caller's thread is free to show how it's going until
-//IsImportKicadSchematicDone.  The project is only replaced by End.
+//IsImportKicadSchematicDone.  The project is only replaced by End.  Meanwhile the import can be cancelled
+//(CancelImportKicadSchematic): the circuits stop being laid out, and End, which there must still be, leaves the project
+//as it was.
 class CLogicimCircuit : public CObject
 {
 CONSTRUCTABLE(CLogicimCircuit);
@@ -87,6 +89,7 @@ public:
 	bool				ImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress = NULL);
 	bool				BeginImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress = NULL);
 	bool				IsImportKicadSchematicDone(void);
+	void				CancelImportKicadSchematic(void);
 	bool				EndImportKicadSchematic(void);
 	bool				NewProject(void);
 

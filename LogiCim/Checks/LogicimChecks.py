@@ -228,6 +228,30 @@ def CheckRememberedFiles(szExecutable):
 		shutil.rmtree(szDirectory, ignore_errors=True)
 
 
+#An import cancelled (its dialog's Cancel) leaves the project, its file and where Import KiCad Schematic opens as they
+#were; the same schematic imports afterwards.
+def CheckCancelledImport(szExecutable):
+	szDirectory = tempfile.mkdtemp(prefix='LogicimChecks')
+	try:
+		szProject = os.path.join(szDirectory, 'FlipFlop.xml')
+		shutil.copy(os.path.join(LOGICIM_DIR, 'FlipFlop.xml'), szProject)
+		szSchematic = os.path.join(szDirectory, 'Empty.kicad_sch')
+		with open(szSchematic, 'w') as cFile:
+			cFile.write('(kicad_sch (version 20250114) (generator "eeschema") (uuid "root") (paper "A4"))\n')
+		szImported = os.path.join(szDirectory, 'Empty.xml')
+		E = re.escape
+
+		return Check(szExecutable, 'cancelled-import', ','.join(['load:' + szProject, 'cancelimport:' + szSchematic, 'files', 'modified', 'import:' + szSchematic, 'files']),
+			[r'loaded$',
+			 r'^Cancelled import %s: not imported$' % E(szSchematic),
+			 r'^Project file: \[%s\]$' % E(szProject), r'^Import KiCad Schematic opens: \[Schematic\.kicad_sch\]$', r'^Modified: no$',
+			 r'^Import %s: imported$' % E(szSchematic),
+			 r'^Project file: \[%s\]$' % E(szImported), r'^Import KiCad Schematic opens: \[%s\]$' % E(szSchematic)],
+			[r'Unknown check step'], {'LOGICIM_SETTINGS': os.path.join(szDirectory, 'Settings.xml')})
+	finally:
+		shutil.rmtree(szDirectory, ignore_errors=True)
+
+
 #File, Recent Projects: the projects loaded or saved, the latest first, each once, kept between runs in LOGICIM_RECENT.
 #One chosen is loaded; one that isn't there any more is taken off; Clear Recent Projects leaves none.
 def CheckRecentProjects(szExecutable):
@@ -512,6 +536,9 @@ def main():
 			iFailed += 1
 	if (not aszNames) or ('remembered-files' in aszNames):
 		if not CheckRememberedFiles(szExecutable):
+			iFailed += 1
+	if (not aszNames) or ('cancelled-import' in aszNames):
+		if not CheckCancelledImport(szExecutable):
 			iFailed += 1
 	if (not aszNames) or ('keymap' in aszNames):
 		if not CheckKeymap(szExecutable):

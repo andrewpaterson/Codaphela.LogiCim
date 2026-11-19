@@ -79,7 +79,7 @@ void CLogicimCircuit::Class(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // The editor is freed with this.  It only points to the families, it
-// doesn't use them as it's freed.  An import still going is waited for
+// doesn't use them as it's freed.  An import still going is cancelled
 // and thrown away.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -87,6 +87,7 @@ void CLogicimCircuit::Free(void)
 {
 	if (mpsImport != NULL)
 	{
+		mpsImport->cImporter.Cancel();
 		mpsImport->cImporter.End();
 		KillImport();
 	}
@@ -268,10 +269,14 @@ bool CLogicimCircuit::ImportKicadSchematic(const char* szFilename, CKicadSchemIm
 // IsImportKicadSchematicDone.  The project isn't touched until
 // EndImportKicadSchematic, which there must be whatever this returns.
 // False if the circuits couldn't be built, or an import is going already.
+// Those built of a schematic that couldn't be are laid out no further:
+// nothing will come of them.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::BeginImportKicadSchematic(const char* szFilename, CKicadSchemImportProgress* pcProgress)
 {
+	bool	bResult;
+
 	if (mpsImport != NULL)
 	{
 		return gcLogger.Error2(__METHOD__, " A KiCad schematic is being imported already.", NULL);
@@ -285,7 +290,12 @@ bool CLogicimCircuit::BeginImportKicadSchematic(const char* szFilename, CKicadSc
 	mpsImport->cImporter.Init(&mpsImport->cCircuits, mpEditor->GetFonts(), &mpsImport->cVariables);
 	mpsImport->cImporter.SetProgress(pcProgress);
 	mpsImport->cImporter.SetJobs(mpcJobs);
-	return mpsImport->cImporter.Begin(szFilename);
+	bResult = mpsImport->cImporter.Begin(szFilename);
+	if (!bResult)
+	{
+		mpsImport->cImporter.Cancel();
+	}
+	return bResult;
 }
 
 
@@ -303,9 +313,26 @@ bool CLogicimCircuit::IsImportKicadSchematicDone(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The import begun is given up: its circuits stop being laid out, each
+// at its next step (see CKicadSchemBoardImporter::Cancel), and
+// EndImportKicadSchematic doesn't wait long and leaves the project as it
+// was.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimCircuit::CancelImportKicadSchematic(void)
+{
+	if (mpsImport != NULL)
+	{
+		mpsImport->cImporter.Cancel();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Waits for the import's circuits to be laid out and loads them in place
 // of the project's.  False, with the project as it was, if they couldn't
-// be made or loaded, or no import was begun.
+// be made or loaded, the import was cancelled, or none was begun.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::EndImportKicadSchematic(void)

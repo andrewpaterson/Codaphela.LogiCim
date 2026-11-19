@@ -274,7 +274,8 @@ bool CLogicimApp::Check(const char* szSteps)
 //
 // load:<file>, save:<file> and import:<file> do what Load Project, Save
 // Project and Import KiCad Schematic do with the file chosen, and new
-// what New Project does (without asking to save the changes).  files:
+// what New Project does (without asking to save the changes).
+// cancelimport:<file> is import: with its dialog's Cancel clicked.  files:
 // the project's file and where each of those opens.  modified: whether
 // the project has changes.  close: whether the close button (and File,
 // Exit) closes LogiCim at once or asks to save first.
@@ -448,6 +449,10 @@ bool CLogicimApp::CheckStep(const char* szStep)
 	else if (strncmp(szStep, "import:", 7) == 0)
 	{
 		printf("Import %s: %s\n", &szStep[7], mpContent->ImportChosenKicadSchematic(&szStep[7]) ? "imported" : "not imported");
+	}
+	else if (strncmp(szStep, "cancelimport:", 13) == 0)
+	{
+		printf("Cancelled import %s: %s\n", &szStep[13], mpContent->ImportChosenKicadSchematic(&szStep[13], true) ? "imported" : "not imported");
 	}
 	else if (StringCompare(szStep, "files") == 0)
 	{

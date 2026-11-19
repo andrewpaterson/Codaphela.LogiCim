@@ -917,6 +917,102 @@ void TestKicadSchemLogicimBoardsJobs(void)
 }
 
 
+//What an import told its progress, the import cancelled as it's told the first circuit is being placed.
+class CKicadSchemTestCancel : public CKicadSchemTestProgress
+{
+public:
+	CKicadSchemBoardImporter*	mpcImporter;
+
+	void	Init(CKicadSchemBoardImporter* pcImporter) { CKicadSchemTestProgress::Init(); mpcImporter = pcImporter; }
+	void	Progress(const char* szBoard, const char* szStage, size uiStep, size uiSteps) override
+	{
+		CKicadSchemTestProgress::Progress(szBoard, szStage, uiStep, uiSteps);
+		if (uiStep == KICAD_SCHEM_IMPORT_STEP_PLACE)
+		{
+			mpcImporter->Cancel();
+		}
+	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// An import cancelled stops at each circuit's next step and gives no
+// circuit.  Cancelled as the first circuit laid out is first placed: every
+// board has been read and built by then, that circuit is placed the once
+// and no more, and none of the others is placed at all.  Cancelled from
+// this thread while the boards' own threads lay them out: End doesn't wait
+// for the layouts to finish, only to stop.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestKicadSchemLogicimBoardsCancelled(void)
+{
+	Ptr<CCircuitFonts>			pFonts;
+	CKicadSchemTestJobs			cJobs;
+	CKicadPathVariables			cVariables;
+	CCircuitViews				cCircuits;
+	CKicadSchemBoardImporter	cImporter;
+	CKicadSchemTestCancel		cProgress;
+	size						i;
+	size						uiRead;
+	size						uiPlaced;
+	size						uiAfter;
+
+	ObjectsInit();
+	pFonts = LoadCircuitFonts(KICAD_SCHEM_LOGICIM_FONTS, CCO_Unknown);
+	ORoot()->Add(pFonts);
+	cVariables.Init();
+	cVariables.Set("_658_COMPUTER_", "Input");
+
+	cCircuits.Init();
+	cImporter.Init(&cCircuits, &pFonts, &cVariables);
+	cProgress.Init(&cImporter);
+	cImporter.SetProgress(&cProgress);
+	AssertFalse(cImporter.IsCancelled());
+	AssertNull(cImporter.Import("${_658_COMPUTER_}/Kicad/Computer/Audio/Audio Board/Audio Board.kicad_sch"));
+	AssertTrue(cImporter.IsCancelled());
+	AssertTrue(cImporter.IsDone());
+	AssertSize(13, cImporter.NumBoards());
+	uiRead = 0;
+	uiPlaced = 0;
+	uiAfter = 0;
+	for (i = 0; i < cProgress.maiSteps.NumElements(); i++)
+	{
+		uiRead += (cProgress.maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_READ) ? 1 : 0;
+		uiPlaced += (cProgress.maiSteps.GetValue(i) == KICAD_SCHEM_IMPORT_STEP_PLACE) ? 1 : 0;
+		uiAfter += (cProgress.maiSteps.GetValue(i) > KICAD_SCHEM_IMPORT_STEP_PLACE) ? 1 : 0;
+	}
+	AssertSize(13, uiRead);
+	AssertSize(1, uiPlaced);
+	AssertSize(0, uiAfter);
+	AssertInt(KICAD_SCHEM_IMPORT_STEP_PLACE, cProgress.maiSteps.GetValue(cProgress.maiSteps.NumElements() - 1));
+	cImporter.Kill();
+	cProgress.Kill();
+	cCircuits.Kill();
+
+	cJobs.Init();
+	cCircuits.Init();
+	cImporter.Init(&cCircuits, &pFonts, &cVariables);
+	cImporter.SetJobs(&cJobs);
+	AssertTrue(cImporter.Begin("${_658_COMPUTER_}/Kicad/Computer/Audio/Audio Board/Audio Board.kicad_sch"));
+	cImporter.Cancel();
+	AssertNull(cImporter.End());
+	cJobs.Wait();
+	AssertTrue(cImporter.IsDone());
+	AssertTrue(cImporter.IsCancelled());
+	AssertSize(13, cImporter.NumBoards());
+	cImporter.Kill();
+	cCircuits.Kill();
+
+	cVariables.Kill();
+	ORoot()->Remove(pFonts);
+	pFonts = NULL;
+	ORoot()->RemoveAll();
+	ObjectsFlush();
+	ObjectsKill(false);
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The Audio Board, with the boards drawn on it made from their own
@@ -1114,6 +1210,7 @@ void TestKicadSchemLogicim(void)
 	TestKicadPathVariables();
 	TestKicadSchemLogicimBoards();
 	TestKicadSchemLogicimBoardsJobs();
+	TestKicadSchemLogicimBoardsCancelled();
 
 	DataMemoryKill();
 	DataIOKill();

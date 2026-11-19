@@ -135,6 +135,10 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //Then dense areas, where the wires knot (turn and cross a lot), are exploded a few times: space is put in across
 //each one, up and down and left and right (so what's lined up stays lined up), and it's rewired.  An explosion is
 //kept if it wires as well and leaves fewer knots over the limit in the dense areas.
+//
+//All that placing and exploding (LayOut) is nearly all of the time a circuit takes, so it can be stopped (SetStop): a
+//stopped layout finishes the placing or the explosion it is in the middle of (up to a second, for the biggest of the
+//Audio Board's boards), skips the rest and leaves the circuit as far as it got, to be thrown away.
 class CKicadSchemLogicimConverter
 {
 protected:
@@ -158,6 +162,8 @@ public:
 
 	void							SetBoards(CKicadSchemBoard* pcBoard, CKicadSchemBoardSource* pcBoardSource);
 	void							SetProgress(CKicadSchemImportProgress* pcProgress);
+	void							SetStop(int32* piStop);
+	bool							IsStopped(void);
 	bool							Convert(const char* szTypeName);
 	bool							Build(const char* szTypeName);
 	void							LayOut(void);
@@ -200,7 +206,7 @@ protected:
 	bool							IsDrawnTerminal(SKicadSchemLogicimTerminal* psTerminal);
 	bool							IsSubnetDrawn(CKicadSchemSubnet* pcSubnet);
 	void							PlaceAndRoute(void);
-	void							PlaceAndRouteAt(float64 fSpread, size* puiPass);
+	size							PlaceAndRouteAt(float64 fSpread, size* puiPass);
 	void							ReportProgress(const char* szStage, size uiStep);
 
 	void							AddPinTerminal(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CPortView* pcPortView, size uiItem);

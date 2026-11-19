@@ -22,7 +22,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include "BaseLib/Logger.h"
 #include "BaseLib/FileUtil.h"
-#include "BaseLib/NativeThread.h"
 #include "BaseLib/StringHelper.h"
 #include "StandardLib/Objects.h"
 #include "StandardLib/ObjectReader.h"
@@ -1006,23 +1005,44 @@ void CLogicimWindowContent::ClearRecentProjects(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// How a KiCad import is going, shown in the status bar: the step last
-// told ("Importing Selector 12bit: Placing") and how many of the boards'
-// steps have been told, and the window painted then, as the import doesn't
-// stop for the window's loop.  Input waits until it's done.
+// How a KiCad import is going: the step last told ("Importing Selector
+// 12bit: Placing") and how many of the boards' steps have been told, in
+// the import dialog and the status bar.  The window is painted then, as
+// its loop waits for the dialog.
 //
 //////////////////////////////////////////////////////////////////////////
-void CLogicimWindowContent::ShowImportProgress(CLogicimImportProgress* pcProgress)
+void CLogicimWindowContent::ShowImportProgress(void)
 {
 	CChars	szText;
 	int64	iDone;
 	int64	iTotal;
 
-	pcProgress->Get(&szText, &iDone, &iTotal);
-	mpMessageInfo->SetText(szText.Text());
+	mcImportProgress.Get(&szText, &iDone, &iTotal);
+	mpImportDialog->SetText(szText.Text());
+	mpImportDialog->SetProgress(iDone, iTotal);
+	if (StringCompare(mpMessageInfo->GetText(), szText.Text()) != 0)
+	{
+		mpMessageInfo->SetText(szText.Text());
+	}
 	szText.Kill();
 	mpImportBar->SetProgress(iDone, iTotal);
 	mpWindow->PaintNow();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The import dialog's tick: how the import is going, and once every
+// circuit is laid out the dialog is done with.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::ImportTick(void)
+{
+	ShowImportProgress();
+	if (mpLogicimCircuit->IsImportKicadSchematicDone())
+	{
+		mpImportDialog->Finish();
+	}
 }
 
 
@@ -1049,6 +1069,21 @@ void CLogicimImportProgress::Kill(void)
 	mszStage.Kill();
 	mszBoard.Kill();
 	mcMutex.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimImportProgress::Reset(void)
+{
+	mcMutex.Lock();
+	mszBoard.Set("");
+	mszStage.Set("");
+	miBoards = 0;
+	miSteps = 0;
+	mcMutex.Unlock();
 }
 
 
@@ -1115,14 +1150,14 @@ void CLogicimWindowContent::ShowImportKicadDialog(void)
 //
 // As Import KiCad Schematic does with the file chosen: it opens on it
 // from now on, if it was imported.  Where Load Project opens isn't
-// changed.
+// changed.  bCancel is for checking, see ImportKicadSchematic.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimWindowContent::ImportChosenKicadSchematic(const char* szFilename)
+bool CLogicimWindowContent::ImportChosenKicadSchematic(const char* szFilename, bool bCancel)
 {
 	bool	bResult;
 
-	bResult = ImportKicadSchematic(szFilename);
+	bResult = ImportKicadSchematic(szFilename, bCancel);
 	if (bResult)
 	{
 		mcSettings.SetKicadImport(szFilename);
@@ -1146,29 +1181,32 @@ void CLogicimWindowContent::SetStartupImport(const char* szFilename)
 //////////////////////////////////////////////////////////////////////////
 //
 // Replaces the project with the circuit made from the KiCad schematic, as
-// the Import KiCad Schematic dialog does.
+// the Import KiCad Schematic dialog does.  Its circuits are laid out on
+// other threads: while they are a dialog over the window (the status bar
+// too) says how it's going, and Cancel there gives the import up with the
+// project as it was.  With no window shown, as in a scripted check, it
+// just waits for them.  Call it from a tick, as it shows a dialog.
+//
+// bCancel is for checking: the import is cancelled once it has begun, as
+// the dialog's Cancel clicked straight away would, with no dialog shown.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
+bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename, bool bCancel)
 {
-	bool					bResult;
-	CLogicimImportProgress	cProgress;
+	bool	bResult;
 
-	//The progress is shown in the status bar as the circuits are laid out, on other threads; it's cleared after.
-	cProgress.Init();
-	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Separator));
-	mpLogicimCircuit->BeginImportKicadSchematic(szFilename, &cProgress);
-	ShowImportProgress(&cProgress);
-	while (!mpLogicimCircuit->IsImportKicadSchematicDone())
+	mcImportProgress.Reset();
+	if (mpLogicimCircuit->BeginImportKicadSchematic(szFilename, &mcImportProgress) && mpWindow->IsShown() && !bCancel)
 	{
-		ThreadSleep(LOGICIM_IMPORT_SHOW_MS);
-		ShowImportProgress(&cProgress);
+		bCancel = !ShowImportProgressDialog();
 	}
+	if (bCancel)
+	{
+		mpLogicimCircuit->CancelImportKicadSchematic();
+		gcLogger.Info2("Cancelled importing [", szFilename, "].", NULL);
+	}
+
 	bResult = mpLogicimCircuit->EndImportKicadSchematic();
-	cProgress.Kill();
-	mpMessageInfo->SetText("");
-	mpImportBar->SetFraction(0);
-	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Panel));
 	if (bResult)
 	{
 		gcLogger.Info2("Imported [", szFilename, "].", NULL);
@@ -1178,4 +1216,30 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename)
 	}
 	UpdateInfo();
 	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Shows the import's progress dialog over the window until the import
+// begun has laid its circuits out, the status bar saying how it's going
+// too.  False if the dialog was cancelled first: the import is still
+// going.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimWindowContent::ShowImportProgressDialog(void)
+{
+	bool	bLaidOut;
+
+	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Separator));
+	mpImportDialog = OMalloc<CProgressDialog>(mpWindow, &msDialogLook, "Import KiCad Schematic", "");
+	mpImportDialog->SetTicker(this, &CLogicimWindowContent::ImportTick);
+	ShowImportProgress();
+	bLaidOut = mpImportDialog->Show();
+	mpImportDialog = NULL;
+
+	mpMessageInfo->SetText("");
+	mpImportBar->SetFraction(0);
+	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Panel));
+	return bLaidOut;
 }

@@ -162,6 +162,7 @@ void CLogicimWindowContent::Init(void)
 	mbUpdatingInfo = false;
 	msTreeMenuPlace.Init();
 	mcSettings.Init();
+	mcImportProgress.Init();
 	mszStartupImport.Init();
 	mbListingSubcircuits = false;
 	mszLayoutFile.Init();
@@ -239,6 +240,8 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMessageDialog);
 	M_Pointer(mpComponentChooser);
 	M_Pointer(mpFileChooser);
+	M_Pointer(mpImportDialog);
+	U_Unknown(CLogicimImportProgress, mcImportProgress);
 	U_Unknown(CLogicimSettings, mcSettings);
 	U_String(mszStartupImport);
 	U_Bool(mbListingSubcircuits);
@@ -382,6 +385,7 @@ void CLogicimWindowContent::Free(void)
 	}
 
 	mszStartupImport.Kill();
+	mcImportProgress.Kill();
 	mcSettings.Kill();
 	mszLayoutFile.Kill();
 	mszKeymapFile.Kill();
