@@ -425,9 +425,8 @@ void CLogicimWindowContent::ShowSimulationTree(void) { ShowToolWindow(LOGICIM_SI
 //////////////////////////////////////////////////////////////////////////
 //
 // Logicim's circuit information: the subcircuit, the simulation and the
-// view path on the left, then a KiCad import's progress while it's
-// imported (a bar, and its board and step in the space left over), and
-// the pointer and zoom on the right.
+// view path on the left, what undo has to say in the space left over
+// (see PressUndo), and the pointer and zoom on the right.
 //
 //////////////////////////////////////////////////////////////////////////
 Ptr<CStatusBar> CLogicimWindowContent::CreateStatusBar(void)
@@ -438,11 +437,6 @@ Ptr<CStatusBar> CLogicimWindowContent::CreateStatusBar(void)
 	mpSubcircuitInfo = AddStatusField(pBar, 190);
 	mpSimulationInfo = AddStatusField(pBar, 250);
 	mpViewPathInfo = AddStatusField(pBar, 250);
-	pBar->AddGap(mpTheme->GetMetric(TM_StatusFieldGap));
-	mpImportBar = OMalloc<CProgressBar>(mpWindow, mpTheme->GetColour(TC_Panel), mpTheme->GetColour(TC_Accent), 4);
-	mpImportBar->SetDesiredSize(100, 4);
-	mpImportBar->SetAlignment(CSH_Left, CSV_Center);
-	pBar->Append(mpImportBar);
 	mpMessageInfo = pBar->AddMessageField();  //The space left over, before the pointer and zoom.
 	mpMouseXInfo = AddStatusField(pBar, 56);
 	mpMouseYInfo = AddStatusField(pBar, 56);

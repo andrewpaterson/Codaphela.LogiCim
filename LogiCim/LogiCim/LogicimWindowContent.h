@@ -42,7 +42,6 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #include "CircuitCanvas.h"
 #include "LogicimCircuit.h"
 #include "LogicimSettings.h"
-#include "WindowLib/ProgressBar.h"
 #include "WindowLib/DockManager.h"
 #include "WindowLib/SettingsDialog.h"
 #include "WindowLib/KeymapPage.h"
@@ -115,7 +114,7 @@ class CLogicimWindowContent;
 #define LOGICIM_CIRCUIT_CONTEXT		"Circuit"  //The keys over the circuit canvas, where bare letters place and turn components.
 
 
-//Keeps how a KiCad import is going for the content to show (see ShowImportProgress): the step last told, how many
+//Keeps how a KiCad import is going for the content to show in its dialog (see ShowImportProgress): the step last told, how many
 //boards there are so far and how many steps have been told.  The steps are told by the threads that lay the boards'
 //circuits out, several at once, and read by the window's, so they are kept under a mutex.
 class CLogicimImportProgress : public CKicadSchemImportProgress
@@ -145,7 +144,7 @@ public:
 //
 //A KiCad schematic's circuits are laid out on other threads (see CLogicimCircuit), which is most of an import.  While
 //they are, a progress dialog over the window says which board and step was last told and how far along the import is,
-//as the status bar does, and its Cancel gives the import up, leaving the project as it was.
+//and its Cancel gives the import up, leaving the project as it was.
 //
 //The content is an object; keep it under the root, see Setup.  It holds the window, its widgets and LogiCim's circuit.
 class CLogicimWindowContent : public CObject, public CDockManagerListener, public CCircuitEditorListener, public CRevealingUndoHost
@@ -197,8 +196,7 @@ protected:
 	Ptr<CLabel>				mpMouseXInfo;
 	Ptr<CLabel>				mpMouseYInfo;
 	Ptr<CLabel>				mpZoomInfo;
-	Ptr<CLabel>				mpMessageInfo;  //A KiCad import's board and step while it's imported, or what Undo would undo; empty otherwise.
-	Ptr<CProgressBar>		mpImportBar;  //How far through the board's steps it is, the panel's colour otherwise.
+	Ptr<CLabel>				mpMessageInfo;  //What undo has to say (see PressUndo); empty otherwise.
 
 	Ptr<CLogicimCircuit>			mpLogicimCircuit;
 	Ptr<CDialog>					mpDialog;  //The dialog being shown, NULL when none is.

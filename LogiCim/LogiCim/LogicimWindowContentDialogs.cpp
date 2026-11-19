@@ -1005,10 +1005,9 @@ void CLogicimWindowContent::ClearRecentProjects(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// How a KiCad import is going: the step last told ("Importing Selector
-// 12bit: Placing") and how many of the boards' steps have been told, in
-// the import dialog and the status bar.  The window is painted then, as
-// its loop waits for the dialog.
+// How a KiCad import is going, in its dialog: the step last told
+// ("Importing Selector 12bit: Placing") above a bar filled as far as the
+// boards' steps have been told.
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowImportProgress(void)
@@ -1020,13 +1019,7 @@ void CLogicimWindowContent::ShowImportProgress(void)
 	mcImportProgress.Get(&szText, &iDone, &iTotal);
 	mpImportDialog->SetText(szText.Text());
 	mpImportDialog->SetProgress(iDone, iTotal);
-	if (StringCompare(mpMessageInfo->GetText(), szText.Text()) != 0)
-	{
-		mpMessageInfo->SetText(szText.Text());
-	}
 	szText.Kill();
-	mpImportBar->SetProgress(iDone, iTotal);
-	mpWindow->PaintNow();
 }
 
 
@@ -1105,7 +1098,7 @@ void CLogicimImportProgress::Progress(const char* szBoard, const char* szStage, 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The step last told, as the status bar says it, and the steps told of
+// The step last told, as the import's dialog says it, and the steps told of
 // all that the boards so far could have (a board whose circuit is placed
 // in fewer tries than it might be has fewer, so every step told is short
 // of them all until the import is done).
@@ -1182,10 +1175,10 @@ void CLogicimWindowContent::SetStartupImport(const char* szFilename)
 //
 // Replaces the project with the circuit made from the KiCad schematic, as
 // the Import KiCad Schematic dialog does.  Its circuits are laid out on
-// other threads: while they are a dialog over the window (the status bar
-// too) says how it's going, and Cancel there gives the import up with the
-// project as it was.  With no window shown, as in a scripted check, it
-// just waits for them.  Call it from a tick, as it shows a dialog.
+// other threads: while they are a dialog over the window says how it's
+// going, and Cancel there gives the import up with the project as it was.
+// With no window shown, as in a scripted check, it just waits for them.
+// Call it from a tick, as it shows a dialog.
 //
 // bCancel is for checking: the import is cancelled once it has begun, as
 // the dialog's Cancel clicked straight away would, with no dialog shown.
@@ -1222,24 +1215,18 @@ bool CLogicimWindowContent::ImportKicadSchematic(const char* szFilename, bool bC
 //////////////////////////////////////////////////////////////////////////
 //
 // Shows the import's progress dialog over the window until the import
-// begun has laid its circuits out, the status bar saying how it's going
-// too.  False if the dialog was cancelled first: the import is still
-// going.
+// begun has laid its circuits out.  False if the dialog was cancelled
+// first: the import is still going.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimWindowContent::ShowImportProgressDialog(void)
 {
 	bool	bLaidOut;
 
-	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Separator));
 	mpImportDialog = OMalloc<CProgressDialog>(mpWindow, &msDialogLook, "Import KiCad Schematic", "");
 	mpImportDialog->SetTicker(this, &CLogicimWindowContent::ImportTick);
 	ShowImportProgress();
 	bLaidOut = mpImportDialog->Show();
 	mpImportDialog = NULL;
-
-	mpMessageInfo->SetText("");
-	mpImportBar->SetFraction(0);
-	mpImportBar->SetTrackColour(mpTheme->GetColour(TC_Panel));
 	return bLaidOut;
 }

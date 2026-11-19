@@ -234,7 +234,6 @@ void CLogicimWindowContent::Class(void)
 	M_Pointer(mpMouseYInfo);
 	M_Pointer(mpZoomInfo);
 	M_Pointer(mpMessageInfo);
-	M_Pointer(mpImportBar);
 	M_Pointer(mpLogicimCircuit);
 	M_Pointer(mpDialog);
 	M_Pointer(mpMessageDialog);
