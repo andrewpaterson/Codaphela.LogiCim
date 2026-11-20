@@ -51,7 +51,7 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 {
 	size					i;
 	CKicadSchemLibPin*		pcPin;
-	char*					szName;
+	const char*				szName;
 	CGroundView*			pcGround;
 	CPositivePowerView*		pcPositive;
 	CComponentView*			pcView;

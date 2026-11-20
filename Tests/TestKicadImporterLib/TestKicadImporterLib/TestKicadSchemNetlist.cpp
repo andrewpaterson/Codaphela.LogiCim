@@ -349,7 +349,7 @@ bool IsKicadSchemNetNoConnect(CKicadSchemNet* pcNet)
 // from a pin can have any name here.
 //
 //////////////////////////////////////////////////////////////////////////
-bool IsKicadSchemNetNamed(CKicadSchemNet* pcNet, char* szKicadName)
+bool IsKicadSchemNetNamed(CKicadSchemNet* pcNet, const char* szKicadName)
 {
 	CChars	szName;
 	bool	bResult;
@@ -398,7 +398,7 @@ void AssertKicadSchemNetlistMatches(char* szName)
 	CKicadSchemExpression*	pcKicadNet;
 	CKicadSchemExpression*	pcNode;
 	CKicadSchemNet*			pcNet;
-	char*					szNetName;
+	const char*				szNetName;
 	CChars					szExpected;
 	CChars					szActual;
 	size					i;

@@ -224,10 +224,10 @@ bool IsKicadSchemPowerFlag(const char* szPowerName, CKicadSchemLibSymbol* pcLibS
 //////////////////////////////////////////////////////////////////////////
 bool IsKicadSchemSkippedSymbol(CKicadSchemSymbol* pcSymbol)
 {
-	CChars	szPrefix;
-	char*	szReference;
-	size	i;
-	bool	bSkipped;
+	CChars		szPrefix;
+	const char*	szReference;
+	size		i;
+	bool		bSkipped;
 
 	for (i = 0; i < sizeof(gaszKicadSchemSkippedLibraryNames) / sizeof(const char*); i++)
 	{

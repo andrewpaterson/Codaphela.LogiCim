@@ -49,7 +49,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 //////////////////////////////////////////////////////////////////////////
 static bool IsKicadSchemConnector(CKicadSchemSymbol* pcSymbol)
 {
-	char*	szReference;
+	const char*	szReference;
 
 	szReference = pcSymbol->GetReference();
 	return (szReference != NULL) && ((szReference[0] == 'J') || (szReference[0] == 'j')) && (szReference[1] >= '0') && (szReference[1] <= '9');
@@ -274,7 +274,7 @@ bool CKicadSchemLogicimConverter::AddBoardPins(CKicadSchemSymbol* pcSymbol, CKic
 CSubcircuitInstanceView* CKicadSchemLogicimConverter::AddSubcircuitInstance(CKicadSchemSymbol* pcSymbol, CCircuitView* pcSubcircuit, size* puiItem)
 {
 	CSubcircuitInstanceView*	pcInstance;
-	char*						szValue;
+	const char*					szValue;
 
 	szValue = pcSymbol->GetValue();
 	pcInstance = NewMalloc<CSubcircuitInstanceView>();
@@ -381,9 +381,9 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 // symbol's.  NULL if neither has one.
 //
 //////////////////////////////////////////////////////////////////////////
-static char* GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+static const char* GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
-	char*	szSchematic;
+	const char*	szSchematic;
 
 	szSchematic = pcSymbol->GetProperties()->GetValue(KICAD_SCHEM_BOARD_SCHEMATIC_PROPERTY);
 	if (StrEmpty(szSchematic))
@@ -406,7 +406,7 @@ static char* GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSche
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::AddBoard(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
-	char*									szSchematic;
+	const char*								szSchematic;
 	CKicadSchemBoard*						pcBoard;
 	CKicadSchemBoardConnector*				pcConnector;
 	CArrayTemplatePtr<CKicadSchemLibPin>	apcPins;
@@ -502,7 +502,7 @@ static void SetKicadSchemPinAppearance(CPinView* pcPinView, CKicadSchemLibPin* p
 static void GetKicadSchemPlaceholderName(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CChars* pszTypeName)
 {
 	const char*	szLibName;
-	char*	szColon;
+	const char*	szColon;
 
 	szLibName = pcLibSymbol->GetName();
 	szColon = strrchr(szLibName, ':');
