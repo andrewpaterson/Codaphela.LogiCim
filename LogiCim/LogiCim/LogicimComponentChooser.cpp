@@ -365,7 +365,7 @@ const char* CLogicimComponentChooser::GetEntryDescription(int iLibrary, int iEnt
 bool CLogicimComponentChooser::EntryMatches(int iLibrary, int iEntry)
 {
 	SComponentLibrary*	psLibrary;
-	char*				szFilter;
+	const char*			szFilter;
 
 	szFilter = mpFilter->GetText();
 	if (iLibrary == (int)NumComponentLibraries())

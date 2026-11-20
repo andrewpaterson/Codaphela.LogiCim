@@ -270,7 +270,7 @@ int CLogicimWindowContent::AddPropertyEditor(CComponentProperties* pcProperties,
 void CLogicimWindowContent::ShowNewSubcircuitDialog(void)
 {
 	Ptr<CTextField>		pName;
-	char*				szName;
+	const char*			szName;
 	CChars				szMessage;
 
 	mpDialog = OMalloc<CDialog>(mpWindow, &msDialogLook, "New Subcircuit");
@@ -326,7 +326,7 @@ void CLogicimWindowContent::ShowNewSimulationDialog(void)
 {
 	Ptr<CTextField>		pName;
 	CChars				szDefault;
-	char*				szName;
+	const char*			szName;
 
 	szDefault.Init("Top ");
 	szDefault.Append(GetEditedCircuitName());
@@ -365,7 +365,7 @@ void CLogicimWindowContent::ShowSelectZoomDialog(void)
 	Ptr<CTextField>		pZoom;
 	Ptr<CCircuitCanvasDraw>	pDraw;
 	CChars				szZoom;
-	char*				szText;
+	const char*			szText;
 	char*				szEnd;
 	float64				fZoom;
 
@@ -1127,7 +1127,7 @@ void CLogicimImportProgress::Get(CChars* pszText, int64* piDone, int64* piTotal)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimWindowContent::ShowImportKicadDialog(void)
 {
-	char*				szFilename;
+	const char*				szFilename;
 
 	mpFileChooser = OMalloc<CFileChooser>(mpWindow, &msDialogLook, "Import KiCad Schematic", false, mcSettings.GetKicadImport(), gasKicadFileTypes, sizeof(gasKicadFileTypes) / sizeof(SFileChooserType), mapIcons.Get(LA_LoadProject), mpFileIcon);
 	if (mpFileChooser->Show())

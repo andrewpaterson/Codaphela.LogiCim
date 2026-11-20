@@ -383,5 +383,5 @@ void CLogicimWindowContent::AppendUndoWhere(bool bRedo, CChars* pszDest)
 }
 
 
-char* CLogicimWindowContent::GetMessage(void) { return mpMessageInfo->GetText(); }
+const char* CLogicimWindowContent::GetMessage(void) { return mpMessageInfo->GetText(); }
 

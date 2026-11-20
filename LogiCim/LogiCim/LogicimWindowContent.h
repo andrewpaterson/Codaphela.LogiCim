@@ -261,7 +261,7 @@ public:
 	bool				ShowUndo(bool bRedo) override;
 	bool				DoUndo(bool bRedo) override;
 	void				AppendUndoWhere(bool bRedo, CChars* pszDest) override;
-	char*				GetMessage(void);
+	const char*				GetMessage(void);
 	void				ActivateCanvas(CCircuitCanvas* pcCanvas);
 	size				NumTabs(void);
 	size				GetActiveTab(void) const;
