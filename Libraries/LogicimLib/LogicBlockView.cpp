@@ -753,7 +753,7 @@ const char* CLogicBlockView::GetType(void) { return GetKindTitle(GetBlockKind())
 const char* CLogicBlockView::GetXMLName(void) const { return GetKindXMLName(GetBlockKind()); }
 ELogicBlockKind CLogicBlockView::GetBlockKind(void) const { return meKind; }
 ELogicBlockKind CLogicBlockView::GetKind(void) const { return meKind; }
-SLogicBlockParams* CLogicBlockView::GetParams(void) { return &msParams; }
+const SLogicBlockParams* CLogicBlockView::GetParams(void) const { return &msParams; }
 
 
 //////////////////////////////////////////////////////////////////////////

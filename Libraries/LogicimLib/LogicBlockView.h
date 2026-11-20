@@ -95,32 +95,32 @@ protected:
 	SLogicBlockParams	msParams;
 
 public:
-			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, ELogicBlockKind eKind, SLogicBlockParams* psParams);
+			void						Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts, ELogicBlockKind eKind, SLogicBlockParams* psParams);
 
-	virtual const char*				GetType(void);
-	virtual const char*				GetXMLName(void) const;
-	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-	virtual bool					InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
-	virtual bool					LoadXML(CMarkupTag* pcTag);
-	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
-	virtual ELogicBlockKind			GetBlockKind(void) const;
+	virtual const char*					GetType(void);
+	virtual const char*					GetXMLName(void) const;
+	virtual void						GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool						InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
+	virtual bool						InitPlaced(int32 x, int32 y, ERotation eRotation, CCircuitView* pcCircuit, CCircuitFonts* pcFonts);
+	virtual bool						LoadXML(CMarkupTag* pcTag);
+	virtual CIntegratedCircuit*			CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
+	virtual ELogicBlockKind				GetBlockKind(void) const;
 
-			ELogicBlockKind			GetKind(void) const;
-			SLogicBlockParams*		GetParams(void);
-			CPortView*				GetPortViewByLabel(const char* szLabel, bool bInverted);
+			ELogicBlockKind				GetKind(void) const;
+			const SLogicBlockParams*	GetParams(void) const;
+			CPortView*					GetPortViewByLabel(const char* szLabel, bool bInverted);
 
-	static	const char*				GetKindXMLName(ELogicBlockKind eKind);
-	static	const char*				GetKindTitle(ELogicBlockKind eKind);
-	static	bool					FindKind(const char* szXMLName, ELogicBlockKind* peKind);
-	static	void					GetDefaultParams(ELogicBlockKind eKind, SLogicBlockParams* psParams);
-	static	void					ClampParams(ELogicBlockKind eKind, SLogicBlockParams* psParams);
-	static	void					GetPins(ELogicBlockKind eKind, SLogicBlockParams* psParams, CArrayLogicBlockPin* pasPins);
-	static	CIntegratedCircuit*		CreateChip(ELogicBlockKind eKind, SLogicBlockParams* psParams, CSubcircuitSimulation* pcSimulation, const char* szName, CFamilyVoltageConfiguration* pcFamily);
+	static	const char*					GetKindXMLName(ELogicBlockKind eKind);
+	static	const char*					GetKindTitle(ELogicBlockKind eKind);
+	static	bool						FindKind(const char* szXMLName, ELogicBlockKind* peKind);
+	static	void						GetDefaultParams(ELogicBlockKind eKind, SLogicBlockParams* psParams);
+	static	void						ClampParams(ELogicBlockKind eKind, SLogicBlockParams* psParams);
+	static	void						GetPins(ELogicBlockKind eKind, SLogicBlockParams* psParams, CArrayLogicBlockPin* pasPins);
+	static	CIntegratedCircuit*			CreateChip(ELogicBlockKind eKind, SLogicBlockParams* psParams, CSubcircuitSimulation* pcSimulation, const char* szName, CFamilyVoltageConfiguration* pcFamily);
 
 protected:
-	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
-			void					CreateBlock(const char* szTitle, const char* szSubtitle);
+	virtual	void						SaveXMLAttributes(CXMLWriter* pcWriter);
+			void						CreateBlock(const char* szTitle, const char* szSubtitle);
 };
 
 
