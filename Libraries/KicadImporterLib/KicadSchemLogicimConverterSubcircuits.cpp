@@ -501,7 +501,7 @@ static void SetKicadSchemPinAppearance(CPinView* pcPinView, CKicadSchemLibPin* p
 //////////////////////////////////////////////////////////////////////////
 static void GetKicadSchemPlaceholderName(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CChars* pszTypeName)
 {
-	char*	szLibName;
+	const char*	szLibName;
 	char*	szColon;
 
 	szLibName = pcLibSymbol->GetName();
@@ -760,7 +760,7 @@ void CKicadSchemLogicimConverter::GetPlaceholderPins(CKicadSchemSymbol* pcSymbol
 	size				i;
 	CKicadSchemLibPin*	pcPin;
 	CChars				szName;
-	char*				szPinName;
+	const char*				szPinName;
 
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{

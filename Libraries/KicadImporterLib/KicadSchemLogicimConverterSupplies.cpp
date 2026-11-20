@@ -151,7 +151,7 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 {
 	CKicadSchemLibPin*		pcOutput;
 	CKicadSchemSubnet*		pcSubnet;
-	char*					szNetName;
+	const char*					szNetName;
 	const char*				szVoltage;
 
 	pcOutput = GetKicadSchemRegulatorOutput(pcSymbol, pcLibSymbol);
