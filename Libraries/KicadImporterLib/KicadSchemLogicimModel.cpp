@@ -133,7 +133,7 @@ void CKicadSchemLogicimModel::LinkItem(size uiItem)
 	psModelItem->uiLastAttached = ARRAY_ELEMENT_NOT_FOUND;
 	psModelItem->uiNextAttached = ARRAY_ELEMENT_NOT_FOUND;
 	psItem = &psModelItem->sItem;
-	mcViewItems.Put(&psItem->pcView, sizeof(psItem->pcView), &uiItem, sizeof(uiItem));
+	mcViewItems.Put(&psItem->pcView, &uiItem);
 	if ((psItem->eKind == KSLIK_BoardPin) && (mcBoardPins.Get(psItem->pcView->GetName()) == NULL))
 	{
 		mcBoardPins.Put(psItem->pcView->GetName(), &uiItem);
@@ -194,17 +194,17 @@ void CKicadSchemLogicimModel::LinkTerminal(size uiTerminal)
 	}
 	psItem->uiLastTerminal = uiTerminal;
 
-	if (mcPortTerminals.Get(&psTerminal->pcPortView, sizeof(psTerminal->pcPortView)) == NULL)
+	if (!mcPortTerminals.HasKey(&psTerminal->pcPortView))
 	{
-		mcPortTerminals.Put(&psTerminal->pcPortView, sizeof(psTerminal->pcPortView), &uiTerminal, sizeof(uiTerminal));
+		mcPortTerminals.Put(&psTerminal->pcPortView, &uiTerminal);
 	}
 
-	psSubnet = (SKicadSchemLogicimSubnetTerminals*)mcSubnetTerminals.Get(&psTerminal->pcSubnet, sizeof(psTerminal->pcSubnet));
+	psSubnet = mcSubnetTerminals.Get(&psTerminal->pcSubnet);
 	if (psSubnet == NULL)
 	{
 		sSubnet.uiFirst = uiTerminal;
 		sSubnet.uiLast = uiTerminal;
-		mcSubnetTerminals.Put(&psTerminal->pcSubnet, sizeof(psTerminal->pcSubnet), &sSubnet, sizeof(sSubnet));
+		mcSubnetTerminals.Put(&psTerminal->pcSubnet, &sSubnet);
 		return;
 	}
 	masTerminals.Get(psSubnet->uiLast)->uiNextOnSubnet = uiTerminal;
@@ -250,14 +250,10 @@ void CKicadSchemLogicimModel::Index(void)
 {
 	size	i;
 
-	mcBoardPins.Kill();
-	mcViewItems.Kill();
-	mcPortTerminals.Kill();
-	mcSubnetTerminals.Kill();
-	mcSubnetTerminals.Init();
-	mcPortTerminals.Init();
-	mcViewItems.Init();
-	mcBoardPins.Init();
+	mcBoardPins.ReInit();
+	mcViewItems.ReInit();
+	mcPortTerminals.ReInit();
+	mcSubnetTerminals.ReInit();
 	for (i = 0; i < masItems.NumElements(); i++)
 	{
 		LinkItem(i);
@@ -404,7 +400,7 @@ size CKicadSchemLogicimModel::FirstSubnetTerminal(CKicadSchemSubnet* pcSubnet)
 {
 	SKicadSchemLogicimSubnetTerminals*	psSubnet;
 
-	psSubnet = (SKicadSchemLogicimSubnetTerminals*)mcSubnetTerminals.Get(&pcSubnet, sizeof(pcSubnet));
+	psSubnet = mcSubnetTerminals.Get(&pcSubnet);
 	return (psSubnet != NULL) ? psSubnet->uiFirst : ARRAY_ELEMENT_NOT_FOUND;
 }
 
@@ -460,7 +456,7 @@ size CKicadSchemLogicimModel::FindPortTerminal(CPortView* pcPortView)
 {
 	size*	puiTerminal;
 
-	puiTerminal = (size*)mcPortTerminals.Get(&pcPortView, sizeof(pcPortView));
+	puiTerminal = mcPortTerminals.Get(&pcPortView);
 	return (puiTerminal != NULL) ? *puiTerminal : ARRAY_ELEMENT_NOT_FOUND;
 }
 
@@ -473,7 +469,7 @@ size CKicadSchemLogicimModel::FindItem(CComponentView* pcView)
 {
 	size*	puiItem;
 
-	puiItem = (size*)mcViewItems.Get(&pcView, sizeof(pcView));
+	puiItem = mcViewItems.Get(&pcView);
 	return (puiItem != NULL) ? *puiItem : ARRAY_ELEMENT_NOT_FOUND;
 }
 

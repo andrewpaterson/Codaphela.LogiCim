@@ -23,8 +23,8 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArraySize.h"
-#include "BaseLib/MapBlock.h"
-#include "BaseLib/MapStringTemplate.h"
+#include "BaseLib/HashMapTemplate.h"
+#include "BaseLib/HashMapString.h"
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/Bounds.h"
 #include "KicadLib/KicadSchemNetlist.h"
@@ -165,10 +165,10 @@ protected:
 	CArrayKicadSchemLogicimModelItem		masItems;
 	CArrayKicadSchemLogicimModelTerminal	masTerminals;
 	CArrayKicadSchemLogicimConnection		masConnections;
-	CMapBlock								mcSubnetTerminals;  //A subnet to its SKicadSchemLogicimSubnetTerminals.
-	CMapBlock								mcPortTerminals;    //A port to its first terminal.
-	CMapBlock								mcViewItems;        //A view to its item.
-	CMapStringTemplate<size>				mcBoardPins;        //A board pin's name to its item.
+	CHashMapTemplate<CKicadSchemSubnet*, SKicadSchemLogicimSubnetTerminals>	mcSubnetTerminals;  //A subnet to its first and last terminals.
+	CHashMapTemplate<CPortView*, size>										mcPortTerminals;    //A port to its first terminal.
+	CHashMapTemplate<CComponentView*, size>									mcViewItems;        //A view to its item.
+	CHashMapString<size>					mcBoardPins;        //A board pin's name to its item.
 
 	void							LinkItem(size uiItem);
 	void							LinkTerminal(size uiTerminal);
