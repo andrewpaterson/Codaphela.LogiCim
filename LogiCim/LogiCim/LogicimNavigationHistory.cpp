@@ -23,6 +23,23 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Each place Killed and the side emptied.
+//
+//////////////////////////////////////////////////////////////////////////
+static void ClearPlaces(CQueueCircuitPlace* pasPlaces)
+{
+	size	i;
+
+	for (i = 0; i < pasPlaces->NumElements(); i++)
+	{
+		pasPlaces->Get(i)->Kill();
+	}
+	pasPlaces->ReInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void CLogicimNavigationHistory::Init(void)
@@ -47,8 +64,8 @@ void CLogicimNavigationHistory::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimNavigationHistory::Clear(void)
 {
-	ClearCircuitPlaces(&masBack);
-	ClearCircuitPlaces(&masForward);
+	ClearPlaces(&masBack);
+	ClearPlaces(&masForward);
 }
 
 
@@ -63,8 +80,8 @@ void CLogicimNavigationHistory::Record(SCircuitPlace* psLeft)
 {
 	SCircuitPlace*	psLast;
 
-	ClearCircuitPlaces(&masForward);
-	psLast = masBack.Tail();
+	ClearPlaces(&masForward);
+	psLast = masBack.Back();
 	if ((psLast != NULL) && psLast->IsSameView(psLeft))
 	{
 		psLast->Copy(psLeft);
@@ -82,18 +99,18 @@ void CLogicimNavigationHistory::Record(SCircuitPlace* psLeft)
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimNavigationHistory::Take(bool bBack, SCircuitPlace* psDest)
 {
-	CArrayCircuitPlace*	pasPlaces;
+	CQueueCircuitPlace*	pasPlaces;
 	SCircuitPlace*		psLast;
 
 	pasPlaces = GetSide(bBack);
-	psLast = pasPlaces->Tail();
+	psLast = pasPlaces->Back();
 	if (psLast == NULL)
 	{
 		return false;
 	}
 	psDest->Copy(psLast);
 	psLast->Kill();
-	pasPlaces->RemoveTail();
+	pasPlaces->RemoveBack();
 	return true;
 }
 
@@ -106,23 +123,23 @@ bool CLogicimNavigationHistory::Take(bool bBack, SCircuitPlace* psDest)
 //////////////////////////////////////////////////////////////////////////
 void CLogicimNavigationHistory::Put(bool bBack, SCircuitPlace* psPlace)
 {
-	CArrayCircuitPlace*	pasPlaces;
+	CQueueCircuitPlace*	pasPlaces;
 	SCircuitPlace*		psNew;
 
 	pasPlaces = GetSide(bBack);
 	if (pasPlaces->NumElements() >= LOGICIM_NAVIGATION_HISTORY_SIZE)
 	{
-		pasPlaces->Get(0)->Kill();
-		pasPlaces->RemoveAt(0);
+		pasPlaces->Front()->Kill();
+		pasPlaces->Pop();
 	}
-	psNew = pasPlaces->Add();
+	psNew = pasPlaces->Push();
 	psNew->Init();
 	psNew->Copy(psPlace);
 }
 
 
 size CLogicimNavigationHistory::Num(bool bBack) { return GetSide(bBack)->NumElements(); }
-CArrayCircuitPlace* CLogicimNavigationHistory::GetSide(bool bBack) { return bBack ? &masBack : &masForward; }
+CQueueCircuitPlace* CLogicimNavigationHistory::GetSide(bool bBack) { return bBack ? &masBack : &masForward; }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -132,7 +149,7 @@ CArrayCircuitPlace* CLogicimNavigationHistory::GetSide(bool bBack) { return bBac
 //////////////////////////////////////////////////////////////////////////
 void CLogicimNavigationHistory::Print(bool bBack, CChars* pszDest)
 {
-	CArrayCircuitPlace*	pasPlaces;
+	CQueueCircuitPlace*	pasPlaces;
 	size				i;
 
 	pasPlaces = GetSide(bBack);

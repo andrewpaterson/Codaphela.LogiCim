@@ -21,9 +21,13 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __LOGICIM_NAVIGATION_HISTORY_H__
 #define __LOGICIM_NAVIGATION_HISTORY_H__
 #include "LogicimLib/CircuitPlace.h"
+#include "BaseLib/QueueTemplate.h"
 
 
 #define LOGICIM_NAVIGATION_HISTORY_SIZE	50  //Places kept back, the oldest forgotten first.
+
+
+typedef CQueueTemplate<SCircuitPlace>	CQueueCircuitPlace;
 
 
 //The places left, for Back, and the places gone back from, for Forward, the latest last.  A move records the place it
@@ -33,8 +37,8 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 class CLogicimNavigationHistory
 {
 protected:
-	CArrayCircuitPlace	masBack;
-	CArrayCircuitPlace	masForward;
+	CQueueCircuitPlace	masBack;
+	CQueueCircuitPlace	masForward;
 
 public:
 	void	Init(void);
@@ -48,7 +52,7 @@ public:
 	void	Print(bool bBack, CChars* pszDest);
 
 protected:
-	CArrayCircuitPlace*	GetSide(bool bBack);
+	CQueueCircuitPlace*	GetSide(bool bBack);
 };
 
 
