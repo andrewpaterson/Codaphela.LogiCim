@@ -203,11 +203,12 @@ void CTraceAutoConnector::Kill(void)
 // The index the map has for the key, ARRAY_ELEMENT_NOT_FOUND if none.
 //
 //////////////////////////////////////////////////////////////////////////
-static size GetTraceAutoConnectIndex(CMapBlock* pcMap, const void* pvKey, size uiKeySize)
+template<class K>
+static size GetTraceAutoConnectIndex(CHashMapTemplate<K, size>* pcMap, const K* pKey)
 {
 	size*	puiIndex;
 
-	puiIndex = (size*)pcMap->Get(pvKey, uiKeySize);
+	puiIndex = pcMap->Get(pKey);
 	return (puiIndex != NULL) ? *puiIndex : ARRAY_ELEMENT_NOT_FOUND;
 }
 
@@ -234,11 +235,11 @@ size CTraceAutoConnector::FindOrAddNet(void* pvKey)
 {
 	size	uiNet;
 
-	uiNet = GetTraceAutoConnectIndex(&mcNetKeys, &pvKey, sizeof(pvKey));
+	uiNet = GetTraceAutoConnectIndex(&mcNetKeys, &pvKey);
 	if (uiNet == ARRAY_ELEMENT_NOT_FOUND)
 	{
 		uiNet = AddNet();
-		mcNetKeys.Put(&pvKey, sizeof(pvKey), &uiNet, sizeof(uiNet));
+		mcNetKeys.Put(&pvKey, &uiNet);
 	}
 	return uiNet;
 }
@@ -270,11 +271,11 @@ size CTraceAutoConnector::FindOrAddRun(void* pvFrom, void* pvTo)
 
 	sKey.pvFrom = pvFrom;
 	sKey.pvTo = pvTo;
-	uiRun = GetTraceAutoConnectIndex(&mcRunKeys, &sKey, sizeof(sKey));
+	uiRun = GetTraceAutoConnectIndex(&mcRunKeys, &sKey);
 	if (uiRun == ARRAY_ELEMENT_NOT_FOUND)
 	{
 		uiRun = AddRun();
-		mcRunKeys.Put(&sKey, sizeof(sKey), &uiRun, sizeof(uiRun));
+		mcRunKeys.Put(&sKey, &uiRun);
 	}
 	return uiRun;
 }
@@ -331,7 +332,7 @@ size CTraceAutoConnector::AddConnection(size uiNet, CPortView* pcFrom, CPortView
 //////////////////////////////////////////////////////////////////////////
 void CTraceAutoConnector::SetComponentBox(CComponentView* pcComponent, SFloat64Bounds* psBox)
 {
-	mcBoxes.Put(&pcComponent, sizeof(pcComponent), psBox, sizeof(SFloat64Bounds));
+	mcBoxes.Put(&pcComponent, psBox);
 }
 
 
@@ -344,7 +345,7 @@ bool CTraceAutoConnector::GetComponentBox(CComponentView* pcComponent, SFloat64B
 {
 	SFloat64Bounds*	psOwn;
 
-	psOwn = (SFloat64Bounds*)mcBoxes.Get(&pcComponent, sizeof(pcComponent));
+	psOwn = mcBoxes.Get(&pcComponent);
 	if (psOwn != NULL)
 	{
 		*psBox = *psOwn;
@@ -372,7 +373,7 @@ bool CTraceAutoConnector::AddPort(CPortView* pcPortView, size uiNet)
 		psPort = masPorts.Add();
 		psPort->pcPort = pcPortView;
 		psPort->uiNet = uiNet;
-		mcPortIndices.Put(&pcPortView, sizeof(pcPortView), &uiIndex, sizeof(uiIndex));
+		mcPortIndices.Put(&pcPortView, &uiIndex);
 		return true;
 	}
 	if (iNet != (int)uiNet)
@@ -392,7 +393,7 @@ int CTraceAutoConnector::GetPortNet(CPortView* pcPortView)
 {
 	size	uiIndex;
 
-	uiIndex = GetTraceAutoConnectIndex(&mcPortIndices, &pcPortView, sizeof(pcPortView));
+	uiIndex = GetTraceAutoConnectIndex(&mcPortIndices, &pcPortView);
 	if (uiIndex == ARRAY_ELEMENT_NOT_FOUND)
 	{
 		return -1;

@@ -22,7 +22,8 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __COMPONENT_SPRITE_CACHE_H__
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/FNVHash.h"
-#include "BaseLib/MapBlock.h"
+#include "BaseLib/HashMapTemplate.h"
+#include "BaseLib/HashText.h"
 #include "StandardLib/Array.h"
 #include "SupportLib/GeometryMap.h"
 #include "SupportLib/Image.h"
@@ -45,6 +46,10 @@ struct SComponentSprite
 	CImageCel*		pcCel;
 	SInt32Vec2		sOffset;
 };
+
+
+//Each key is a copy of the bytes of a component's shapes (malloced, freed as its sprite goes), to its sprite.
+typedef CHashMapTemplate<SHashText, SComponentSprite, SHashOfText>	CMapComponentSprites;
 
 
 //What a component (or a port) last drew from a cache, so it can draw it again without painting its shapes to find
@@ -110,7 +115,7 @@ class CComponentSpriteCache : public CObject
 CONSTRUCTABLE(CComponentSpriteCache);
 DESTRUCTABLE(CComponentSpriteCache);
 protected:
-	CMapBlock						mcSprites;  //Key to SComponentSprite.
+	CMapComponentSprites			mcSprites;  //Shapes to their sprite.
 	CArray<CComponentSpritePage>	maPages;
 	size							muiCurrentPage;  //The page new sprites are packed onto.
 	int32							miPageSize;
@@ -150,7 +155,7 @@ public:
 
 protected:
 	bool			FindOrMakeSprite(SComponentSprite* psSprite);
-	void			FoldKey(void);
+	void			FreeKeys(void);
 	bool			PlaceSprite(int32 iWidth, int32 iHeight, size* puiPage, SInt32Vec2* psPosition);
 	size			NewPage(int32 iWidth, int32 iHeight);
 	void			ResetPage(size uiPage, int32 iWidth, int32 iHeight);

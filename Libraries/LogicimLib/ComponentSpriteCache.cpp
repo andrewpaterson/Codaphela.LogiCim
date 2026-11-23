@@ -232,7 +232,7 @@ void CComponentSpriteCache::Init(lsize uiMaxBytes, int32 iPageSize)
 //////////////////////////////////////////////////////////////////////////
 void CComponentSpriteCache::Class(void)
 {
-	U_Unknown(CMapBlock, mcSprites);
+	U_Unknown(CMapComponentSprites, mcSprites);
 	M_Embedded(maPages);
 	U_Size(muiCurrentPage);
 	U_Int32(miPageSize);
@@ -257,6 +257,7 @@ void CComponentSpriteCache::Class(void)
 void CComponentSpriteCache::Free(void)
 {
 	mauiKey.Kill();
+	FreeKeys();
 	mcSprites.Kill();
 }
 
@@ -389,6 +390,10 @@ void CComponentSpriteCache::DrawSprite(SComponentSprite* psSprite, CGeometryMap*
 bool CComponentSpriteCache::FindOrMakeSprite(SComponentSprite* psSprite)
 {
 	SComponentSprite*	psFound;
+	SComponentSprite*	psStored;
+	SHashText			sKey;
+	char*				szKey;
+	bool				bAdded;
 	CInt32Rect			cBounds;
 	int32				iWidth;
 	int32				iHeight;
@@ -401,8 +406,8 @@ bool CComponentSpriteCache::FindOrMakeSprite(SComponentSprite* psSprite)
 
 	mauiKey.ReInit();
 	mpScratch->AppendKey(&mauiKey);
-	FoldKey();
-	psFound = (SComponentSprite*)mcSprites.Get(mauiKey.GetData(), mauiKey.NumElements());
+	sKey.Init((const char*)mauiKey.GetData(), mauiKey.NumElements());
+	psFound = mcSprites.Get(&sKey);
 	if (psFound)
 	{
 		muiHits++;
@@ -467,34 +472,33 @@ bool CComponentSpriteCache::FindOrMakeSprite(SComponentSprite* psSprite)
 	psSprite->uiPage = uiPage;
 	psSprite->uiGeneration = pcPage->GetGeneration();
 	psSprite->sOffset = cBounds.msTopLeft;
-	mcSprites.Put(mauiKey.GetData(), mauiKey.NumElements(), psSprite, sizeof(SComponentSprite));
+
+	szKey = (char*)malloc(mauiKey.NumElements() + 1);
+	memcpy(szKey, mauiKey.GetData(), mauiKey.NumElements());
+	sKey.Init(szKey, mauiKey.NumElements());
+	psStored = mcSprites.FindOrAdd(&sKey, &bAdded);
+	if (!bAdded)
+	{
+		free(szKey);
+	}
+	*psStored = *psSprite;
 	return true;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A key longer than the map takes (a big component's shapes, such as a
-// board with many pins) keeps its first bytes, then the hash of all of it
-// and its length, so it fits.
+// The sprites' keys' copies.
 //
 //////////////////////////////////////////////////////////////////////////
-void CComponentSpriteCache::FoldKey(void)
+void CComponentSpriteCache::FreeKeys(void)
 {
-	uint64	uiHash;
-	uint64	uiLength;
-	size	uiKept;
+	size	i;
 
-	if (mauiKey.NumElements() <= MAX_KEY_SIZE)
+	for (i = 0; i < mcSprites.NumElements(); i++)
 	{
-		return;
+		free((void*)mcSprites.GetKey(i)->sz);
 	}
-	uiLength = (uint64)mauiKey.NumElements();
-	uiHash = FNVHash64(mauiKey.GetData(), mauiKey.NumElements(), FNV_HASH64_START);
-	uiKept = MAX_KEY_SIZE - sizeof(uint64) - sizeof(uint64);
-	mauiKey.SetUsedElements(uiKept);
-	memcpy(mauiKey.InsertNumAt(sizeof(uint64), mauiKey.NumElements()), &uiHash, sizeof(uint64));
-	memcpy(mauiKey.InsertNumAt(sizeof(uint64), mauiKey.NumElements()), &uiLength, sizeof(uint64));
 }
 
 
@@ -590,38 +594,19 @@ size CComponentSpriteCache::NewPage(int32 iWidth, int32 iHeight)
 void CComponentSpriteCache::ResetPage(size uiPage, int32 iWidth, int32 iHeight)
 {
 	CComponentSpritePage*	pcPage;
-	SMapIterator			sIterator;
-	void*					pvKey;
-	size					uiKeySize;
-	void*					pvData;
-	size					uiDataSize;
-	bool					bExists;
-	CArrayTemplate<uint8>	auiKeys;
-	CArrayTemplate<size>	auiKeySizes;
 	size					i;
-	uint8*					puiKey;
 
-	//The page's sprites' keys are found first; the map can't be changed while it is iterated.
-	auiKeys.Init();
-	auiKeySizes.Init();
-	bExists = mcSprites.StartIteration(&sIterator, &pvKey, &uiKeySize, &pvData, &uiDataSize);
-	while (bExists)
+	//From the last: a removed sprite's place is taken by the last, which has been looked at already.
+	i = mcSprites.NumElements();
+	while (i != 0)
 	{
-		if (((SComponentSprite*)pvData)->uiPage == uiPage)
+		i--;
+		if (mcSprites.GetValue(i)->uiPage == uiPage)
 		{
-			auiKeys.InsertBlockAfterEnd((uint8*)pvKey, uiKeySize);
-			auiKeySizes.Add(&uiKeySize);
+			free((void*)mcSprites.GetKey(i)->sz);
+			mcSprites.RemoveAt(i);
 		}
-		bExists = mcSprites.Iterate(&sIterator, &pvKey, &uiKeySize, &pvData, &uiDataSize);
 	}
-	puiKey = auiKeys.GetData();
-	for (i = 0; i < auiKeySizes.NumElements(); i++)
-	{
-		mcSprites.Remove(puiKey, *auiKeySizes.Get(i));
-		puiKey += *auiKeySizes.Get(i);
-	}
-	auiKeySizes.Kill();
-	auiKeys.Kill();
 
 	pcPage = &maPages.Get(uiPage);
 	muiBytes -= pcPage->GetBytes();
@@ -659,8 +644,8 @@ Ptr<CImage> CComponentSpriteCache::NewSpriteImage(int32 iWidth, int32 iHeight)
 //////////////////////////////////////////////////////////////////////////
 void CComponentSpriteCache::Clear(void)
 {
-	mcSprites.Kill();
-	mcSprites.Init();
+	FreeKeys();
+	mcSprites.ReInit();
 	maPages.RemoveAll();
 	muiCurrentPage = COMPONENT_SPRITE_NO_PAGE;
 	muiBytes = 0;

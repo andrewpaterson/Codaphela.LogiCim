@@ -23,7 +23,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArraySize.h"
 #include "BaseLib/ArrayTemplate.h"
-#include "BaseLib/MapBlock.h"
+#include "BaseLib/HashMapTemplate.h"
 #include "CircuitView.h"
 #include "Rotation.h"
 
@@ -144,10 +144,10 @@ protected:
 	size							muiNumNets;
 	size							muiNumRuns;
 	CArrayTraceAutoConnectPort		masPorts;
-	CMapBlock						mcPortIndices;  //A port to its index in masPorts.
-	CMapBlock						mcBoxes;        //A component to the SFloat64Bounds of its own it keeps clear (see SetComponentBox).
-	CMapBlock						mcNetKeys;      //A caller's key to its net (see FindOrAddNet).
-	CMapBlock						mcRunKeys;      //A caller's STraceAutoConnectRunKey to its run (see FindOrAddRun).
+	CHashMapTemplate<CPortView*, size>						mcPortIndices;  //A port to its index in masPorts.
+	CHashMapTemplate<CComponentView*, SFloat64Bounds>		mcBoxes;        //A component to the box of its own it keeps clear (see SetComponentBox).
+	CHashMapTemplate<void*, size>							mcNetKeys;      //A caller's key to its net (see FindOrAddNet).
+	CHashMapTemplate<STraceAutoConnectRunKey, size>			mcRunKeys;      //A caller's pair of keys to its run (see FindOrAddRun).
 
 	SInt32Vec2						msGridMinimum;
 	int32							miGridWidth;
