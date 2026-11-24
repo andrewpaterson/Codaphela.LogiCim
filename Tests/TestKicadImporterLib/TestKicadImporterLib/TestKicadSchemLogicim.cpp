@@ -7,6 +7,7 @@
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/Jobs.h"
 #include "BaseLib/NativeThread.h"
+#include "BaseLib/UnionFind.h"
 #include "StandardLib/Objects.h"
 #include "LogicimLib/CircuitFile.h"
 #include "LogicimLib/CircuitFonts.h"
@@ -242,7 +243,7 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 	CCircuitView*					pcCircuit;
 	CKicadSchemLogicimModel*		pcModel;
 	CArrayPortViewPtr				apcPorts;
-	CArrayInt						aiParents;
+	CUnionFind						cParents;
 	CArrayTemplatePtr<CKicadSchemNet>	apcGroupNets;
 	CArrayInt						aiSubnetGroups;
 	size							uiTraces;
@@ -256,7 +257,7 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 	size							uiSubnet;
 	CChars							szFirst;
 	CChars							szThis;
-	CArrayInt						aiBits;
+	CUnionFind						cBits;
 	CArrayPortBitJoin				asJoins;
 	SPortBitJoin*					psJoin;
 	int								iBit;
@@ -266,18 +267,15 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 	apcPorts.Init();
 	pcCircuit->CollectPortViews(&apcPorts);
 	uiTraces = pcCircuit->NumTraces();
-	aiParents.Init();
-	for (i = 0; i < uiTraces + apcPorts.NumElements(); i++)
-	{
-		aiParents.Add((int)i);
-	}
+	cParents.Init();
+	cParents.AddNum(uiTraces + apcPorts.NumElements());
 	for (i = 0; i < uiTraces; i++)
 	{
 		for (j = i + 1; j < uiTraces; j++)
 		{
 			if (pcCircuit->GetTrace(i)->Touches(pcCircuit->GetTrace(j)))
 			{
-				JoinKicadSchemRoots(&aiParents, (int)i, (int)j);
+				cParents.Join(i, j);
 			}
 		}
 	}
@@ -287,7 +285,7 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 		{
 			if (pcCircuit->GetTrace(j)->Contains(apcPorts.GetPtr(i)->GetGridPosition()))
 			{
-				JoinKicadSchemRoots(&aiParents, (int)(uiTraces + i), (int)j);
+				cParents.Join(uiTraces + i, j);
 			}
 		}
 		szName = apcPorts.GetPtr(i)->GetOwner()->GetConnectionName();
@@ -297,17 +295,14 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 			if ((apcPorts.GetPtr(i)->GetGridPosition() == apcPorts.GetPtr(j)->GetGridPosition()) ||
 				((szName != NULL) && (szOtherName != NULL) && (StringCompare(szName, szOtherName) == 0)))
 			{
-				JoinKicadSchemRoots(&aiParents, (int)(uiTraces + i), (int)(uiTraces + j));
+				cParents.Join(uiTraces + i, uiTraces + j);
 			}
 		}
 	}
 
 	//The bits of each group, joined where components (splitters) join them.
-	aiBits.Init();
-	for (i = 0; i < aiParents.NumElements() * KICAD_SCHEM_LOGICIM_TEST_BITS; i++)
-	{
-		aiBits.Add((int)i);
-	}
+	cBits.Init();
+	cBits.AddNum(cParents.NumElements() * KICAD_SCHEM_LOGICIM_TEST_BITS);
 	for (i = 0; i < pcCircuit->NumComponents(); i++)
 	{
 		asJoins.Init();
@@ -316,15 +311,14 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 		{
 			psJoin = asJoins.Get(j);
 			AssertTrue((psJoin->uiFromBit < KICAD_SCHEM_LOGICIM_TEST_BITS) && (psJoin->uiToBit < KICAD_SCHEM_LOGICIM_TEST_BITS));
-			JoinKicadSchemRoots(&aiBits,
-				FindKicadSchemRoot(&aiParents, (int)(uiTraces + apcPorts.Find(psJoin->pcFrom))) * KICAD_SCHEM_LOGICIM_TEST_BITS + (int)psJoin->uiFromBit,
-				FindKicadSchemRoot(&aiParents, (int)(uiTraces + apcPorts.Find(psJoin->pcTo))) * KICAD_SCHEM_LOGICIM_TEST_BITS + (int)psJoin->uiToBit);
+			cBits.Join(cParents.Find(uiTraces + apcPorts.Find(psJoin->pcFrom)) * KICAD_SCHEM_LOGICIM_TEST_BITS + psJoin->uiFromBit,
+					   cParents.Find(uiTraces + apcPorts.Find(psJoin->pcTo)) * KICAD_SCHEM_LOGICIM_TEST_BITS + psJoin->uiToBit);
 		}
 		asJoins.Kill();
 	}
 
 	apcGroupNets.Init();
-	for (i = 0; i < aiBits.NumElements(); i++)
+	for (i = 0; i < cBits.NumElements(); i++)
 	{
 		apcGroupNets.Add(NULL);
 	}
@@ -336,11 +330,11 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 	for (i = 0; i < pcModel->NumTerminals(); i++)
 	{
 		psTerminal = pcModel->GetTerminal(i);
-		iGroup = FindKicadSchemRoot(&aiParents, (int)(uiTraces + apcPorts.Find(psTerminal->pcPortView)));
+		iGroup = (int)cParents.Find(uiTraces + apcPorts.Find(psTerminal->pcPortView));
 
 		//Nothing of another net, bit for bit (a bus's own terminals are many nets).
 		pcNet = psTerminal->pcSubnet->GetNet();
-		iBit = FindKicadSchemRoot(&aiBits, iGroup * KICAD_SCHEM_LOGICIM_TEST_BITS);
+		iBit = (int)cBits.Find((size)iGroup * KICAD_SCHEM_LOGICIM_TEST_BITS);
 		if (!psTerminal->bBus)
 		{
 			if (apcGroupNets.GetPtr(iBit) == NULL)
@@ -387,8 +381,8 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 
 	aiSubnetGroups.Kill();
 	apcGroupNets.Kill();
-	aiBits.Kill();
-	aiParents.Kill();
+	cBits.Kill();
+	cParents.Kill();
 	apcPorts.Kill();
 }
 

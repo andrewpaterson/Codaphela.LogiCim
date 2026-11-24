@@ -2,6 +2,7 @@
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/LogToMemory.h"
+#include "BaseLib/UnionFind.h"
 #include "LogicimLib/BufferView.h"
 #include "LogicimLib/CircuitView.h"
 #include "LogicimLib/TraceAutoConnector.h"
@@ -25,41 +26,12 @@ CBufferView* AddAutoConnectBuffer(CCircuitView* pcCircuit, int32 x, int32 y, int
 
 //////////////////////////////////////////////////////////////////////////
 //
-//
-//////////////////////////////////////////////////////////////////////////
-int FindAutoConnectRoot(CArrayInt* paiParents, int i)
-{
-	while (paiParents->GetValue(i) != i)
-	{
-		i = paiParents->GetValue(i);
-	}
-	return i;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void JoinAutoConnectRoots(CArrayInt* paiParents, int i, int j)
-{
-	i = FindAutoConnectRoot(paiParents, i);
-	j = FindAutoConnectRoot(paiParents, j);
-	if (i != j)
-	{
-		paiParents->SetValue(j, i);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // The group each port is in, joined as Logicim's wiring joins them
 // (CCircuitWiring::JoinLevel): wires that touch, ports on wires and ports
 // at the same place.  Ports are numbered after the wires.
 //
 //////////////////////////////////////////////////////////////////////////
-void GetAutoConnectGroups(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts, CArrayInt* paiParents)
+void GetAutoConnectGroups(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts, CUnionFind* pcParents)
 {
 	size	i;
 	size	j;
@@ -68,18 +40,15 @@ void GetAutoConnectGroups(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts,
 	papcPorts->Init();
 	pcCircuit->CollectPortViews(papcPorts);
 	uiTraces = pcCircuit->NumTraces();
-	paiParents->Init();
-	for (i = 0; i < uiTraces + papcPorts->NumElements(); i++)
-	{
-		paiParents->Add((int)i);
-	}
+	pcParents->Init();
+	pcParents->AddNum(uiTraces + papcPorts->NumElements());
 	for (i = 0; i < uiTraces; i++)
 	{
 		for (j = i + 1; j < uiTraces; j++)
 		{
 			if (pcCircuit->GetTrace(i)->Touches(pcCircuit->GetTrace(j)))
 			{
-				JoinAutoConnectRoots(paiParents, (int)i, (int)j);
+				pcParents->Join(i, j);
 			}
 		}
 	}
@@ -89,14 +58,14 @@ void GetAutoConnectGroups(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts,
 		{
 			if (pcCircuit->GetTrace(j)->Contains(papcPorts->GetPtr(i)->GetGridPosition()))
 			{
-				JoinAutoConnectRoots(paiParents, (int)(uiTraces + i), (int)j);
+				pcParents->Join(uiTraces + i, j);
 			}
 		}
 		for (j = i + 1; j < papcPorts->NumElements(); j++)
 		{
 			if (papcPorts->GetPtr(i)->GetGridPosition() == papcPorts->GetPtr(j)->GetGridPosition())
 			{
-				JoinAutoConnectRoots(paiParents, (int)(uiTraces + i), (int)(uiTraces + j));
+				pcParents->Join(uiTraces + i, uiTraces + j);
 			}
 		}
 	}
@@ -107,9 +76,9 @@ void GetAutoConnectGroups(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts,
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int GetAutoConnectGroup(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts, CArrayInt* paiParents, CPortView* pcPort)
+int GetAutoConnectGroup(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts, CUnionFind* pcParents, CPortView* pcPort)
 {
-	return FindAutoConnectRoot(paiParents, (int)(pcCircuit->NumTraces() + papcPorts->Find(pcPort)));
+	return (int)pcParents->Find(pcCircuit->NumTraces() + papcPorts->Find(pcPort));
 }
 
 
@@ -121,12 +90,12 @@ int GetAutoConnectGroup(CCircuitView* pcCircuit, CArrayPortViewPtr* papcPorts, C
 bool AreAutoConnected(CCircuitView* pcCircuit, CPortView* pcPort1, CPortView* pcPort2)
 {
 	CArrayPortViewPtr	apcPorts;
-	CArrayInt			aiParents;
+	CUnionFind			cParents;
 	bool				bResult;
 
-	GetAutoConnectGroups(pcCircuit, &apcPorts, &aiParents);
-	bResult = GetAutoConnectGroup(pcCircuit, &apcPorts, &aiParents, pcPort1) == GetAutoConnectGroup(pcCircuit, &apcPorts, &aiParents, pcPort2);
-	aiParents.Kill();
+	GetAutoConnectGroups(pcCircuit, &apcPorts, &cParents);
+	bResult = GetAutoConnectGroup(pcCircuit, &apcPorts, &cParents, pcPort1) == GetAutoConnectGroup(pcCircuit, &apcPorts, &cParents, pcPort2);
+	cParents.Kill();
 	apcPorts.Kill();
 	return bResult;
 }
@@ -140,22 +109,22 @@ bool AreAutoConnected(CCircuitView* pcCircuit, CPortView* pcPort1, CPortView* pc
 size NumAutoConnectedPorts(CCircuitView* pcCircuit, CPortView* pcPort)
 {
 	CArrayPortViewPtr	apcPorts;
-	CArrayInt			aiParents;
+	CUnionFind			cParents;
 	int					iGroup;
 	size				i;
 	size				uiPorts;
 
-	GetAutoConnectGroups(pcCircuit, &apcPorts, &aiParents);
-	iGroup = GetAutoConnectGroup(pcCircuit, &apcPorts, &aiParents, pcPort);
+	GetAutoConnectGroups(pcCircuit, &apcPorts, &cParents);
+	iGroup = GetAutoConnectGroup(pcCircuit, &apcPorts, &cParents, pcPort);
 	uiPorts = 0;
 	for (i = 0; i < apcPorts.NumElements(); i++)
 	{
-		if (FindAutoConnectRoot(&aiParents, (int)(pcCircuit->NumTraces() + i)) == iGroup)
+		if ((int)cParents.Find(pcCircuit->NumTraces() + i) == iGroup)
 		{
 			uiPorts++;
 		}
 	}
-	aiParents.Kill();
+	cParents.Kill();
 	apcPorts.Kill();
 	return uiPorts;
 }

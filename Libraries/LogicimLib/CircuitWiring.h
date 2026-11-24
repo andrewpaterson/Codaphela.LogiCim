@@ -21,6 +21,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CIRCUIT_WIRING_H__
 #define __CIRCUIT_WIRING_H__
 #include "BaseLib/ArrayInt.h"
+#include "BaseLib/UnionFind.h"
 #include "ComponentView.h"
 #include "TraceView.h"
 
@@ -87,11 +88,11 @@ protected:
 	CCircuitSimulation*			mpcSimulation;
 	CArrayWiringLevel			masLevels;
 	size						muiNumNodes;
-	CArrayInt					maiParents;
+	CUnionFind					mcParents;
 	CArrayWiringNodeNet			masNodeNets;
 	size						muiNumNets;
 	CArrayWiringNet				masNets;
-	CArrayInt					maiBitParents;
+	CUnionFind					mcBitParents;
 	CArrayComponentViewPtr*		mpapcDetachedComponents;
 	CArrayTraceViewPtr*			mpapcDetachedTraces;
 
@@ -129,8 +130,6 @@ protected:
 	int		GetPortViewNode(SWiringLevel* psLevel, CPortView* pcPortView);
 	int		GetPortViewNet(SWiringLevel* psLevel, CPortView* pcPortView);
 	int		GetNodeNet(size uiNode);
-	int		FindRoot(CArrayInt* paiParents, int iNode);
-	void	Join(CArrayInt* paiParents, int iNode1, int iNode2);
 };
 
 
