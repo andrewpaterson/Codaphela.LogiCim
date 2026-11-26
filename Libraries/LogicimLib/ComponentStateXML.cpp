@@ -143,6 +143,10 @@ void CIntegratedCircuitStateXML::SaveOutput(CXMLWriter* pcWriter, CPortOutput* p
 		pcWriter->Attribute("startVoltage", pcOutput->GetStartVoltage());
 		pcWriter->Attribute("endVoltage", pcOutput->GetEndVoltage());
 		pcWriter->Attribute("slewTime", pcOutput->GetSlewTime());
+		if (pcOutput->IsCurve())
+		{
+			pcWriter->Attribute("timeConstant", pcOutput->GetTimeConstant());
+		}
 		pcWriter->End();
 	}
 }
@@ -284,6 +288,7 @@ bool CIntegratedCircuitStateXML::LoadOutput(CMarkupTag* pcOutputTag, CPortOutput
 	float32		fStartVoltage;
 	float32		fEndVoltage;
 	int64		iSlewTime;
+	int64		iTimeConstant;
 
 	szType = pcOutputTag->GetStringAttribute("type");
 	if (!pcOutputTag->GetInt64Attribute("time", &iTime) || (szType == NULL))
@@ -306,7 +311,12 @@ bool CIntegratedCircuitStateXML::LoadOutput(CMarkupTag* pcOutputTag, CPortOutput
 		{
 			return gcLogger.Error2(__METHOD__, " A Slew [Output] needs a startVoltage, endVoltage and whole number slewTime.", NULL);
 		}
-		pcOutput->InitSlew(iTime, fStartVoltage, fEndVoltage, iSlewTime);
+		iTimeConstant = 0;
+		if ((pcOutputTag->GetStringAttribute("timeConstant") != NULL) && !pcOutputTag->GetInt64Attribute("timeConstant", &iTimeConstant))
+		{
+			return gcLogger.Error2(__METHOD__, " A Slew [Output]'s timeConstant must be a whole number.", NULL);
+		}
+		pcOutput->InitSlew(iTime, fStartVoltage, fEndVoltage, iSlewTime, iTimeConstant);
 		return true;
 	}
 	return gcLogger.Error2(__METHOD__, " Unknown [Output] type [", szType, "].", NULL);

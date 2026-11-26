@@ -225,6 +225,10 @@ void CSlewEventXML::SaveAttributes(CXMLWriter* pcWriter, CEvent* pcEvent)
 	pcWriter->Attribute("startVoltage", pcSlew->GetStartVoltage());
 	pcWriter->Attribute("endVoltage", pcSlew->GetEndVoltage());
 	pcWriter->Attribute("slewTime", pcSlew->GetSlewTime());
+	if (pcSlew->GetTimeConstant() > 0)
+	{
+		pcWriter->Attribute("timeConstant", pcSlew->GetTimeConstant());
+	}
 }
 
 
@@ -240,6 +244,7 @@ CPortEvent* CSlewEventXML::Load(CMarkupTag* pcTag, CLogicPort* pcPort)
 	float32		fStartVoltage;
 	float32		fEndVoltage;
 	int64		iSlewTime;
+	int64		iTimeConstant;
 
 	if (!LoadTimeAndID(pcTag, &iTime, &iID))
 	{
@@ -250,8 +255,14 @@ CPortEvent* CSlewEventXML::Load(CMarkupTag* pcTag, CLogicPort* pcPort)
 		gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a startVoltage, endVoltage and whole number slewTime.", NULL);
 		return NULL;
 	}
+	iTimeConstant = 0;
+	if ((pcTag->GetStringAttribute("timeConstant") != NULL) && !pcTag->GetInt64Attribute("timeConstant", &iTimeConstant))
+	{
+		gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "]'s timeConstant must be a whole number.", NULL);
+		return NULL;
+	}
 	pcEvent = NewMalloc<CSlewEvent>();
-	pcEvent->Init(pcPort, iTime, iID, fStartVoltage, fEndVoltage, iSlewTime);
+	pcEvent->Init(pcPort, iTime, iID, fStartVoltage, fEndVoltage, iSlewTime, iTimeConstant);
 	return pcEvent;
 }
 

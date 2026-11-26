@@ -1,7 +1,7 @@
 Resistors and RC filters in KiCad imports
 ==========================================
 
-Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Part 1 is built (below).  Pull-ups and pull-downs (a resistor
+Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Part 1 and part 2's simulation are built (below).  Pull-ups and pull-downs (a resistor
 with one end on a supply) are a separate plan, PullsPlan.txt: a weak drive in MicroprocessorLib.
 
 
@@ -110,6 +110,15 @@ Part 2: slow RCs become delay elements (MicroprocessorLib, LogicimLib, KicadImpo
     as R1 x C1 to the comparator's threshold plus the parts' delays; the PS2 Timing with a burst of clocks on Clock
     holds RC Packet Pulse high through the burst and lets it fall about R3 x C3 x ln(5/VT-) after the last.
     TestMicroprocessorLib, TestLogicimLib, TestKicadImporterLib; the decode check.
+
+Built 2026-11-26, steps 7 to 10 and step 13's MicroprocessorLib tests (TestRCFilter.cpp): a slew with a time constant
+is an RC curve (CPortOutput, CSlewEvent, CLogicPort::WriteCurve), five time constants long; crossing times from the
+curve (CPortOutput::CalculateTimeAtVoltage), and a pending transition from a curve that turned back reads the level the
+input still has, so a short pulse changes nothing.  CRCFilter, its input a CAnalogInPort (a slew told half way along
+it); CAnalogComparator (CComparator was already the 74x521's equality comparator), its inputs crossing each other by
+the MAX9010's 1mV offset.  Schmitt parts: the unsettled band does behave as hysteresis, so a part's family has its
+VT- and VT+ as VIL and VIH (CFamilyVoltageConfigurationStore::GetPart, SchmittThresholds.cpp: 74LVC14, 74LVC1G17,
+74VHCT14), taken at the family's own VCCs.  LogicimLib saves a curve's time constant in a simulation's state.
 
 
 Questions for the user (put one at a time, recommendation first)
