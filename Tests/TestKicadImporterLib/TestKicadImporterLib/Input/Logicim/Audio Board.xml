@@ -108,6 +108,8 @@
       <Pin name="J5-D17" x="20" y="340" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
       <Subcircuit name="B9" x="412" y="41" rotation="East" type="Audio DAC" comment="Audio DAC" left="-12" top="-18" right="8" bottom="18" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="B12" x="77" y="54" rotation="East" type="Audio Address Decode" comment="Audio Address Decode" left="-14" top="-10" right="16" bottom="10" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Ground name="GND" x="158" y="56" rotation="East"/>
+      <PositivePower name="3.3V" x="68" y="294" rotation="East" voltage="3.29999995"/>
       <Tunnel name="CLK" x="330" y="191" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
       <Tunnel name="CLK" x="257" y="288" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
       <Tunnel name="CLK" x="239" y="111" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
@@ -948,6 +950,15 @@
       <Trace x0="102" y0="162" x1="96" y1="162"/>
       <Trace x0="102" y0="167" x1="102" y1="162"/>
       <Trace x0="105" y0="167" x1="102" y1="167"/>
+      <Trace x0="54" y0="271" x1="59" y1="271"/>
+      <Trace x0="54" y0="276" x1="54" y1="271"/>
+      <Trace x0="58" y0="276" x1="54" y1="276"/>
+      <Trace x0="58" y0="282" x1="58" y1="276"/>
+      <Trace x0="64" y0="282" x1="58" y1="282"/>
+      <Trace x0="64" y0="292" x1="64" y1="282"/>
+      <Trace x0="70" y0="292" x1="64" y1="292"/>
+      <Trace x0="70" y0="294" x1="70" y1="292"/>
+      <Trace x0="69" y0="294" x1="70" y1="294"/>
       <Trace x0="103" y0="195" x1="101" y1="195"/>
       <Trace x0="103" y0="170" x1="103" y1="195"/>
       <Trace x0="109" y0="170" x1="103" y1="170"/>
@@ -983,6 +994,13 @@
       <Trace x0="305" y0="100" x1="306" y1="100"/>
       <Trace x0="305" y0="119" x1="305" y1="100"/>
       <Trace x0="267" y0="119" x1="305" y1="119"/>
+      <Trace x0="117" y0="11" x1="141" y1="11"/>
+      <Trace x0="117" y0="53" x1="117" y1="11"/>
+      <Trace x0="150" y0="53" x1="117" y1="53"/>
+      <Trace x0="150" y0="58" x1="150" y1="53"/>
+      <Trace x0="159" y0="58" x1="150" y1="58"/>
+      <Trace x0="159" y0="56" x1="159" y1="58"/>
+      <Trace x0="158" y0="56" x1="159" y1="56"/>
       <Trace x0="380" y0="248" x1="355" y1="248"/>
       <Trace x0="380" y0="290" x1="380" y1="248"/>
       <Trace x0="360" y0="290" x1="380" y1="290"/>
@@ -1166,6 +1184,8 @@
       <Pin name="L~{OE}" x="37" y="112" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
       <Pin name="LLE" x="37" y="117" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="true" clockNotch="false"/>
       <Subcircuit name="IC1" x="91" y="17" rotation="East" type="IS61C256AL-12TLI" comment="IS61C256AL-12TLI" left="-12" top="-19" right="11" bottom="21" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <PositivePower name="5V" x="127" y="17" rotation="West" voltage="5"/>
+      <Ground name="GND" x="71" y="17" rotation="East"/>
       <Tunnel name="LQ7" x="41" y="72" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="LQ7" x="144" y="53" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="103" y="0" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -1275,6 +1295,12 @@
       <Trace x0="41" y0="87" x1="37" y1="87"/>
       <Trace x0="41" y0="77" x1="37" y1="77"/>
       <Trace x0="41" y0="97" x1="37" y1="97"/>
+      <Trace x0="73" y0="0" x1="78" y1="0"/>
+      <Trace x0="73" y0="17" x1="73" y1="0"/>
+      <Trace x0="71" y0="17" x1="73" y1="17"/>
+      <Trace x0="115" y0="0" x1="103" y1="0"/>
+      <Trace x0="115" y0="17" x1="115" y1="0"/>
+      <Trace x0="126" y0="17" x1="115" y1="17"/>
     </Circuit>
     <Circuit type="IS61C256AL-12TLI">
       <Pin name="~{CE}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>
@@ -1339,6 +1365,7 @@
       <Logic74Unit name="IC4" x="62" y="22" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G08" unit="A" pinSpacing="2"/>
       <Logic74Package name="IC3" x="62" y="69" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="02" pinSpacing="2"/>
       <Logic74Unit name="IC5" x="90" y="69" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G11" unit="A" pinSpacing="2"/>
+      <Ground name="GND" x="82" y="23" rotation="East"/>
       <Tunnel name="~{Reset}" x="91" y="28" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset}" x="34" y="106" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
       <Tunnel name="~{A3}" x="37" y="101" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="2.5035714285714286" bottom="0.82857142857142851"/>
@@ -1420,6 +1447,9 @@
       <Trace x0="36" y0="89" x1="47" y1="89"/>
       <Trace x0="36" y0="91" x1="36" y1="89"/>
       <Trace x0="37" y0="91" x1="36" y1="91"/>
+      <Trace x0="87" y0="24" x1="91" y1="24"/>
+      <Trace x0="87" y0="23" x1="87" y1="24"/>
+      <Trace x0="82" y0="23" x1="87" y1="23"/>
       <Trace x0="47" y0="106" x1="46" y1="106"/>
       <Trace x0="47" y0="104" x1="47" y1="106"/>
       <Trace x0="33" y0="104" x1="47" y1="104"/>
@@ -1483,6 +1513,8 @@
       <Logic74Package name="IC2" x="298" y="34" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" pinSpacing="2"/>
       <Logic74Package name="IC8" x="61" y="117" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="573" pinSpacing="2"/>
       <Logic74Unit name="IC3" x="245" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="D" pinSpacing="2"/>
+      <Ground name="GND" x="93" y="195" rotation="East"/>
+      <PositivePower name="3.3V" x="277" y="33" rotation="East" voltage="3.29999995"/>
       <Tunnel name="GND" x="113" y="195" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="40" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="38" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -1614,11 +1646,9 @@
       <Trace x0="292" y0="26" x1="239" y1="26"/>
       <Trace x0="235" y0="24" x1="236" y1="24"/>
       <Trace x0="235" y0="22" x1="235" y1="24"/>
-      <Trace x0="278" y0="22" x1="235" y1="22"/>
-      <Trace x0="278" y0="46" x1="278" y1="22"/>
-      <Trace x0="310" y0="46" x1="278" y1="46"/>
-      <Trace x0="310" y0="38" x1="310" y1="46"/>
-      <Trace x0="303" y0="38" x1="310" y1="38"/>
+      <Trace x0="311" y0="22" x1="235" y1="22"/>
+      <Trace x0="311" y0="38" x1="311" y1="22"/>
+      <Trace x0="303" y0="38" x1="311" y1="38"/>
       <Trace x0="65" y0="239" x1="61" y1="239"/>
       <Trace x0="65" y0="219" x1="61" y1="219"/>
       <Trace x0="65" y0="214" x1="61" y1="214"/>
@@ -1633,6 +1663,9 @@
       <Trace x0="49" y0="116" x1="44" y1="116"/>
       <Trace x0="49" y0="118" x1="49" y1="116"/>
       <Trace x0="48" y0="118" x1="49" y1="118"/>
+      <Trace x0="285" y0="32" x1="292" y1="32"/>
+      <Trace x0="285" y0="33" x1="285" y1="32"/>
+      <Trace x0="278" y0="33" x1="285" y1="33"/>
       <Trace x0="297" y0="157" x1="297" y1="156"/>
       <Trace x0="291" y0="157" x1="297" y1="157"/>
       <Trace x0="291" y0="153" x1="291" y1="157"/>
@@ -1641,6 +1674,7 @@
       <Trace x0="290" y0="158" x1="298" y1="158"/>
       <Trace x0="290" y0="157" x1="290" y1="158"/>
       <Trace x0="289" y0="157" x1="290" y1="157"/>
+      <Trace x0="93" y0="195" x1="113" y1="195"/>
       <Trace x0="52" y0="130" x1="49" y1="130"/>
       <Trace x0="52" y0="133" x1="52" y1="130"/>
       <Trace x0="51" y0="133" x1="52" y1="133"/>
@@ -1717,6 +1751,10 @@
       <Trace x0="271" y0="89" x1="271" y1="42"/>
       <Trace x0="247" y0="89" x1="271" y1="89"/>
       <Trace x0="118" y0="28" x1="236" y1="28"/>
+      <Trace x0="310" y0="42" x1="310" y1="38"/>
+      <Trace x0="305" y0="42" x1="310" y1="42"/>
+      <Trace x0="305" y0="46" x1="305" y1="42"/>
+      <Trace x0="304" y0="46" x1="305" y1="46"/>
       <Trace x0="304" y0="142" x1="304" y1="46"/>
       <Trace x0="302" y0="142" x1="304" y1="142"/>
       <Trace x0="302" y0="158" x1="302" y1="142"/>
@@ -1725,11 +1763,13 @@
       <Trace x0="303" y0="162" x1="303" y1="160"/>
       <Trace x0="282" y0="162" x1="303" y1="162"/>
       <Trace x0="282" y0="141" x1="282" y1="162"/>
-      <Trace x0="305" y0="141" x1="282" y1="141"/>
-      <Trace x0="305" y0="42" x1="305" y1="141"/>
-      <Trace x0="311" y0="42" x1="305" y1="42"/>
-      <Trace x0="311" y0="37" x1="311" y1="42"/>
-      <Trace x0="306" y0="37" x1="311" y1="37"/>
+      <Trace x0="303" y0="141" x1="282" y1="141"/>
+      <Trace x0="303" y0="48" x1="303" y1="141"/>
+      <Trace x0="306" y0="48" x1="303" y1="48"/>
+      <Trace x0="306" y0="43" x1="306" y1="48"/>
+      <Trace x0="312" y0="43" x1="306" y1="43"/>
+      <Trace x0="312" y0="37" x1="312" y1="43"/>
+      <Trace x0="306" y0="37" x1="312" y1="37"/>
       <Trace x0="306" y0="30" x1="306" y1="37"/>
       <Trace x0="304" y0="30" x1="306" y1="30"/>
       <Trace x0="198" y0="120" x1="170" y1="120"/>
@@ -1874,6 +1914,7 @@
       <Pin name="C2" x="70" y="130" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="16" inverting="false" clockNotch="false"/>
       <Pin name="C1" x="70" y="140" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="17" inverting="false" clockNotch="false"/>
       <Pin name="C0" x="70" y="145" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
+      <Ground name="GND" x="120" y="67" rotation="East"/>
       <Tunnel name="GND" x="126" y="102" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="97" y="56" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="97" y="80" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -1987,6 +2028,9 @@
       <Trace x0="59" y0="48" x1="71" y1="48"/>
       <Trace x0="59" y0="50" x1="59" y1="48"/>
       <Trace x0="60" y0="50" x1="59" y1="50"/>
+      <Trace x0="122" y0="102" x1="126" y1="102"/>
+      <Trace x0="122" y0="67" x1="122" y1="102"/>
+      <Trace x0="120" y0="67" x1="122" y1="67"/>
     </Circuit>
     <Circuit type="SN74LVC1G332DCKR">
       <Pin name="A" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
@@ -2165,6 +2209,8 @@
       <Pin name="J2-31" x="46" y="57" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="31" inverting="false" clockNotch="false"/>
       <Pin name="J2-32" x="46" y="52" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
       <Subcircuit name="Y2" x="72" y="67" rotation="East" type="XLH735010.000000X" comment="XLH735010.000000X" left="-10" top="-3" right="10" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <PositivePower name="3.3V" x="100" y="47" rotation="East" voltage="3.29999995"/>
+      <Ground name="GND" x="101" y="39" rotation="East"/>
       <Tunnel name="~{WR}_{B}" x="49" y="102" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="3.403571428571428" bottom="0.82857142857142851"/>
       <Tunnel name="~{WR}_{B}" x="164" y="89" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="3.403571428571428" bottom="0.82857142857142851"/>
       <Tunnel name="CLK" x="203" y="35" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
@@ -2237,6 +2283,12 @@
       <Trace x0="49" y0="97" x1="46" y1="97"/>
       <Trace x0="83" y0="68" x1="96" y1="68"/>
       <Trace x0="203" y0="35" x1="188" y1="35"/>
+      <Trace x0="104" y0="46" x1="109" y1="46"/>
+      <Trace x0="104" y0="39" x1="104" y1="46"/>
+      <Trace x0="101" y0="39" x1="104" y1="39"/>
+      <Trace x0="103" y0="40" x1="109" y1="40"/>
+      <Trace x0="103" y0="47" x1="103" y1="40"/>
+      <Trace x0="101" y0="47" x1="103" y1="47"/>
       <Trace x0="91" y0="89" x1="88" y1="89"/>
       <Trace x0="91" y0="78" x1="91" y1="89"/>
       <Trace x0="96" y0="78" x1="91" y1="78"/>
@@ -2293,6 +2345,8 @@
       <Logic74Package name="IC3" x="32" y="22" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="2G02" pinSpacing="2"/>
       <Logic74Package name="IC5" x="82" y="66" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="244" pinSpacing="2"/>
       <Logic74Package name="IC4" x="126" y="44" rotation="West" family="ABT" explicitPowerPorts="false" partType="245" pinSpacing="2"/>
+      <Ground name="GND" x="67" y="23" rotation="East"/>
+      <PositivePower name="3.3V" x="66" y="28" rotation="East" voltage="3.29999995"/>
       <Tunnel name="GND" x="77" y="23" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="77" y="19" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="77" y="17" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -2359,6 +2413,12 @@
       <Trace x0="50" y0="70" x1="47" y1="70"/>
       <Trace x0="50" y0="75" x1="47" y1="75"/>
       <Trace x0="50" y0="65" x1="47" y1="65"/>
+      <Trace x0="67" y0="23" x1="77" y1="23"/>
+      <Trace x0="72" y0="21" x1="77" y1="21"/>
+      <Trace x0="72" y0="26" x1="72" y1="21"/>
+      <Trace x0="69" y0="26" x1="72" y1="26"/>
+      <Trace x0="69" y0="28" x1="69" y1="26"/>
+      <Trace x0="67" y0="28" x1="69" y1="28"/>
     </Circuit>
     <Circuit type="Counter 16bit with IO" leftPositions="22" rightPositions="22" bottomPositions="8">
       <Logic74Package name="IC10" x="167" y="210" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="161" pinSpacing="2"/>
@@ -2405,6 +2465,8 @@
       <Pin name="C0" x="79" y="259" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
       <Logic74Package name="IC7" x="167" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="161" pinSpacing="2"/>
       <Logic74Package name="IC8" x="167" y="129" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="161" pinSpacing="2"/>
+      <Ground name="GND" x="71" y="72" rotation="East"/>
+      <PositivePower name="3.3V" x="149" y="105" rotation="East" voltage="3.29999995"/>
       <Tunnel name="~{Reset}" x="161" y="121" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset}" x="54" y="23" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset}" x="161" y="202" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="4.1035714285714286" bottom="0.82857142857142851"/>
@@ -2737,8 +2799,10 @@
       <Trace x0="176" y0="115" x1="176" y1="125"/>
       <Trace x0="169" y0="115" x1="176" y1="115"/>
       <Trace x0="169" y0="104" x1="169" y1="115"/>
-      <Trace x0="150" y0="104" x1="169" y1="104"/>
-      <Trace x0="150" y0="84" x1="150" y1="104"/>
+      <Trace x0="158" y0="104" x1="169" y1="104"/>
+      <Trace x0="158" y0="102" x1="158" y1="104"/>
+      <Trace x0="150" y0="102" x1="158" y1="102"/>
+      <Trace x0="150" y0="84" x1="150" y1="102"/>
       <Trace x0="161" y0="84" x1="150" y1="84"/>
       <Trace x0="148" y0="114" x1="148" y1="127"/>
       <Trace x0="170" y0="114" x1="148" y1="114"/>
@@ -2935,9 +2999,9 @@
       <Trace x0="247" y0="83" x1="258" y1="83"/>
       <Trace x0="247" y0="84" x1="247" y1="83"/>
       <Trace x0="248" y0="84" x1="247" y1="84"/>
-      <Trace x0="81" y0="72" x1="81" y1="79"/>
-      <Trace x0="65" y0="72" x1="81" y1="72"/>
-      <Trace x0="65" y0="97" x1="65" y1="72"/>
+      <Trace x0="81" y0="70" x1="81" y1="79"/>
+      <Trace x0="65" y0="70" x1="81" y1="70"/>
+      <Trace x0="65" y0="97" x1="65" y1="70"/>
       <Trace x0="77" y0="97" x1="65" y1="97"/>
       <Trace x0="77" y0="99" x1="77" y1="97"/>
       <Trace x0="76" y0="99" x1="77" y1="99"/>
@@ -2947,6 +3011,9 @@
       <Trace x0="247" y0="129" x1="260" y1="129"/>
       <Trace x0="247" y0="127" x1="247" y1="129"/>
       <Trace x0="248" y0="127" x1="247" y1="127"/>
+      <Trace x0="156" y0="88" x1="162" y1="88"/>
+      <Trace x0="156" y0="105" x1="156" y1="88"/>
+      <Trace x0="150" y0="105" x1="156" y1="105"/>
       <Trace x0="221" y0="62" x1="221" y1="65"/>
       <Trace x0="202" y0="62" x1="221" y1="62"/>
       <Trace x0="202" y0="85" x1="202" y1="62"/>
@@ -2979,18 +3046,23 @@
       <Trace x0="247" y0="85" x1="259" y1="85"/>
       <Trace x0="247" y0="88" x1="247" y1="85"/>
       <Trace x0="248" y0="88" x1="247" y1="88"/>
-      <Trace x0="82" y0="71" x1="82" y1="77"/>
-      <Trace x0="64" y0="71" x1="82" y1="71"/>
-      <Trace x0="64" y0="98" x1="64" y1="71"/>
-      <Trace x0="80" y0="98" x1="64" y1="98"/>
-      <Trace x0="80" y0="103" x1="80" y1="98"/>
-      <Trace x0="76" y0="103" x1="80" y1="103"/>
+      <Trace x0="82" y0="73" x1="82" y1="77"/>
+      <Trace x0="103" y0="73" x1="82" y1="73"/>
+      <Trace x0="103" y0="103" x1="103" y1="73"/>
+      <Trace x0="76" y0="103" x1="103" y1="103"/>
       <Trace x0="240" y0="105" x1="240" y1="108"/>
       <Trace x0="261" y0="105" x1="240" y1="105"/>
       <Trace x0="261" y0="130" x1="261" y1="105"/>
       <Trace x0="247" y0="130" x1="261" y1="130"/>
       <Trace x0="247" y0="131" x1="247" y1="130"/>
       <Trace x0="248" y0="131" x1="247" y1="131"/>
+      <Trace x0="82" y0="97" x1="84" y1="97"/>
+      <Trace x0="82" y0="98" x1="82" y1="97"/>
+      <Trace x0="83" y0="98" x1="82" y1="98"/>
+      <Trace x0="83" y0="97" x1="83" y1="98"/>
+      <Trace x0="105" y0="97" x1="83" y1="97"/>
+      <Trace x0="105" y0="72" x1="105" y1="97"/>
+      <Trace x0="71" y0="72" x1="105" y1="72"/>
       <Trace x0="199" y0="100" x1="183" y1="100"/>
       <Trace x0="199" y0="108" x1="199" y1="100"/>
       <Trace x0="215" y0="108" x1="199" y1="108"/>
@@ -3027,10 +3099,10 @@
       <Trace x0="183" y0="222" x1="184" y1="222"/>
       <Trace x0="73" y0="77" x1="74" y1="77"/>
       <Trace x0="73" y0="84" x1="73" y1="77"/>
-      <Trace x0="62" y0="84" x1="73" y1="84"/>
-      <Trace x0="62" y0="99" x1="62" y1="84"/>
-      <Trace x0="73" y0="99" x1="62" y1="99"/>
-      <Trace x0="73" y0="120" x1="73" y1="99"/>
+      <Trace x0="63" y0="84" x1="73" y1="84"/>
+      <Trace x0="63" y0="98" x1="63" y1="84"/>
+      <Trace x0="73" y0="98" x1="63" y1="98"/>
+      <Trace x0="73" y0="120" x1="73" y1="98"/>
       <Trace x0="74" y0="120" x1="73" y1="120"/>
       <Trace x0="251" y0="79" x1="247" y1="79"/>
       <Trace x0="251" y0="86" x1="251" y1="79"/>
@@ -3058,10 +3130,10 @@
       <Trace x0="83" y0="93" x1="83" y1="95"/>
       <Trace x0="79" y0="93" x1="83" y1="93"/>
       <Trace x0="79" y0="100" x1="79" y1="93"/>
-      <Trace x0="63" y0="100" x1="79" y1="100"/>
-      <Trace x0="63" y0="70" x1="63" y1="100"/>
-      <Trace x0="66" y0="70" x1="63" y1="70"/>
-      <Trace x0="66" y0="49" x1="66" y1="70"/>
+      <Trace x0="64" y0="100" x1="79" y1="100"/>
+      <Trace x0="64" y0="69" x1="64" y1="100"/>
+      <Trace x0="66" y0="69" x1="64" y1="69"/>
+      <Trace x0="66" y0="49" x1="66" y1="69"/>
       <Trace x0="54" y0="49" x1="66" y1="49"/>
       <Trace x0="123" y0="136" x1="123" y1="93"/>
       <Trace x0="101" y0="136" x1="123" y1="136"/>
@@ -3113,8 +3185,8 @@
       <Trace x0="134" y0="84" x1="150" y1="84"/>
       <Trace x0="134" y0="27" x1="134" y1="84"/>
       <Trace x0="48" y0="27" x1="134" y1="27"/>
-      <Trace x0="201" y0="106" x1="73" y1="106"/>
-      <Trace x0="201" y0="100" x1="201" y1="106"/>
+      <Trace x0="201" y0="107" x1="73" y1="107"/>
+      <Trace x0="201" y0="100" x1="201" y1="107"/>
       <Trace x0="244" y0="100" x1="201" y1="100"/>
       <Trace x0="244" y0="86" x1="244" y1="100"/>
       <Trace x0="251" y0="86" x1="244" y1="86"/>
@@ -3125,9 +3197,9 @@
       <Trace x0="82" y0="138" x1="85" y1="138"/>
       <Trace x0="82" y0="139" x1="82" y1="138"/>
       <Trace x0="61" y0="139" x1="82" y1="139"/>
-      <Trace x0="61" y0="83" x1="61" y1="139"/>
-      <Trace x0="62" y0="83" x1="61" y1="83"/>
-      <Trace x0="62" y0="41" x1="62" y1="83"/>
+      <Trace x0="61" y0="115" x1="61" y1="139"/>
+      <Trace x0="62" y0="115" x1="61" y1="115"/>
+      <Trace x0="62" y0="41" x1="62" y1="115"/>
       <Trace x0="54" y0="41" x1="62" y1="41"/>
       <Trace x0="218" y0="71" x1="226" y1="71"/>
       <Trace x0="222" y0="83" x1="222" y1="71"/>
@@ -3298,6 +3370,8 @@
       <Pin name="D1" x="46" y="189" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="28" inverting="false" clockNotch="false"/>
       <Pin name="D0" x="46" y="199" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="27" inverting="false" clockNotch="false"/>
       <Pin name="Device ~{CS}" x="46" y="204" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="true" clockNotch="false"/>
+      <PositivePower name="3.3V" x="85" y="24" rotation="West" voltage="3.29999995"/>
+      <Ground name="GND" x="84" y="19" rotation="West"/>
       <Tunnel name="A8" x="37" y="89" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="A8" x="130" y="106" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="A4" x="130" y="70" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
@@ -3494,6 +3568,26 @@
       <Trace x0="36" y0="57" x1="47" y1="57"/>
       <Trace x0="36" y0="59" x1="36" y1="57"/>
       <Trace x0="37" y0="59" x1="36" y1="59"/>
+      <Trace x0="63" y0="40" x1="65" y1="40"/>
+      <Trace x0="63" y0="41" x1="63" y1="40"/>
+      <Trace x0="62" y0="41" x1="63" y1="41"/>
+      <Trace x0="62" y0="40" x1="62" y1="41"/>
+      <Trace x0="80" y0="40" x1="62" y1="40"/>
+      <Trace x0="80" y0="34" x1="80" y1="40"/>
+      <Trace x0="83" y0="34" x1="80" y1="34"/>
+      <Trace x0="83" y0="24" x1="83" y1="34"/>
+      <Trace x0="84" y0="24" x1="83" y1="24"/>
+      <Trace x0="63" y0="42" x1="64" y1="42"/>
+      <Trace x0="63" y0="43" x1="63" y1="42"/>
+      <Trace x0="62" y0="43" x1="63" y1="43"/>
+      <Trace x0="62" y0="42" x1="62" y1="43"/>
+      <Trace x0="81" y0="42" x1="62" y1="42"/>
+      <Trace x0="81" y0="35" x1="81" y1="42"/>
+      <Trace x0="84" y0="35" x1="81" y1="35"/>
+      <Trace x0="84" y0="31" x1="84" y1="35"/>
+      <Trace x0="80" y0="31" x1="84" y1="31"/>
+      <Trace x0="80" y0="19" x1="80" y1="31"/>
+      <Trace x0="84" y0="19" x1="80" y1="19"/>
       <Trace x0="124" y0="110" x1="75" y1="110"/>
       <Trace x0="124" y0="114" x1="75" y1="114"/>
       <Trace x0="211" y0="24" x1="162" y1="24"/>
@@ -3789,6 +3883,8 @@
       <Pin name="Line Out Left" x="140" y="27" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
       <Pin name="J2-4" x="140" y="42" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
       <Pin name="J2-5" x="140" y="32" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="5" inverting="false" clockNotch="false"/>
+      <Ground name="GND" x="67" y="74" rotation="East"/>
+      <PositivePower name="5V" x="96" y="65" rotation="West" voltage="5"/>
       <Tunnel name="GND" x="62" y="66" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="80" y="66" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="-5V" x="102" y="68" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
@@ -3823,6 +3919,14 @@
       <Trace x0="112" y0="34" x1="113" y1="34"/>
       <Trace x0="112" y0="36" x1="112" y1="34"/>
       <Trace x0="113" y0="36" x1="112" y1="36"/>
+      <Trace x0="61" y0="66" x1="62" y1="66"/>
+      <Trace x0="61" y0="72" x1="61" y1="66"/>
+      <Trace x0="68" y0="72" x1="61" y1="72"/>
+      <Trace x0="68" y0="74" x1="68" y1="72"/>
+      <Trace x0="67" y0="74" x1="68" y1="74"/>
+      <Trace x0="88" y0="62" x1="80" y1="62"/>
+      <Trace x0="88" y0="65" x1="88" y1="62"/>
+      <Trace x0="95" y0="65" x1="88" y1="65"/>
       <Trace x0="102" y0="68" x1="80" y1="68"/>
     </Circuit>
     <Circuit type="MAX5102BEUE+T">
@@ -3885,6 +3989,7 @@
       <Pin name="CPU B ~{WE}" x="52" y="82" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="10" inverting="true" clockNotch="false"/>
       <Pin name="J1-14" x="52" y="87" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="14" inverting="false" clockNotch="false"/>
       <Logic74Unit name="IC4" x="85" y="54" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="08" unit="C" pinSpacing="2"/>
+      <Ground name="GND" x="74" y="70" rotation="East"/>
       <Tunnel name="CPU A ~{OE}" x="85" y="25" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.4035714285714285" bottom="0.82857142857142851"/>
       <Tunnel name="CPU A ~{OE}" x="55" y="57" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.4035714285714285" bottom="0.82857142857142851"/>
       <Tunnel name="CPU B ~{OE}" x="85" y="27" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.4035714285714285" bottom="0.82857142857142851"/>
@@ -3935,6 +4040,7 @@
       <Trace x0="55" y0="57" x1="52" y1="57"/>
       <Trace x0="55" y0="67" x1="52" y1="67"/>
       <Trace x0="55" y0="72" x1="52" y1="72"/>
+      <Trace x0="74" y0="70" x1="84" y1="70"/>
     </Circuit>
   </Circuits>
 </Logicim>

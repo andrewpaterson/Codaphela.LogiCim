@@ -260,3 +260,124 @@ bool IsKicadSchemSkippedSymbol(CKicadSchemSymbol* pcSymbol)
 	return bSkipped;
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a label's whole text names a supply: a ground ("GND",
+// "GND_{OUT1}"), a supply pin's name (VCC, VCCIO, VCCINT) or a voltage
+// (see IsKicadSchemVoltageLabel).  The HCP65's schematics name their
+// supplies with labels, not power symbols, which KiCad made global and
+// broke a schematic with sub-sheets (the user, 2026-11-26: "GND, 3.3V,
+// 5V, 12V, 18V ... should be treated as supplies"; "GND_{OUT*} yes, its
+// power label.  VCC, VCCIO and VCCINT yes").  The grounds like them are
+// ordinary nets: GND_{A} EN to GND_{D} EN enable the Pico boards'
+// switched grounds GNDa to GNDd, and GND_{TOP} and GND_{1} to GND_{4}
+// are what they switch.
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemSupplyLabel(const char* szText)
+{
+	return IsKicadSchemGroundLabel(szText) || IsKicadSchemVccLabel(szText) || IsKicadSchemVoltageLabel(szText);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a label's whole text is a ground's: "GND", or a switched
+// ground's output, "GND_{OUT" and a number and "}".
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemGroundLabel(const char* szText)
+{
+	size	i;
+
+	if (szText == NULL)
+	{
+		return false;
+	}
+	if (strcmp(szText, "GND") == 0)
+	{
+		return true;
+	}
+	if (strncmp(szText, "GND_{OUT", 8) != 0)
+	{
+		return false;
+	}
+	for (i = 8; (szText[i] >= '0') && (szText[i] <= '9'); i++)
+	{
+	}
+	return (i > 8) && (szText[i] == '}') && (szText[i + 1] == '\0');
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a label's whole text is a supply pin's name that says no
+// voltage: VCC, VCCIO or VCCINT (a CPLD's I/O and core supplies), all
+// 5V (see GetKicadSchemSupplyLabelVoltage).
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemVccLabel(const char* szText)
+{
+	return (szText != NULL) && ((strcmp(szText, "VCC") == 0) || (strcmp(szText, "VCCIO") == 0) || (strcmp(szText, "VCCINT") == 0));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a label's whole text is a voltage: an optional sign, digits, an
+// optional decimal part and V ("3.3V", "-5V", "1.25V").
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemVoltageLabel(const char* szText)
+{
+	size	i;
+	size	uiDigits;
+
+	if (szText == NULL)
+	{
+		return false;
+	}
+	i = ((szText[0] == '+') || (szText[0] == '-')) ? 1 : 0;
+	for (uiDigits = 0; (szText[i] >= '0') && (szText[i] <= '9'); i++)
+	{
+		uiDigits++;
+	}
+	if (uiDigits == 0)
+	{
+		return false;
+	}
+	if (szText[i] == '.')
+	{
+		i++;
+		for (uiDigits = 0; (szText[i] >= '0') && (szText[i] <= '9'); i++)
+		{
+			uiDigits++;
+		}
+		if (uiDigits == 0)
+		{
+			return false;
+		}
+	}
+	return (szText[i] == 'V') && (szText[i + 1] == '\0');
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The voltage a supply label names: 0 for a ground, negative for "-5V",
+// and 5V for VCC, VCCIO and VCCINT (GetKicadSchemSupplyVoltage's for a
+// name with no voltage).  VCC is always 5V: the CPLD is a MAX 7000, whose
+// VCCINT is 5V, and the MAX II programmer's 3.3V read as 5V is fine (the
+// user, 2026-11-26).
+//
+//////////////////////////////////////////////////////////////////////////
+float32 GetKicadSchemSupplyLabelVoltage(const char* szText)
+{
+	if (IsKicadSchemGroundLabel(szText))
+	{
+		return 0.0f;
+	}
+	return (szText[0] == '-') ? -GetKicadSchemSupplyVoltage(szText) : GetKicadSchemSupplyVoltage(szText);
+}

@@ -26,7 +26,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 
 //What KiCad's names say about supplies: grounds and voltages, the power pins of logic parts, the nets of supplies,
-//voltage regulators' pins and power flags, and the symbols that are left out.
+//voltage regulators' pins and power flags, the symbols that are left out, and the labels that are supplies.
 bool	IsKicadSchemGroundName(const char* szName);
 float32	GetKicadSchemSupplyVoltage(const char* szName);
 bool	HasKicadSchemVoltage(const char* szText);
@@ -35,6 +35,11 @@ bool	IsKicadSchemPowerNetName(const char* szName);
 bool	IsKicadSchemRegulatorPinName(const char* szName, const char* szEnd);
 bool	IsKicadSchemPowerFlag(const char* szPowerName, CKicadSchemLibSymbol* pcLibSymbol);
 bool	IsKicadSchemSkippedSymbol(CKicadSchemSymbol* pcSymbol);
+bool	IsKicadSchemSupplyLabel(const char* szText);
+bool	IsKicadSchemGroundLabel(const char* szText);
+bool	IsKicadSchemVccLabel(const char* szText);
+bool	IsKicadSchemVoltageLabel(const char* szText);
+float32	GetKicadSchemSupplyLabelVoltage(const char* szText);
 
 
 #endif // __KICAD_SCHEM_SUPPLY_NAMES_H__

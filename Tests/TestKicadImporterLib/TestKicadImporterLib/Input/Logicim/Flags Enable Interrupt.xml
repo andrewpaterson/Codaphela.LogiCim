@@ -42,6 +42,8 @@
       <Logic74Package name="IC2" x="298" y="34" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" pinSpacing="2"/>
       <Logic74Package name="IC8" x="61" y="117" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="573" pinSpacing="2"/>
       <Logic74Unit name="IC3" x="245" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="D" pinSpacing="2"/>
+      <Ground name="GND" x="93" y="195" rotation="East"/>
+      <PositivePower name="3.3V" x="277" y="33" rotation="East" voltage="3.29999995"/>
       <Tunnel name="GND" x="113" y="195" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="40" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="38" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -173,11 +175,9 @@
       <Trace x0="292" y0="26" x1="239" y1="26"/>
       <Trace x0="235" y0="24" x1="236" y1="24"/>
       <Trace x0="235" y0="22" x1="235" y1="24"/>
-      <Trace x0="278" y0="22" x1="235" y1="22"/>
-      <Trace x0="278" y0="46" x1="278" y1="22"/>
-      <Trace x0="310" y0="46" x1="278" y1="46"/>
-      <Trace x0="310" y0="38" x1="310" y1="46"/>
-      <Trace x0="303" y0="38" x1="310" y1="38"/>
+      <Trace x0="311" y0="22" x1="235" y1="22"/>
+      <Trace x0="311" y0="38" x1="311" y1="22"/>
+      <Trace x0="303" y0="38" x1="311" y1="38"/>
       <Trace x0="65" y0="239" x1="61" y1="239"/>
       <Trace x0="65" y0="219" x1="61" y1="219"/>
       <Trace x0="65" y0="214" x1="61" y1="214"/>
@@ -192,6 +192,9 @@
       <Trace x0="49" y0="116" x1="44" y1="116"/>
       <Trace x0="49" y0="118" x1="49" y1="116"/>
       <Trace x0="48" y0="118" x1="49" y1="118"/>
+      <Trace x0="285" y0="32" x1="292" y1="32"/>
+      <Trace x0="285" y0="33" x1="285" y1="32"/>
+      <Trace x0="278" y0="33" x1="285" y1="33"/>
       <Trace x0="297" y0="157" x1="297" y1="156"/>
       <Trace x0="291" y0="157" x1="297" y1="157"/>
       <Trace x0="291" y0="153" x1="291" y1="157"/>
@@ -200,6 +203,7 @@
       <Trace x0="290" y0="158" x1="298" y1="158"/>
       <Trace x0="290" y0="157" x1="290" y1="158"/>
       <Trace x0="289" y0="157" x1="290" y1="157"/>
+      <Trace x0="93" y0="195" x1="113" y1="195"/>
       <Trace x0="52" y0="130" x1="49" y1="130"/>
       <Trace x0="52" y0="133" x1="52" y1="130"/>
       <Trace x0="51" y0="133" x1="52" y1="133"/>
@@ -276,6 +280,10 @@
       <Trace x0="271" y0="89" x1="271" y1="42"/>
       <Trace x0="247" y0="89" x1="271" y1="89"/>
       <Trace x0="118" y0="28" x1="236" y1="28"/>
+      <Trace x0="310" y0="42" x1="310" y1="38"/>
+      <Trace x0="305" y0="42" x1="310" y1="42"/>
+      <Trace x0="305" y0="46" x1="305" y1="42"/>
+      <Trace x0="304" y0="46" x1="305" y1="46"/>
       <Trace x0="304" y0="142" x1="304" y1="46"/>
       <Trace x0="302" y0="142" x1="304" y1="142"/>
       <Trace x0="302" y0="158" x1="302" y1="142"/>
@@ -284,11 +292,13 @@
       <Trace x0="303" y0="162" x1="303" y1="160"/>
       <Trace x0="282" y0="162" x1="303" y1="162"/>
       <Trace x0="282" y0="141" x1="282" y1="162"/>
-      <Trace x0="305" y0="141" x1="282" y1="141"/>
-      <Trace x0="305" y0="42" x1="305" y1="141"/>
-      <Trace x0="311" y0="42" x1="305" y1="42"/>
-      <Trace x0="311" y0="37" x1="311" y1="42"/>
-      <Trace x0="306" y0="37" x1="311" y1="37"/>
+      <Trace x0="303" y0="141" x1="282" y1="141"/>
+      <Trace x0="303" y0="48" x1="303" y1="141"/>
+      <Trace x0="306" y0="48" x1="303" y1="48"/>
+      <Trace x0="306" y0="43" x1="306" y1="48"/>
+      <Trace x0="312" y0="43" x1="306" y1="43"/>
+      <Trace x0="312" y0="37" x1="312" y1="43"/>
+      <Trace x0="306" y0="37" x1="312" y1="37"/>
       <Trace x0="306" y0="30" x1="306" y1="37"/>
       <Trace x0="304" y0="30" x1="306" y1="30"/>
       <Trace x0="198" y0="120" x1="170" y1="120"/>

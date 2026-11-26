@@ -81,8 +81,8 @@ typedef CArrayTemplate<SKicadSchemDecodeOutput>	CArrayKicadSchemDecodeOutput;
 //The sheet's circuit is built by CKicadSchemLogicimConverter (Build: its parts, with no placing or routing) and wired
 //by its netlist instead of by wires: every component is moved apart, and a tunnel named as its net goes on each port
 //the converter made for a pin, label or supply.  A resistor between two nets that aren't supplies (a series
-//resistor, as on chip selects leaving the board) joins them, though the converter leaves resistors out.  A net named
-//as a supply ("GND", "3.3V") is driven at its voltage, as the converter only drives a power symbol's.
+//resistor, as on chip selects leaving the board) joins them, though the converter leaves resistors out.  Supplies are
+//the converter's: its power symbols and the labels named as supplies ("GND", "3.3V").
 //
 //The board's pins (its edge connector's nets) are its inputs where only inputs are on their nets, and its outputs
 //where an output is.  An input named A and a number is that address line, any other input is a mode.  Every
@@ -127,7 +127,6 @@ protected:
 	void	JoinSeriesResistors(void);
 	void	AddNetTunnels(void);
 	bool	Simulate(void);
-	void	DriveSupplies(void);
 	bool	FindPins(void);
 	void	AddInput(CPinView* pcPinView);
 	bool	DecodeMode(size uiMode, CChars* pszDest);

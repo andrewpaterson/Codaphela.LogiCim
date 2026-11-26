@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logicim version="2">
+  <Circuits>
+    <Circuit type="Supply Label Test">
+      <Logic74Unit name="U1" x="77" y="39" rotation="East" family="LVC" explicitPowerPorts="false" partType="1G08" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="U2" x="77" y="63" rotation="East" family="LVC" explicitPowerPorts="false" partType="1G08" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="U3" x="79" y="87" rotation="East" family="LVC" explicitPowerPorts="false" partType="1G04" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="U4" x="79" y="110" rotation="East" family="LVC" explicitPowerPorts="false" partType="1G04" unit="A" pinSpacing="2"/>
+      <PositivePower name="5V" x="64" y="38" rotation="East" voltage="5"/>
+      <Ground name="GND_{OUT1}" x="65" y="64" rotation="East"/>
+      <PositivePower name="VCCIO" x="64" y="87" rotation="East" voltage="5"/>
+      <Tunnel name="GNDb" x="72" y="40" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.125" bottom="0.65000000000000002"/>
+      <Tunnel name="GNDb" x="72" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.125" bottom="0.65000000000000002"/>
+      <Trace x0="72" y0="40" x1="76" y1="40"/>
+      <Trace x0="72" y0="62" x1="76" y1="62"/>
+      <Trace x0="65" y0="38" x1="76" y1="38"/>
+      <Trace x0="65" y0="64" x1="76" y1="64"/>
+      <Trace x0="65" y0="87" x1="78" y1="87"/>
+    </Circuit>
+  </Circuits>
+</Logicim>

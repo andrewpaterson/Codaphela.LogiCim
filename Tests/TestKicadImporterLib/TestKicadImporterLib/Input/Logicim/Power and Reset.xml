@@ -39,6 +39,8 @@
       <Pin name="J3-19" x="60" y="100" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
       <Subcircuit name="S1" x="70" y="32" rotation="East" type="GPTS203211B" comment="GPTS203211B" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="S2" x="24" y="48" rotation="East" type="DTS-62N-V" comment="DTS-62N-V" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Ground name="GND" x="13" y="48" rotation="East"/>
+      <PositivePower name="5V" x="49" y="61" rotation="West" voltage="5"/>
       <Tunnel name="GND" x="22" y="42" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="10" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="~{Reset} SW" x="46" y="48" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
@@ -59,14 +61,19 @@
       <Trace x0="32" y0="49" x1="44" y1="49"/>
       <Trace x0="10" y0="62" x1="13" y1="62"/>
       <Trace x0="15" y0="47" x1="16" y1="47"/>
+      <Trace x0="15" y0="48" x1="15" y1="47"/>
+      <Trace x0="13" y0="48" x1="15" y1="48"/>
       <Trace x0="15" y0="43" x1="15" y1="47"/>
       <Trace x0="23" y0="43" x1="15" y1="43"/>
       <Trace x0="23" y0="42" x1="23" y1="43"/>
       <Trace x0="22" y0="42" x1="23" y1="42"/>
-      <Trace x0="15" y0="49" x1="15" y1="47"/>
+      <Trace x0="15" y0="49" x1="15" y1="48"/>
       <Trace x0="16" y0="49" x1="15" y1="49"/>
       <Trace x0="123" y0="63" x1="110" y1="63"/>
       <Trace x0="89" y0="63" x1="76" y1="63"/>
+      <Trace x0="41" y0="62" x1="34" y1="62"/>
+      <Trace x0="41" y0="61" x1="41" y1="62"/>
+      <Trace x0="48" y0="61" x1="41" y1="61"/>
       <Trace x0="88" y0="62" x1="88" y1="63"/>
       <Trace x0="101" y0="62" x1="88" y1="62"/>
       <Trace x0="101" y0="63" x1="101" y1="62"/>

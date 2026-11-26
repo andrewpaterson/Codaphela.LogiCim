@@ -189,7 +189,6 @@ bool CKicadSchemLogicimDecode::Decode(const char* szTypeName, CChars* pszDest)
 	{
 		return false;
 	}
-	DriveSupplies();
 	if (!FindPins())
 	{
 		return false;
@@ -356,51 +355,6 @@ bool CKicadSchemLogicimDecode::Simulate(void)
 	}
 	mpSimulation->GetTimeline()->Run();
 	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// A supply on each net named as one ("GND", "3.3V"), at its voltage: a
-// board's inputs tied high or low by a label, with no power symbol, are
-// driven by nothing the converter makes.
-//
-//////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimDecode::DriveSupplies(void)
-{
-	CKicadSchemLogicimModel*		pcModel;
-	SKicadSchemLogicimTerminal*		psTerminal;
-	CKicadSchemNet*					pcNet;
-	CTrace*							pcTrace;
-	CArrayInt						aiSupplied;
-	CPowerSource*					pcSupply;
-	float32							fVoltage;
-	size							i;
-	int								iGroup;
-
-	aiSupplied.Init();
-	pcModel = mcConverter.GetModel();
-	for (i = 0; i < pcModel->NumTerminals(); i++)
-	{
-		psTerminal = pcModel->GetTerminal(i);
-		pcNet = (psTerminal->pcSubnet != NULL) ? psTerminal->pcSubnet->GetNet() : NULL;
-		if ((pcNet == NULL) || !IsKicadSchemPowerNetName(pcNet->GetName()))
-		{
-			continue;
-		}
-		iGroup = (int)GetNetGroup(pcNet);
-		pcTrace = GetPortTrace(psTerminal->pcPortView);
-		if ((pcTrace == NULL) || (aiSupplied.Find(iGroup) != ARRAY_ELEMENT_NOT_FOUND))
-		{
-			continue;
-		}
-		fVoltage = IsKicadSchemGroundName(pcNet->GetName()) ? 0.0f : GetKicadSchemSupplyVoltage(pcNet->GetName());
-		pcSupply = &OMalloc<CPowerSource>(mpSimulation->GetSubcircuitTopSimulation(), pcNet->GetName(), fVoltage);
-		pcSupply->GetPowerOutPort()->ConnectLive(pcTrace, mpSimulation->GetTimeline());
-		aiSupplied.Add(iGroup);
-	}
-	aiSupplied.Kill();
-	mpSimulation->GetTimeline()->Run();
 }
 
 

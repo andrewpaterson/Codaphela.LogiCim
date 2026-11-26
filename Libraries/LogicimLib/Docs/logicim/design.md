@@ -159,14 +159,19 @@ each change and each undo or redo.
 ## KiCad import
 
 KicadImporterLib makes LogiCim circuits from KiCad schematics read by CommonLibraries' KicadLib.
-[`CKicadSchemLogicimConverter`] makes one sheet's circuit: a real 74 series part becomes a 74 series package or
-units as KiCad draws it, any other 74 series gate or flip flop generic ones, a power symbol a supply, a board's
-edge connector the circuit's pins, and any other symbol an instance of an empty placeholder circuit with its pins,
-to be filled in later.  Passives, power flags, test points and the like are left out, and a voltage regulator
-becomes the implied supply of the chips its output reaches.  A subnet joined to the rest of its net by labels gets
-a tunnel at each label.  The pieces are [`CKicadSchemLogicimModel`] (the items, terminals and connections),
-[`CKicadSchemLogicimBuses`], [`CKicadSchemLogicimPlacer`] (spread out from KiCad's places, lined up, moved clear,
-dense areas exploded) and [`CKicadSchemLogicimWiring`], which routes with [`CTraceAutoConnector`].
+[`CKicadSchemLogicimConverter`] makes one sheet's circuit: a real 74 series part becomes a 74 series package or units
+as KiCad draws it, any other 74 series gate or flip flop generic ones, a power symbol a supply, a board's edge
+connector the circuit's pins, and any other symbol an instance of an empty placeholder circuit with its pins, to be
+filled in later.  Passives, power flags, test points and the like are left out, and a voltage regulator becomes the
+implied supply of the chips its output reaches.  A subnet joined to the rest of its net by labels gets a tunnel at
+each label.  A net a label names as a supply gets one supply, as a power symbol would give it, beside the first such
+label on a part of it that's drawn and wired to that part; its labels' tunnels take it to the rest
+([`CKicadSchemLogicimConverter::AddSupplyLabels`]).  A supply label is one whose whole text is GND,
+`#!text GND_{OUT1}` and the like (0V), a voltage (`#!text 3.3V`, `#!text 18V`, `#!text 1.25V`) or VCC, VCCIO or VCCINT
+(5V) ([`IsKicadSchemSupplyLabel`]).  A negative voltage (the Audio DAC's `#!text -5V`) stays an ordinary net: LogiCim's
+supplies are grounds and positive supplies.  The pieces are [`CKicadSchemLogicimModel`] (the items, terminals and
+connections), [`CKicadSchemLogicimBuses`], [`CKicadSchemLogicimPlacer`] (spread out from KiCad's places, lined up,
+moved clear, dense areas exploded) and [`CKicadSchemLogicimWiring`], which routes with [`CTraceAutoConnector`].
 
 [`CKicadSchemBoardImporter`] imports a board with every board drawn on it (a symbol with a Schematic property),
 each made once as a circuit whose instances are its symbols.  Building every board's circuit is quick and done on
@@ -177,12 +182,12 @@ and tells a [`CKicadSchemImportProgress`] its steps.
 [`CKicadSchemLogicimDecode`] reads a board's address decode by simulating it.  The sheet's circuit is built but not
 laid out: its components are moved apart and wired by the netlist instead, a tunnel named as its net on each port the
 converter made for a pin, label or supply.  A resistor between two nets that aren't supplies joins them (a chip
-select leaves a board through a series resistor), and a net named as a supply is driven at its voltage (an input tied
-low by a GND label has no power symbol for the converter to make).  The board's pins on nets that only inputs read
-are driven, those named A and a number as the address and the rest as modes, through every combination, and the
-pins on nets a part drives are read once it settles; an output neither high nor low is an error.  Each output's
-active addresses are written as ranges, a range repeating through address lines the board hasn't on one line
-(`LogiCim --decode`, [The LogiCim Application](app.md#kicad-import)).
+select leaves a board through a series resistor), though the converter leaves resistors out.  Its supplies are the
+converter's, power symbols' and supply labels' (a GND label ties the board's unused '138 enables low).  The board's
+pins on nets that only inputs read are driven, those named A and a number as the address and the rest as modes,
+through every combination, and the pins on nets a part drives are read once it settles; an output neither high nor
+low is an error.  Each output's active addresses are written as ranges, a range repeating through address lines the
+board hasn't on one line (`LogiCim --decode`, [The LogiCim Application](app.md#kicad-import)).
 
 ## Tests
 
@@ -193,7 +198,7 @@ active addresses are written as ranges, a range repeating through address lines 
 | [`TestLogicimLib/TestWiring.cpp`], [`TestLogicimLib/TestViewPaths.cpp`], [`TestLogicimLib/TestSubcircuits.cpp`] | nets, tunnels, splitters, paths and instances |
 | [`TestLogicimLib/TestComponentSprites.cpp`], [`TestLogicimLib/TestCircuitGrid.cpp`] | the sprite cache and grid tiles draw as painting does |
 | [`TestLogicimLib/TestTraceAutoConnector.cpp`], [`TestLogicimLib/TestCircuitEditor.cpp`] | routing, and editing with undo |
-| [`TestKicadImporterLib/TestKicadSchemLogicim.cpp`] | each converted schematic compared with its expected circuit in Input/Logicim; boards on threads and cancelled |
+| [`TestKicadImporterLib/TestKicadSchemLogicim.cpp`] | each converted schematic compared with its expected circuit in Input/Logicim; supply labels; boards on threads and cancelled |
 | [`TestKicadImporterLib/TestKicadSchemDecode.cpp`] | the decode of a small board (a series resistor, a pull up, a GND label) and of the HCP65 MPU Address Decode board |
 
 The reference images of the first views were checked against Java Logicim's own renders when they were made
@@ -235,6 +240,15 @@ The reference images of the first views were checked against Java Logicim's own 
   differed between Release and Debug in the last digit.
 - A KiCad import lays its boards out on several threads (2026-11-19): the Audio Board's thirteen boards took 12.2 s
   and about 6 s after (the build wasn't recorded).
+- Labels named as supplies are supplies (the user, 2026-11-26): "GND, 3.3V, 5V, 12V, 18V (and few other slightly
+  more unusual values) should be treated as supplies.  I think KiCad does some annoying global level power symbol
+  stuff that broke a schematic with sub-schematics so stopped using them."  Then "GND_{OUT*} yes, its power label.
+  VCC, VCCIO and VCCINT yes", and VCC is always 5V: "The CPLD in this case is the Altera MAX 7000 series which has
+  VCCINT of 5V.  There is also a MAX II programmer which is 3.3V but it's fine if that is misinterpreted as 5V".  The
+  names like them are ordinary nets: `#!text GND_{A} EN` to `#!text GND_{D} EN` enable the Pico boards' switched
+  grounds `#!text GNDa` to `#!text GNDd`, and `#!text GND_{TOP}` and `#!text GND_{1}` to `#!text GND_{4}` are what
+  they switch.  A net has one supply, beside a label, rather than a supply in place of each label's tunnel, as a
+  power symbol on each pin would be: grounds on a 74573's pins left too little room to route the pins beside them.
 
 ## Not done
 

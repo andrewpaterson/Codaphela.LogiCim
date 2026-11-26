@@ -145,6 +145,7 @@ bool CKicadSchemLogicimConverter::Build(const char* szTypeName)
 	}
 	ReportProgress("Making buses", KICAD_SCHEM_IMPORT_STEP_BUSES);
 	ApplyRegulatedVoltages();
+	AddSupplyLabels();
 	mcBuses.AddTunnels();
 	mcBuses.AddBuses();
 	RemoveUnconnectedItems();

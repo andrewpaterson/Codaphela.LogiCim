@@ -97,6 +97,29 @@ void TestKicadSchemLogicimNames(void)
 	AssertFloat(12.0f, GetKicadSchemSupplyVoltage("12VOut"), 4);
 	AssertFloat(5.0f, GetKicadSchemSupplyVoltage("VCC"), 4);
 
+	//Labels named as supplies, and the ordinary nets named like them on the Pico boards.
+	AssertTrue(IsKicadSchemSupplyLabel("GND"));
+	AssertTrue(IsKicadSchemSupplyLabel("GND_{OUT1}"));
+	AssertTrue(IsKicadSchemSupplyLabel("3.3V"));
+	AssertTrue(IsKicadSchemSupplyLabel("18V"));
+	AssertTrue(IsKicadSchemSupplyLabel("-5V"));
+	AssertTrue(IsKicadSchemSupplyLabel("1.25V"));
+	AssertTrue(IsKicadSchemSupplyLabel("VCC"));
+	AssertTrue(IsKicadSchemSupplyLabel("VCCIO"));
+	AssertTrue(IsKicadSchemSupplyLabel("VCCINT"));
+	AssertFalse(IsKicadSchemSupplyLabel("GNDb"));
+	AssertFalse(IsKicadSchemSupplyLabel("GND_{A} EN"));
+	AssertFalse(IsKicadSchemSupplyLabel("GND_{TOP}"));
+	AssertFalse(IsKicadSchemSupplyLabel("GND_{1}"));
+	AssertFalse(IsKicadSchemSupplyLabel("GND_{OUT}"));
+	AssertFalse(IsKicadSchemSupplyLabel("+3V3"));
+	AssertFalse(IsKicadSchemSupplyLabel("3.V"));
+	AssertFalse(IsKicadSchemSupplyLabel("V"));
+	AssertFloat(0.0f, GetKicadSchemSupplyLabelVoltage("GND_{OUT2}"), 4);
+	AssertFloat(-5.0f, GetKicadSchemSupplyLabelVoltage("-5V"), 4);
+	AssertFloat(1.25f, GetKicadSchemSupplyLabelVoltage("1.25V"), 4);
+	AssertFloat(5.0f, GetKicadSchemSupplyLabelVoltage("VCCINT"), 4);
+
 	AssertInt(ROT_East, GetKicadSchemRotation(ROT_East, 0));
 	AssertInt(ROT_North, GetKicadSchemRotation(ROT_East, 90));
 	AssertInt(ROT_West, GetKicadSchemRotation(ROT_East, 180));
@@ -628,6 +651,44 @@ char gszKicadSchemRegulatorTestFile[] =
 	")\n";
 
 
+//Gates with their inputs tied by labels: U1's to 5V and GNDb, U2's to GNDb and GND_{OUT1}, U3's to VCCIO and U4's to
+//GND_{A} EN.  5V, GND_{OUT1} and VCCIO are supplies; GNDb (a net of two parts, joined by tunnels) and GND_{A} EN
+//aren't.
+char gszKicadSchemSupplyLabelTestFile[] =
+	"(kicad_sch (version 20250114) (generator \"eeschema\") (uuid \"root\") (paper \"A4\")\n"
+	"	(lib_symbols\n"
+	"		(symbol \"Nexperia:74LVC1G08\" (property \"Reference\" \"U\") (property \"Value\" \"74LVC1G08\")\n"
+	"			(symbol \"74LVC1G08_1_1\"\n"
+	"				(pin input line (at -5.08 1.27 0) (length 2.54) (name \"A\") (number \"1\"))\n"
+	"				(pin input line (at -5.08 -1.27 0) (length 2.54) (name \"B\") (number \"2\"))\n"
+	"				(pin output line (at 5.08 0 180) (length 2.54) (name \"Y\") (number \"4\"))\n"
+	"				(pin power_in line (at 0 5.08 270) (length 2.54) (hide yes) (name \"VCC\") (number \"5\"))\n"
+	"				(pin power_in line (at 0 -5.08 90) (length 2.54) (hide yes) (name \"GND\") (number \"3\"))))\n"
+	"		(symbol \"Nexperia:74LVC1G04\" (property \"Reference\" \"U\") (property \"Value\" \"74LVC1G04\")\n"
+	"			(symbol \"74LVC1G04_1_1\"\n"
+	"				(pin input line (at -5.08 0 0) (length 2.54) (name \"A\") (number \"2\"))\n"
+	"				(pin output line (at 5.08 0 180) (length 2.54) (name \"Y\") (number \"4\"))\n"
+	"				(pin power_in line (at 0 5.08 270) (length 2.54) (hide yes) (name \"VCC\") (number \"5\"))\n"
+	"				(pin power_in line (at 0 -5.08 90) (length 2.54) (hide yes) (name \"GND\") (number \"3\")))))\n"
+	"	(symbol (lib_id \"Nexperia:74LVC1G08\") (at 100 50 0) (unit 1) (uuid \"u1\") (property \"Reference\" \"U1\") (property \"Value\" \"74LVC1G08\"))\n"
+	"	(symbol (lib_id \"Nexperia:74LVC1G08\") (at 100 80 0) (unit 1) (uuid \"u2\") (property \"Reference\" \"U2\") (property \"Value\" \"74LVC1G08\"))\n"
+	"	(symbol (lib_id \"Nexperia:74LVC1G04\") (at 100 110 0) (unit 1) (uuid \"u3\") (property \"Reference\" \"U3\") (property \"Value\" \"74LVC1G04\"))\n"
+	"	(symbol (lib_id \"Nexperia:74LVC1G04\") (at 100 140 0) (unit 1) (uuid \"u4\") (property \"Reference\" \"U4\") (property \"Value\" \"74LVC1G04\"))\n"
+	"	(wire (pts (xy 94.92 48.73) (xy 87.3 48.73)) (uuid \"w1\"))\n"
+	"	(label \"5V\" (at 87.3 48.73 180) (uuid \"l1\"))\n"
+	"	(wire (pts (xy 94.92 51.27) (xy 87.3 51.27)) (uuid \"w2\"))\n"
+	"	(label \"GNDb\" (at 87.3 51.27 180) (uuid \"l2\"))\n"
+	"	(wire (pts (xy 94.92 78.73) (xy 87.3 78.73)) (uuid \"w3\"))\n"
+	"	(label \"GNDb\" (at 87.3 78.73 180) (uuid \"l3\"))\n"
+	"	(wire (pts (xy 94.92 81.27) (xy 87.3 81.27)) (uuid \"w4\"))\n"
+	"	(label \"GND_{OUT1}\" (at 87.3 81.27 180) (uuid \"l4\"))\n"
+	"	(wire (pts (xy 94.92 110) (xy 87.3 110)) (uuid \"w5\"))\n"
+	"	(label \"VCCIO\" (at 87.3 110 180) (uuid \"l5\"))\n"
+	"	(wire (pts (xy 94.92 140) (xy 87.3 140)) (uuid \"w6\"))\n"
+	"	(label \"GND_{A} EN\" (at 87.3 140 180) (uuid \"l6\"))\n"
+	")\n";
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -639,22 +700,23 @@ void TestKicadSchemLogicimConvert(void)
 	//Its VCC symbol is on no wire, only U1's hidden VCC pin, so it isn't made.
 	AssertKicadSchemLogicimConverts("Netlist Test", 0, 1, NULL, gszKicadSchemNetlistTestFile, 0);
 	AssertKicadSchemLogicimConverts("Bus Test", 0, 2, NULL, gszKicadSchemBusTestFile, 0, 3);
-	AssertKicadSchemLogicimConverts("Clock Oscillator", 0, 1, NULL, NULL, 0, 0, 4);
-	AssertKicadSchemLogicimConverts("Clock Hold V1 to V2", 0, 2, NULL, NULL, 0, 1, 25);
-	AssertKicadSchemLogicimConverts("LSF0204", 0, 1, NULL);
-	AssertKicadSchemLogicimConverts("LED Display", 0, 2, NULL);
+	//The boards name their supplies with labels: a supply for each of those nets that has a part drawn.
+	AssertKicadSchemLogicimConverts("Clock Oscillator", 0, 1, NULL, NULL, 2, 0, 4);
+	AssertKicadSchemLogicimConverts("Clock Hold V1 to V2", 0, 2, NULL, NULL, 3, 1, 25);
+	AssertKicadSchemLogicimConverts("LSF0204", 0, 1, NULL, NULL, 3);
+	AssertKicadSchemLogicimConverts("LED Display", 0, 2, NULL, NULL, 1);
 	//Its L7805 isn't drawn (a regulator gives its voltage to the ICs it powers).
-	AssertKicadSchemLogicimConverts("LCD Dual 7 Segment Tester", 0, 1, NULL, NULL, 0, 0, 9);
+	AssertKicadSchemLogicimConverts("LCD Dual 7 Segment Tester", 0, 1, NULL, NULL, 2, 0, 9);
 	//Its three regulators aren't drawn.
-	AssertKicadSchemLogicimConverts("Power and Reset", 0, 1, NULL, NULL, 0, 0, 32);
+	AssertKicadSchemLogicimConverts("Power and Reset", 0, 1, NULL, NULL, 2, 0, 32);
 	//Its AP7365 isn't drawn.
-	AssertKicadSchemLogicimConverts("HCP65 MPU NMI", 10, 0, "IC8", NULL, 0, 0, 25);
+	AssertKicadSchemLogicimConverts("HCP65 MPU NMI", 10, 0, "IC8", NULL, 2, 0, 25);
 	//Its AP7365 isn't drawn.
-	AssertKicadSchemLogicimConverts("Triple MPU Clock Generator", 8, 1, NULL, NULL, 0, 0, 53);
+	AssertKicadSchemLogicimConverts("Triple MPU Clock Generator", 8, 1, NULL, NULL, 2, 0, 53);
 	//Its AP7365 isn't drawn.
-	AssertKicadSchemLogicimConverts("Flags Enable Interrupt", 0, 0, NULL, NULL, 0, 4, 26);
+	AssertKicadSchemLogicimConverts("Flags Enable Interrupt", 0, 0, NULL, NULL, 2, 4, 26);
 	//Its LD1117S50C isn't drawn.
-	AssertKicadSchemLogicimConverts("UART Board", 0, 1, NULL, NULL, 0, 10, 90);
+	AssertKicadSchemLogicimConverts("UART Board", 0, 1, NULL, NULL, 3, 10, 90);
 
 	//A 74 series part drawn as units is units, and drawn whole is a package.
 	AssertKicadSchemLogicimElements("HCP65 MPU NMI", "Logic74Unit", 15);
@@ -664,8 +726,22 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimElements("Triple MPU Clock Generator", "Logic74Package", 3);
 	AssertKicadSchemLogicimElements("Triple MPU Clock Generator", "Logic74Unit", 14);
 
-	//Voltage regulators (an LD1117S33C, an LD1117S50C and an L7812) aren't drawn.
-	AssertKicadSchemLogicimElements("Power and Reset", "PositivePower", 0);
+	//Voltage regulators (an LD1117S33C, an LD1117S50C and an L7812) aren't drawn: its one positive supply is its 5V
+	//labels'.
+	AssertKicadSchemLogicimElements("Power and Reset", "PositivePower", 1);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "<PositivePower name=\"5V\"", 1);
+
+	//A supply for each net a label names as one, and an ordinary net for the names like them.
+	AssertKicadSchemLogicimConverts("Supply Label Test", 4, 0, "U1", gszKicadSchemSupplyLabelTestFile, 3);
+	AssertKicadSchemLogicimElements("Supply Label Test", "PositivePower", 2);
+	AssertKicadSchemLogicimAttributes("Supply Label Test", "<PositivePower name=\"5V\"", 1);
+	AssertKicadSchemLogicimAttributes("Supply Label Test", "<PositivePower name=\"VCCIO\"", 1);
+	AssertKicadSchemLogicimAttributes("Supply Label Test", "voltage=\"5\"", 2);
+	AssertKicadSchemLogicimElements("Supply Label Test", "Ground", 1);
+	AssertKicadSchemLogicimAttributes("Supply Label Test", "<Ground name=\"GND_{OUT1}\"", 1);
+	AssertKicadSchemLogicimElements("Supply Label Test", "Tunnel", 2);
+	AssertKicadSchemLogicimAttributes("Supply Label Test", "<Tunnel name=\"GNDb\"", 2);
+	AssertKicadSchemLogicimAttributes("Supply Label Test", "GND_{A} EN", 0);
 
 	//A regulator isn't drawn: the IC its output powers gets its voltage as its implied Vcc.  The ground on only the
 	//regulator's pin, and the VCC label's tunnel on a wire to nothing drawn, aren't made, so neither is the wire.

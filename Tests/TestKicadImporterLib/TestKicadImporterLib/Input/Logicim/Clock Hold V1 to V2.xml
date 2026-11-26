@@ -29,6 +29,9 @@
       <Pin name="L=C" x="134" y="91" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
       <Pin name="~{L=C}" x="134" y="96" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
       <Subcircuit name="B22" x="36" y="19" rotation="East" type="W65C816 Clock Hold" comment="W65C816 Clock Hold" left="-13" top="-15" right="17" bottom="15" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <PositivePower name="5V" x="27" y="85" rotation="East" voltage="5"/>
+      <Ground name="GND" x="68" y="61" rotation="West"/>
+      <PositivePower name="3.3V" x="27" y="38" rotation="East" voltage="3.29999995"/>
       <Tunnel name="CLP" x="117" y="96" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="CLP" x="80" y="24" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="21" y="63" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -97,9 +100,9 @@
       <Trace x0="16" y0="53" x1="21" y1="53"/>
       <Trace x0="16" y0="47" x1="16" y1="53"/>
       <Trace x0="23" y0="47" x1="16" y1="47"/>
-      <Trace x0="23" y0="37" x1="23" y1="47"/>
-      <Trace x0="57" y0="37" x1="23" y1="37"/>
-      <Trace x0="57" y0="22" x1="57" y1="37"/>
+      <Trace x0="23" y0="35" x1="23" y1="47"/>
+      <Trace x0="57" y0="35" x1="23" y1="35"/>
+      <Trace x0="57" y0="22" x1="57" y1="35"/>
       <Trace x0="54" y0="22" x1="57" y1="22"/>
       <Trace x0="117" y0="96" x1="120" y1="96"/>
       <Trace x0="117" y0="31" x1="120" y1="31"/>
@@ -131,28 +134,53 @@
       <Trace x0="80" y0="18" x1="54" y1="18"/>
       <Trace x0="80" y0="14" x1="54" y1="14"/>
       <Trace x0="80" y0="24" x1="54" y1="24"/>
-      <Trace x0="16" y0="74" x1="16" y1="55"/>
-      <Trace x0="33" y0="74" x1="16" y1="74"/>
-      <Trace x0="33" y0="76" x1="33" y1="74"/>
+      <Trace x0="16" y0="63" x1="21" y1="63"/>
+      <Trace x0="16" y0="74" x1="16" y1="63"/>
+      <Trace x0="24" y0="74" x1="16" y1="74"/>
+      <Trace x0="24" y0="83" x1="24" y1="74"/>
+      <Trace x0="29" y0="83" x1="24" y1="83"/>
+      <Trace x0="29" y0="85" x1="29" y1="83"/>
+      <Trace x0="28" y0="85" x1="29" y1="85"/>
+      <Trace x0="58" y0="51" x1="47" y1="51"/>
+      <Trace x0="58" y0="61" x1="58" y1="51"/>
+      <Trace x0="68" y0="61" x1="58" y1="61"/>
+      <Trace x0="15" y0="77" x1="15" y1="55"/>
+      <Trace x0="33" y0="77" x1="15" y1="77"/>
+      <Trace x0="33" y0="76" x1="33" y1="77"/>
       <Trace x0="32" y0="76" x1="33" y1="76"/>
-      <Trace x0="80" y0="61" x1="47" y1="61"/>
-      <Trace x0="15" y0="77" x1="15" y1="59"/>
-      <Trace x0="38" y0="77" x1="15" y1="77"/>
-      <Trace x0="38" y0="76" x1="38" y1="77"/>
-      <Trace x0="37" y0="76" x1="38" y1="76"/>
-      <Trace x0="19" y0="62" x1="19" y1="57"/>
-      <Trace x0="14" y0="62" x1="19" y1="62"/>
+      <Trace x0="18" y0="12" x1="22" y1="12"/>
+      <Trace x0="18" y0="17" x1="18" y1="12"/>
+      <Trace x0="21" y0="17" x1="18" y1="17"/>
+      <Trace x0="21" y0="40" x1="21" y1="17"/>
+      <Trace x0="29" y0="40" x1="21" y1="40"/>
+      <Trace x0="29" y0="38" x1="29" y1="40"/>
+      <Trace x0="28" y0="38" x1="29" y1="38"/>
+      <Trace x0="57" y0="61" x1="47" y1="61"/>
+      <Trace x0="57" y0="63" x1="57" y1="61"/>
+      <Trace x0="70" y0="63" x1="57" y1="63"/>
+      <Trace x0="70" y0="61" x1="70" y1="63"/>
+      <Trace x0="80" y0="61" x1="70" y1="61"/>
+      <Trace x0="16" y0="62" x1="16" y1="59"/>
+      <Trace x0="14" y0="62" x1="16" y1="62"/>
       <Trace x0="14" y0="78" x1="14" y1="62"/>
-      <Trace x0="33" y0="78" x1="14" y1="78"/>
-      <Trace x0="33" y0="80" x1="33" y1="78"/>
+      <Trace x0="38" y0="78" x1="14" y1="78"/>
+      <Trace x0="38" y0="76" x1="38" y1="78"/>
+      <Trace x0="37" y0="76" x1="38" y1="76"/>
+      <Trace x0="19" y0="54" x1="19" y1="57"/>
+      <Trace x0="8" y0="54" x1="19" y1="54"/>
+      <Trace x0="8" y0="79" x1="8" y1="54"/>
+      <Trace x0="33" y0="79" x1="8" y1="79"/>
+      <Trace x0="33" y0="80" x1="33" y1="79"/>
       <Trace x0="32" y0="80" x1="33" y1="80"/>
-      <Trace x0="80" y0="35" x1="56" y1="35"/>
+      <Trace x0="67" y0="36" x1="56" y1="36"/>
+      <Trace x0="67" y0="35" x1="67" y1="36"/>
+      <Trace x0="80" y0="35" x1="67" y1="35"/>
       <Trace x0="64" y0="59" x1="47" y1="59"/>
       <Trace x0="64" y0="71" x1="64" y1="59"/>
       <Trace x0="80" y0="71" x1="64" y1="71"/>
-      <Trace x0="54" y0="39" x1="54" y1="59"/>
-      <Trace x0="17" y0="39" x1="54" y1="39"/>
-      <Trace x0="17" y0="10" x1="17" y1="39"/>
+      <Trace x0="54" y0="41" x1="54" y1="59"/>
+      <Trace x0="17" y0="41" x1="54" y1="41"/>
+      <Trace x0="17" y0="10" x1="17" y1="41"/>
       <Trace x0="22" y0="10" x1="17" y1="10"/>
     </Circuit>
     <Circuit type="Hold Count">

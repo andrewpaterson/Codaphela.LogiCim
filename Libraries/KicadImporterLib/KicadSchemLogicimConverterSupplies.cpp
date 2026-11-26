@@ -52,8 +52,6 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	size					i;
 	CKicadSchemLibPin*		pcPin;
 	const char*				szName;
-	CGroundView*			pcGround;
-	CPositivePowerView*		pcPositive;
 	CComponentView*			pcView;
 	SFloat64Vec2			sPosition;
 	size					uiItem;
@@ -74,24 +72,139 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 		return true;
 	}
 
-	if (IsKicadSchemGroundName(szName))
-	{
-		pcGround = NewMalloc<CGroundView>();
-		pcGround->Init(0, 0, GetKicadSchemRotation(ROT_North, pcSymbol->GetAngle()), szName);
-		pcView = pcGround;
-	}
-	else
-	{
-		pcPositive = NewMalloc<CPositivePowerView>();
-		pcPositive->Init(0, 0, GetKicadSchemRotation(ROT_South, pcSymbol->GetAngle()), szName, GetKicadSchemSupplyVoltage(szName));
-		pcView = pcPositive;
-	}
-
+	pcView = NewSupply(szName, IsKicadSchemGroundName(szName) ? 0.0f : GetKicadSchemSupplyVoltage(szName), pcSymbol->GetAngle(), ROT_North, ROT_South);
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
 	uiItem = mcModel.AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0), pcSymbol);
 	AddPinTerminal(pcSymbol, pcPin, pcView->GetPortView((size)0), uiItem);
 	msCounts.uiPowers++;
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A supply for each net a label names as one ("GND", "3.3V"; see
+// IsKicadSchemSupplyLabel) and no power symbol supplies, as a power
+// symbol is: the HCP65's schematics name their supplies with labels.
+// It's one for the net, beside the first of its labels on a part of it
+// that's drawn, where the label's text is, and wired to that part; the
+// labels' tunnels join the rest.  A supply in place of each label's
+// tunnel, as a power symbol on each pin is, left too little room between
+// the pins tied to it to route the pins beside them (2026-11-26).
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddSupplyLabels(void)
+{
+	size				i;
+	CKicadSchemNet*		pcNet;
+	CKicadSchemSubnet*	pcSubnet;
+	CKicadSchemLabel*	pcLabel;
+	CComponentView*		pcView;
+	SFloat64Vec2		sPosition;
+	float64				fAngle;
+	size				uiItem;
+
+	for (i = 0; i < mpcNetlist->NumNets(); i++)
+	{
+		pcNet = mpcNetlist->GetNet(i);
+		pcLabel = HasSupply(pcNet) ? NULL : FindSupplyLabel(pcNet, &pcSubnet);
+		if (pcLabel == NULL)
+		{
+			continue;
+		}
+
+		//Off the label's wire, so it isn't attached to the pin the label (and its tunnel) may be on.
+		fAngle = pcLabel->GetAngle() * M_PI / 180.0;
+		sPosition = *pcLabel->GetPosition() + SFloat64Vec2(cos(fAngle), -sin(fAngle)) * (KICAD_SCHEM_LOGICIM_GRID * 2);
+		pcView = NewSupply(pcLabel->GetText(), GetKicadSchemSupplyLabelVoltage(pcLabel->GetText()), pcLabel->GetAngle(), ROT_West, ROT_West);
+		uiItem = mcModel.AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0), NULL);
+		mcModel.AddTerminal(pcSubnet, &sPosition, pcView->GetPortView((size)0), uiItem);
+		msCounts.uiPowers++;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a power symbol already supplies the net.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::HasSupply(CKicadSchemNet* pcNet)
+{
+	size	j;
+	size	k;
+
+	for (j = 0; j < pcNet->NumSubnets(); j++)
+	{
+		for (k = mcModel.FirstSubnetTerminal(pcNet->GetSubnet(j)); k != ARRAY_ELEMENT_NOT_FOUND; k = mcModel.NextSubnetTerminal(k))
+		{
+			if (mcModel.GetItem(mcModel.GetTerminal(k)->uiItem)->eKind == KSLIK_Supply)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The net's first label named as a supply that isn't negative on a part
+// of it that's drawn, and that part (*ppcSubnet).  NULL if it has none:
+// nothing drawn needs its supply.
+//
+//////////////////////////////////////////////////////////////////////////
+CKicadSchemLabel* CKicadSchemLogicimConverter::FindSupplyLabel(CKicadSchemNet* pcNet, CKicadSchemSubnet** ppcSubnet)
+{
+	size				j;
+	size				k;
+	CKicadSchemSubnet*	pcSubnet;
+	CKicadSchemLabel*	pcLabel;
+
+	for (j = 0; j < pcNet->NumSubnets(); j++)
+	{
+		pcSubnet = pcNet->GetSubnet(j);
+		if (!IsSubnetDrawn(pcSubnet))
+		{
+			continue;
+		}
+		for (k = 0; k < pcSubnet->NumLabels(); k++)
+		{
+			pcLabel = pcSubnet->GetLabel(k);
+			//LogiCim's supplies are grounds and positive supplies, so a negative one (the Audio DAC's -5V, for its op
+			//amps) stays an ordinary net.
+			if (!mpcNetlist->IsBusLabel(pcLabel) && IsKicadSchemSupplyLabel(pcLabel->GetText()) && (GetKicadSchemSupplyLabelVoltage(pcLabel->GetText()) >= 0.0f))
+			{
+				*ppcSubnet = pcSubnet;
+				return pcLabel;
+			}
+		}
+	}
+	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A ground for 0V, else a positive supply, turned by fAngle from the way
+// each faces upright (where the symbol or label has its body).
+//
+//////////////////////////////////////////////////////////////////////////
+CComponentView* CKicadSchemLogicimConverter::NewSupply(const char* szName, float32 fVoltage, float64 fAngle, ERotation eGroundUpright, ERotation ePositiveUpright)
+{
+	CGroundView*			pcGround;
+	CPositivePowerView*		pcPositive;
+
+	if (fVoltage == 0.0f)
+	{
+		pcGround = NewMalloc<CGroundView>();
+		pcGround->Init(0, 0, GetKicadSchemRotation(eGroundUpright, fAngle), szName);
+		return pcGround;
+	}
+	pcPositive = NewMalloc<CPositivePowerView>();
+	pcPositive->Init(0, 0, GetKicadSchemRotation(ePositiveUpright, fAngle), szName, fVoltage);
+	return pcPositive;
 }
 
 

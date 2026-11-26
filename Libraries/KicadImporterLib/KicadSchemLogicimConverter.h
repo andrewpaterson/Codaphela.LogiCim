@@ -101,9 +101,10 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //and "Y" on a single gate part, which is a unit) or, if they have no names, by their types; any other part's pins by
 //the labels of its package's pins (see AddLogic74Block).  A 74 series gate or flip flop that isn't a part there's a row
 //for becomes a generic gate (or D flip flop) for each of its gates.  Power pins are left out: the parts have implied
-//power.  A power symbol becomes a ground or a positive supply of its voltage ("+3V3" is 3.3V).  A voltage regulator
-//isn't drawn: the ICs whose power pins its output reaches are given its voltage as their implied Vcc (see AddRegulator
-//and ApplyRegulatedVoltages).  A connector (a board's edge connector) becomes the circuit's pins, one for
+//power.  A power symbol becomes a ground or a positive supply of its voltage ("+3V3" is 3.3V), and a net a label names
+//as a supply ("GND", "3.3V", "-5V", "VCC"; see IsKicadSchemSupplyLabel) gets one beside the label (see
+//AddSupplyLabels).  A voltage regulator isn't drawn: the ICs whose power pins its output reaches are given its voltage
+//as their implied Vcc (see AddRegulator and ApplyRegulatedVoltages).  A connector (a board's edge connector) becomes the circuit's pins, one for
 //each net on it that isn't a supply's (see AddBoardPins).  Resistors and resistor networks, capacitors and capacitor
 //networks, inductors, diodes, LEDs, mounting holes, net ties, test points and power flags are left out.  Any other
 //symbol becomes an instance of a placeholder subcircuit made for its library symbol and unit: an empty circuit with a
@@ -175,6 +176,10 @@ public:
 protected:
 	bool							AddSymbol(CKicadSchemSymbol* pcSymbol);
 	bool							AddPower(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
+	void							AddSupplyLabels(void);
+	bool							HasSupply(CKicadSchemNet* pcNet);
+	CKicadSchemLabel*				FindSupplyLabel(CKicadSchemNet* pcNet, CKicadSchemSubnet** ppcSubnet);
+	CComponentView*					NewSupply(const char* szName, float32 fVoltage, float64 fAngle, ERotation eGroundUpright, ERotation ePositiveUpright);
 	bool							AddBoardPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	CKicadSchemBoardConnector*		AddBoardConnector(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							AddBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector);

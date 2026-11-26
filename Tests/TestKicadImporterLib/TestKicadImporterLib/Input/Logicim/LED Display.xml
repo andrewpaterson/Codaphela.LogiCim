@@ -5,6 +5,7 @@
       <Subcircuit name="IC6" x="50" y="102" rotation="East" type="ATF16V8BQL-15XU" comment="ATF16V8BQL-15XU" left="-11" top="-11" right="9" bottom="11" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="DS2" x="139" y="101" rotation="East" type="KCDC03-123" comment="KCDC03-123" left="-12" top="-11" right="13" bottom="11" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="IC14" x="50" y="46" rotation="East" type="ATF16V8BQL-15XU" comment="ATF16V8BQL-15XU" left="-11" top="-11" right="9" bottom="11" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Ground name="GND" x="46" y="117" rotation="East"/>
       <Tunnel name="GND" x="38" y="103" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="38" y="105" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="38" y="107" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -49,6 +50,11 @@
       <Tunnel name="Left Digit 0 E segment" x="60" y="45" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.625" bottom="0.65000000000000002"/>
       <Tunnel name="Left Digit 0 F segment" x="60" y="47" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.625" bottom="0.65000000000000002"/>
       <Tunnel name="Left Digit 0 G segment" x="60" y="49" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="12.825000000000001" bottom="0.65000000000000002"/>
+      <Trace x0="29" y0="103" x1="38" y1="103"/>
+      <Trace x0="29" y0="115" x1="29" y1="103"/>
+      <Trace x0="47" y0="115" x1="29" y1="115"/>
+      <Trace x0="47" y0="117" x1="47" y1="115"/>
+      <Trace x0="46" y0="117" x1="47" y1="117"/>
     </Circuit>
     <Circuit type="ATF16V8BQL-15XU">
       <Pin name="IN1" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>

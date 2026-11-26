@@ -14,6 +14,8 @@
       <Pin name="IC1" x="63" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="7" inverting="false" clockNotch="false"/>
       <Pin name="IC0" x="57" y="33" rotation="South" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="bottom" anchour="negative" weight="8" inverting="false" clockNotch="false"/>
       <Subcircuit name="S3" x="35" y="37" rotation="East" type="NDS-04-V" comment="NDS-04-V" left="-8" top="-5" right="7" bottom="5" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <PositivePower name="5V" x="30" y="50" rotation="East" voltage="5"/>
+      <PositivePower name="12V" x="102" y="107" rotation="East" voltage="12"/>
       <Tunnel name="5V" x="26" y="56" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="26" y="58" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="26" y="60" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -31,6 +33,16 @@
       <Tunnel name="IC0" x="55" y="80" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
       <Tunnel name="IC4" x="65" y="75" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="2.625" bottom="0.65000000000000002"/>
       <Trace x0="67" y0="107" x1="64" y1="107"/>
+      <Trace x0="25" y0="56" x1="26" y1="56"/>
+      <Trace x0="25" y0="52" x1="25" y1="56"/>
+      <Trace x0="32" y0="52" x1="25" y1="52"/>
+      <Trace x0="32" y0="50" x1="32" y1="52"/>
+      <Trace x0="31" y0="50" x1="32" y1="50"/>
+      <Trace x0="92" y0="107" x1="83" y1="107"/>
+      <Trace x0="92" y0="105" x1="92" y1="107"/>
+      <Trace x0="104" y0="105" x1="92" y1="105"/>
+      <Trace x0="104" y0="107" x1="104" y1="105"/>
+      <Trace x0="103" y0="107" x1="104" y1="107"/>
       <Trace x0="44" y0="62" x1="43" y1="62"/>
       <Trace x0="44" y0="64" x1="44" y1="62"/>
       <Trace x0="55" y0="64" x1="44" y1="64"/>
