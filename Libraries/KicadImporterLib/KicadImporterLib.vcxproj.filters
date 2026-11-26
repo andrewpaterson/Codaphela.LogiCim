@@ -118,6 +118,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="PullsPlan.txt">
+      <Filter>Plans</Filter>
+    </None>
     <None Include="ResistorsPlan.txt">
       <Filter>Plans</Filter>
     </None>

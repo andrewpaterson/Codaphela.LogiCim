@@ -2,7 +2,7 @@ Resistors and RC filters in KiCad imports
 ==========================================
 
 Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Nothing is built.  Pull-ups and pull-downs (a resistor
-with one end on a supply) are a separate plan, still to write: they need a weak drive in MicroprocessorLib.
+with one end on a supply) are a separate plan, PullsPlan.txt: a weak drive in MicroprocessorLib.
 
 
 Why
@@ -137,5 +137,5 @@ Order
 -----
 
 Part 1 first: it is small, needs no new simulation, and every import's buses and chip selects then reach where they
-go.  Part 2 after, its MicroprocessorLib steps before the views and the importer.  Pull-ups and pull-downs are the
-next plan.
+go.  Part 2 after, its MicroprocessorLib steps before the views and the importer.  Pull-ups and pull-downs are
+PullsPlan.txt, after it.
