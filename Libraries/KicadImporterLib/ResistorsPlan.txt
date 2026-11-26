@@ -94,7 +94,7 @@ Part 2: slow RCs become delay elements (MicroprocessorLib, LogicimLib, KicadImpo
     state, as every other component is.
 12. KicadImporterLib: a slow RC (part 1, step 3) becomes an RC element between the two nets, the capacitor's
     supply its ground; a diode across the resistor (anode on one net, cathode on the other) sets which way is fast.
-    A comparator symbol (IN+, IN-, OUT; the MAX9010) becomes a comparator.
+    A part on the comparators' list (question 5: the MAX9010) becomes a comparator.
 13. Tests.  MicroprocessorLib: crossing times worked out by hand for a rise and a fall; a pulse shorter than the
     crossing time changing nothing; the diode's fast direction; the comparator against a fixed voltage.  LogiCim:
     the Clock Doubler imported and run with a clock on Fast CLK gives a pulse on 2x Fast CLK at every edge, as wide
@@ -119,6 +119,9 @@ Questions for the user (put one at a time, recommendation first)
   4. How an RC element and a comparator look in LogiCim: recommended as above (step 11).
      Decided 2026-11-26 (the user): as recommended, drawn as their schematic symbols, the time constant labelled.
   5. Whether a MAX9010-like part is "a comparator" by its symbol's pin names (IN+, IN-, OUT) or by a list of parts.
+     Decided 2026-11-26 (the user): a list of part numbers, beside KicadSchemLogicFunction.cpp's table of 74 series
+     parts, each with its datasheet's delay; the MAX9010 first.  The Audio DAC's AS358 op-amp (IN_1+, IN_1-,
+     OUT_1) is not a comparator and isn't listed.
   6. Where no capacitor is drawn, the capacitance a termination drives: recommended estimated, each input on the net
      at its family's input capacitance (a column added to PropagationTimes.csv from the datasheets: about 4pF for
      74LVC) plus a fixed few pF for the wiring (one figure to agree), so the 220 ohm terminations become RC elements
