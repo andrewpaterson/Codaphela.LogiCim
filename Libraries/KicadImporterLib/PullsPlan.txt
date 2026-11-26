@@ -103,6 +103,7 @@ Questions for the user (put one at a time, recommendation first)
 
   1. How a pull looks in LogiCim: recommended as step 5 (a resistor to a supply or ground symbol, the weakly held
      trace a lighter colour).
+     Decided 2026-11-26 (the user: "pull is drawn as a resistor to a supply or ground symbol"): as recommended.
 
 
 Order
