@@ -31,6 +31,7 @@ bool	IsKicadSchemGroundName(const char* szName);
 float32	GetKicadSchemSupplyVoltage(const char* szName);
 bool	HasKicadSchemVoltage(const char* szText);
 bool	IsKicadSchemPowerPinName(const char* szName);
+bool	IsKicadSchemNoConnectName(const char* szName);
 bool	IsKicadSchemPowerNetName(const char* szName);
 bool	IsKicadSchemRegulatorPinName(const char* szName, const char* szEnd);
 bool	IsKicadSchemPowerFlag(const char* szPowerName, CKicadSchemLibSymbol* pcLibSymbol);

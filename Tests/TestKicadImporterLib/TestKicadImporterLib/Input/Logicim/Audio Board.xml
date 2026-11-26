@@ -2205,7 +2205,7 @@
     <Circuit type="Audio Clock">
       <Logic74Package name="IC2" x="114" y="42" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="161" pinSpacing="2"/>
       <Logic74Package name="IC1" x="150" y="56" rotation="East" family="LVC" explicitPowerPorts="false" vccRail="5V" gndRail="GND" partType="3253" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="187" y="35" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G17" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="187" y="35" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="1G17" unit="A" pinSpacing="2"/>
       <Logic74Unit name="IC9" x="184" y="78" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="1G08" unit="A" pinSpacing="2"/>
       <Logic74Package name="IC8" x="82" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="2G04" pinSpacing="2"/>
       <Subcircuit name="Y1" x="72" y="35" rotation="East" type="ASVK-32.768KHZ-LJT" comment="ASVK-32.768KHZ-LJT" left="-11" top="-3" right="11" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>

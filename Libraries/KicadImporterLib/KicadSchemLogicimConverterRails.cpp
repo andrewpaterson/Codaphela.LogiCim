@@ -31,7 +31,8 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 //////////////////////////////////////////////////////////////////////////
 //
 // The nets of the symbol's power pins (its power inputs, or pins named
-// as power), the ground ones (bGround) or the others, added to papcNets.
+// as power but not "NC"), the ground ones (bGround) or the others, added
+// to papcNets.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::GetPowerPinNets(CKicadSchemSymbol* pcSymbol, bool bGround, CArrayTemplatePtr<CKicadSchemNet>* papcNets)
@@ -53,7 +54,7 @@ void CKicadSchemLogicimConverter::GetPowerPinNets(CKicadSchemSymbol* pcSymbol, b
 		{
 			continue;
 		}
-		if ((pcPin->GetType() != KSPT_PowerIn) && !IsKicadSchemPowerPinName(pcPin->GetName()))
+		if (((pcPin->GetType() != KSPT_PowerIn) && !IsKicadSchemPowerPinName(pcPin->GetName())) || IsKicadSchemNoConnectName(pcPin->GetName()))
 		{
 			continue;
 		}

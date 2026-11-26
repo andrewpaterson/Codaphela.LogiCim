@@ -137,6 +137,19 @@ bool IsKicadSchemPowerPinName(const char* szName)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Whether the pin's name says it's connected to nothing ("NC", "N.C."),
+// which IsKicadSchemPowerPinName counts with the power pins, as neither
+// is drawn.
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemNoConnectName(const char* szName)
+{
+	return (StringInsensitiveCompare(szName, "NC") == 0) || (StringInsensitiveCompare(szName, "N.C.") == 0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Whether the net is a supply's: a ground ("GND"), a supply pin's name
 // ("VCC") or a voltage ("+3V3", "3.3V", "5V").
 //

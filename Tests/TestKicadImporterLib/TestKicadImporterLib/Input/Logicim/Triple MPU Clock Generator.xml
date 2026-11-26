@@ -16,7 +16,7 @@
       <Logic74Unit name="IC5" x="141" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
       <Logic74Unit name="IC6" x="163" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
       <Logic74Unit name="IC3" x="141" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC8" x="202" y="135" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G17" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC8" x="202" y="135" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="1G17" unit="A" pinSpacing="2"/>
       <Logic74Unit name="IC10" x="185" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
       <Pin name="J5-1" x="95" y="147" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
       <Pin name="J5-3" x="95" y="157" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>

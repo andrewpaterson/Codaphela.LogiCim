@@ -20,8 +20,8 @@
       <Pin name="J2-19" x="29" y="188" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
       <Pin name="J2-20" x="29" y="193" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
       <ResetSupervisor name="IC3" x="24" y="63" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="5" vccRail="5V" gndRail="GND" tripVoltage="4.3499999" resetTime="150000000"/>
-      <Logic74Unit name="IC4" x="75" y="63" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="5" partType="1G17" unit="A" pinSpacing="2"/>
-      <Logic74Unit name="IC7" x="109" y="63" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G17" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC4" x="75" y="63" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="5" vccRail="5V" gndRail="GND" partType="1G17" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="109" y="63" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="1G17" unit="A" pinSpacing="2"/>
       <Pin name="J3-1" x="60" y="190" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
       <Pin name="J3-2" x="60" y="185" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
       <Pin name="J3-4" x="60" y="175" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
