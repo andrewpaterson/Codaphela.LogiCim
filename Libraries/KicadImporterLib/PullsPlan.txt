@@ -120,3 +120,9 @@ starts.
 
 After ResistorsPlan.txt's part 2.  MicroprocessorLib first (steps 1 to 4 with their tests), then LogicimLib, then the
 importer.
+
+Built 2026-11-27: step 2's capacitance (CTrace::SetCapacitance, 3pF by default) and step 3's curve: let go, or its
+pulls' level moving, a weakly held trace curves to its pulls' level, R x C (CTrace::NotifyVoltageChanged), its logic
+ports told as of a slew; a strong driver taking it slews from where the curve is and ends it.  Step 8's
+MicroprocessorLib tests (TestPull.cpp: a 10k pull on 10pF crossing VIH 86.9ns after release; the DS1813's released
+reset rising over 5.5k x 3pF).  Not done: a curve in progress isn't saved with a simulation's state.
