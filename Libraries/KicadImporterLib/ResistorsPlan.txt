@@ -17,11 +17,15 @@ every import do the right thing for the two kinds of series resistor the HCP65's
 What the boards have (KiCad 10's netlists of the 135 schematics in HCP65/Kicad/Computer, 2026-11-26): about 458
 resistor elements with neither end on a supply, on 30 boards, 248 pulls, 6 between supplies.
 
-  1. Fast: the 20 and 22 ohm networks (CAY16-200/220J4LF) on buses, chip selects and clocks, with 1 to 10pF beside
-     some of them, R x C at most about 0.22ns, a 10-90% rise of at most about 0.5ns.  Faster than the parts around
-     them (74LVC at 3.3V: 1 to 5ns; 74HCT: 12 to 22ns) and than the drivers' own edges.  What they really remove is
-     ringing on a fast edge (series termination), which no logic simulation models.  As a logic wire they are exact.
-     Also here: LED current limiters (the LEDs aren't simulated), the PS/2 lines' 150 ohm resistors, and the Audio
+  1. Terminations: 196 elements of 220 ohm (CAY16-221J4LF) and 136 of 20 ohm (CAY16-200J4LF), with a few of 10,
+     47 and 100, on buses, chip selects and clocks.  A capacitor is drawn beside only a few 20 and 47 ohm ones (5 to
+     10pF: R x C 0.1 to 0.24ns).  The rest drive only what is on their net: a 74LVC input is about 4 to 5pF, a
+     trace about 1pF for every 1 to 2cm, a connector a few pF.  So a 20 ohm termination is 0.1 to 0.6ns (a wire to
+     any logic simulation), but a 220 ohm one is about 1.1ns into one input (a 10-90% rise of 2.4ns) and 4 to 7ns
+     into a loaded bus line across a backplane (a rise of 10 to 15ns): as slow as a gate (74LVC at 3.3V: 1 to 5ns;
+     74HCT: 12 to 22ns), so a real RC filter, which also swallows glitches of about a nanosecond.  What a
+     termination removes besides is ringing on a fast edge, which no logic simulation models.  Also with no supply
+     at either end: LED current limiters (the LEDs aren't simulated), the PS/2 lines' 150 ohm resistors, the Audio
      DAC's op-amp resistors (the op-amp is a placeholder).
   2. Slow: RCs that are the circuit's function, R x C of nanoseconds to milliseconds.
        Clock Doubler: Fast CLK -> 74LVC1G17 (Schmitt buffer) -> Clean Fast CLK -> R1 750 ohm -> C1 16pF (12ns) ->
@@ -48,8 +52,10 @@ Part 1: fast series resistors become wires (KicadImporterLib)
    CKicadSchemLogicimDecode::JoinSeriesResistors pairs them (move that pairing into a shared function).  A bussed
    network (one common pin) has no element whose ends are two signals: its common pin is never joined.
 3. The rule, in CKicadSchemLogicimConverter: an element whose two nets aren't supplies (IsKicadSchemPowerNetName, or
-   a supply label) joins them into one net, unless it makes a slow RC: a capacitor from either of its nets to a
-   supply with R x C of 1ns or more (part 2).  A joined net is drawn as one net: its labels' tunnels share a name
+   a supply label) joins them into one net, unless it makes a slow RC: R x C of 1ns or more, C being the capacitors
+   from either of its nets to a supply or, where none is drawn, an estimate of what it drives (each input on the
+   driven net at its family's input capacitance, from the datasheets, plus a few pF for the wiring; see question
+   6), and those are part 2's.  A joined net is drawn as one net: its labels' tunnels share a name
    (the decode's way); the resistor stays out of the drawing, as now.
 4. Warnings, in the import's report: a series resistor whose value can't be read is joined; a slow RC is left apart
    until part 2 is built, so the circuit is the same as today there.
@@ -106,6 +112,11 @@ Questions for the user (put one at a time, recommendation first)
      views and the importer.
   4. How an RC element and a comparator look in LogiCim: recommended as above (step 11).
   5. Whether a MAX9010-like part is "a comparator" by its symbol's pin names (IN+, IN-, OUT) or by a list of parts.
+  6. Where no capacitor is drawn, the capacitance a termination drives: recommended estimated, each input on the net
+     at its family's input capacitance (a column added to PropagationTimes.csv from the datasheets: about 4pF for
+     74LVC) plus a fixed few pF for the wiring (one figure to agree), so the 220 ohm terminations become RC elements
+     (about 1ns and up) and the 20 ohm ones stay wires.  The alternative, joining every termination with no drawn
+     capacitor as a wire, gets the logic right but each 220 ohm one's timing a few ns early.
 
 
 Order
