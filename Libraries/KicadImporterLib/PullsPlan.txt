@@ -113,5 +113,10 @@ Changed 2026-11-26 (the user, building PowerPlan.txt: "Build the weak drive now"
 built before ResistorsPlan's part 2, for PowerPlan's DS1813; a released line goes to its pull level at once until
 ResistorsPlan's RC curve exists.  Steps 5 to 8's LogicimLib and importer parts stay for later.
 
+Built 2026-11-26: steps 1, 2 (without the trace's capacitance), 3 (the release at once) and 4, with step 8's
+MicroprocessorLib tests (TestPull.cpp): CPort::GetDrive, CPullPort, CPull, CLogicPort::SetPullUp,
+CTrace::HasStrongDriver and NotifyVoltageChanged.  Inputs held only by supplies and pulls are read as their chip
+starts.
+
 After ResistorsPlan.txt's part 2.  MicroprocessorLib first (steps 1 to 4 with their tests), then LogicimLib, then the
 importer.
