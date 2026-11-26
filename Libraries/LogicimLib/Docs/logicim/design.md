@@ -22,6 +22,7 @@ are MicroprocessorLib's ([Logic Simulation](../libraries/microprocessorlib/logic
 | [`CW65C816View`], [`C65C64View`] | the processors, with their registers and flags shown live |
 | [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies (on at start or not, a rise time, and a regulator's In port and dropout), and a subcircuit's pins |
 | [`CResetSupervisorView`] | a power-on reset supervisor, a DS1813: its RST, its trip voltage and reset time |
+| [`CPullView`] | a pull-up or pull-down: a resistor to a supply bar or a ground symbol, on a rail or with a supply of its own, its net's capacitance carried for its release curve; a trace only pulls hold is drawn fainter |
 | [`CRCFilterView`], [`CAnalogComparatorView`] | an RC element (a resistor into a capacitor to ground, a diode across the resistor if it has one, its time constant shown; no power) and an analog comparator, a MAX9010 |
 | [`CSplitterView`], [`CTunnelView`], [`CLabelView`] | wiring that makes no component, and text |
 | [`CSubcircuitInstanceView`] | an instance of another circuit of the project |
@@ -186,10 +187,14 @@ capacitors drawn from that net to a supply, or else an estimate, each input on t
 capacitance (PropagationTimes.csv's CI) plus 3pF of wiring and 10pF a connector pin; that becomes an RC element from
 the driven side to the other, where the resistor is ([`CKicadSchemLogicimConverter::AddRCFilters`]).  Resistors in
 parallel between the same nets are one RC, and a diode across it (anode to cathode, [`GetKicadSchemDiodeElements`])
-charges its capacitor quickly that way, through 25 ohms.  A value that can't be read joins, warned.
+charges its capacitor quickly that way, through 25 ohms.  A value that can't be read joins, warned.  A resistor from a
+supply to a net logic is on (a part, a board drawn on the sheet, a connector pin; not a placeholder) is a pull, on the
+supply's rail if it is one, carrying its net's capacitance, all of what series resistors joined it to
+([`CKicadSchemLogicimConverter::AddPulls`]); to a net only an LED or a placeholder is on it's left out, and an
+unreadable value is 10k, warned.  A bussed network (a 4609X, a 4816P-1) is an element from each pin to its common pin,
+which joins no signals; a network numbered only (a CA0612 capacitor array) pairs its pins across the package.
 [`GetKicadSchemResistance`] and [`GetKicadSchemCapacitance`] read every value HCP65/Kicad writes, resistor networks'
-part codes too; [`GetKicadSchemPassiveElements`] pairs a network's pins by name, so a bussed network's common pin
-joins nothing.  A chip whose VCC and GND nets have
+part codes too; [`GetKicadSchemPassiveElements`] pairs an isolated network's pins by name.  A chip whose VCC and GND nets have
 supplies is on those nets as power rails, its power pins hidden ([`CKicadSchemLogicimConverter::ApplyPowerRails`]); a
 voltage regulator becomes a supply on its output's rail, fed from its input's with its part's dropout and start-up
 ([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); a DS1813 a reset supervisor; a MAX9010 an analog comparator
@@ -226,12 +231,12 @@ board hasn't on one line (`LogiCim --decode`, [The LogiCim Application](app.md#k
 | Test | Covers |
 |---|---|
 | [`TestLogicimLib/TestGateViews.cpp`], [`TestLogicimLib/TestTextViews.cpp`], [`TestLogicimLib/TestLogic74Views.cpp`] | views drawn, compared with reference images in Input |
-| [`TestLogicimLib/TestCircuitFile.cpp`], [`TestLogicimLib/TestSimulationState.cpp`] | every view type round trip; a ring oscillator and a W65C816 saved mid-run run on identically once loaded; both processors' cores round trip |
+| [`TestLogicimLib/TestCircuitFile.cpp`], [`TestLogicimLib/TestSimulationState.cpp`] | every view type round trip; a ring oscillator, one through an RC element, and a W65C816 saved mid-run run on identically once loaded; both processors' cores round trip; pulls on their own supply and on a rail |
 | [`TestLogicimLib/TestWiring.cpp`], [`TestLogicimLib/TestViewPaths.cpp`], [`TestLogicimLib/TestSubcircuits.cpp`] | nets, tunnels, splitters, paths and instances |
 | [`TestLogicimLib/TestComponentSprites.cpp`], [`TestLogicimLib/TestCircuitGrid.cpp`] | the sprite cache and grid tiles draw as painting does |
 | [`TestLogicimLib/TestTraceAutoConnector.cpp`], [`TestLogicimLib/TestCircuitEditor.cpp`] | routing, and editing with undo |
 | [`TestKicadImporterLib/TestKicadSchemLogicim.cpp`] | each converted schematic compared with its expected circuit in Input/Logicim; supply labels; boards on threads and cancelled |
-| [`TestKicadImporterLib/TestKicadSchemPassives.cpp`] | every value form in HCP65/Kicad read; a test sheet's resistors, networks and RCs joined or made RC elements; the Clock Doubler's pulse at each edge, the PS2 Timing's packet pulse held through a burst and let go along R3 x C3 |
+| [`TestKicadImporterLib/TestKicadSchemPassives.cpp`] | every value form in HCP65/Kicad read; a test sheet's resistors, networks and RCs joined or made RC elements; the Clock Doubler's pulse at each edge, the PS2 Timing's packet pulse held through a burst and let go along R3 x C3; the Address Buffer 16bit's pulls, a line let go curving up over 10k x 13pF |
 | [`TestKicadImporterLib/TestKicadSchemPower.cpp`] | Power and Reset and the Processor Reset Device imported and powered up: rails, regulators, the DS1813, the reset through R1 |
 | [`TestKicadImporterLib/TestKicadSchemDecode.cpp`] | the decode of a small board (a series resistor, a pull up, a GND label) and of the HCP65 MPU Address Decode board |
 

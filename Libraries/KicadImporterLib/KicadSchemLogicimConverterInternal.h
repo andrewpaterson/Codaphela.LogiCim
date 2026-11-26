@@ -44,7 +44,8 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 
 //The helpers the files of KicadSchemLogicimConverter share.
-ERotation GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo);
+ERotation	GetKicadSchemFacing(SFloat64Vec2* psFrom, SFloat64Vec2* psTo);
+const char*	GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 
 
 #endif // __KICAD_SCHEM_LOGICIM_CONVERTER_INTERNAL_H__

@@ -26,6 +26,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/CircuitViews.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "LogicimLib/RCFilterView.h"
+#include "LogicimLib/PullView.h"
 #include "KicadLib/KicadSchemNetlist.h"
 #include "KicadSchemLogicFunction.h"
 #include "KicadSchemLogicPins.h"
@@ -142,15 +143,15 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //voltage regulator becomes a supply fed by its input's rail, on its output's (see AddRegulatorSupplies; its output's
 //voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A series resistor (neither end on a supply)
 //joins its two nets into one, unless it's an RC filter, which becomes an RC element from its driven net to the other
-//(see JoinSeriesResistors, AddRCFilters).  A DS1813 becomes a reset supervisor (see AddSupervisor), a comparator on
-//IsKicadSchemComparatorPart's list an analog comparator (see AddAnalogComparator).  Every supply made rises over
-//KICAD_SCHEM_LOGICIM_RISE_TIME as the simulation starts.  A connector (a board's edge connector) becomes the circuit's
-//pins, one for each net on it that isn't a supply's (see AddBoardPins).  Resistors and resistor networks, capacitors
-//and capacitor networks, inductors, diodes, LEDs, mounting holes, net ties, test points and power flags aren't drawn
-//themselves.  Any other
-//symbol becomes an instance of a placeholder subcircuit made for its library symbol and unit: an empty circuit with a
-//pin for each of its shown pins, on the side KiCad draws it, so it can be wired and its logic filled in later.
-//Hierarchical sheets are left out.
+//(see JoinSeriesResistors, AddRCFilters); one from a supply to a net something reads is a pull (see AddPulls).  A
+//DS1813 becomes a reset supervisor (see AddSupervisor), a comparator on IsKicadSchemComparatorPart's list an analog
+//comparator (see AddAnalogComparator).  Every supply made rises over KICAD_SCHEM_LOGICIM_RISE_TIME as the simulation
+//starts.  A connector (a board's edge connector) becomes the circuit's pins, one for each net on it that isn't a
+//supply's (see AddBoardPins).  Resistors and resistor networks, capacitors and capacitor networks, inductors, diodes,
+//LEDs, mounting holes, net ties, test points and power flags aren't drawn themselves.  Any other symbol becomes an
+//instance of a placeholder subcircuit made for its library symbol and unit: an empty circuit with a pin for each of its
+//shown pins, on the side KiCad draws it, so it can be wired and its logic filled in later.  Hierarchical sheets are
+//left out.
 //
 //A subnet that is part of a bigger net (it's joined to the rest by labels) gets a tunnel named as the net at each of
 //its labels, so each subnet is wired on its own, as KiCad drew it.  A tunnel or supply on a subnet with nothing else drawn on it (wired only to
@@ -278,6 +279,12 @@ protected:
 	void							NameNetGroups(CArrayKicadSchemPassiveElement* pasJoined);
 	void							AddResistorTunnels(SKicadSchemPassiveElement* psResistor);
 	void							AddSlowRC(SKicadSchemPassiveElement* psResistor, int iLoad, float64 fCapacitance);
+	void							KeepPull(CArrayKicadSchemPassiveElement* pasPulls, SKicadSchemPassiveElement* psResistor, int iSupply);
+	void							AddPulls(CArrayKicadSchemPassiveElement* pasPulls);
+	void							AddPull(SKicadSchemPassiveElement* psResistor);
+	float64							GetGroupCapacitance(CKicadSchemNet* pcNet);
+	bool							IsNetRead(CKicadSchemNet* pcNet);
+	float32							GetSupplyNetVoltage(CKicadSchemNet* pcNet);
 	void							AddRCFilters(void);
 	ERCFilterDiode					GetRCFilterDiode(SKicadSchemLogicimRC* psRC, CArrayKicadSchemPassiveElement* pasDiodes);
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);

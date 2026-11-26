@@ -1,7 +1,7 @@
 Pull-ups and pull-downs in KiCad imports
 =========================================
 
-Planned 2026-11-26 (the user: "A weak drive sounds good").  Nothing is built.  Built after ResistorsPlan.txt's part
+Planned 2026-11-26 (the user: "A weak drive sounds good").  Built (below).  Built after ResistorsPlan.txt's part
 2: a released line rises along its RC curve (step 7 there) and its capacitance is that plan's estimate (question 6
 there).  The electronics choices here are mine (the user, 2026-11-26: "whatever you suggest goes").
 
@@ -126,3 +126,16 @@ pulls' level moving, a weakly held trace curves to its pulls' level, R x C (CTra
 ports told as of a slew; a strong driver taking it slews from where the curve is and ends it.  Step 8's
 MicroprocessorLib tests (TestPull.cpp: a 10k pull on 10pF crossing VIH 86.9ns after release; the DS1813's released
 reset rising over 5.5k x 3pF).  Not done: a curve in progress isn't saved with a simulation's state.
+
+Built 2026-11-27, steps 5 to 8: CPullView (a resistor to a supply bar or a ground symbol, its resistance shown; on a
+rail by name, or with a supply of its own; it carries a capacitance, which CPull gives its trace) and a weakly held
+trace drawn half way to the background (CCircuitColours::GetWeakColour).  The importer makes a pull of a resistor from
+a supply to a net logic is on (a part, a drawn board, a connector pin; a placeholder isn't logic), after the series
+resistors have joined their nets, with the joined group's capacitance (GetGroupCapacitance); an unreadable value is
+10k, warned; to a net only an LED or a placeholder is on it's left out (counted).  Bussed networks are an element from
+each pin to the common pin (4609X pin 1, 4816P-1 pin 16), never joining signals; arrays numbered only (CA0612) pair
+across the package, which brought their drawn capacitors into the estimates.  A network's elements are named apart
+("RN2.3").  Tests: TestSimulationStatePulls (LogicimLib), the Address Buffer 16bit's /A0 let go curving up over 10k x
+13pF (TestKicadSchemPassives.cpp).  Expected circuits: pulls added to Audio Board (27), LCD Dual 7 Segment Tester (8)
+and Power and Reset (1); the LED Display's network RCs renamed.  Not done: step 8's Processor Board empty socket test
+(the board's 1MB schematic and its boards aren't in the test data; the Address Buffer covers a pulled line let go).

@@ -23,6 +23,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "MicroprocessorLib/Voltage.h"
 #include "MicroprocessorLib/FamilyVoltageConfigurationStore.h"
 #include "MicroprocessorLib/RCFilterPins.h"
+#include "MicroprocessorLib/Pull.h"
 #include "LogicimLib/TunnelView.h"
 #include "KicadSchemSupplyNames.h"
 #include "KicadSchemLogicPins.h"
@@ -32,8 +33,9 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A series resistor (neither end on a supply; a pull is PullsPlan.txt's)
-// is a chip select or bus line leaving through a termination, the same
+// A resistor with one end on a supply is a pull (AddPulls).  A series
+// resistor (neither end on a supply, nor a bussed network's) is a chip
+// select or bus line leaving through a termination, the same
 // signal on both sides: it joins its nets into one, unless R x C is
 // KICAD_SCHEM_LOGICIM_SLOW_RC or more, an RC filter, which becomes an RC
 // element (masRCFilters, AddRCFilters) unless filters are joined too
@@ -48,10 +50,13 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 {
 	CArrayKicadSchemPassiveElement	asResistors;
 	CArrayKicadSchemPassiveElement	asJoined;
+	CArrayKicadSchemPassiveElement	asPulls;
 	SKicadSchemPassiveElement*		psResistor;
 	size							i;
 	int								iLoad;
 	float64							fCapacitance;
+	bool							bSupply0;
+	bool							bSupply1;
 
 	for (i = 0; i < mcModel.NumItems(); i++)
 	{
@@ -63,11 +68,23 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 	GetKicadSchemPassiveElements(mpcFile, mpcNetlist, false, &masCapacitors);
 	asResistors.Init();
 	asJoined.Init();
+	asPulls.Init();
 	GetKicadSchemPassiveElements(mpcFile, mpcNetlist, true, &asResistors);
 	for (i = 0; i < asResistors.NumElements(); i++)
 	{
 		psResistor = asResistors.Get(i);
-		if ((psResistor->apcNets[0] == NULL) || (psResistor->apcNets[1] == NULL) || (psResistor->apcNets[0] == psResistor->apcNets[1]) || IsSupplyNet(psResistor->apcNets[0]) || IsSupplyNet(psResistor->apcNets[1]))
+		if ((psResistor->apcNets[0] == NULL) || (psResistor->apcNets[1] == NULL) || (psResistor->apcNets[0] == psResistor->apcNets[1]))
+		{
+			continue;
+		}
+		bSupply0 = IsSupplyNet(psResistor->apcNets[0]);
+		bSupply1 = IsSupplyNet(psResistor->apcNets[1]);
+		if (bSupply0 != bSupply1)
+		{
+			KeepPull(&asPulls, psResistor, bSupply0 ? 0 : 1);
+			continue;
+		}
+		if (bSupply0 || psResistor->bBussed)
 		{
 			continue;
 		}
@@ -99,6 +116,8 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 	asJoined.Kill();
 	asResistors.Kill();
 	AddRCFilters();
+	AddPulls(&asPulls);
+	asPulls.Kill();
 	mcSymbolItems.ReInit();
 }
 
@@ -397,6 +416,7 @@ void CKicadSchemLogicimConverter::AddRCFilters(void)
 	CRCFilterView*					pcView;
 	size							uiItem;
 	size							i;
+	CChars							szName;
 
 	asDiodes.Init();
 	GetKicadSchemDiodeElements(mpcFile, mpcNetlist, &asDiodes);
@@ -406,7 +426,10 @@ void CKicadSchemLogicimConverter::AddRCFilters(void)
 		psResistor = &psRC->sResistor;
 		psRC->eDiode = GetRCFilterDiode(psRC, &asDiodes);
 		pcView = NewMalloc<CRCFilterView>();
-		pcView->Init(0, 0, ROT_East, psResistor->pcSymbol->GetReference(), (float32)psResistor->fValue, (float32)psRC->fCapacitance, psRC->eDiode);
+		szName.Init();
+		GetKicadSchemPassiveElementName(&szName, psResistor);
+		pcView->Init(0, 0, ROT_East, szName.Text(), (float32)psResistor->fValue, (float32)psRC->fCapacitance, psRC->eDiode);
+		szName.Kill();
 		uiItem = mcModel.AddItem(pcView, KSLIK_Part, psResistor->pcSymbol->GetPosition(), NULL, psResistor->pcSymbol);
 		AddPinTerminal(psResistor->pcSymbol, psResistor->apcPins[1 - psRC->iLoad], pcView->GetPortView(RC_FILTER_PIN_IN), uiItem);
 		AddPinTerminal(psResistor->pcSymbol, psResistor->apcPins[psRC->iLoad], pcView->GetPortView(RC_FILTER_PIN_OUT), uiItem);
@@ -445,4 +468,180 @@ ERCFilterDiode CKicadSchemLogicimConverter::GetRCFilterDiode(SKicadSchemLogicimR
 		}
 	}
 	return RCFD_None;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A resistor from a supply (apcNets[iSupply]) to another net, kept to be
+// made a pull (AddPulls) once the series resistors have joined their nets,
+// its supply's end second.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::KeepPull(CArrayKicadSchemPassiveElement* pasPulls, SKicadSchemPassiveElement* psResistor, int iSupply)
+{
+	SKicadSchemPassiveElement*	psPull;
+
+	psPull = pasPulls->Add();
+	*psPull = *psResistor;
+	if (iSupply == 0)
+	{
+		psPull->apcPins[0] = psResistor->apcPins[1];
+		psPull->apcPins[1] = psResistor->apcPins[0];
+		psPull->apcNets[0] = psResistor->apcNets[1];
+		psPull->apcNets[1] = psResistor->apcNets[0];
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each resistor from a supply (apcNets[1]) to a net something made reads,
+// or a connector takes off the board, as a pull: up to the supply's
+// voltage, or down for a ground, on the supply's rail if it is one, else
+// with a supply of its own.  It carries its net's capacitance, all the
+// nets series resistors joined it to (GetGroupCapacitance), for the curve
+// its net takes when it's let go.  One whose value can't be read is 10k,
+// warned of.  To a net nothing reads (an LED's) it's left out.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddPulls(CArrayKicadSchemPassiveElement* pasPulls)
+{
+	size	i;
+
+	for (i = 0; i < pasPulls->NumElements(); i++)
+	{
+		AddPull(pasPulls->Get(i));
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The pull of a resistor from its supply, apcNets[1].
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddPull(SKicadSchemPassiveElement* psResistor)
+{
+	CKicadSchemNet*	pcSignal;
+	CKicadSchemNet*	pcSupply;
+	float32			fResistance;
+	float32			fVoltage;
+	CPullView*		pcView;
+	size			uiItem;
+	CChars			szName;
+
+	pcSignal = psResistor->apcNets[0];
+	pcSupply = psResistor->apcNets[1];
+	if (!IsNetRead(pcSignal))
+	{
+		msCounts.uiLeftOutPulls++;
+		return;
+	}
+	fResistance = (float32)psResistor->fValue;
+	if (!IsVoltage(fResistance))
+	{
+		gcLogger.Warning2(__METHOD__, " Pull [", psResistor->pcSymbol->GetReference(), "]'s value [", psResistor->pcSymbol->GetValue(), "] can't be read: it's 10k.", NULL);
+		msCounts.uiUnreadResistors++;
+		fResistance = 10000.0f;
+	}
+	fVoltage = GetSupplyNetVoltage(pcSupply);
+
+	pcView = NewMalloc<CPullView>();
+	szName.Init();
+	GetKicadSchemPassiveElementName(&szName, psResistor);
+	pcView->Init(0, 0, ROT_East, szName.Text(), fResistance, (fVoltage > 0.0f) ? PD_Up : PD_Down, fVoltage);
+	szName.Kill();
+	if (IsRailNet(pcSupply))
+	{
+		pcView->SetRail(pcSupply->GetName());
+	}
+	pcView->SetCapacitance((float32)GetGroupCapacitance(pcSignal));
+	uiItem = mcModel.AddItem(pcView, KSLIK_Part, psResistor->pcSymbol->GetPosition(), NULL, psResistor->pcSymbol);
+	AddPinTerminal(psResistor->pcSymbol, psResistor->apcPins[0], pcView->GetPortView(PULL_PIN_SIGNAL), uiItem);
+	msCounts.uiPulls++;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether a pin of logic made from the sheet (a part, a board drawn on it,
+// a connector's board pin) is on the net, other than a power pin.  A
+// placeholder's (an analog part's, a socket's) isn't logic.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsNetRead(CKicadSchemNet* pcNet)
+{
+	size					i;
+	size					j;
+	CKicadSchemSubnet*		pcSubnet;
+	SKicadSchemNetPin*		psPin;
+	EKicadSchemPinType		eType;
+	size*					puiItem;
+
+	for (i = 0; i < pcNet->NumSubnets(); i++)
+	{
+		pcSubnet = pcNet->GetSubnet(i);
+		for (j = 0; j < pcSubnet->NumPins(); j++)
+		{
+			psPin = pcSubnet->GetPin(j);
+			eType = psPin->pcPin->GetType();
+			puiItem = mcSymbolItems.Get(&psPin->pcSymbol);
+			if ((puiItem == NULL) || (eType == KSPT_PowerIn) || (eType == KSPT_PowerOut))
+			{
+				continue;
+			}
+			if ((mcModel.GetItem(*puiItem)->eKind != KSLIK_Subcircuit) || (GetKicadSchemBoardSchematic(psPin->pcSymbol, mpcFile->GetLibSymbol(psPin->pcSymbol)) != NULL))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A supply net's voltage, from its label or power symbol's name ("3.3V",
+// "+5V", "GND"), or the regulator that drives it.
+//
+//////////////////////////////////////////////////////////////////////////
+float32 CKicadSchemLogicimConverter::GetSupplyNetVoltage(CKicadSchemNet* pcNet)
+{
+	if (IsKicadSchemSupplyLabel(pcNet->GetName()))
+	{
+		return GetKicadSchemSupplyLabelVoltage(pcNet->GetName());
+	}
+	if (IsKicadSchemPowerNetName(pcNet->GetName()))
+	{
+		return GetKicadSchemSupplyVoltage(pcNet->GetName());
+	}
+	return GetNetRegulatedVoltage(pcNet);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The capacitance of the net and every net series resistors joined it to.
+//
+//////////////////////////////////////////////////////////////////////////
+float64 CKicadSchemLogicimConverter::GetGroupCapacitance(CKicadSchemNet* pcNet)
+{
+	size				i;
+	CKicadSchemNet*		pcGroup;
+	CKicadSchemNet*		pcOther;
+	float64				fCapacitance;
+
+	pcGroup = mcModel.GetGroup(pcNet);
+	fCapacitance = 0;
+	for (i = 0; i < mpcNetlist->NumNets(); i++)
+	{
+		pcOther = mpcNetlist->GetNet(i);
+		if (mcModel.GetGroup(pcOther) == pcGroup)
+		{
+			fCapacitance += GetNetCapacitance(pcOther);
+		}
+	}
+	return fCapacitance;
 }

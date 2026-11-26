@@ -3,6 +3,7 @@
 #include "MicroprocessorLib/AnalogComparator.h"
 #include "MicroprocessorLib/Constant.h"
 #include "MicroprocessorLib/Pin.h"
+#include "MicroprocessorLib/Pull.h"
 #include "KicadImporterLib/KicadSchemPassives.h"
 #include "TestKicadSchemBoard.h"
 
@@ -10,6 +11,7 @@
 #define KICAD_SCHEM_PASSIVES_SHEET			"Input" _FS_ "Passives.kicad_sch"
 #define KICAD_SCHEM_PASSIVES_CLOCK_DOUBLER	"Input" _FS_ "Kicad" _FS_ "Computer" _FS_ "Component Boards" _FS_ "Clock Doubler" _FS_ "Clock Doubler.kicad_sch"
 #define KICAD_SCHEM_PASSIVES_PS2_TIMING		"Input" _FS_ "Kicad" _FS_ "Computer" _FS_ "PS2" _FS_ "PS2 Timing" _FS_ "PS2 Timing.kicad_sch"
+#define KICAD_SCHEM_PASSIVES_ADDRESS_BUFFER	"Input" _FS_ "Kicad" _FS_ "Computer" _FS_ "Component Boards" _FS_ "Address Buffer 16bit" _FS_ "Address Buffer 16bit.kicad_sch"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -85,7 +87,7 @@ bool TestKicadSchemPassivesJoined(SKicadSchemTestBoard* psBoard, const char* szN
 //////////////////////////////////////////////////////////////////////////
 //
 // The test sheet's elements: a resistor is one, an isolated network one a
-// pair of its pins, a bussed network none.
+// pair of its pins, a bussed network one from each pin to its common pin.
 //
 //////////////////////////////////////////////////////////////////////////
 void TestKicadSchemPassiveElements(void)
@@ -96,19 +98,27 @@ void TestKicadSchemPassiveElements(void)
 	SKicadSchemPassiveElement*		psElement;
 	size							i;
 	size							uiNetwork;
+	size							uiBussed;
 
 	sBoard.Init(KICAD_SCHEM_PASSIVES_SHEET, "Passives");
 	asResistors.Init();
 	GetKicadSchemPassiveElements(&sBoard.cFile, &sBoard.cNetlist, true, &asResistors);
-	AssertSize(8, asResistors.NumElements());
+	AssertSize(16, asResistors.NumElements());
 	uiNetwork = 0;
+	uiBussed = 0;
 	for (i = 0; i < asResistors.NumElements(); i++)
 	{
 		psElement = asResistors.Get(i);
 		AssertNotNull(psElement->apcNets[0]);
 		AssertNotNull(psElement->apcNets[1]);
-		AssertFalse(StringCompare(psElement->pcSymbol->GetReference(), "RN2") == 0);
-		if (StringCompare(psElement->pcSymbol->GetReference(), "RN1") == 0)
+		if (StringCompare(psElement->pcSymbol->GetReference(), "RN2") == 0)
+		{
+			AssertTrue(psElement->bBussed);
+			AssertString("E", psElement->apcNets[1]->GetName());
+			AssertString("PC", psElement->apcPins[1]->GetName());
+			uiBussed++;
+		}
+		else if (StringCompare(psElement->pcSymbol->GetReference(), "RN1") == 0)
 		{
 			AssertString(psElement->apcPins[0]->GetName(), psElement->apcPins[1]->GetName());
 			AssertDouble(220.0, psElement->fValue, 6);
@@ -116,6 +126,7 @@ void TestKicadSchemPassiveElements(void)
 		}
 	}
 	AssertSize(4, uiNetwork);
+	AssertSize(8, uiBussed);
 
 	asCapacitors.Init();
 	GetKicadSchemPassiveElements(&sBoard.cFile, &sBoard.cNetlist, false, &asCapacitors);
@@ -129,10 +140,10 @@ void TestKicadSchemPassiveElements(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // The test sheet imported: R1 (22 ohm into C1's 10pF, 0.22ns) joins A to
-// A_{s}; R2 (1k into 1nF, 1us) is an RC filter, left apart; RN1's four
+// A_{s}; R2 (1k into 1nF, 1us) is an RC filter, an RC element; RN1's four
 // 220 ohms into the wiring's 3pF join D0 to D3 to their D_{s}s; the
 // bussed RN2 joins nothing; R3's value can't be read, so it joins, warned;
-// R4 is a pull to 3V3, not a series resistor.
+// R4 is a pull to 3V3, left out as nothing reads G.
 //
 //////////////////////////////////////////////////////////////////////////
 void TestKicadSchemPassiveJoins(void)
@@ -146,6 +157,8 @@ void TestKicadSchemPassiveJoins(void)
 	AssertSize(6, psCounts->uiSeriesResistors);
 	AssertSize(1, psCounts->uiRCFilters);
 	AssertSize(1, psCounts->uiUnreadResistors);
+	AssertSize(0, psCounts->uiPulls);
+	AssertSize(1, psCounts->uiLeftOutPulls);
 
 	AssertTrue(TestKicadSchemPassivesJoined(&sBoard, "A", "A_{s}"));
 	AssertTrue(TestKicadSchemPassivesJoined(&sBoard, "D0", "D0_{s}"));
@@ -185,10 +198,10 @@ CTrace* TestKicadSchemPassivesPinTrace(SKicadSchemTestBoard* psBoard, const char
 //////////////////////////////////////////////////////////////////////////
 //
 // A one bit constant of szFamily at fVcc, on supplies of its own, driving
-// the board's pin named szPin as another board would, from bValue.
+// pcTrace as another board or a device would, from bValue.
 //
 //////////////////////////////////////////////////////////////////////////
-CLogicPort* TestKicadSchemPassivesDrive(SKicadSchemTestBoard* psBoard, const char* szPin, const char* szFamily, float32 fVcc, bool bValue)
+CLogicPort* TestKicadSchemPassivesDriveTrace(SKicadSchemTestBoard* psBoard, CTrace* pcTrace, const char* szFamily, float32 fVcc, bool bValue)
 {
 	CSubcircuitSimulation*	pcTop;
 	CTimeline*				pcTimeline;
@@ -209,9 +222,20 @@ CLogicPort* TestKicadSchemPassivesDrive(SKicadSchemTestBoard* psBoard, const cha
 	pcConstant = &OMalloc<CConstant>(pcTop, "Driver", OMalloc<CConstantPins>(psBoard->cFamilies.Get(szFamily), 1), bValue ? 1 : 0);
 	AssertTrue(pcConstant->GetPins()->GetVoltageCommon()->ConnectLive(pcVccTrace, pcTimeline));
 	AssertTrue(pcConstant->GetPins()->GetVoltageGround()->ConnectLive(pcGndTrace, pcTimeline));
-	AssertTrue(pcConstant->GetConstantPins()->GetOutput(0)->ConnectLive(TestKicadSchemPassivesPinTrace(psBoard, szPin), pcTimeline));
+	AssertTrue(pcConstant->GetConstantPins()->GetOutput(0)->ConnectLive(pcTrace, pcTimeline));
 	psBoard->pSimulation->GetTimeline()->Run();
 	return pcConstant->GetConstantPins()->GetOutput(0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The board's pin named szPin driven, see TestKicadSchemPassivesDriveTrace.
+//
+//////////////////////////////////////////////////////////////////////////
+CLogicPort* TestKicadSchemPassivesDrive(SKicadSchemTestBoard* psBoard, const char* szPin, const char* szFamily, float32 fVcc, bool bValue)
+{
+	return TestKicadSchemPassivesDriveTrace(psBoard, TestKicadSchemPassivesPinTrace(psBoard, szPin), szFamily, fVcc, bValue);
 }
 
 
@@ -288,7 +312,10 @@ void TestKicadSchemPassiveClockDoubler(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The PS2 Timing: Clock through a 74VHCT14 (Schmitt, at 5V) to ~{Clock},
+// The PS2 Timing: the PS/2 socket's clock, /Clock_{IN} (pulled up by R6,
+// driven here as a PS/2 device would), through R5 (150 ohm, an RC
+// element) to Clock, then a
+// 74VHCT14 (Schmitt, at 5V) to ~{Clock},
 // R3 (4.7k) and D1's first diode into C3 (0.1uF) on RC Packet Pulse, then
 // two more inverters to Packet Pulse.  A burst of eight 40us clocks
 // charges C3 through the diode on each low and R3 lets only a little go
@@ -322,7 +349,9 @@ void TestKicadSchemPassivePS2Timing(void)
 	pcFilter = (CRCFilter*)sBoard.Get("R3");
 
 	sBoard.RunTo(3000000);
-	pcClock = TestKicadSchemPassivesDrive(&sBoard, "Clock", "VHCT", 5.0f, true);
+	AssertNotNull(sBoard.Get("R6"));
+	AssertNotNull(sBoard.Get("R5"));
+	pcClock = TestKicadSchemPassivesDriveTrace(&sBoard, ((CRCFilter*)sBoard.Get("R5"))->GetRCFilterPins()->GetIn()->GetTrace(), "VHCT", 5.0f, true);
 	sBoard.RunTo(4000000);
 	pcPacketPulse = TestKicadSchemPassivesPinTrace(&sBoard, "Packet Pulse");
 	pcRCPacketPulse = TestKicadSchemPassivesPinTrace(&sBoard, "RC Packet Pulse");
@@ -359,6 +388,58 @@ void TestKicadSchemPassivePS2Timing(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The Address Buffer 16bit: each of its 74ABT245s' B side lines (/A0 to
+// /A15) has a 10k pull to 3.3V (RN1 to RN4) and a 20 ohm termination to
+// its connector's line, A0_{s} and so on, which a 10pF capacitor network
+// loads.  Each pull carries its joined line's capacitance: 3pF of wiring
+// on /A0 (the 245's B pins are drawn as tri-state outputs, which add
+// nothing) and the 10pF drawn on A0_{s}, 13pF.  Enabled (Device ~{CS}
+// low) with A0_{IN} low, /A0 is driven low; turned off, it curves up to
+// 3.3V, R x C 130ns.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestKicadSchemPassiveAddressBuffer(void)
+{
+	SKicadSchemTestBoard	sBoard;
+	CPull*					pcPull;
+	CTrace*					pcLine;
+	CLogicPort*				pcSelect;
+	CPortOutput*			pcCurve;
+	int64					iTime;
+
+	sBoard.Init(KICAD_SCHEM_PASSIVES_ADDRESS_BUFFER, "Address Buffer 16bit");
+	AssertSize(16, sBoard.cConverter.GetCounts()->uiPulls);
+	AssertSize(0, sBoard.cConverter.GetCounts()->uiLeftOutPulls);
+	pcPull = (CPull*)sBoard.Get("RN2.1");
+	AssertNotNull(pcPull);
+	AssertFloat(10000.0f, pcPull->GetSignalPort()->GetResistance(), 1);
+	AssertFloat(13.0f, pcPull->GetCapacitance() * 1e12f, 2);
+
+	sBoard.RunTo(3000000);
+	pcSelect = TestKicadSchemPassivesDrive(&sBoard, "Device ~{CS}", "LVC", 3.3f, false);
+	TestKicadSchemPassivesDrive(&sBoard, "A0_{IN}", "LVC", 3.3f, false);
+	pcLine = pcPull->GetSignalPort()->GetTrace();
+	AssertTrue(pcLine->HasStrongDriver(sBoard.pSimulation->GetTime()));
+	AssertTrue(pcLine->GetVoltage(sBoard.pSimulation->GetTime()) < 0.5f);
+	AssertFloat(13.0f, pcLine->GetCapacitance() * 1e12f, 2);
+
+	pcSelect->Write(sBoard.pSimulation->GetTimeline(), true);
+	sBoard.pSimulation->GetTimeline()->Run();
+	iTime = sBoard.pSimulation->GetTime();
+	AssertFalse(pcLine->HasStrongDriver(iTime));
+	pcCurve = pcLine->GetWeakCurve();
+	AssertTrue(pcCurve->IsCurve());
+	AssertFloat(3.3f, pcCurve->GetEndVoltage(), 3);
+	AssertTrue((pcCurve->GetTimeConstant() >= NanosecondsToTime((int64)130) - 2) && (pcCurve->GetTimeConstant() <= NanosecondsToTime((int64)130) + 2));
+	sBoard.pSimulation->RunToTime(NanosecondsToTime((int64)2000));
+	AssertFloat(3.3f, pcLine->GetVoltage(sBoard.pSimulation->GetTime()), 3);
+
+	sBoard.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestKicadSchemPassives(void)
@@ -372,6 +453,7 @@ void TestKicadSchemPassives(void)
 	TestKicadSchemPassiveJoins();
 	TestKicadSchemPassiveClockDoubler();
 	TestKicadSchemPassivePS2Timing();
+	TestKicadSchemPassiveAddressBuffer();
 
 	DataMemoryKill();
 	DataIOKill();

@@ -25,16 +25,18 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadLib/KicadSchemNetlist.h"
 
 
-//A resistor's or capacitor's element: its two pins and their nets.  A resistor or capacitor is one element; a network
-//is an element for each pair of its pins with the same name (a resistor network's "R1" on pins 1 and 8), so a
-//bussed network's common pin, which pairs with none, is in no element.  The value is the symbol's, in ohms or farads,
-//NaN when it can't be read.
+//A resistor's or capacitor's element: its two pins and their nets.  A resistor or capacitor is one element; an
+//isolated network is an element for each pair of its pins with the same name (a resistor network's "R1" on pins 1
+//and 8), or with only numbers, across the package (a CA0612's pins 1 and 8); a bussed network (a 4609X, a 4816P-1) an element from each pin to its common pin, apcPins[1], which is
+//bBussed: its common pin joins no signals together.  The value is the symbol's, in ohms or farads, NaN when it can't
+//be read.
 struct SKicadSchemPassiveElement
 {
 	CKicadSchemSymbol*	pcSymbol;
 	CKicadSchemLibPin*	apcPins[2];
 	CKicadSchemNet*		apcNets[2];  //NULL for a pin on no net.
 	float64				fValue;
+	bool				bBussed;
 };
 
 
@@ -54,6 +56,7 @@ float64	GetKicadSchemCapacitance(const char* szValue);
 void	GetKicadSchemPassiveElements(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, bool bResistors, CArrayKicadSchemPassiveElement* pasElements);
 void	GetKicadSchemDiodeElements(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, CArrayKicadSchemPassiveElement* pasElements);
 CKicadSchemNet*	GetKicadSchemPinNet(CKicadSchemNetlist* pcNetlist, CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin);
+void	GetKicadSchemPassiveElementName(CChars* psz, SKicadSchemPassiveElement* psElement);
 
 
 #endif // __KICAD_SCHEM_PASSIVES_H__

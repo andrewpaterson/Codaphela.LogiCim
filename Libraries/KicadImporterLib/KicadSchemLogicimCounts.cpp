@@ -38,6 +38,8 @@ void SKicadSchemLogicimCounts::Init(void)
 	uiSeriesResistors = 0;
 	uiRCFilters = 0;
 	uiUnreadResistors = 0;
+	uiPulls = 0;
+	uiLeftOutPulls = 0;
 	uiTunnels = 0;
 	uiSplitters = 0;
 	uiSkipped = 0;

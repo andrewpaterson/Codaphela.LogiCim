@@ -381,7 +381,7 @@ static int32 GetKicadSchemLibPinPlace(CArrayTemplatePtr<CKicadSchemLibPin>* papc
 // symbol's.  NULL if neither has one.
 //
 //////////////////////////////////////////////////////////////////////////
-static const char* GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+const char* GetKicadSchemBoardSchematic(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
 	const char*	szSchematic;
 

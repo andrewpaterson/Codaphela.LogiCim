@@ -39,6 +39,7 @@
       <Pin name="J3-19" x="60" y="100" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
       <Subcircuit name="S1" x="70" y="32" rotation="East" type="GPTS203211B" comment="GPTS203211B" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="S2" x="24" y="48" rotation="East" type="DTS-62N-V" comment="DTS-62N-V" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Pull name="R1" x="53" y="71" rotation="East" resistance="4700" direction="Up" rail="5V" capacitance="28"/>
       <Ground name="GND" x="13" y="48" rotation="East" rail="GND"/>
       <PositivePower name="18V" x="101" y="32" rotation="West" riseTime="1000000" rail="18V" voltage="18"/>
       <PositivePower name="IC1" x="109" y="32" rotation="South" riseTime="1000000" dropout="2" rail="12V" voltage="12" feedRail="18V"/>
@@ -82,6 +83,9 @@
       <Trace x0="161" y0="57" x1="149" y1="57"/>
       <Trace x0="161" y0="56" x1="161" y1="57"/>
       <Trace x0="172" y0="56" x1="161" y1="56"/>
+      <Trace x0="73" y0="63" x1="74" y1="63"/>
+      <Trace x0="73" y0="71" x1="73" y1="63"/>
+      <Trace x0="55" y0="71" x1="73" y1="71"/>
       <Trace x0="109" y0="34" x1="109" y1="33"/>
       <Trace x0="123" y0="34" x1="109" y1="34"/>
       <Trace x0="123" y0="33" x1="123" y1="34"/>
@@ -95,7 +99,7 @@
       <Trace x0="170" y0="34" x1="150" y1="34"/>
       <Trace x0="170" y0="33" x1="170" y1="34"/>
       <Trace x0="189" y0="33" x1="170" y1="33"/>
-      <Trace x0="60" y0="63" x1="74" y1="63"/>
+      <Trace x0="60" y0="63" x1="73" y1="63"/>
       <Trace x0="60" y0="47" x1="60" y1="63"/>
       <Trace x0="45" y0="47" x1="60" y1="47"/>
       <Trace x0="45" y0="48" x1="45" y1="47"/>

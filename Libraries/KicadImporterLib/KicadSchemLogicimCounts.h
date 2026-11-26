@@ -35,7 +35,9 @@ struct SKicadSchemLogicimCounts
 	size	uiRegulators;			//Voltage regulators.
 	size	uiSeriesResistors;		//Series resistors joining their nets.
 	size	uiRCFilters;			//RC elements made from series resistors that are RC filters (see JoinSeriesResistors).
-	size	uiUnreadResistors;		//Series resistors whose value couldn't be read, joined.
+	size	uiUnreadResistors;		//Series resistors whose value couldn't be read, joined, and pulls, 10k.
+	size	uiPulls;				//Pull-ups and pull-downs: resistors from a supply to a net something reads.
+	size	uiLeftOutPulls;			//Resistors from a supply to a net nothing made reads (an LED's), left out.
 	size	uiTunnels;				//Labels' and buses' tunnels.
 	size	uiSplitters;			//Buses' splitters.
 	size	uiSkipped;				//Symbols left out: passive parts, mechanical symbols and power flags.
