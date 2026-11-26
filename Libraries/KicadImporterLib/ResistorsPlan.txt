@@ -104,8 +104,9 @@ Part 2: slow RCs become delay elements (MicroprocessorLib, LogicimLib, KicadImpo
 Questions for the user (put one at a time, recommendation first)
 ------------------------------------------------------------------
 
-  1. Where fast ends and slow begins: recommended 1ns (R x C), below the fastest gate delay on the boards; every
-     termination is under 0.25ns and the slowest RC that matters is 12ns.
+  1. Where fast ends and slow begins: recommended 1ns (R x C), about the fastest gate delay on the boards.  The 20
+     ohm terminations (0.1 to 0.6ns) fall below it and the Clock Doubler (12ns) above; the 220 ohm ones sit at it
+     (1.1ns into one input) and go over it as they drive more, so question 6 decides them.
   2. A joined net's name: recommended the name a label gives it (the connector's side if both have labels), else
      the driven side's.
   3. Part 2's order: recommended the simulation first (steps 7 to 10, with MicroprocessorLib's tests), then the
