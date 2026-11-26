@@ -97,6 +97,13 @@ static SComponentLibraryEntry gasPower[] =
 };
 
 
+static SComponentLibraryEntry gasAnalog[] =
+{
+	{ "RCFilter", "RC Filter", "A resistor into a capacitor: its output follows its input along RC curves, so short pulses never reach a threshold.", "rc filter resistor capacitor delay glitch analog" },
+	{ "AnalogComparator", "Analog Comparator", "Drives its output high while IN+ is above IN-, as a MAX9010.", "analog comparator max9010 threshold voltage" },
+};
+
+
 static SComponentLibraryEntry gasInstruments[] =
 {
 	{ "Probe", "Probe", "Shows the value on its bus.", "probe value bus display" },
@@ -137,6 +144,7 @@ static SComponentLibrary gasComponentLibraries[] =
 	LIBRARY("Power", "Supplies, ground and reset supervisors.", gasPower),
 	LIBRARY("Plexers", "Multiplexers and decoders.", gasPlexers),
 	LIBRARY("Arithmetic", "Adders and comparators.", gasArithmetic),
+	LIBRARY("Analog", "RC filters and analog comparators.", gasAnalog),
 	LIBRARY("Instruments", "Probes and oscilloscopes.", gasInstruments),
 	LIBRARY("Wiring", "Pins, splitters and tunnels.", gasWiring),
 	LIBRARY("Microprocessors", "Microprocessors.", gasMicroprocessors),

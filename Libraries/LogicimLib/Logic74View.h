@@ -65,7 +65,7 @@ public:
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 
-			char*					GetPartType(void);
+	virtual char*					GetPartType(void);
 			SLogic74Part*			GetPart(void) const;
 			int						GetUnitCount(void) const;
 			void					GetPartNumber(CChars* psz);
@@ -108,7 +108,7 @@ public:
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily);
 	virtual CComponentView*			NewNextUnit(void);
 
-			char*					GetPartType(void);
+	virtual char*					GetPartType(void);
 			SLogic74Part*			GetPart(void) const;
 			int						GetUnit(void) const;
 			char					GetUnitLetter(void) const;

@@ -314,7 +314,7 @@ CCircuitComponent* CIntegratedCircuitView::CreateComponent(CViewPath* pcViewPath
 		return NULL;
 	}
 
-	pcFamily = pcFamilies->Get(mszFamily.Text());
+	pcFamily = pcFamilies->GetPart(mszFamily.Text(), GetPartType());
 	if (pcFamily == NULL)
 	{
 		gcLogger.Error2(__METHOD__, " Cannot find family [", mszFamily.Text(), "].", NULL);
@@ -561,6 +561,7 @@ bool CIntegratedCircuitView::IsExplicitPowerPorts(void) const { return mbExplici
 CIntegratedCircuitView* CIntegratedCircuitView::GetIntegratedCircuitView(void) { return this; }
 void CIntegratedCircuitView::SetImpliedVcc(float32 fImpliedVcc) { mfImpliedVcc = fImpliedVcc; }
 bool CIntegratedCircuitView::HasPowerRails(void) const { return !mszVccRail.Empty(); }
+char* CIntegratedCircuitView::GetPartType(void) { return NULL; }
 char* CIntegratedCircuitView::GetVccRail(void) { return mszVccRail.Text(); }
 char* CIntegratedCircuitView::GetGndRail(void) { return mszGndRail.Text(); }
 float32 CIntegratedCircuitView::GetImpliedVcc(void) const { return mfImpliedVcc; }

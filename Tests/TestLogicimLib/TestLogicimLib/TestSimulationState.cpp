@@ -33,6 +33,7 @@
 #include "LogicimLib/TunnelView.h"
 #include "LogicimLib/PowerSourceView.h"
 #include "LogicimLib/ResetSupervisorView.h"
+#include "LogicimLib/RCFilterView.h"
 #include "MicroprocessorLib/ResetSupervisor.h"
 #include "MicroprocessorLib/W65C816Chip.h"
 #include "MicroprocessorLib/W65C816InstructionFactory.h"
@@ -78,6 +79,43 @@ void AddRingOscillatorViews(CCircuitView* pcCircuit)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A NAND enabled by the trace of the first wire, then a 5ns RC filter and
+// two inverters back to the NAND: a ring whose period is mostly the RC's
+// curves, so it is saved part way along one.
+//
+//////////////////////////////////////////////////////////////////////////
+void AddRCRingOscillatorViews(CCircuitView* pcCircuit)
+{
+	CNandGateView*	pcNand;
+	CRCFilterView*	pcFilter;
+	CInverterView*	pcInverter;
+
+	pcNand = NewMalloc<CNandGateView>();
+	pcNand->Init(-17, 0, ROT_East, "U1", "LVC", false, 2, 1);
+	pcCircuit->Add(pcNand);
+	pcFilter = NewMalloc<CRCFilterView>();
+	pcFilter->Init(-9, 0, ROT_East, "RC1", 500.0f, 10e-12f, RCFD_None);
+	pcCircuit->Add(pcFilter);
+	pcInverter = NewMalloc<CInverterView>();
+	pcInverter->Init(-4, 0, ROT_East, "U2", "LVC", false, 1, 1);
+	pcCircuit->Add(pcInverter);
+	pcInverter = NewMalloc<CInverterView>();
+	pcInverter->Init(1, 0, ROT_East, "U3", "LVC", false, 1, 1);
+	pcCircuit->Add(pcInverter);
+	pcCircuit->AddTrace(-25, -1, -18, -1);
+	pcCircuit->AddTrace(-14, 0, -12, 0);
+	pcCircuit->AddTrace(-6, 0, -5, 0);
+	pcCircuit->AddTrace(-2, 0, 0, 0);
+	pcCircuit->AddTrace(3, 0, 4, 0);
+	pcCircuit->AddTrace(4, 0, 4, 4);
+	pcCircuit->AddTrace(4, 4, -20, 4);
+	pcCircuit->AddTrace(-20, 4, -20, 1);
+	pcCircuit->AddTrace(-20, 1, -18, 1);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A supply on the enable wire.  Supplies keep no state, so the one in a
 // loaded simulation is wired on quietly, as if it had always been there.
 //
@@ -101,11 +139,12 @@ CPowerSource* AddRingEnable(CCircuitSimulation* pcSimulation, CCircuitView* pcCi
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Saved part way through oscillating and loaded into another simulation,
-// the ring saves the same and then runs on exactly as the original.
+// Saved part way through oscillating, iSaveTime nanoseconds after it is
+// enabled, and loaded into another simulation, the ring saves the same
+// and then runs on exactly as the original.
 //
 //////////////////////////////////////////////////////////////////////////
-void TestSimulationStateRingRoundTrip(void)
+void TestSimulationStateRingRoundTrip(void (*fAddViews)(CCircuitView*), int64 iSaveTime, const char* szSaved)
 {
 	CFamilyVoltageConfigurationStore	cFamilies;
 	float32								fVcc;
@@ -140,13 +179,13 @@ void TestSimulationStateRingRoundTrip(void)
 	cOriginalView.Init();
 	cPaths.Init();
 	pcOriginalPath = cPaths.AddTop(&cOriginalView);
-	AddRingOscillatorViews(&cOriginalView);
+	fAddViews(&cOriginalView);
 	AssertTrue(cOriginalView.CreateSimulation(pcOriginalPath, &pOriginal, &cFamilies));
 	pcLow = AddRingEnable(&pOriginal, &cOriginalView, pcOriginalPath, 0.0f, true);
 	pOriginal->GetTimeline()->Run();
 	pcLow->GetPowerOutPort()->Disconnect(pOriginal->GetTimeline());
 	AddRingEnable(&pOriginal, &cOriginalView, pcOriginalPath, fVcc, true);
-	pOriginal->RunToTime(NanosecondsToTime((int64)37));
+	pOriginal->RunToTime(NanosecondsToTime(iSaveTime));
 	AssertTrue(pOriginal->GetTimeline()->NumSimultaneousEvents() > 0);
 
 	cFileUtil.MakeDir("Output");
@@ -166,6 +205,10 @@ void TestSimulationStateRingRoundTrip(void)
 	cLoadedText.Init();
 	SaveCircuitXML(&cLoadedView, pcLoadedPath, &pLoaded, &cLoadedText);
 	AssertString(cOriginalText.GetText(), cLoadedText.GetText());
+	if (szSaved != NULL)
+	{
+		AssertTrue(strstr(cOriginalText.GetText(), szSaved) != NULL);
+	}
 	cLoadedText.Kill();
 	cOriginalText.Kill();
 
@@ -1153,7 +1196,8 @@ void TestSimulationState(void)
 	DataMemoryInit();
 
 	TestSimulationStateStates();
-	TestSimulationStateRingRoundTrip();
+	TestSimulationStateRingRoundTrip(AddRingOscillatorViews, 37, NULL);
+	TestSimulationStateRingRoundTrip(AddRCRingOscillatorViews, 23, "timeConstant");
 	TestSimulationStatePowerRamp();
 	TestSimulationStatePowerRails();
 	TestSimulationStateW65C816Core();

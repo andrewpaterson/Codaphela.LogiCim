@@ -83,6 +83,7 @@ public:
 	virtual CIntegratedCircuit*		CreateIntegratedCircuit(CSubcircuitSimulation* pcSimulation, CFamilyVoltageConfiguration* pcFamily) =0;
 
 			char*					GetFamily(void);
+	virtual char*					GetPartType(void);
 			bool					IsExplicitPowerPorts(void) const;
 			void					SetImpliedVcc(float32 fImpliedVcc);
 			float32					GetImpliedVcc(void) const;
