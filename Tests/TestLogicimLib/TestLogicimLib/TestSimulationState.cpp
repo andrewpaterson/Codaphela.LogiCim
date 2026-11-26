@@ -34,6 +34,8 @@
 #include "LogicimLib/PowerSourceView.h"
 #include "LogicimLib/ResetSupervisorView.h"
 #include "LogicimLib/RCFilterView.h"
+#include "LogicimLib/PullView.h"
+#include "LogicimLib/CircuitColours.h"
 #include "MicroprocessorLib/ResetSupervisor.h"
 #include "MicroprocessorLib/W65C816Chip.h"
 #include "MicroprocessorLib/W65C816InstructionFactory.h"
@@ -480,6 +482,115 @@ void TestSimulationStatePowerRails(void)
 	ObjectsKill();
 
 	cFileUtil.Delete("Output" _FS_ "Rails.xml");
+	cFileUtil.RemoveDir("Output");
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A 10k pull-up with a 3.3V supply of its own and a pull-down on the GND
+// rail, each read by an inverter: the lines are at their pulls' levels,
+// drawn fainter than a driven line, and the circuit saves and loads.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSimulationStatePulls(void)
+{
+	CFamilyVoltageConfigurationStore	cFamilies;
+	Ptr<CCircuitSimulation>				pSimulation;
+	Ptr<CCircuitSimulation>				pLoaded;
+	CCircuitView						cView;
+	CCircuitView						cLoadedView;
+	CViewPaths							cPaths;
+	CViewPath*							pcPath;
+	CViewPath*							pcLoadedPath;
+	CPullView*							pcUp;
+	CPullView*							pcDown;
+	CGroundView*						pcGround;
+	CInverterView*						pcInverterView;
+	CInverterView*						pcUpInverterView;
+	CTrace*								pcPulledUp;
+	CTrace*								pcPulledDown;
+	CCircuitColours						cColours;
+	CXMLWriter							cText;
+	CXMLWriter							cLoadedText;
+	CFileUtil							cFileUtil;
+	int64								iTime;
+
+	ObjectsInit();
+	CEvent::ResetNextID();
+	CTrace::ResetNextID();
+	cFamilies.Init();
+	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
+
+	pSimulation = OMalloc<CCircuitSimulation>("Pulls");
+	ORoot()->Add(pSimulation);
+	cView.Init();
+	cPaths.Init();
+	pcPath = cPaths.AddTop(&cView);
+	pcUp = NewMalloc<CPullView>();
+	pcUp->Init(0, 0, ROT_East, "R1", 10000.0f, PD_Up, 3.3f);
+	cView.Add(pcUp);
+	pcDown = NewMalloc<CPullView>();
+	pcDown->Init(0, 10, ROT_East, "R2", 4700.0f, PD_Down, 0.0f);
+	pcDown->SetRail("GND");
+	cView.Add(pcDown);
+	AssertSize(1, pcDown->NumHiddenPortViews());
+	pcGround = NewMalloc<CGroundView>();
+	pcGround->Init(20, 20, ROT_North, "GND");
+	pcGround->SetRail("GND");
+	cView.Add(pcGround);
+	pcUpInverterView = NewMalloc<CInverterView>();
+	pcUpInverterView->Init(5, 0, ROT_East, "U1", "LVC", false, 1, 1);
+	cView.Add(pcUpInverterView);
+	pcInverterView = NewMalloc<CInverterView>();
+	pcInverterView->Init(5, 10, ROT_East, "U2", "LVC", false, 1, 1);
+	cView.Add(pcInverterView);
+	cView.AddTrace(2, 0, 4, 0);
+	cView.AddTrace(2, 10, 4, 10);
+	AssertTrue(cView.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+	pSimulation->GetTimeline()->Run();
+
+	iTime = pSimulation->GetTime();
+	pcPulledUp = cView.GetTrace(0)->GetTrace(pcPath, &pSimulation, 0);
+	pcPulledDown = cView.GetTrace(1)->GetTrace(pcPath, &pSimulation, 0);
+	AssertFloat(3.3f, pcPulledUp->GetVoltage(iTime), 3);
+	AssertFalse(pcPulledUp->HasStrongDriver(iTime));
+	AssertFloat(0.0f, pcPulledDown->GetVoltage(iTime), 3);
+	AssertFloat(0.2f, pcUpInverterView->GetIntegratedCircuit(pcPath, &pSimulation)->GetPort("Output")->GetVoltageOut(iTime), 3);
+	AssertFloat(3.1f, pcInverterView->GetIntegratedCircuit(pcPath, &pSimulation)->GetPort("Output")->GetVoltageOut(iTime), 3);
+	cColours.InitLogicim();
+	AssertFalse(cColours.GetColourForTrace(pcPulledUp, iTime) == cColours.GetColourForVoltage(3.3f));
+	cColours.Kill();
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitFile(&cView, "Output" _FS_ "Pulls.xml"));
+	pLoaded = OMalloc<CCircuitSimulation>("Pulls");
+	ORoot()->Add(pLoaded);
+	cLoadedView.Init();
+	pcLoadedPath = cPaths.AddTop(&cLoadedView);
+	AssertTrue(LoadCircuitFile(&cLoadedView, pcLoadedPath, &pLoaded, &cFamilies, "Output" _FS_ "Pulls.xml"));
+	cText.Init();
+	SaveCircuitXML(&cView, &cText);
+	cLoadedText.Init();
+	SaveCircuitXML(&cLoadedView, &cLoadedText);
+	AssertString(cText.GetText(), cLoadedText.GetText());
+	AssertTrue(strstr(cText.GetText(), "<Pull name=\"R2\"") != NULL);
+	AssertTrue(strstr(cText.GetText(), "direction=\"Down\" rail=\"GND\"") != NULL);
+	cLoadedText.Kill();
+	cText.Kill();
+
+	cLoadedView.Kill();
+	ORoot()->Remove(pLoaded);
+	pLoaded = NULL;
+	cView.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
+	cPaths.Kill();
+	cFamilies.Kill();
+	ObjectsDiscard();
+	ObjectsKill();
+
+	cFileUtil.Delete("Output" _FS_ "Pulls.xml");
 	cFileUtil.RemoveDir("Output");
 }
 
@@ -1200,6 +1311,7 @@ void TestSimulationState(void)
 	TestSimulationStateRingRoundTrip(AddRCRingOscillatorViews, 23, "timeConstant");
 	TestSimulationStatePowerRamp();
 	TestSimulationStatePowerRails();
+	TestSimulationStatePulls();
 	TestSimulationStateW65C816Core();
 	TestSimulationState65C64Core();
 	TestSimulationStateW65C816RoundTrip();

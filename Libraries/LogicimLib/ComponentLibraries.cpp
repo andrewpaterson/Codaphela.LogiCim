@@ -94,6 +94,7 @@ static SComponentLibraryEntry gasPower[] =
 	{ "PositivePower", "Positive Power", "A supply at a fixed voltage.", "power supply vcc voltage" },
 	{ "Ground", "Ground", "A supply at 0V.", "ground gnd 0v power" },
 	{ "ResetSupervisor", "Reset Supervisor", "Holds reset low until its supply is good, as a DS1813.", "reset supervisor power on ds1813 brown out" },
+	{ "Pull", "Pull", "A resistor to a supply or ground: holds a line nothing drives at its level.", "pull up down resistor weak" },
 };
 
 
@@ -141,7 +142,7 @@ static SComponentLibrary gasComponentLibraries[] =
 	{ "74' Series", "74 series logic parts, as packages and as their units.", gas74Series, 0 },
 	LIBRARY("Memory", "Flip flops, counters, registers and latches.", gasMemory),
 	LIBRARY("Sources", "Clocks and constants.", gasSources),
-	LIBRARY("Power", "Supplies, ground and reset supervisors.", gasPower),
+	LIBRARY("Power", "Supplies, ground, pulls and reset supervisors.", gasPower),
 	LIBRARY("Plexers", "Multiplexers and decoders.", gasPlexers),
 	LIBRARY("Arithmetic", "Adders and comparators.", gasArithmetic),
 	LIBRARY("Analog", "RC filters and analog comparators.", gasAnalog),

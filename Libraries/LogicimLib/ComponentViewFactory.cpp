@@ -33,6 +33,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "ResetSupervisorView.h"
 #include "RCFilterView.h"
 #include "AnalogComparatorView.h"
+#include "PullView.h"
 #include "LabelView.h"
 #include "TunnelView.h"
 #include "W65C816View.h"
@@ -96,6 +97,7 @@ SComponentViewType gasComponentViewTypes[] =
 	{ "ResetSupervisor", NewComponentViewOfClass<CResetSupervisorView> },
 	{ "RCFilter", NewComponentViewOfClass<CRCFilterView> },
 	{ "AnalogComparator", NewComponentViewOfClass<CAnalogComparatorView> },
+	{ "Pull", NewComponentViewOfClass<CPullView> },
 	{ "PositivePower", NewComponentViewOfClass<CPositivePowerView> },
 	{ "Pin", NewComponentViewOfClass<CPinView> },
 	{ "W65C816", NewComponentViewOfClass<CW65C816View> },

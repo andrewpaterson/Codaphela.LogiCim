@@ -371,10 +371,6 @@ bool CIntegratedCircuitView::PowerImplicitly(CIntegratedCircuit* pcIntegratedCir
 bool PowerPortsImplicitly(CSubcircuitSimulation* pcSimulation, CPort* pcCommon, CPort* pcGround, CFamilyVoltageConfiguration* pcFamily, CArrayCircuitComponentPtr* papcSupplies, float32 fVcc)
 {
 	CVoltageConfiguration*	pcVoltage;
-	CCircuit*				pcCircuit;
-	CTrace*					pcVCC;
-	CTrace*					pcGND;
-	CPowerSource*			pcPower;
 
 	pcVoltage = pcFamily->GetDefaultVoltageConfiguration(DEFAULT_LOGIC_LEVEL);
 	if (pcVoltage == NULL)
@@ -382,20 +378,28 @@ bool PowerPortsImplicitly(CSubcircuitSimulation* pcSimulation, CPort* pcCommon, 
 		return gcLogger.Error2(__METHOD__, " Family [", pcFamily->GetFamily(), "] has no default voltage; its power ports must be explicit.", NULL);
 	}
 
-	pcCircuit = pcSimulation->GetCircuit();
-
-	pcVCC = pcCircuit->AddTrace();
-	pcCommon->Connect(pcVCC, false);
-	pcPower = &OMalloc<CPowerSource>(pcSimulation, "", (fVcc > 0) ? fVcc : pcVoltage->GetVcc());
-	pcPower->GetPowerOutPort()->Connect(pcVCC, false);
-	papcSupplies->Add(pcPower);
-
-	pcGND = pcCircuit->AddTrace();
-	pcGround->Connect(pcGND, false);
-	pcPower = &OMalloc<CPowerSource>(pcSimulation, "", 0.0f);
-	pcPower->GetPowerOutPort()->Connect(pcGND, false);
-	papcSupplies->Add(pcPower);
+	AddImplicitSupply(pcSimulation, pcCommon, (fVcc > 0) ? fVcc : pcVoltage->GetVcc(), papcSupplies);
+	AddImplicitSupply(pcSimulation, pcGround, 0.0f, papcSupplies);
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A supply of fVoltage on a trace of its own with pcPort, added to
+// papcSupplies, which go with the component the port is on.
+//
+//////////////////////////////////////////////////////////////////////////
+void AddImplicitSupply(CSubcircuitSimulation* pcSimulation, CPort* pcPort, float32 fVoltage, CArrayCircuitComponentPtr* papcSupplies)
+{
+	CTrace*			pcTrace;
+	CPowerSource*	pcPower;
+
+	pcTrace = pcSimulation->GetCircuit()->AddTrace();
+	pcPort->Connect(pcTrace, false);
+	pcPower = &OMalloc<CPowerSource>(pcSimulation, "", fVoltage);
+	pcPower->GetPowerOutPort()->Connect(pcTrace, false);
+	papcSupplies->Add(pcPower);
 }
 
 

@@ -231,12 +231,37 @@ ARGB32 CCircuitColours::GetColourForTrace(CTrace* pcTrace, int64 iTime)
 		return msTraceUndriven;
 	}
 
+	if (!pcTrace->HasStrongDriver(iTime))
+	{
+		return GetWeakColour(GetColourForVoltage(fVoltage));
+	}
 	fShortVoltage = pcTrace->GetShortVoltage(iTime);
 	if (fShortVoltage == 0)
 	{
 		return GetColourForVoltage(fVoltage);
 	}
 	return AddShort(GetColourForVoltage(fVoltage), fShortVoltage);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A level only pulls hold: half way from its colour to the background's.
+//
+//////////////////////////////////////////////////////////////////////////
+ARGB32 CCircuitColours::GetWeakColour(ARGB32 sVoltage)
+{
+	uint32	auiVoltage[4];
+	uint32	auiBackground[4];
+	size	j;
+
+	Get32BitColour(&auiVoltage[0], &auiVoltage[1], &auiVoltage[2], &auiVoltage[3], sVoltage);
+	Get32BitColour(&auiBackground[0], &auiBackground[1], &auiBackground[2], &auiBackground[3], msBackground);
+	for (j = 0; j < 3; j++)
+	{
+		auiVoltage[j] = (auiVoltage[j] + auiBackground[j]) / 2;
+	}
+	return Set32BitColour(auiVoltage[0], auiVoltage[1], auiVoltage[2], (uint32)255);
 }
 
 

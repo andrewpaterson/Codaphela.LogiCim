@@ -66,6 +66,7 @@ public:
 protected:
 	void	GenerateGradient(ARGB32* asColours, ARGB32 sStart, int iStart, ARGB32 sEnd, int iEnd);
 	ARGB32	AddShort(ARGB32 sVoltage, float32 fShortVoltage);
+	ARGB32	GetWeakColour(ARGB32 sVoltage);
 };
 
 

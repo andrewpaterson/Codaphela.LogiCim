@@ -116,6 +116,7 @@ protected:
 
 class CPort;
 bool PowerPortsImplicitly(CSubcircuitSimulation* pcSimulation, CPort* pcCommon, CPort* pcGround, CFamilyVoltageConfiguration* pcFamily, CArrayCircuitComponentPtr* papcSupplies, float32 fVcc = 0);
+void AddImplicitSupply(CSubcircuitSimulation* pcSimulation, CPort* pcPort, float32 fVoltage, CArrayCircuitComponentPtr* papcSupplies);
 
 
 #endif // __INTEGRATED_CIRCUIT_VIEW_H__

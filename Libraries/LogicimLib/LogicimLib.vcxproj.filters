@@ -54,6 +54,9 @@
     <ClCompile Include="AnalogComparatorView.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
+    <ClCompile Include="PullView.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
     <ClCompile Include="LabelView.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
@@ -243,6 +246,9 @@
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="AnalogComparatorView.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="PullView.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="LabelView.h">
