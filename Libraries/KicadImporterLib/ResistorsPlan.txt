@@ -112,6 +112,7 @@ Questions for the user (put one at a time, recommendation first)
      Decided 2026-11-26: 1ns (the user leaves the electronics to my recommendation: "whatever you suggest goes").
   2. A joined net's name: recommended the name a label gives it (the connector's side if both have labels), else
      the driven side's.
+     Decided 2026-11-26 (the user: "The name a label gives it"): as recommended.
   3. Part 2's order: recommended the simulation first (steps 7 to 10, with MicroprocessorLib's tests), then the
      views and the importer.
   4. How an RC element and a comparator look in LogiCim: recommended as above (step 11).
