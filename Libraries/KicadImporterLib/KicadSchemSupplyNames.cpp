@@ -170,6 +170,91 @@ bool IsKicadSchemPowerNetName(const char* szName)
 }
 
 
+//The regulators on the HCP65's boards, from their datasheets (HCP65/Datasheets); the last is any other.
+static SKicadSchemRegulatorPart gasKicadSchemRegulatorParts[] =
+{
+	{ "LD1117", 1.1f, 1000000 },  //1.1V at 500mA; 1ms for the 100uF the boards put on it.
+	{ "AP7365", 0.3f, 200000 },  //Start-up 200us.
+	{ "L78", 2.0f, 1000000 },
+	{ "", 1.0f, 1000000 },
+};
+
+
+//The DS1813's trip voltages by its part number's suffix, typical.
+struct SKicadSchemSupervisorTrip
+{
+	const char*		szSuffix;
+	float32			fTripVoltage;
+};
+static SKicadSchemSupervisorTrip gasKicadSchemSupervisorTrips[] =
+{
+	{ "-5", 4.62f },
+	{ "-10", 4.35f },
+	{ "-15", 4.13f },
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether szText starts with szPrefix.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool StartsWithKicadSchemPart(const char* szText, const char* szPrefix)
+{
+	return (szText != NULL) && (strncmp(szText, szPrefix, StrLen(szPrefix)) == 0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The regulator part the value starts with ("LD1117S33C"), or the any
+// other regulator entry.
+//
+//////////////////////////////////////////////////////////////////////////
+SKicadSchemRegulatorPart* GetKicadSchemRegulatorPart(const char* szValue)
+{
+	size	i;
+	size	uiParts;
+
+	uiParts = sizeof(gasKicadSchemRegulatorParts) / sizeof(SKicadSchemRegulatorPart);
+	for (i = 0; i < uiParts - 1; i++)
+	{
+		if (StartsWithKicadSchemPart(szValue, gasKicadSchemRegulatorParts[i].szPart))
+		{
+			return &gasKicadSchemRegulatorParts[i];
+		}
+	}
+	return &gasKicadSchemRegulatorParts[uiParts - 1];
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A DS1813's trip voltage from its value ("DS1813R-10+T&R"), 0 if the
+// value isn't a DS1813's.
+//
+//////////////////////////////////////////////////////////////////////////
+float32 GetKicadSchemSupervisorTripVoltage(const char* szValue)
+{
+	size		i;
+	const char*	szSuffix;
+
+	if (!StartsWithKicadSchemPart(szValue, "DS1813"))
+	{
+		return 0.0f;
+	}
+	szSuffix = strchr(szValue, '-');
+	for (i = 0; (szSuffix != NULL) && (i < sizeof(gasKicadSchemSupervisorTrips) / sizeof(SKicadSchemSupervisorTrip)); i++)
+	{
+		if (StartsWithKicadSchemPart(szSuffix, gasKicadSchemSupervisorTrips[i].szSuffix))
+		{
+			return gasKicadSchemSupervisorTrips[i].fTripVoltage;
+		}
+	}
+	return 4.35f;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Whether the pin's name, ignoring case, ends with szEnd and is either

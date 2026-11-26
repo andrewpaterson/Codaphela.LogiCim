@@ -2,10 +2,10 @@
 <Logicim version="2">
   <Circuits>
     <Circuit type="Flags Enable Interrupt">
-      <Logic74Unit name="IC7" x="111" y="90" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="63" y="91" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="C" pinSpacing="2"/>
-      <Logic74Unit name="IC7" x="111" y="120" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" unit="D" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="168" y="120" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="E" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="111" y="90" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="00" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="63" y="91" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="C" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="111" y="120" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="00" unit="D" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="168" y="120" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="E" pinSpacing="2"/>
       <Pin name="CLK" x="39" y="179" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
       <Pin name="Write Clear Interrupt" x="39" y="184" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
       <Pin name="~{Set Interrupt on CLK}" x="39" y="189" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
@@ -32,25 +32,26 @@
       <Pin name="F2" x="61" y="234" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="20" inverting="false" clockNotch="false"/>
       <Pin name="F1" x="61" y="239" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="19" inverting="false" clockNotch="false"/>
       <Pin name="F0" x="61" y="244" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="18" inverting="false" clockNotch="false"/>
-      <Logic74Unit name="IC3" x="114" y="195" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="F" pinSpacing="2"/>
-      <Logic74Unit name="IC1" x="237" y="26" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G11" unit="A" pinSpacing="2"/>
-      <Logic74Package name="IC6" x="310" y="156" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="573" pinSpacing="2"/>
-      <Logic74Unit name="IC7" x="111" y="60" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" unit="A" pinSpacing="2"/>
-      <Logic74Unit name="IC7" x="163" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="00" unit="C" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="243" y="166" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="116" y="28" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="A" pinSpacing="2"/>
-      <Logic74Package name="IC2" x="298" y="34" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" pinSpacing="2"/>
-      <Logic74Package name="IC8" x="61" y="117" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="573" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="245" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="04" unit="D" pinSpacing="2"/>
-      <Ground name="GND" x="93" y="195" rotation="East"/>
-      <PositivePower name="3.3V" x="277" y="33" rotation="East" voltage="3.29999995"/>
+      <Logic74Unit name="IC3" x="114" y="195" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="F" pinSpacing="2"/>
+      <Logic74Unit name="IC1" x="237" y="26" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="1G11" unit="A" pinSpacing="2"/>
+      <Logic74Package name="IC6" x="310" y="156" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="573" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="111" y="60" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="00" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC7" x="163" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="00" unit="C" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="243" y="166" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="116" y="28" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="A" pinSpacing="2"/>
+      <Logic74Package name="IC2" x="298" y="34" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" pinSpacing="2"/>
+      <Logic74Package name="IC8" x="61" y="117" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="573" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="245" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="D" pinSpacing="2"/>
+      <Ground name="GND" x="71" y="186" rotation="West" rail="GND"/>
+      <PositivePower name="5V" x="72" y="219" rotation="West" riseTime="1000000" rail="5V" voltage="5"/>
+      <PositivePower name="IC5" x="99" y="213" rotation="South" riseTime="200000" dropout="0.300000012" rail="3.3V" voltage="3.29999995" feedRail="5V"/>
       <Tunnel name="GND" x="113" y="195" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="40" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="38" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="55" y="127" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="304" y="30" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="305" y="160" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
-      <Tunnel name="Interrupt" x="65" y="184" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="Interrupt" x="65" y="182" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="289" y="153" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="80" y="128" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="65" y="214" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -66,6 +67,7 @@
       <Tunnel name="F2" x="78" y="136" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F2" x="65" y="234" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F2" x="295" y="161" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="140" y="214" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="292" y="32" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="F4" x="289" y="157" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F4" x="65" y="219" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -91,7 +93,7 @@
       <Tunnel name="D1" x="322" y="166" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D1" x="48" y="142" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D1" x="39" y="244" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Interrupt}" x="65" y="189" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.7035714285714283" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Interrupt}" x="65" y="191" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.7035714285714283" bottom="0.82857142857142851"/>
       <Tunnel name="~{Interrupt}" x="303" y="28" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.7035714285714283" bottom="0.82857142857142851"/>
       <Tunnel name="D3" x="329" y="158" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="D3" x="40" y="134" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.3249999999999997" bottom="0.65000000000000002"/>
@@ -175,26 +177,29 @@
       <Trace x0="292" y0="26" x1="239" y1="26"/>
       <Trace x0="235" y0="24" x1="236" y1="24"/>
       <Trace x0="235" y0="22" x1="235" y1="24"/>
-      <Trace x0="311" y0="22" x1="235" y1="22"/>
-      <Trace x0="311" y0="38" x1="311" y1="22"/>
-      <Trace x0="303" y0="38" x1="311" y1="38"/>
+      <Trace x0="278" y0="22" x1="235" y1="22"/>
+      <Trace x0="278" y0="46" x1="278" y1="22"/>
+      <Trace x0="310" y0="46" x1="278" y1="46"/>
+      <Trace x0="310" y0="38" x1="310" y1="46"/>
+      <Trace x0="303" y0="38" x1="310" y1="38"/>
       <Trace x0="65" y0="239" x1="61" y1="239"/>
       <Trace x0="65" y0="219" x1="61" y1="219"/>
       <Trace x0="65" y0="214" x1="61" y1="214"/>
-      <Trace x0="65" y0="184" x1="61" y1="184"/>
-      <Trace x0="65" y0="189" x1="61" y1="189"/>
       <Trace x0="65" y0="199" x1="61" y1="199"/>
       <Trace x0="65" y0="224" x1="61" y1="224"/>
       <Trace x0="65" y0="204" x1="61" y1="204"/>
       <Trace x0="65" y0="234" x1="61" y1="234"/>
       <Trace x0="65" y0="244" x1="61" y1="244"/>
+      <Trace x0="63" y0="184" x1="61" y1="184"/>
+      <Trace x0="63" y0="182" x1="63" y1="184"/>
+      <Trace x0="65" y0="182" x1="63" y1="182"/>
+      <Trace x0="63" y0="189" x1="61" y1="189"/>
+      <Trace x0="63" y0="191" x1="63" y1="189"/>
+      <Trace x0="65" y0="191" x1="63" y1="191"/>
       <Trace x0="44" y0="116" x1="44" y1="121"/>
       <Trace x0="49" y0="116" x1="44" y1="116"/>
       <Trace x0="49" y0="118" x1="49" y1="116"/>
       <Trace x0="48" y0="118" x1="49" y1="118"/>
-      <Trace x0="285" y0="32" x1="292" y1="32"/>
-      <Trace x0="285" y0="33" x1="285" y1="32"/>
-      <Trace x0="278" y0="33" x1="285" y1="33"/>
       <Trace x0="297" y0="157" x1="297" y1="156"/>
       <Trace x0="291" y0="157" x1="297" y1="157"/>
       <Trace x0="291" y0="153" x1="291" y1="157"/>
@@ -203,7 +208,6 @@
       <Trace x0="290" y0="158" x1="298" y1="158"/>
       <Trace x0="290" y0="157" x1="290" y1="158"/>
       <Trace x0="289" y0="157" x1="290" y1="157"/>
-      <Trace x0="93" y0="195" x1="113" y1="195"/>
       <Trace x0="52" y0="130" x1="49" y1="130"/>
       <Trace x0="52" y0="133" x1="52" y1="130"/>
       <Trace x0="51" y0="133" x1="52" y1="133"/>
@@ -263,6 +267,10 @@
       <Trace x0="41" y0="131" x1="35" y1="131"/>
       <Trace x0="41" y0="134" x1="41" y1="131"/>
       <Trace x0="40" y0="134" x1="41" y1="134"/>
+      <Trace x0="99" y0="215" x1="99" y1="214"/>
+      <Trace x0="120" y0="215" x1="99" y1="215"/>
+      <Trace x0="120" y0="214" x1="120" y1="215"/>
+      <Trace x0="140" y0="214" x1="120" y1="214"/>
       <Trace x0="72" y0="127" x1="72" y1="122"/>
       <Trace x0="69" y0="127" x1="72" y1="127"/>
       <Trace x0="69" y0="140" x1="69" y1="127"/>
@@ -280,10 +288,6 @@
       <Trace x0="271" y0="89" x1="271" y1="42"/>
       <Trace x0="247" y0="89" x1="271" y1="89"/>
       <Trace x0="118" y0="28" x1="236" y1="28"/>
-      <Trace x0="310" y0="42" x1="310" y1="38"/>
-      <Trace x0="305" y0="42" x1="310" y1="42"/>
-      <Trace x0="305" y0="46" x1="305" y1="42"/>
-      <Trace x0="304" y0="46" x1="305" y1="46"/>
       <Trace x0="304" y0="142" x1="304" y1="46"/>
       <Trace x0="302" y0="142" x1="304" y1="142"/>
       <Trace x0="302" y0="158" x1="302" y1="142"/>
@@ -292,13 +296,11 @@
       <Trace x0="303" y0="162" x1="303" y1="160"/>
       <Trace x0="282" y0="162" x1="303" y1="162"/>
       <Trace x0="282" y0="141" x1="282" y1="162"/>
-      <Trace x0="303" y0="141" x1="282" y1="141"/>
-      <Trace x0="303" y0="48" x1="303" y1="141"/>
-      <Trace x0="306" y0="48" x1="303" y1="48"/>
-      <Trace x0="306" y0="43" x1="306" y1="48"/>
-      <Trace x0="312" y0="43" x1="306" y1="43"/>
-      <Trace x0="312" y0="37" x1="312" y1="43"/>
-      <Trace x0="306" y0="37" x1="312" y1="37"/>
+      <Trace x0="305" y0="141" x1="282" y1="141"/>
+      <Trace x0="305" y0="42" x1="305" y1="141"/>
+      <Trace x0="311" y0="42" x1="305" y1="42"/>
+      <Trace x0="311" y0="37" x1="311" y1="42"/>
+      <Trace x0="306" y0="37" x1="311" y1="37"/>
       <Trace x0="306" y0="30" x1="306" y1="37"/>
       <Trace x0="304" y0="30" x1="306" y1="30"/>
       <Trace x0="198" y0="120" x1="170" y1="120"/>

@@ -2,7 +2,14 @@
 <Logicim version="2">
   <Circuits>
     <Circuit type="Regulator Test">
-      <Logic74Unit name="U2" x="80" y="40" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="5" partType="1G04" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="U2" x="80" y="40" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="5" vccRail="VCC" gndRail="GND" partType="1G04" unit="A" pinSpacing="2"/>
+      <Ground name="GND" x="40" y="46" rotation="North" rail="GND"/>
+      <PositivePower name="U1" x="40" y="40" rotation="South" riseTime="1000000" rail="VCC" voltage="5"/>
+      <Tunnel name="VCC" x="52" y="41" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
+      <Trace x0="40" y0="42" x1="40" y1="41"/>
+      <Trace x0="46" y0="42" x1="40" y1="42"/>
+      <Trace x0="46" y0="41" x1="46" y1="42"/>
+      <Trace x0="52" y0="41" x1="46" y1="41"/>
     </Circuit>
   </Circuits>
 </Logicim>

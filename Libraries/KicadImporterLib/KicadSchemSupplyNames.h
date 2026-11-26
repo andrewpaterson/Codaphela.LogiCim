@@ -42,5 +42,17 @@ bool	IsKicadSchemVoltageLabel(const char* szText);
 float32	GetKicadSchemSupplyLabelVoltage(const char* szText);
 
 
+//A voltage regulator's dropout and how long its output takes to rise (its start-up, charging its output
+//capacitors), by the part its symbol's value names; a power-on reset supervisor's trip voltage the same way.
+struct SKicadSchemRegulatorPart
+{
+	const char*		szPart;
+	float32			fDropout;
+	int64			iRiseNanoseconds;
+};
+SKicadSchemRegulatorPart*	GetKicadSchemRegulatorPart(const char* szValue);
+float32						GetKicadSchemSupervisorTripVoltage(const char* szValue);
+
+
 #endif // __KICAD_SCHEM_SUPPLY_NAMES_H__
 

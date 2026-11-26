@@ -8,5 +8,6 @@
     <ClCompile Include="TestKicadSchemNetlist.cpp" />
     <ClCompile Include="TestKicadSchemLogicim.cpp" />
     <ClCompile Include="TestKicadSchemDecode.cpp" />
+    <ClCompile Include="TestKicadSchemPower.cpp" />
   </ItemGroup>
 </Project>

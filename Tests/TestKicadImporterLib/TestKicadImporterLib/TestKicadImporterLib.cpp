@@ -12,6 +12,7 @@ void TestKicadSchemFile(void);
 void TestKicadSchemNetlist(void);
 void TestKicadSchemLogicim(void);
 void TestKicadSchemDecode(void);
+void TestKicadSchemPower(void);
 
 
 int __cdecl main(void)
@@ -31,6 +32,7 @@ int __cdecl main(void)
 	TestKicadSchemNetlist();
 	TestKicadSchemLogicim();
 	TestKicadSchemDecode();
+	TestKicadSchemPower();
 
 	MemoryKill();
 	TypeConverterKill();

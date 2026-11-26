@@ -11,8 +11,8 @@
       <Subcircuit name="2.2KOhm?" x="63" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="2.2KOhm?" x="116" y="42" rotation="South" type="MFR-12FTF52-0R" comment="MFR-12FTF52-0R" left="-7" top="-3" right="7" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="IC?" x="62" y="61" rotation="East" type="LSF0204PW-Q100J" comment="LSF0204PW-Q100J" left="-11" top="-8" right="11" bottom="8" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <PositivePower name="3.3V" x="43" y="30" rotation="West" voltage="3.29999995"/>
-      <PositivePower name="5V" x="105" y="30" rotation="East" voltage="5"/>
+      <PositivePower name="3.3V" x="43" y="30" rotation="West" riseTime="1000000" voltage="3.29999995"/>
+      <PositivePower name="5V" x="105" y="30" rotation="East" riseTime="1000000" voltage="5"/>
       <Ground name="GND" x="42" y="62" rotation="West"/>
       <Trace x0="55" y0="33" x1="55" y1="34"/>
       <Trace x0="58" y0="33" x1="55" y1="33"/>

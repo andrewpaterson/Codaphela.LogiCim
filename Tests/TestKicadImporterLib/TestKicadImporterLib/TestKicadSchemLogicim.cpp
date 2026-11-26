@@ -705,17 +705,17 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimConverts("Clock Hold V1 to V2", 0, 2, NULL, NULL, 3, 1, 25);
 	AssertKicadSchemLogicimConverts("LSF0204", 0, 1, NULL, NULL, 3);
 	AssertKicadSchemLogicimConverts("LED Display", 0, 2, NULL, NULL, 1);
-	//Its L7805 isn't drawn (a regulator gives its voltage to the ICs it powers).
+	//Its L7805 is a supply on its output's rail, fed from its input's.
 	AssertKicadSchemLogicimConverts("LCD Dual 7 Segment Tester", 0, 1, NULL, NULL, 2, 0, 9);
-	//Its three regulators aren't drawn.
+	//Its three regulators are supplies on their outputs' rails, fed from their inputs'.
 	AssertKicadSchemLogicimConverts("Power and Reset", 0, 1, NULL, NULL, 2, 0, 32);
-	//Its AP7365 isn't drawn.
+	//Its AP7365 is a 3.3V supply fed from the 5V rail.
 	AssertKicadSchemLogicimConverts("HCP65 MPU NMI", 10, 0, "IC8", NULL, 2, 0, 25);
-	//Its AP7365 isn't drawn.
+	//Its AP7365 is a 3.3V supply fed from the 5V rail.
 	AssertKicadSchemLogicimConverts("Triple MPU Clock Generator", 8, 1, NULL, NULL, 2, 0, 53);
-	//Its AP7365 isn't drawn.
+	//Its AP7365 is a 3.3V supply fed from the 5V rail.
 	AssertKicadSchemLogicimConverts("Flags Enable Interrupt", 0, 0, NULL, NULL, 2, 4, 26);
-	//Its LD1117S50C isn't drawn.
+	//Its LD1117S50C is a 5V supply fed from the 12V rail.
 	AssertKicadSchemLogicimConverts("UART Board", 0, 1, NULL, NULL, 3, 10, 90);
 
 	//A 74 series part drawn as units is units, and drawn whole is a package.
@@ -726,10 +726,14 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimElements("Triple MPU Clock Generator", "Logic74Package", 3);
 	AssertKicadSchemLogicimElements("Triple MPU Clock Generator", "Logic74Unit", 14);
 
-	//Voltage regulators (an LD1117S33C, an LD1117S50C and an L7812) aren't drawn: its one positive supply is its 5V
-	//labels'.
-	AssertKicadSchemLogicimElements("Power and Reset", "PositivePower", 1);
-	AssertKicadSchemLogicimAttributes("Power and Reset", "<PositivePower name=\"5V\"", 1);
+	//Its voltage regulators are supplies fed from their inputs' rails: the L7812 from the 18V input's label's supply,
+	//the LD1117S50C and LD1117S33C from the L7812's 12V.  Its DS1813 is a reset supervisor on the 5V rail.
+	AssertKicadSchemLogicimElements("Power and Reset", "PositivePower", 4);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "<PositivePower name=\"18V\"", 1);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "rail=\"12V\" voltage=\"12\" feedRail=\"18V\"", 1);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "feedRail=\"12V\"", 2);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "<ResetSupervisor name=\"IC3\"", 1);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "vccRail=\"5V\" gndRail=\"GND\" tripVoltage=\"4.3499999\"", 1);
 
 	//A supply for each net a label names as one, and an ordinary net for the names like them.
 	AssertKicadSchemLogicimConverts("Supply Label Test", 4, 0, "U1", gszKicadSchemSupplyLabelTestFile, 3);
@@ -743,13 +747,18 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimAttributes("Supply Label Test", "<Tunnel name=\"GNDb\"", 2);
 	AssertKicadSchemLogicimAttributes("Supply Label Test", "GND_{A} EN", 0);
 
-	//A regulator isn't drawn: the IC its output powers gets its voltage as its implied Vcc.  The ground on only the
-	//regulator's pin, and the VCC label's tunnel on a wire to nothing drawn, aren't made, so neither is the wire.
-	AssertKicadSchemLogicimConverts("Regulator Test", 1, 0, NULL, gszKicadSchemRegulatorTestFile, 0);
-	AssertKicadSchemLogicimElements("Regulator Test", "PositivePower", 0);
-	AssertKicadSchemLogicimElements("Regulator Test", "Ground", 0);
-	AssertKicadSchemLogicimElements("Regulator Test", "Tunnel", 0);
-	AssertKicadSchemLogicimElements("Regulator Test", "Trace", 0);
+	//A regulator is a supply on its output's rail, VCC, wired to the VCC label's tunnel, and rises on its own as nothing
+	//supplies its input.  The IC it powers is on the VCC and GND rails, and the ground, on only the regulator's ground
+	//pin, is made: it's on the GND rail, which the IC's hidden GND pin joins.  The IC still has the regulator's voltage
+	//as its implied Vcc.
+	AssertKicadSchemLogicimConverts("Regulator Test", 1, 0, NULL, gszKicadSchemRegulatorTestFile, 1);
+	AssertKicadSchemLogicimElements("Regulator Test", "PositivePower", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Test", "<PositivePower name=\"U1\"", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Test", "rail=\"VCC\" voltage=\"5\"", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Test", "feedRail", 0);
+	AssertKicadSchemLogicimElements("Regulator Test", "Ground", 1);
+	AssertKicadSchemLogicimElements("Regulator Test", "Tunnel", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Test", "vccRail=\"VCC\" gndRail=\"GND\"", 1);
 	AssertKicadSchemLogicimAttributes("Regulator Test", "impliedVCC=\"5", 1);
 }
 

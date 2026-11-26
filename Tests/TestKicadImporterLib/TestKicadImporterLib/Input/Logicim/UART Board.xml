@@ -2,12 +2,12 @@
 <Logicim version="2">
   <Circuits>
     <Circuit type="UART Board">
-      <Subcircuit name="B3" x="249" y="146" rotation="East" type="UART RS232" comment="UART RS232" left="-13" top="-11" right="15" bottom="13" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Subcircuit name="B6" x="170" y="23" rotation="East" type="UART_Signals" comment="UART Signals" left="-15" top="-8" right="15" bottom="8" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Subcircuit name="B5" x="249" y="83" rotation="East" type="UART TTL5V" comment="UART TTL5V" left="-13" top="-11" right="15" bottom="13" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Subcircuit name="IC3" x="166" y="130" rotation="East" type="SST39VF010-70-4I-NHE" comment="SST39VF010-70-4I-NHE" left="-12" top="-21" right="11" bottom="23" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Subcircuit name="B4" x="170" y="73" rotation="East" type="Device_Decode_Stage_A" comment="Device Decode Stage A" left="-17" top="-15" right="18" bottom="15" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Subcircuit name="B2" x="261" y="19" rotation="East" type="Clock_Hold_Standard" comment="Clock Hold Standard" left="-17" top="-12" right="12" bottom="12" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B3" x="253" y="150" rotation="East" type="UART RS232" comment="UART RS232" left="-13" top="-11" right="15" bottom="13" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B6" x="174" y="23" rotation="East" type="UART_Signals" comment="UART Signals" left="-15" top="-8" right="15" bottom="8" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B5" x="253" y="83" rotation="East" type="UART TTL5V" comment="UART TTL5V" left="-13" top="-11" right="15" bottom="13" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="IC3" x="166" y="134" rotation="East" type="SST39VF010-70-4I-NHE" comment="SST39VF010-70-4I-NHE" left="-12" top="-21" right="11" bottom="23" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B4" x="174" y="73" rotation="East" type="Device_Decode_Stage_A" comment="Device Decode Stage A" left="-17" top="-15" right="18" bottom="15" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
+      <Subcircuit name="B2" x="273" y="19" rotation="East" type="Clock_Hold_Standard" comment="Clock Hold Standard" left="-17" top="-12" right="12" bottom="12" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Subcircuit name="B1" x="90" y="80" rotation="East" type="Device_Buffer" comment="Device Buffer" left="-13" top="-34" right="12" bottom="34" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Pin name="Main CLK" x="34" y="77" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
       <Pin name="J5-B4" x="34" y="82" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
@@ -99,74 +99,76 @@
       <Pin name="J5-C16" x="57" y="297" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
       <Pin name="J5-C17" x="57" y="302" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
       <Pin name="J5-C18" x="57" y="307" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="0" inverting="false" clockNotch="false"/>
-      <PositivePower name="5V" x="240" y="172" rotation="East" voltage="5"/>
-      <Ground name="GND" x="285" y="146" rotation="West"/>
-      <PositivePower name="3.3V" x="203" y="130" rotation="West" voltage="3.29999995"/>
-      <Tunnel name="5V" x="235" y="151" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="235" y="153" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="154" y="29" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="235" y="88" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="235" y="90" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="152" y="84" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="152" y="86" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="243" y="27" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="243" y="29" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Ground name="GND" x="297" y="150" rotation="West"/>
+      <PositivePower name="12V" x="30" y="219" rotation="East" riseTime="1000000" rail="12V" voltage="12"/>
+      <PositivePower name="3.3V" x="207" y="134" rotation="West" riseTime="1000000" voltage="3.29999995"/>
+      <PositivePower name="IC1" x="45" y="219" rotation="South" riseTime="1000000" dropout="1.10000002" rail="5V" voltage="5" feedRail="12V"/>
+      <Tunnel name="5V" x="76" y="220" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="155" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="157" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="158" y="29" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="88" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="239" y="90" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="156" y="84" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="156" y="86" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="255" y="27" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="255" y="29" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="76" y="106" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="5V" x="76" y="108" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="137" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="139" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="141" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="143" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="186" y="17" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="74" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="76" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="78" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="265" y="80" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="153" y="151" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="153" y="117" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="153" y="119" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="141" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="143" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="145" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="147" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="190" y="17" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="74" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="76" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="78" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="269" y="80" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="155" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="153" y="121" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="153" y="123" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="153" y="125" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="153" y="127" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="153" y="129" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="189" y="66" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="152" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="152" y="64" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="189" y="60" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="189" y="62" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="189" y="64" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="243" y="21" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="243" y="23" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="274" y="9" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="274" y="11" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="274" y="13" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="GND" x="274" y="15" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="131" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="153" y="133" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="66" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="156" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="156" y="64" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="60" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="62" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="193" y="64" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="255" y="21" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="255" y="23" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="9" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="11" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="13" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="286" y="15" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="103" y="52" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="76" y="56" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="76" y="58" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="103" y="48" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="103" y="50" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="103" y="54" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Device ROM}" x="189" y="72" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
-      <Tunnel name="~{Device ROM}" x="153" y="115" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
-      <Tunnel name="~{Device ROM}" x="243" y="11" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device ROM}" x="193" y="72" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device ROM}" x="153" y="119" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device ROM}" x="255" y="11" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.503571428571429" bottom="0.82857142857142851"/>
       <Tunnel name="~{Device Interrupt}" x="31" y="157" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="9.5035714285714299" bottom="0.82857142857142851"/>
-      <Tunnel name="~{Device Interrupt}" x="186" y="25" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="9.5035714285714299" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device Interrupt}" x="190" y="25" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="9.5035714285714299" bottom="0.82857142857142851"/>
       <Tunnel name="~{Device Enable}" x="31" y="172" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.5035714285714299" bottom="0.82857142857142851"/>
-      <Tunnel name="~{Device Enable}" x="186" y="23" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="8.5035714285714299" bottom="0.82857142857142851"/>
-      <Tunnel name="3.3V" x="178" y="111" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="3.3V" x="243" y="25" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="3.3V" x="274" y="23" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Reset Device}" x="152" y="80" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.9035714285714285" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Device Enable}" x="190" y="23" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="8.5035714285714299" bottom="0.82857142857142851"/>
+      <Tunnel name="3.3V" x="178" y="115" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="255" y="25" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="286" y="23" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="~{Reset Device}" x="156" y="80" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.9035714285714285" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset Device}" x="34" y="162" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="7.9035714285714285" bottom="0.82857142857142851"/>
-      <Tunnel name="~{Reset System}" x="152" y="82" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Reset System}" x="156" y="82" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset System}" x="57" y="67" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
-      <Tunnel name="HD2" x="274" y="17" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD2" x="286" y="17" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="HD2" x="57" y="207" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="HD1" x="274" y="19" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD1" x="286" y="19" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="HD1" x="57" y="212" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="HD0" x="274" y="21" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="HD0" x="286" y="21" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="HD0" x="57" y="217" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="~{Select Device}" x="76" y="48" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.1035714285714278" bottom="0.82857142857142851"/>
       <Tunnel name="~{Select Device}" x="34" y="167" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.1035714285714278" bottom="0.82857142857142851"/>
@@ -222,22 +224,22 @@
       <Tunnel name="DD6" x="57" y="172" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="DD7" x="76" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="DD7" x="57" y="167" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Splitter name="" x="146" y="21" rotation="West" bitWidth="15" fanOut="2" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="1 1 1 0 1 1 1 1 1 1 1 1 1 1 1"/>
-      <Splitter name="" x="139" y="66" rotation="West" bitWidth="15" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 7 7 6 5 7 7 7 7 7 4 3 2 1 0"/>
-      <Splitter name="" x="141" y="131" rotation="West" bitWidth="15" fanOut="11" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="9 8 7 6 5 4 3 2 1 0 10 10 10 10 10"/>
-      <Splitter name="" x="228" y="82" rotation="West" bitWidth="15" fanOut="4" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="2 1 0 3 3 3 3 3 3 3 3 3 3 3 3"/>
-      <Splitter name="" x="228" y="145" rotation="West" bitWidth="15" fanOut="4" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="2 1 0 3 3 3 3 3 3 3 3 3 3 3 3"/>
+      <Splitter name="" x="150" y="21" rotation="West" bitWidth="15" fanOut="2" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="1 1 1 0 1 1 1 1 1 1 1 1 1 1 1"/>
+      <Splitter name="" x="143" y="66" rotation="West" bitWidth="15" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 7 7 6 5 7 7 7 7 7 4 3 2 1 0"/>
+      <Splitter name="" x="141" y="135" rotation="West" bitWidth="15" fanOut="11" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="9 8 7 6 5 4 3 2 1 0 10 10 10 10 10"/>
+      <Splitter name="" x="232" y="82" rotation="West" bitWidth="15" fanOut="4" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="2 1 0 3 3 3 3 3 3 3 3 3 3 3 3"/>
+      <Splitter name="" x="232" y="149" rotation="West" bitWidth="15" fanOut="4" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="2 1 0 3 3 3 3 3 3 3 3 3 3 3 3"/>
       <Splitter name="" x="111" y="96" rotation="East" bitWidth="15" fanOut="15" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14"/>
       <Splitter name="" x="111" y="114" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
-      <Splitter name="" x="251" y="121" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
-      <Splitter name="" x="168" y="178" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
-      <Splitter name="" x="251" y="184" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
-      <Trace x0="230" y0="145" x1="235" y1="145"/>
-      <Trace x0="230" y0="147" x1="235" y1="147"/>
-      <Trace x0="230" y0="149" x1="235" y1="149"/>
-      <Trace x0="230" y0="82" x1="235" y1="82"/>
-      <Trace x0="230" y0="84" x1="235" y1="84"/>
-      <Trace x0="230" y0="86" x1="235" y1="86"/>
+      <Splitter name="" x="255" y="121" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Splitter name="" x="168" y="182" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Splitter name="" x="255" y="188" rotation="East" bitWidth="8" fanOut="8" gridSpacing="2" appearance="left_handed" endOffset="0" splitIndices="7 6 5 4 3 2 1 0"/>
+      <Trace x0="234" y0="149" x1="239" y1="149"/>
+      <Trace x0="234" y0="151" x1="239" y1="151"/>
+      <Trace x0="234" y0="153" x1="239" y1="153"/>
+      <Trace x0="234" y0="82" x1="239" y1="82"/>
+      <Trace x0="234" y0="84" x1="239" y1="84"/>
+      <Trace x0="234" y0="86" x1="239" y1="86"/>
       <Trace x0="109" y0="68" x1="103" y1="68"/>
       <Trace x0="109" y0="70" x1="103" y1="70"/>
       <Trace x0="109" y0="72" x1="103" y1="72"/>
@@ -283,8 +285,6 @@
       <Trace x0="104" y0="112" x1="103" y1="112"/>
       <Trace x0="104" y0="114" x1="104" y1="112"/>
       <Trace x0="109" y0="114" x1="104" y1="114"/>
-      <Trace x0="143" y0="131" x1="153" y1="131"/>
-      <Trace x0="143" y0="133" x1="153" y1="133"/>
       <Trace x0="143" y0="135" x1="153" y1="135"/>
       <Trace x0="143" y0="137" x1="153" y1="137"/>
       <Trace x0="143" y0="139" x1="153" y1="139"/>
@@ -293,342 +293,336 @@
       <Trace x0="143" y0="145" x1="153" y1="145"/>
       <Trace x0="143" y0="147" x1="153" y1="147"/>
       <Trace x0="143" y0="149" x1="153" y1="149"/>
-      <Trace x0="141" y0="66" x1="152" y1="66"/>
-      <Trace x0="141" y0="68" x1="152" y1="68"/>
-      <Trace x0="141" y0="70" x1="152" y1="70"/>
-      <Trace x0="141" y0="72" x1="152" y1="72"/>
-      <Trace x0="141" y0="74" x1="152" y1="74"/>
-      <Trace x0="141" y0="76" x1="152" y1="76"/>
-      <Trace x0="141" y0="78" x1="152" y1="78"/>
-      <Trace x0="173" y0="156" x1="173" y1="154"/>
-      <Trace x0="169" y0="156" x1="173" y1="156"/>
-      <Trace x0="169" y0="163" x1="169" y1="156"/>
-      <Trace x0="165" y0="163" x1="169" y1="163"/>
-      <Trace x0="165" y0="164" x1="165" y1="163"/>
-      <Trace x0="166" y0="164" x1="165" y1="164"/>
-      <Trace x0="171" y0="162" x1="171" y1="154"/>
-      <Trace x0="164" y0="162" x1="171" y1="162"/>
-      <Trace x0="164" y0="166" x1="164" y1="162"/>
-      <Trace x0="166" y0="166" x1="164" y1="166"/>
-      <Trace x0="169" y0="155" x1="169" y1="154"/>
-      <Trace x0="168" y0="155" x1="169" y1="155"/>
-      <Trace x0="168" y0="161" x1="168" y1="155"/>
-      <Trace x0="163" y0="161" x1="168" y1="161"/>
-      <Trace x0="163" y0="168" x1="163" y1="161"/>
-      <Trace x0="166" y0="168" x1="163" y1="168"/>
-      <Trace x0="167" y0="160" x1="167" y1="154"/>
-      <Trace x0="162" y0="160" x1="167" y1="160"/>
-      <Trace x0="162" y0="170" x1="162" y1="160"/>
-      <Trace x0="166" y0="170" x1="162" y1="170"/>
-      <Trace x0="165" y0="157" x1="165" y1="154"/>
-      <Trace x0="173" y0="157" x1="165" y1="157"/>
-      <Trace x0="173" y0="179" x1="173" y1="157"/>
-      <Trace x0="164" y0="179" x1="173" y1="179"/>
-      <Trace x0="164" y0="172" x1="164" y1="179"/>
-      <Trace x0="166" y0="172" x1="164" y1="172"/>
-      <Trace x0="163" y0="158" x1="163" y1="154"/>
-      <Trace x0="174" y0="158" x1="163" y1="158"/>
-      <Trace x0="174" y0="180" x1="174" y1="158"/>
-      <Trace x0="163" y0="180" x1="174" y1="180"/>
-      <Trace x0="163" y0="174" x1="163" y1="180"/>
-      <Trace x0="166" y0="174" x1="163" y1="174"/>
-      <Trace x0="161" y0="159" x1="161" y1="154"/>
-      <Trace x0="175" y0="159" x1="161" y1="159"/>
-      <Trace x0="175" y0="181" x1="175" y1="159"/>
-      <Trace x0="162" y0="181" x1="175" y1="181"/>
-      <Trace x0="162" y0="176" x1="162" y1="181"/>
-      <Trace x0="166" y0="176" x1="162" y1="176"/>
-      <Trace x0="159" y0="178" x1="159" y1="154"/>
-      <Trace x0="166" y0="178" x1="159" y1="178"/>
-      <Trace x0="256" y0="162" x1="256" y1="160"/>
-      <Trace x0="254" y0="162" x1="256" y1="162"/>
-      <Trace x0="254" y0="169" x1="254" y1="162"/>
-      <Trace x0="248" y0="169" x1="254" y1="169"/>
-      <Trace x0="248" y0="170" x1="248" y1="169"/>
-      <Trace x0="249" y0="170" x1="248" y1="170"/>
-      <Trace x0="254" y0="161" x1="254" y1="160"/>
-      <Trace x0="255" y0="161" x1="254" y1="161"/>
-      <Trace x0="255" y0="168" x1="255" y1="161"/>
-      <Trace x0="247" y0="168" x1="255" y1="168"/>
-      <Trace x0="247" y0="172" x1="247" y1="168"/>
-      <Trace x0="249" y0="172" x1="247" y1="172"/>
-      <Trace x0="252" y0="167" x1="252" y1="160"/>
-      <Trace x0="246" y0="167" x1="252" y1="167"/>
-      <Trace x0="246" y0="174" x1="246" y1="167"/>
-      <Trace x0="249" y0="174" x1="246" y1="174"/>
-      <Trace x0="250" y0="166" x1="250" y1="160"/>
-      <Trace x0="245" y0="166" x1="250" y1="166"/>
-      <Trace x0="245" y0="176" x1="245" y1="166"/>
-      <Trace x0="249" y0="176" x1="245" y1="176"/>
-      <Trace x0="248" y0="162" x1="248" y1="160"/>
-      <Trace x0="244" y0="162" x1="248" y1="162"/>
-      <Trace x0="244" y0="178" x1="244" y1="162"/>
-      <Trace x0="249" y0="178" x1="244" y1="178"/>
-      <Trace x0="246" y0="163" x1="246" y1="160"/>
-      <Trace x0="259" y0="163" x1="246" y1="163"/>
-      <Trace x0="259" y0="185" x1="259" y1="163"/>
-      <Trace x0="247" y0="185" x1="259" y1="185"/>
-      <Trace x0="247" y0="180" x1="247" y1="185"/>
-      <Trace x0="249" y0="180" x1="247" y1="180"/>
-      <Trace x0="244" y0="161" x1="244" y1="160"/>
-      <Trace x0="245" y0="161" x1="244" y1="161"/>
-      <Trace x0="245" y0="164" x1="245" y1="161"/>
-      <Trace x0="260" y0="164" x1="245" y1="164"/>
-      <Trace x0="260" y0="186" x1="260" y1="164"/>
-      <Trace x0="246" y0="186" x1="260" y1="186"/>
-      <Trace x0="246" y0="182" x1="246" y1="186"/>
-      <Trace x0="249" y0="182" x1="246" y1="182"/>
-      <Trace x0="242" y0="165" x1="242" y1="160"/>
-      <Trace x0="261" y0="165" x1="242" y1="165"/>
-      <Trace x0="261" y0="187" x1="261" y1="165"/>
-      <Trace x0="248" y0="187" x1="261" y1="187"/>
-      <Trace x0="248" y0="184" x1="248" y1="187"/>
-      <Trace x0="249" y0="184" x1="248" y1="184"/>
-      <Trace x0="256" y0="99" x1="256" y1="97"/>
-      <Trace x0="254" y0="99" x1="256" y1="99"/>
-      <Trace x0="254" y0="106" x1="254" y1="99"/>
-      <Trace x0="248" y0="106" x1="254" y1="106"/>
-      <Trace x0="248" y0="107" x1="248" y1="106"/>
-      <Trace x0="249" y0="107" x1="248" y1="107"/>
-      <Trace x0="254" y0="98" x1="254" y1="97"/>
-      <Trace x0="255" y0="98" x1="254" y1="98"/>
-      <Trace x0="255" y0="105" x1="255" y1="98"/>
-      <Trace x0="247" y0="105" x1="255" y1="105"/>
-      <Trace x0="247" y0="109" x1="247" y1="105"/>
-      <Trace x0="249" y0="109" x1="247" y1="109"/>
-      <Trace x0="252" y0="104" x1="252" y1="97"/>
-      <Trace x0="246" y0="104" x1="252" y1="104"/>
-      <Trace x0="246" y0="111" x1="246" y1="104"/>
-      <Trace x0="249" y0="111" x1="246" y1="111"/>
-      <Trace x0="250" y0="103" x1="250" y1="97"/>
-      <Trace x0="245" y0="103" x1="250" y1="103"/>
-      <Trace x0="245" y0="113" x1="245" y1="103"/>
-      <Trace x0="249" y0="113" x1="245" y1="113"/>
-      <Trace x0="248" y0="99" x1="248" y1="97"/>
-      <Trace x0="244" y0="99" x1="248" y1="99"/>
-      <Trace x0="244" y0="115" x1="244" y1="99"/>
-      <Trace x0="249" y0="115" x1="244" y1="115"/>
-      <Trace x0="246" y0="100" x1="246" y1="97"/>
-      <Trace x0="259" y0="100" x1="246" y1="100"/>
-      <Trace x0="259" y0="122" x1="259" y1="100"/>
-      <Trace x0="247" y0="122" x1="259" y1="122"/>
-      <Trace x0="247" y0="117" x1="247" y1="122"/>
-      <Trace x0="249" y0="117" x1="247" y1="117"/>
-      <Trace x0="244" y0="98" x1="244" y1="97"/>
-      <Trace x0="245" y0="98" x1="244" y1="98"/>
-      <Trace x0="245" y0="101" x1="245" y1="98"/>
-      <Trace x0="260" y0="101" x1="245" y1="101"/>
-      <Trace x0="260" y0="123" x1="260" y1="101"/>
-      <Trace x0="246" y0="123" x1="260" y1="123"/>
-      <Trace x0="246" y0="119" x1="246" y1="123"/>
-      <Trace x0="249" y0="119" x1="246" y1="119"/>
-      <Trace x0="242" y0="102" x1="242" y1="97"/>
-      <Trace x0="261" y0="102" x1="242" y1="102"/>
-      <Trace x0="261" y0="124" x1="261" y1="102"/>
-      <Trace x0="248" y0="124" x1="261" y1="124"/>
-      <Trace x0="248" y0="121" x1="248" y1="124"/>
-      <Trace x0="249" y0="121" x1="248" y1="121"/>
-      <Trace x0="152" y0="19" x1="154" y1="19"/>
-      <Trace x0="152" y0="28" x1="152" y1="19"/>
-      <Trace x0="150" y0="28" x1="152" y1="28"/>
-      <Trace x0="150" y0="32" x1="150" y1="28"/>
-      <Trace x0="159" y0="32" x1="150" y1="32"/>
-      <Trace x0="159" y0="57" x1="159" y1="32"/>
-      <Trace x0="151" y0="57" x1="159" y1="57"/>
-      <Trace x0="151" y0="60" x1="151" y1="57"/>
-      <Trace x0="152" y0="60" x1="151" y1="60"/>
-      <Trace x0="150" y0="23" x1="154" y1="23"/>
-      <Trace x0="150" y0="26" x1="150" y1="23"/>
-      <Trace x0="148" y0="26" x1="150" y1="26"/>
-      <Trace x0="148" y0="34" x1="148" y1="26"/>
-      <Trace x0="157" y0="34" x1="148" y1="34"/>
-      <Trace x0="157" y0="55" x1="157" y1="34"/>
-      <Trace x0="198" y0="55" x1="157" y1="55"/>
-      <Trace x0="198" y0="76" x1="198" y1="55"/>
-      <Trace x0="189" y0="76" x1="198" y1="76"/>
+      <Trace x0="143" y0="151" x1="153" y1="151"/>
+      <Trace x0="143" y0="153" x1="153" y1="153"/>
+      <Trace x0="145" y0="66" x1="156" y1="66"/>
+      <Trace x0="145" y0="68" x1="156" y1="68"/>
+      <Trace x0="145" y0="70" x1="156" y1="70"/>
+      <Trace x0="145" y0="72" x1="156" y1="72"/>
+      <Trace x0="145" y0="74" x1="156" y1="74"/>
+      <Trace x0="145" y0="76" x1="156" y1="76"/>
+      <Trace x0="145" y0="78" x1="156" y1="78"/>
+      <Trace x0="173" y0="160" x1="173" y1="158"/>
+      <Trace x0="169" y0="160" x1="173" y1="160"/>
+      <Trace x0="169" y0="167" x1="169" y1="160"/>
+      <Trace x0="165" y0="167" x1="169" y1="167"/>
+      <Trace x0="165" y0="168" x1="165" y1="167"/>
+      <Trace x0="166" y0="168" x1="165" y1="168"/>
+      <Trace x0="171" y0="166" x1="171" y1="158"/>
+      <Trace x0="164" y0="166" x1="171" y1="166"/>
+      <Trace x0="164" y0="170" x1="164" y1="166"/>
+      <Trace x0="166" y0="170" x1="164" y1="170"/>
+      <Trace x0="169" y0="159" x1="169" y1="158"/>
+      <Trace x0="168" y0="159" x1="169" y1="159"/>
+      <Trace x0="168" y0="165" x1="168" y1="159"/>
+      <Trace x0="163" y0="165" x1="168" y1="165"/>
+      <Trace x0="163" y0="172" x1="163" y1="165"/>
+      <Trace x0="166" y0="172" x1="163" y1="172"/>
+      <Trace x0="167" y0="164" x1="167" y1="158"/>
+      <Trace x0="162" y0="164" x1="167" y1="164"/>
+      <Trace x0="162" y0="174" x1="162" y1="164"/>
+      <Trace x0="166" y0="174" x1="162" y1="174"/>
+      <Trace x0="165" y0="161" x1="165" y1="158"/>
+      <Trace x0="173" y0="161" x1="165" y1="161"/>
+      <Trace x0="173" y0="183" x1="173" y1="161"/>
+      <Trace x0="164" y0="183" x1="173" y1="183"/>
+      <Trace x0="164" y0="176" x1="164" y1="183"/>
+      <Trace x0="166" y0="176" x1="164" y1="176"/>
+      <Trace x0="163" y0="162" x1="163" y1="158"/>
+      <Trace x0="174" y0="162" x1="163" y1="162"/>
+      <Trace x0="174" y0="184" x1="174" y1="162"/>
+      <Trace x0="163" y0="184" x1="174" y1="184"/>
+      <Trace x0="163" y0="178" x1="163" y1="184"/>
+      <Trace x0="166" y0="178" x1="163" y1="178"/>
+      <Trace x0="161" y0="163" x1="161" y1="158"/>
+      <Trace x0="175" y0="163" x1="161" y1="163"/>
+      <Trace x0="175" y0="185" x1="175" y1="163"/>
+      <Trace x0="162" y0="185" x1="175" y1="185"/>
+      <Trace x0="162" y0="180" x1="162" y1="185"/>
+      <Trace x0="166" y0="180" x1="162" y1="180"/>
+      <Trace x0="159" y0="182" x1="159" y1="158"/>
+      <Trace x0="166" y0="182" x1="159" y1="182"/>
+      <Trace x0="260" y0="166" x1="260" y1="164"/>
+      <Trace x0="258" y0="166" x1="260" y1="166"/>
+      <Trace x0="258" y0="173" x1="258" y1="166"/>
+      <Trace x0="252" y0="173" x1="258" y1="173"/>
+      <Trace x0="252" y0="174" x1="252" y1="173"/>
+      <Trace x0="253" y0="174" x1="252" y1="174"/>
+      <Trace x0="258" y0="165" x1="258" y1="164"/>
+      <Trace x0="259" y0="165" x1="258" y1="165"/>
+      <Trace x0="259" y0="172" x1="259" y1="165"/>
+      <Trace x0="251" y0="172" x1="259" y1="172"/>
+      <Trace x0="251" y0="176" x1="251" y1="172"/>
+      <Trace x0="253" y0="176" x1="251" y1="176"/>
+      <Trace x0="256" y0="171" x1="256" y1="164"/>
+      <Trace x0="250" y0="171" x1="256" y1="171"/>
+      <Trace x0="250" y0="178" x1="250" y1="171"/>
+      <Trace x0="253" y0="178" x1="250" y1="178"/>
+      <Trace x0="254" y0="170" x1="254" y1="164"/>
+      <Trace x0="249" y0="170" x1="254" y1="170"/>
+      <Trace x0="249" y0="180" x1="249" y1="170"/>
+      <Trace x0="253" y0="180" x1="249" y1="180"/>
+      <Trace x0="252" y0="166" x1="252" y1="164"/>
+      <Trace x0="248" y0="166" x1="252" y1="166"/>
+      <Trace x0="248" y0="182" x1="248" y1="166"/>
+      <Trace x0="253" y0="182" x1="248" y1="182"/>
+      <Trace x0="250" y0="167" x1="250" y1="164"/>
+      <Trace x0="263" y0="167" x1="250" y1="167"/>
+      <Trace x0="263" y0="189" x1="263" y1="167"/>
+      <Trace x0="251" y0="189" x1="263" y1="189"/>
+      <Trace x0="251" y0="184" x1="251" y1="189"/>
+      <Trace x0="253" y0="184" x1="251" y1="184"/>
+      <Trace x0="248" y0="165" x1="248" y1="164"/>
+      <Trace x0="249" y0="165" x1="248" y1="165"/>
+      <Trace x0="249" y0="168" x1="249" y1="165"/>
+      <Trace x0="264" y0="168" x1="249" y1="168"/>
+      <Trace x0="264" y0="190" x1="264" y1="168"/>
+      <Trace x0="250" y0="190" x1="264" y1="190"/>
+      <Trace x0="250" y0="186" x1="250" y1="190"/>
+      <Trace x0="253" y0="186" x1="250" y1="186"/>
+      <Trace x0="246" y0="169" x1="246" y1="164"/>
+      <Trace x0="265" y0="169" x1="246" y1="169"/>
+      <Trace x0="265" y0="191" x1="265" y1="169"/>
+      <Trace x0="252" y0="191" x1="265" y1="191"/>
+      <Trace x0="252" y0="188" x1="252" y1="191"/>
+      <Trace x0="253" y0="188" x1="252" y1="188"/>
+      <Trace x0="260" y0="99" x1="260" y1="97"/>
+      <Trace x0="258" y0="99" x1="260" y1="99"/>
+      <Trace x0="258" y0="106" x1="258" y1="99"/>
+      <Trace x0="252" y0="106" x1="258" y1="106"/>
+      <Trace x0="252" y0="107" x1="252" y1="106"/>
+      <Trace x0="253" y0="107" x1="252" y1="107"/>
+      <Trace x0="258" y0="98" x1="258" y1="97"/>
+      <Trace x0="259" y0="98" x1="258" y1="98"/>
+      <Trace x0="259" y0="105" x1="259" y1="98"/>
+      <Trace x0="251" y0="105" x1="259" y1="105"/>
+      <Trace x0="251" y0="109" x1="251" y1="105"/>
+      <Trace x0="253" y0="109" x1="251" y1="109"/>
+      <Trace x0="256" y0="104" x1="256" y1="97"/>
+      <Trace x0="250" y0="104" x1="256" y1="104"/>
+      <Trace x0="250" y0="111" x1="250" y1="104"/>
+      <Trace x0="253" y0="111" x1="250" y1="111"/>
+      <Trace x0="254" y0="103" x1="254" y1="97"/>
+      <Trace x0="249" y0="103" x1="254" y1="103"/>
+      <Trace x0="249" y0="113" x1="249" y1="103"/>
+      <Trace x0="253" y0="113" x1="249" y1="113"/>
+      <Trace x0="252" y0="99" x1="252" y1="97"/>
+      <Trace x0="248" y0="99" x1="252" y1="99"/>
+      <Trace x0="248" y0="115" x1="248" y1="99"/>
+      <Trace x0="253" y0="115" x1="248" y1="115"/>
+      <Trace x0="250" y0="100" x1="250" y1="97"/>
+      <Trace x0="263" y0="100" x1="250" y1="100"/>
+      <Trace x0="263" y0="122" x1="263" y1="100"/>
+      <Trace x0="251" y0="122" x1="263" y1="122"/>
+      <Trace x0="251" y0="117" x1="251" y1="122"/>
+      <Trace x0="253" y0="117" x1="251" y1="117"/>
+      <Trace x0="248" y0="98" x1="248" y1="97"/>
+      <Trace x0="249" y0="98" x1="248" y1="98"/>
+      <Trace x0="249" y0="101" x1="249" y1="98"/>
+      <Trace x0="264" y0="101" x1="249" y1="101"/>
+      <Trace x0="264" y0="123" x1="264" y1="101"/>
+      <Trace x0="250" y0="123" x1="264" y1="123"/>
+      <Trace x0="250" y0="119" x1="250" y1="123"/>
+      <Trace x0="253" y0="119" x1="250" y1="119"/>
+      <Trace x0="246" y0="102" x1="246" y1="97"/>
+      <Trace x0="265" y0="102" x1="246" y1="102"/>
+      <Trace x0="265" y0="124" x1="265" y1="102"/>
+      <Trace x0="252" y0="124" x1="265" y1="124"/>
+      <Trace x0="252" y0="121" x1="252" y1="124"/>
+      <Trace x0="253" y0="121" x1="252" y1="121"/>
+      <Trace x0="156" y0="19" x1="158" y1="19"/>
+      <Trace x0="156" y0="28" x1="156" y1="19"/>
+      <Trace x0="154" y0="28" x1="156" y1="28"/>
+      <Trace x0="154" y0="32" x1="154" y1="28"/>
+      <Trace x0="163" y0="32" x1="154" y1="32"/>
+      <Trace x0="163" y0="57" x1="163" y1="32"/>
+      <Trace x0="155" y0="57" x1="163" y1="57"/>
+      <Trace x0="155" y0="60" x1="155" y1="57"/>
+      <Trace x0="156" y0="60" x1="155" y1="60"/>
+      <Trace x0="154" y0="23" x1="158" y1="23"/>
+      <Trace x0="154" y0="26" x1="154" y1="23"/>
+      <Trace x0="152" y0="26" x1="154" y1="26"/>
+      <Trace x0="152" y0="34" x1="152" y1="26"/>
+      <Trace x0="161" y0="34" x1="152" y1="34"/>
+      <Trace x0="161" y0="55" x1="161" y1="34"/>
+      <Trace x0="202" y0="55" x1="161" y1="55"/>
+      <Trace x0="202" y0="76" x1="202" y1="55"/>
+      <Trace x0="193" y0="76" x1="202" y1="76"/>
+      <Trace x0="227" y0="19" x1="190" y1="19"/>
+      <Trace x0="227" y0="76" x1="227" y1="19"/>
+      <Trace x0="239" y0="76" x1="227" y1="76"/>
+      <Trace x0="150" y0="25" x1="158" y1="25"/>
+      <Trace x0="150" y0="35" x1="150" y1="25"/>
+      <Trace x0="226" y0="35" x1="150" y1="35"/>
+      <Trace x0="226" y0="70" x1="226" y1="35"/>
+      <Trace x0="274" y0="70" x1="226" y1="70"/>
+      <Trace x0="274" y0="82" x1="274" y1="70"/>
+      <Trace x0="269" y0="82" x1="274" y1="82"/>
       <Trace x0="130" y0="58" x1="103" y1="58"/>
-      <Trace x0="130" y0="111" x1="130" y1="58"/>
-      <Trace x0="153" y0="111" x1="130" y1="111"/>
+      <Trace x0="130" y0="115" x1="130" y1="58"/>
+      <Trace x0="153" y0="115" x1="130" y1="115"/>
       <Trace x0="129" y0="60" x1="103" y1="60"/>
-      <Trace x0="129" y0="113" x1="129" y1="60"/>
-      <Trace x0="153" y0="113" x1="129" y1="113"/>
-      <Trace x0="223" y0="19" x1="186" y1="19"/>
-      <Trace x0="223" y0="76" x1="223" y1="19"/>
-      <Trace x0="235" y0="76" x1="223" y1="76"/>
-      <Trace x0="146" y0="25" x1="154" y1="25"/>
-      <Trace x0="146" y0="35" x1="146" y1="25"/>
-      <Trace x0="222" y0="35" x1="146" y1="35"/>
-      <Trace x0="222" y0="70" x1="222" y1="35"/>
-      <Trace x0="270" y0="70" x1="222" y1="70"/>
-      <Trace x0="270" y0="82" x1="270" y1="70"/>
-      <Trace x0="265" y0="82" x1="270" y1="82"/>
-      <Trace x0="192" y0="68" x1="189" y1="68"/>
-      <Trace x0="192" y0="67" x1="192" y1="68"/>
-      <Trace x0="220" y0="67" x1="192" y1="67"/>
-      <Trace x0="220" y0="15" x1="220" y1="67"/>
-      <Trace x0="243" y0="15" x1="220" y1="15"/>
-      <Trace x0="197" y0="139" x1="235" y1="139"/>
-      <Trace x0="197" y0="77" x1="197" y1="139"/>
-      <Trace x0="199" y0="77" x1="197" y1="77"/>
-      <Trace x0="199" y0="71" x1="199" y1="77"/>
-      <Trace x0="197" y0="71" x1="199" y1="71"/>
-      <Trace x0="197" y0="21" x1="197" y1="71"/>
-      <Trace x0="186" y0="21" x1="197" y1="21"/>
-      <Trace x0="217" y0="17" x1="243" y1="17"/>
-      <Trace x0="217" y0="13" x1="217" y1="17"/>
-      <Trace x0="130" y0="13" x1="217" y1="13"/>
-      <Trace x0="130" y0="58" x1="130" y1="13"/>
-      <Trace x0="103" y0="58" x1="130" y1="58"/>
-      <Trace x0="241" y0="19" x1="243" y1="19"/>
-      <Trace x0="241" y0="18" x1="241" y1="19"/>
-      <Trace x0="216" y0="18" x1="241" y1="18"/>
-      <Trace x0="216" y0="14" x1="216" y1="18"/>
-      <Trace x0="131" y0="14" x1="216" y1="14"/>
-      <Trace x0="131" y0="60" x1="131" y1="14"/>
-      <Trace x0="103" y0="60" x1="131" y1="60"/>
+      <Trace x0="129" y0="117" x1="129" y1="60"/>
+      <Trace x0="153" y0="117" x1="129" y1="117"/>
+      <Trace x0="229" y0="68" x1="193" y1="68"/>
+      <Trace x0="229" y0="15" x1="229" y1="68"/>
+      <Trace x0="255" y0="15" x1="229" y1="15"/>
+      <Trace x0="201" y0="143" x1="239" y1="143"/>
+      <Trace x0="201" y0="77" x1="201" y1="143"/>
+      <Trace x0="203" y0="77" x1="201" y1="77"/>
+      <Trace x0="203" y0="71" x1="203" y1="77"/>
+      <Trace x0="201" y0="71" x1="203" y1="71"/>
+      <Trace x0="201" y0="21" x1="201" y1="71"/>
+      <Trace x0="190" y0="21" x1="201" y1="21"/>
+      <Trace x0="226" y0="17" x1="255" y1="17"/>
+      <Trace x0="226" y0="13" x1="226" y1="17"/>
+      <Trace x0="132" y0="13" x1="226" y1="13"/>
+      <Trace x0="132" y0="58" x1="132" y1="13"/>
+      <Trace x0="103" y0="58" x1="132" y1="58"/>
+      <Trace x0="253" y0="19" x1="255" y1="19"/>
+      <Trace x0="253" y0="18" x1="253" y1="19"/>
+      <Trace x0="225" y0="18" x1="253" y1="18"/>
+      <Trace x0="225" y0="14" x1="225" y1="18"/>
+      <Trace x0="133" y0="14" x1="225" y1="14"/>
+      <Trace x0="133" y0="60" x1="133" y1="14"/>
+      <Trace x0="103" y0="60" x1="133" y1="60"/>
       <Trace x0="31" y0="157" x1="34" y1="157"/>
       <Trace x0="31" y0="172" x1="34" y1="172"/>
-      <Trace x0="148" y0="21" x1="154" y1="21"/>
-      <Trace x0="231" y0="151" x1="235" y1="151"/>
-      <Trace x0="231" y0="154" x1="231" y1="151"/>
-      <Trace x0="234" y0="154" x1="231" y1="154"/>
-      <Trace x0="234" y0="161" x1="234" y1="154"/>
-      <Trace x0="238" y0="161" x1="234" y1="161"/>
-      <Trace x0="238" y0="170" x1="238" y1="161"/>
-      <Trace x0="242" y0="170" x1="238" y1="170"/>
-      <Trace x0="242" y0="172" x1="242" y1="170"/>
-      <Trace x0="241" y0="172" x1="242" y1="172"/>
-      <Trace x0="275" y0="137" x1="265" y1="137"/>
-      <Trace x0="275" y0="146" x1="275" y1="137"/>
-      <Trace x0="285" y0="146" x1="275" y1="146"/>
-      <Trace x0="190" y0="111" x1="178" y1="111"/>
-      <Trace x0="190" y0="130" x1="190" y1="111"/>
-      <Trace x0="202" y0="130" x1="190" y1="130"/>
-      <Trace x0="208" y0="78" x1="189" y1="78"/>
-      <Trace x0="208" y0="74" x1="208" y1="78"/>
-      <Trace x0="235" y0="74" x1="208" y1="74"/>
-      <Trace x0="142" y0="21" x1="145" y1="21"/>
-      <Trace x0="142" y0="65" x1="142" y1="21"/>
-      <Trace x0="137" y0="65" x1="142" y1="65"/>
-      <Trace x0="137" y0="66" x1="137" y1="65"/>
-      <Trace x0="138" y0="66" x1="137" y1="66"/>
-      <Trace x0="135" y0="57" x1="151" y1="57"/>
-      <Trace x0="135" y0="56" x1="135" y1="57"/>
-      <Trace x0="103" y0="56" x1="135" y1="56"/>
-      <Trace x0="233" y0="141" x1="235" y1="141"/>
-      <Trace x0="233" y0="133" x1="233" y1="141"/>
-      <Trace x0="250" y0="133" x1="233" y1="133"/>
-      <Trace x0="250" y0="125" x1="250" y1="133"/>
-      <Trace x0="245" y0="125" x1="250" y1="125"/>
-      <Trace x0="245" y0="116" x1="245" y1="125"/>
-      <Trace x0="243" y0="116" x1="245" y1="116"/>
-      <Trace x0="243" y0="103" x1="243" y1="116"/>
-      <Trace x0="225" y0="103" x1="243" y1="103"/>
-      <Trace x0="225" y0="78" x1="225" y1="103"/>
-      <Trace x0="235" y0="78" x1="225" y1="78"/>
-      <Trace x0="226" y0="82" x1="227" y1="82"/>
-      <Trace x0="226" y0="89" x1="226" y1="82"/>
-      <Trace x0="229" y0="89" x1="226" y1="89"/>
-      <Trace x0="229" y0="144" x1="229" y1="89"/>
-      <Trace x0="226" y0="144" x1="229" y1="144"/>
-      <Trace x0="226" y0="145" x1="226" y1="144"/>
-      <Trace x0="227" y0="145" x1="226" y1="145"/>
-      <Trace x0="253" y0="184" x1="252" y1="184"/>
-      <Trace x0="253" y0="170" x1="253" y1="184"/>
-      <Trace x0="257" y0="170" x1="253" y1="170"/>
-      <Trace x0="257" y0="162" x1="257" y1="170"/>
-      <Trace x0="270" y0="162" x1="257" y1="162"/>
-      <Trace x0="270" y0="133" x1="270" y1="162"/>
-      <Trace x0="253" y0="133" x1="270" y1="133"/>
-      <Trace x0="253" y0="121" x1="253" y1="133"/>
-      <Trace x0="252" y0="121" x1="253" y1="121"/>
-      <Trace x0="137" y0="81" x1="137" y1="66"/>
-      <Trace x0="141" y0="81" x1="137" y1="81"/>
-      <Trace x0="141" y0="130" x1="141" y1="81"/>
-      <Trace x0="139" y0="130" x1="141" y1="130"/>
-      <Trace x0="139" y0="131" x1="139" y1="130"/>
-      <Trace x0="140" y0="131" x1="139" y1="131"/>
-      <Trace x0="233" y0="68" x1="233" y1="78"/>
-      <Trace x0="265" y0="68" x1="233" y1="68"/>
-      <Trace x0="265" y0="33" x1="265" y1="68"/>
-      <Trace x0="238" y0="33" x1="265" y1="33"/>
-      <Trace x0="238" y0="17" x1="238" y1="33"/>
-      <Trace x0="243" y0="17" x1="238" y1="17"/>
-      <Trace x0="237" y0="19" x1="241" y1="19"/>
-      <Trace x0="237" y0="34" x1="237" y1="19"/>
-      <Trace x0="264" y0="34" x1="237" y1="34"/>
-      <Trace x0="264" y0="67" x1="264" y1="34"/>
-      <Trace x0="232" y0="67" x1="264" y1="67"/>
-      <Trace x0="232" y0="80" x1="232" y1="67"/>
-      <Trace x0="235" y0="80" x1="232" y1="80"/>
-      <Trace x0="151" y0="115" x1="153" y1="115"/>
-      <Trace x0="151" y0="109" x1="151" y1="115"/>
-      <Trace x0="152" y0="109" x1="151" y1="109"/>
-      <Trace x0="152" y0="90" x1="152" y1="109"/>
-      <Trace x0="195" y0="90" x1="152" y1="90"/>
-      <Trace x0="195" y0="74" x1="195" y1="90"/>
-      <Trace x0="197" y0="74" x1="195" y1="74"/>
-      <Trace x0="197" y0="72" x1="197" y1="74"/>
-      <Trace x0="189" y0="72" x1="197" y1="72"/>
-      <Trace x0="209" y0="178" x1="169" y1="178"/>
-      <Trace x0="209" y0="188" x1="209" y1="178"/>
-      <Trace x0="253" y0="188" x1="209" y1="188"/>
-      <Trace x0="253" y0="184" x1="253" y1="188"/>
-      <Trace x0="252" y0="184" x1="253" y1="184"/>
-      <Trace x0="152" y0="11" x1="152" y1="19"/>
-      <Trace x0="223" y0="11" x1="152" y1="11"/>
-      <Trace x0="223" y0="9" x1="223" y1="11"/>
-      <Trace x0="243" y0="9" x1="223" y1="9"/>
-      <Trace x0="208" y0="137" x1="235" y1="137"/>
-      <Trace x0="208" y0="78" x1="208" y1="137"/>
-      <Trace x0="189" y0="78" x1="208" y1="78"/>
-      <Trace x0="199" y0="92" x1="141" y1="92"/>
-      <Trace x0="199" y0="82" x1="199" y1="92"/>
-      <Trace x0="227" y0="82" x1="199" y1="82"/>
-      <Trace x0="112" y0="96" x1="141" y1="96"/>
+      <Trace x0="152" y0="21" x1="158" y1="21"/>
+      <Trace x0="45" y0="221" x1="45" y1="220"/>
+      <Trace x0="48" y0="221" x1="45" y1="221"/>
+      <Trace x0="48" y0="220" x1="48" y1="221"/>
+      <Trace x0="76" y0="220" x1="48" y1="220"/>
+      <Trace x0="283" y0="141" x1="269" y1="141"/>
+      <Trace x0="283" y0="150" x1="283" y1="141"/>
+      <Trace x0="297" y0="150" x1="283" y1="150"/>
+      <Trace x0="192" y0="115" x1="178" y1="115"/>
+      <Trace x0="192" y0="134" x1="192" y1="115"/>
+      <Trace x0="206" y0="134" x1="192" y1="134"/>
+      <Trace x0="212" y0="78" x1="193" y1="78"/>
+      <Trace x0="212" y0="74" x1="212" y1="78"/>
+      <Trace x0="239" y0="74" x1="212" y1="74"/>
+      <Trace x0="146" y0="21" x1="149" y1="21"/>
+      <Trace x0="146" y0="65" x1="146" y1="21"/>
+      <Trace x0="141" y0="65" x1="146" y1="65"/>
+      <Trace x0="141" y0="66" x1="141" y1="65"/>
+      <Trace x0="142" y0="66" x1="141" y1="66"/>
+      <Trace x0="137" y0="57" x1="155" y1="57"/>
+      <Trace x0="137" y0="56" x1="137" y1="57"/>
+      <Trace x0="103" y0="56" x1="137" y1="56"/>
+      <Trace x0="237" y0="145" x1="239" y1="145"/>
+      <Trace x0="237" y0="137" x1="237" y1="145"/>
+      <Trace x0="254" y0="137" x1="237" y1="137"/>
+      <Trace x0="254" y0="125" x1="254" y1="137"/>
+      <Trace x0="249" y0="125" x1="254" y1="125"/>
+      <Trace x0="249" y0="116" x1="249" y1="125"/>
+      <Trace x0="247" y0="116" x1="249" y1="116"/>
+      <Trace x0="247" y0="103" x1="247" y1="116"/>
+      <Trace x0="229" y0="103" x1="247" y1="103"/>
+      <Trace x0="229" y0="78" x1="229" y1="103"/>
+      <Trace x0="239" y0="78" x1="229" y1="78"/>
+      <Trace x0="230" y0="82" x1="231" y1="82"/>
+      <Trace x0="230" y0="89" x1="230" y1="82"/>
+      <Trace x0="233" y0="89" x1="230" y1="89"/>
+      <Trace x0="233" y0="148" x1="233" y1="89"/>
+      <Trace x0="230" y0="148" x1="233" y1="148"/>
+      <Trace x0="230" y0="149" x1="230" y1="148"/>
+      <Trace x0="231" y0="149" x1="230" y1="149"/>
+      <Trace x0="257" y0="188" x1="256" y1="188"/>
+      <Trace x0="257" y0="174" x1="257" y1="188"/>
+      <Trace x0="261" y0="174" x1="257" y1="174"/>
+      <Trace x0="261" y0="166" x1="261" y1="174"/>
+      <Trace x0="274" y0="166" x1="261" y1="166"/>
+      <Trace x0="274" y0="137" x1="274" y1="166"/>
+      <Trace x0="257" y0="137" x1="274" y1="137"/>
+      <Trace x0="257" y0="121" x1="257" y1="137"/>
+      <Trace x0="256" y0="121" x1="257" y1="121"/>
+      <Trace x0="141" y0="81" x1="141" y1="66"/>
+      <Trace x0="143" y0="81" x1="141" y1="81"/>
+      <Trace x0="143" y0="134" x1="143" y1="81"/>
+      <Trace x0="139" y0="134" x1="143" y1="134"/>
+      <Trace x0="139" y0="135" x1="139" y1="134"/>
+      <Trace x0="140" y0="135" x1="139" y1="135"/>
+      <Trace x0="237" y0="68" x1="237" y1="78"/>
+      <Trace x0="269" y0="68" x1="237" y1="68"/>
+      <Trace x0="269" y0="33" x1="269" y1="68"/>
+      <Trace x0="250" y0="33" x1="269" y1="33"/>
+      <Trace x0="250" y0="17" x1="250" y1="33"/>
+      <Trace x0="255" y0="17" x1="250" y1="17"/>
+      <Trace x0="249" y0="19" x1="253" y1="19"/>
+      <Trace x0="249" y0="34" x1="249" y1="19"/>
+      <Trace x0="268" y0="34" x1="249" y1="34"/>
+      <Trace x0="268" y0="67" x1="268" y1="34"/>
+      <Trace x0="236" y0="67" x1="268" y1="67"/>
+      <Trace x0="236" y0="80" x1="236" y1="67"/>
+      <Trace x0="239" y0="80" x1="236" y1="80"/>
+      <Trace x0="151" y0="119" x1="153" y1="119"/>
+      <Trace x0="151" y0="112" x1="151" y1="119"/>
+      <Trace x0="156" y0="112" x1="151" y1="112"/>
+      <Trace x0="156" y0="90" x1="156" y1="112"/>
+      <Trace x0="199" y0="90" x1="156" y1="90"/>
+      <Trace x0="199" y0="74" x1="199" y1="90"/>
+      <Trace x0="201" y0="74" x1="199" y1="74"/>
+      <Trace x0="201" y0="72" x1="201" y1="74"/>
+      <Trace x0="193" y0="72" x1="201" y1="72"/>
+      <Trace x0="211" y0="182" x1="169" y1="182"/>
+      <Trace x0="211" y0="192" x1="211" y1="182"/>
+      <Trace x0="257" y0="192" x1="211" y1="192"/>
+      <Trace x0="257" y0="188" x1="257" y1="192"/>
+      <Trace x0="256" y0="188" x1="257" y1="188"/>
+      <Trace x0="203" y0="92" x1="143" y1="92"/>
+      <Trace x0="203" y0="82" x1="203" y1="92"/>
+      <Trace x0="231" y0="82" x1="203" y1="82"/>
+      <Trace x0="233" y0="33" x1="163" y1="33"/>
+      <Trace x0="233" y0="9" x1="233" y1="33"/>
+      <Trace x0="255" y0="9" x1="233" y1="9"/>
+      <Trace x0="212" y0="141" x1="239" y1="141"/>
+      <Trace x0="212" y0="78" x1="212" y1="141"/>
+      <Trace x0="193" y0="78" x1="212" y1="78"/>
+      <Trace x0="112" y0="96" x1="143" y1="96"/>
       <Trace x0="113" y0="114" x1="112" y1="114"/>
       <Trace x0="113" y0="115" x1="113" y1="114"/>
       <Trace x0="112" y0="115" x1="113" y1="115"/>
-      <Trace x0="112" y0="182" x1="112" y1="115"/>
-      <Trace x0="170" y0="182" x1="112" y1="182"/>
-      <Trace x0="170" y0="178" x1="170" y1="182"/>
-      <Trace x0="169" y0="178" x1="170" y1="178"/>
-      <Trace x0="232" y0="143" x1="235" y1="143"/>
-      <Trace x0="232" y0="132" x1="232" y1="143"/>
-      <Trace x0="265" y0="132" x1="232" y1="132"/>
-      <Trace x0="265" y0="98" x1="265" y1="132"/>
-      <Trace x0="266" y0="98" x1="265" y1="98"/>
-      <Trace x0="266" y0="83" x1="266" y1="98"/>
-      <Trace x0="271" y0="83" x1="266" y1="83"/>
-      <Trace x0="271" y0="73" x1="271" y1="83"/>
-      <Trace x0="266" y0="73" x1="271" y1="73"/>
-      <Trace x0="266" y0="32" x1="266" y1="73"/>
-      <Trace x0="237" y0="32" x1="266" y1="32"/>
-      <Trace x0="237" y0="19" x1="237" y1="32"/>
-      <Trace x0="243" y0="19" x1="237" y1="19"/>
-      <Trace x0="272" y0="145" x1="265" y1="145"/>
-      <Trace x0="272" y0="134" x1="272" y1="145"/>
-      <Trace x0="196" y0="134" x1="272" y1="134"/>
-      <Trace x0="196" y0="75" x1="196" y1="134"/>
-      <Trace x0="200" y0="75" x1="196" y1="75"/>
-      <Trace x0="200" y0="70" x1="200" y1="75"/>
-      <Trace x0="196" y0="70" x1="200" y1="70"/>
-      <Trace x0="196" y0="33" x1="196" y1="70"/>
-      <Trace x0="149" y0="33" x1="196" y1="33"/>
-      <Trace x0="149" y0="27" x1="149" y1="33"/>
-      <Trace x0="154" y0="27" x1="149" y1="27"/>
-      <Trace x0="151" y0="17" x1="154" y1="17"/>
-      <Trace x0="151" y0="24" x1="151" y1="17"/>
-      <Trace x0="144" y0="24" x1="151" y1="24"/>
-      <Trace x0="144" y0="36" x1="144" y1="24"/>
-      <Trace x0="158" y0="36" x1="144" y1="36"/>
-      <Trace x0="158" y0="56" x1="158" y1="36"/>
-      <Trace x0="194" y0="56" x1="158" y1="56"/>
-      <Trace x0="194" y0="70" x1="194" y1="56"/>
-      <Trace x0="189" y0="70" x1="194" y1="70"/>
-      <Trace x0="219" y0="56" x1="194" y1="56"/>
-      <Trace x0="219" y0="13" x1="219" y1="56"/>
-      <Trace x0="243" y0="13" x1="219" y1="13"/>
+      <Trace x0="112" y0="186" x1="112" y1="115"/>
+      <Trace x0="170" y0="186" x1="112" y1="186"/>
+      <Trace x0="170" y0="182" x1="170" y1="186"/>
+      <Trace x0="169" y0="182" x1="170" y1="182"/>
+      <Trace x0="236" y0="147" x1="239" y1="147"/>
+      <Trace x0="236" y0="136" x1="236" y1="147"/>
+      <Trace x0="269" y0="136" x1="236" y1="136"/>
+      <Trace x0="269" y0="98" x1="269" y1="136"/>
+      <Trace x0="270" y0="98" x1="269" y1="98"/>
+      <Trace x0="270" y0="83" x1="270" y1="98"/>
+      <Trace x0="275" y0="83" x1="270" y1="83"/>
+      <Trace x0="275" y0="73" x1="275" y1="83"/>
+      <Trace x0="270" y0="73" x1="275" y1="73"/>
+      <Trace x0="270" y0="32" x1="270" y1="73"/>
+      <Trace x0="249" y0="32" x1="270" y1="32"/>
+      <Trace x0="249" y0="19" x1="249" y1="32"/>
+      <Trace x0="255" y0="19" x1="249" y1="19"/>
+      <Trace x0="276" y0="149" x1="269" y1="149"/>
+      <Trace x0="276" y0="138" x1="276" y1="149"/>
+      <Trace x0="200" y0="138" x1="276" y1="138"/>
+      <Trace x0="200" y0="75" x1="200" y1="138"/>
+      <Trace x0="204" y0="75" x1="200" y1="75"/>
+      <Trace x0="204" y0="70" x1="204" y1="75"/>
+      <Trace x0="200" y0="70" x1="204" y1="70"/>
+      <Trace x0="200" y0="37" x1="200" y1="70"/>
+      <Trace x0="153" y0="37" x1="200" y1="37"/>
+      <Trace x0="153" y0="27" x1="153" y1="37"/>
+      <Trace x0="158" y0="27" x1="153" y1="27"/>
+      <Trace x0="155" y0="17" x1="158" y1="17"/>
+      <Trace x0="155" y0="24" x1="155" y1="17"/>
+      <Trace x0="151" y0="24" x1="155" y1="24"/>
+      <Trace x0="151" y0="33" x1="151" y1="24"/>
+      <Trace x0="162" y0="33" x1="151" y1="33"/>
+      <Trace x0="162" y0="56" x1="162" y1="33"/>
+      <Trace x0="198" y0="56" x1="162" y1="56"/>
+      <Trace x0="198" y0="70" x1="198" y1="56"/>
+      <Trace x0="193" y0="70" x1="198" y1="70"/>
+      <Trace x0="228" y0="56" x1="198" y1="56"/>
+      <Trace x0="228" y0="13" x1="228" y1="56"/>
+      <Trace x0="255" y0="13" x1="228" y1="13"/>
     </Circuit>
     <Circuit type="UART RS232">
       <Pin name="~{Reset}" x="0" y="0" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="hexadecimal" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="0" inverting="true" clockNotch="false"/>

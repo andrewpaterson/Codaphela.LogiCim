@@ -174,8 +174,11 @@ KicadImporterLib makes LogiCim circuits from KiCad schematics read by CommonLibr
 [`CKicadSchemLogicimConverter`] makes one sheet's circuit: a real 74 series part becomes a 74 series package or units
 as KiCad draws it, any other 74 series gate or flip flop generic ones, a power symbol a supply, a board's edge
 connector the circuit's pins, and any other symbol an instance of an empty placeholder circuit with its pins, to be
-filled in later.  Passives, power flags, test points and the like are left out, and a voltage regulator becomes the
-implied supply of the chips its output reaches.  A subnet joined to the rest of its net by labels gets a tunnel at
+filled in later.  Passives, power flags, test points and the like are left out.  A chip whose VCC and GND nets have
+supplies is on those nets as power rails, its power pins hidden ([`CKicadSchemLogicimConverter::ApplyPowerRails`]); a
+voltage regulator becomes a supply on its output's rail, fed from its input's with its part's dropout and start-up
+([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); a DS1813 a reset supervisor; and every supply made rises
+over 1ms as the simulation starts.  A subnet joined to the rest of its net by labels gets a tunnel at
 each label.  A net a label names as a supply gets one supply, as a power symbol would give it, beside the first such
 label on a part of it that's drawn and wired to that part; its labels' tunnels take it to the rest
 ([`CKicadSchemLogicimConverter::AddSupplyLabels`]).  A supply label is one whose whole text is GND,

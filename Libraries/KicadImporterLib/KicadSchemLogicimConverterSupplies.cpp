@@ -28,6 +28,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/BufferView.h"
 #include "LogicimLib/Logic74View.h"
 #include "LogicimLib/FlipFlopView.h"
+#include "MicroprocessorLib/LongTime.h"
 #include "LogicimLib/PowerSourceView.h"
 #include "LogicimLib/TunnelView.h"
 #include "LogicimLib/CircuitTextMarkupParser.h"
@@ -84,8 +85,8 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 //////////////////////////////////////////////////////////////////////////
 //
 // A supply for each net a label names as one ("GND", "3.3V"; see
-// IsKicadSchemSupplyLabel) and no power symbol supplies, as a power
-// symbol is: the HCP65's schematics name their supplies with labels.
+// IsKicadSchemSupplyLabel) and no power symbol or regulator supplies, as
+// a power symbol is: the HCP65's schematics name their supplies with labels.
 // It's one for the net, beside the first of its labels on a part of it
 // that's drawn, where the label's text is, and wired to that part; the
 // labels' tunnels join the rest.  A supply in place of each label's
@@ -107,7 +108,7 @@ void CKicadSchemLogicimConverter::AddSupplyLabels(void)
 	for (i = 0; i < mpcNetlist->NumNets(); i++)
 	{
 		pcNet = mpcNetlist->GetNet(i);
-		pcLabel = HasSupply(pcNet) ? NULL : FindSupplyLabel(pcNet, &pcSubnet);
+		pcLabel = (HasSupply(pcNet) || (GetNetRegulatedVoltage(pcNet) > 0)) ? NULL : FindSupplyLabel(pcNet, &pcSubnet);
 		if (pcLabel == NULL)
 		{
 			continue;
@@ -151,8 +152,8 @@ bool CKicadSchemLogicimConverter::HasSupply(CKicadSchemNet* pcNet)
 //////////////////////////////////////////////////////////////////////////
 //
 // The net's first label named as a supply that isn't negative on a part
-// of it that's drawn, and that part (*ppcSubnet).  NULL if it has none:
-// nothing drawn needs its supply.
+// of it that's drawn, or of a power rail, and that part (*ppcSubnet).
+// NULL if it has none: nothing drawn needs its supply.
 //
 //////////////////////////////////////////////////////////////////////////
 CKicadSchemLabel* CKicadSchemLogicimConverter::FindSupplyLabel(CKicadSchemNet* pcNet, CKicadSchemSubnet** ppcSubnet)
@@ -165,7 +166,7 @@ CKicadSchemLabel* CKicadSchemLogicimConverter::FindSupplyLabel(CKicadSchemNet* p
 	for (j = 0; j < pcNet->NumSubnets(); j++)
 	{
 		pcSubnet = pcNet->GetSubnet(j);
-		if (!IsSubnetDrawn(pcSubnet))
+		if (!IsSubnetDrawn(pcSubnet) && !IsRailNet(pcNet))
 		{
 			continue;
 		}
@@ -187,8 +188,9 @@ CKicadSchemLabel* CKicadSchemLogicimConverter::FindSupplyLabel(CKicadSchemNet* p
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A ground for 0V, else a positive supply, turned by fAngle from the way
-// each faces upright (where the symbol or label has its body).
+// A ground for 0V, else a positive supply rising over the import's rise
+// time, turned by fAngle from the way each faces upright (where the
+// symbol or label has its body).
 //
 //////////////////////////////////////////////////////////////////////////
 CComponentView* CKicadSchemLogicimConverter::NewSupply(const char* szName, float32 fVoltage, float64 fAngle, ERotation eGroundUpright, ERotation ePositiveUpright)
@@ -204,6 +206,7 @@ CComponentView* CKicadSchemLogicimConverter::NewSupply(const char* szName, float
 	}
 	pcPositive = NewMalloc<CPositivePowerView>();
 	pcPositive->Init(0, 0, GetKicadSchemRotation(ePositiveUpright, fAngle), szName, fVoltage);
+	pcPositive->SetRiseTime(NanosecondsToTime((int64)KICAD_SCHEM_LOGICIM_RISE_TIME));
 	return pcPositive;
 }
 
@@ -211,11 +214,11 @@ CComponentView* CKicadSchemLogicimConverter::NewSupply(const char* szName, float
 //////////////////////////////////////////////////////////////////////////
 //
 // The output pin of a voltage regulator: one with an input pin ("VIN",
-// "6VIn"), an output pin ("VOUT", "3.3VOut") and a ground.  NULL if the
-// symbol's unit isn't a regulator.
+// "6VIn", *ppcInput), an output pin ("VOUT", "3.3VOut") and a ground.
+// NULL if the symbol's unit isn't a regulator.
 //
 //////////////////////////////////////////////////////////////////////////
-static CKicadSchemLibPin* GetKicadSchemRegulatorOutput(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+static CKicadSchemLibPin* GetKicadSchemRegulatorOutput(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CKicadSchemLibPin** ppcInput)
 {
 	size					i;
 	CKicadSchemLibPin*		pcPin;
@@ -246,6 +249,7 @@ static CKicadSchemLibPin* GetKicadSchemRegulatorOutput(CKicadSchemSymbol* pcSymb
 			bGround = true;
 		}
 	}
+	*ppcInput = pcInput;
 	return ((pcInput != NULL) && bGround) ? pcOutput : NULL;
 }
 
@@ -263,11 +267,12 @@ static CKicadSchemLibPin* GetKicadSchemRegulatorOutput(CKicadSchemSymbol* pcSymb
 bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
 {
 	CKicadSchemLibPin*		pcOutput;
+	CKicadSchemLibPin*		pcInput;
 	CKicadSchemSubnet*		pcSubnet;
-	const char*					szNetName;
+	const char*				szNetName;
 	const char*				szVoltage;
 
-	pcOutput = GetKicadSchemRegulatorOutput(pcSymbol, pcLibSymbol);
+	pcOutput = GetKicadSchemRegulatorOutput(pcSymbol, pcLibSymbol, &pcInput);
 	if (pcOutput == NULL)
 	{
 		return false;
@@ -287,7 +292,8 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 	{
 		return false;
 	}
-	AddRegulatedNets(pcSymbol, pcLibSymbol, GetKicadSchemSupplyVoltage(szVoltage));
+	pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcInput);
+	AddRegulatedNets(pcSymbol, pcLibSymbol, GetKicadSchemSupplyVoltage(szVoltage), (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL);
 	msCounts.uiRegulators++;
 	return true;
 }
@@ -295,11 +301,11 @@ bool CKicadSchemLogicimConverter::AddRegulator(CKicadSchemSymbol* pcSymbol, CKic
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The nets of the regulator's output pins driven at fVoltage, unless
-// another regulator drives them.
+// The nets of the regulator's output pins driven at fVoltage from
+// pcFeed, its input's net, unless another regulator drives them.
 //
 //////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimConverter::AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage)
+void CKicadSchemLogicimConverter::AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage, CKicadSchemNet* pcFeed)
 {
 	size							i;
 	CKicadSchemLibPin*				pcPin;
@@ -319,6 +325,9 @@ void CKicadSchemLogicimConverter::AddRegulatedNets(CKicadSchemSymbol* pcSymbol, 
 				psRegulated = masRegulated.Add();
 				psRegulated->pcNet = pcNet;
 				psRegulated->fVoltage = fVoltage;
+				psRegulated->pcSymbol = pcSymbol;
+				psRegulated->pcOutput = pcPin;
+				psRegulated->pcFeed = pcFeed;
 			}
 		}
 	}
@@ -355,40 +364,19 @@ float32 CKicadSchemLogicimConverter::GetNetRegulatedVoltage(CKicadSchemNet* pcNe
 //////////////////////////////////////////////////////////////////////////
 float32 CKicadSchemLogicimConverter::GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol)
 {
-	CKicadSchemLibSymbol*	pcLibSymbol;
-	CKicadSchemLibPin*		pcPin;
-	CKicadSchemSubnet*		pcSubnet;
-	size					i;
-	float32					fVoltage;
+	CArrayTemplatePtr<CKicadSchemNet>	apcNets;
+	size								i;
+	float32								fVoltage;
 
-	pcLibSymbol = mpcFile->GetLibSymbol(pcSymbol);
-	if (pcLibSymbol == NULL)
+	apcNets.Init();
+	GetPowerPinNets(pcSymbol, false, &apcNets);
+	fVoltage = 0;
+	for (i = 0; (i < apcNets.NumElements()) && (fVoltage == 0); i++)
 	{
-		return 0;
+		fVoltage = GetNetRegulatedVoltage(apcNets.GetPtr(i));
 	}
-	for (i = 0; i < pcLibSymbol->NumPins(); i++)
-	{
-		pcPin = pcLibSymbol->GetPin(i);
-		if (!pcSymbol->IsUnitPin(pcPin) || IsKicadSchemGroundName(pcPin->GetName()))
-		{
-			continue;
-		}
-		if ((pcPin->GetType() != KSPT_PowerIn) && !IsKicadSchemPowerPinName(pcPin->GetName()))
-		{
-			continue;
-		}
-		pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
-		if ((pcSubnet == NULL) || (pcSubnet->GetNet() == NULL))
-		{
-			continue;
-		}
-		fVoltage = GetNetRegulatedVoltage(pcSubnet->GetNet());
-		if (fVoltage > 0)
-		{
-			return fVoltage;
-		}
-	}
-	return 0;
+	apcNets.Kill();
+	return fVoltage;
 }
 
 

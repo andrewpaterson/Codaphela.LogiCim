@@ -3,27 +3,27 @@
   <Circuits>
     <Circuit type="Triple MPU Clock Generator">
       <Subcircuit name="Y2" x="156" y="134" rotation="East" type="LFSPXO020733" comment="LFSPXO020733" left="-9" top="-3" right="9" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
-      <Logic74Package name="IC11" x="218" y="98" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="157" pinSpacing="2"/>
-      <Logic74Unit name="IC5" x="97" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
+      <Logic74Package name="IC11" x="218" y="98" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="157" pinSpacing="2"/>
+      <Logic74Unit name="IC5" x="97" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="A" pinSpacing="2"/>
       <Pin name="~{Reset}" x="71" y="149" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
       <Pin name="J4-3" x="71" y="154" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
-      <Logic74Unit name="IC12" x="39" y="48" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G08" unit="A" pinSpacing="2"/>
-      <Logic74Package name="IC13" x="42" y="70" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="14" pinSpacing="2"/>
-      <Logic74Unit name="IC10" x="185" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
-      <Logic74Unit name="IC2" x="75" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
-      <Logic74Package name="IC7" x="218" y="60" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="157" pinSpacing="2"/>
-      <Logic74Unit name="IC4" x="119" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC5" x="141" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC6" x="163" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC3" x="141" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC12" x="39" y="48" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="1G08" unit="A" pinSpacing="2"/>
+      <Logic74Package name="IC13" x="42" y="70" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="14" pinSpacing="2"/>
+      <Logic74Unit name="IC10" x="185" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC2" x="75" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="A" pinSpacing="2"/>
+      <Logic74Package name="IC7" x="218" y="60" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="157" pinSpacing="2"/>
+      <Logic74Unit name="IC4" x="119" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC5" x="141" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC6" x="163" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC3" x="141" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
       <Logic74Unit name="IC8" x="202" y="135" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="1G17" unit="A" pinSpacing="2"/>
-      <Logic74Unit name="IC10" x="185" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC10" x="185" y="103" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
       <Pin name="J5-1" x="95" y="147" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
       <Pin name="J5-3" x="95" y="157" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="3" inverting="false" clockNotch="false"/>
       <Pin name="CLK" x="95" y="162" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="4" inverting="false" clockNotch="false"/>
-      <Logic74Unit name="IC4" x="75" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
-      <Logic74Unit name="IC2" x="119" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="B" pinSpacing="2"/>
-      <Logic74Unit name="IC6" x="163" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC4" x="75" y="88" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="A" pinSpacing="2"/>
+      <Logic74Unit name="IC2" x="119" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="B" pinSpacing="2"/>
+      <Logic74Unit name="IC6" x="163" y="50" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="A" pinSpacing="2"/>
       <Subcircuit name="Y1" x="114" y="134" rotation="East" type="XLH735100.000000I" comment="XLH735100.000000I" left="-10" top="-3" right="10" bottom="3" typeY="-1.2999999999999998" commentY="0.20000000000000018" nameY="1.5000000000000002" pinSpacing="2"/>
       <Pin name="J2-1" x="38" y="98" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="1" inverting="false" clockNotch="false"/>
       <Pin name="J2-2" x="38" y="103" rotation="West" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="left" anchour="negative" weight="2" inverting="false" clockNotch="false"/>
@@ -73,9 +73,10 @@
       <Pin name="J2-32" x="60" y="218" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="32" inverting="false" clockNotch="false"/>
       <Pin name="J2-30" x="60" y="228" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="30" inverting="false" clockNotch="false"/>
       <Pin name="J2-29" x="60" y="233" rotation="East" family="LVC" explicitPowerPorts="false" bitWidth="1" radix="binary" left="-2" top="-1" right="0" bottom="1" alignment="right" anchour="negative" weight="29" inverting="false" clockNotch="false"/>
-      <Logic74Unit name="IC3" x="97" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" partType="74" unit="A" pinSpacing="2"/>
-      <Ground name="GND" x="152" y="141" rotation="East"/>
-      <PositivePower name="3.3V" x="151" y="127" rotation="East" voltage="3.29999995"/>
+      <Logic74Unit name="IC3" x="97" y="65" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="74" unit="A" pinSpacing="2"/>
+      <Ground name="GND" x="63" y="114" rotation="West" rail="GND"/>
+      <PositivePower name="5V" x="19" y="167" rotation="East" riseTime="1000000" rail="5V" voltage="5"/>
+      <PositivePower name="IC1" x="34" y="167" rotation="South" riseTime="200000" dropout="0.300000012" rail="3.3V" voltage="3.29999995" feedRail="5V"/>
       <Tunnel name="GND" x="146" y="135" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="213" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="213" y="106" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
@@ -100,6 +101,7 @@
       <Tunnel name="CLK" x="95" y="162" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
       <Tunnel name="CLK" x="125" y="135" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.2249999999999996" bottom="0.65000000000000002"/>
       <Tunnel name="~{Main Access2}" x="35" y="178" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="3.3V" x="63" y="168" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="146" y="133" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="166" y="133" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="93" y="102" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
@@ -145,7 +147,7 @@
       <Tunnel name="R•CLK_{s}" x="94" y="62" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="4.4250000000000007" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{0s}" x="213" y="86" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{0s}" x="116" y="89" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="~{Main Access1}" x="35" y="163" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
+      <Tunnel name="~{Main Access1}" x="35" y="162" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="8.3035714285714288" bottom="0.82857142857142851"/>
       <Tunnel name="CK_{5s}" x="213" y="100" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{5s}" x="94" y="104" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
       <Tunnel name="CK_{1s}" x="213" y="88" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.3249999999999997" bottom="0.65000000000000002"/>
@@ -189,17 +191,13 @@
       <Trace x0="35" y0="173" x1="38" y1="173"/>
       <Trace x0="35" y0="148" x1="38" y1="148"/>
       <Trace x0="35" y0="143" x1="38" y1="143"/>
-      <Trace x0="35" y0="163" x1="38" y1="163"/>
-      <Trace x0="145" y0="133" x1="146" y1="133"/>
-      <Trace x0="145" y0="129" x1="145" y1="133"/>
-      <Trace x0="153" y0="129" x1="145" y1="129"/>
-      <Trace x0="153" y0="127" x1="153" y1="129"/>
-      <Trace x0="152" y0="127" x1="153" y1="127"/>
-      <Trace x0="145" y0="135" x1="146" y1="135"/>
-      <Trace x0="145" y0="139" x1="145" y1="135"/>
-      <Trace x0="153" y0="139" x1="145" y1="139"/>
-      <Trace x0="153" y0="141" x1="153" y1="139"/>
-      <Trace x0="152" y0="141" x1="153" y1="141"/>
+      <Trace x0="37" y0="163" x1="38" y1="163"/>
+      <Trace x0="37" y0="162" x1="37" y1="163"/>
+      <Trace x0="35" y0="162" x1="37" y1="162"/>
+      <Trace x0="34" y0="170" x1="34" y1="168"/>
+      <Trace x0="62" y0="170" x1="34" y1="170"/>
+      <Trace x0="62" y0="168" x1="62" y1="170"/>
+      <Trace x0="63" y0="168" x1="62" y1="168"/>
       <Trace x0="201" y0="135" x1="166" y1="135"/>
     </Circuit>
     <Circuit type="LFSPXO020733">

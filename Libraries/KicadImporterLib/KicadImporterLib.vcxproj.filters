@@ -63,6 +63,9 @@
     <ClCompile Include="KicadSchemLogicimConverterSupplies.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
+    <ClCompile Include="KicadSchemLogicimConverterRails.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
     <ClCompile Include="KicadSchemLogicimCounts.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>

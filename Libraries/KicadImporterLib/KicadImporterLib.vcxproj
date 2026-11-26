@@ -29,6 +29,7 @@
     <ClCompile Include="KicadSchemLogicimConverterSubcircuits.cpp" />
     <ClCompile Include="KicadSchemLogicimConverterLogic.cpp" />
     <ClCompile Include="KicadSchemLogicimConverterSupplies.cpp" />
+    <ClCompile Include="KicadSchemLogicimConverterRails.cpp" />
     <ClCompile Include="KicadSchemLogicimCounts.cpp" />
     <ClCompile Include="KicadSchemLogicimDecode.cpp" />
     <ClCompile Include="KicadSchemSupplyNames.cpp" />

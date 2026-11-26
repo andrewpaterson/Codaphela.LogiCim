@@ -82,12 +82,19 @@ struct SKicadSchemLogicPart
 };
 
 
-//A voltage regulator's output: the net it drives and its voltage.
+//A voltage regulator's output: the net it drives and its voltage, the regulator and the net of its input, its feed.
 struct SKicadSchemLogicimRegulated
 {
 	CKicadSchemNet*		pcNet;
 	float32				fVoltage;
+	CKicadSchemSymbol*	pcSymbol;
+	CKicadSchemLibPin*	pcOutput;
+	CKicadSchemNet*		pcFeed;
 };
+
+
+//How long an imported supply takes to rise as the simulation starts: a regulator charging the 100uF on its output.
+#define KICAD_SCHEM_LOGICIM_RISE_TIME		1000000  //Nanoseconds.
 
 
 typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegulated;
@@ -100,11 +107,14 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //a 74 series package, both named as the part.  A gate part's pins are found by their names ("1A", "1B" and "1Y"; "A"
 //and "Y" on a single gate part, which is a unit) or, if they have no names, by their types; any other part's pins by
 //the labels of its package's pins (see AddLogic74Block).  A 74 series gate or flip flop that isn't a part there's a row
-//for becomes a generic gate (or D flip flop) for each of its gates.  Power pins are left out: the parts have implied
-//power.  A power symbol becomes a ground or a positive supply of its voltage ("+3V3" is 3.3V), and a net a label names
-//as a supply ("GND", "3.3V", "-5V", "VCC"; see IsKicadSchemSupplyLabel) gets one beside the label (see
-//AddSupplyLabels).  A voltage regulator isn't drawn: the ICs whose power pins its output reaches are given its voltage
-//as their implied Vcc (see AddRegulator and ApplyRegulatedVoltages).  A connector (a board's edge connector) becomes the circuit's pins, one for
+//for becomes a generic gate (or D flip flop) for each of its gates.  A power symbol becomes a ground or a positive
+//supply of its voltage ("+3V3" is 3.3V), and a net a label names as a supply ("GND", "3.3V", "-5V", "VCC"; see
+//IsKicadSchemSupplyLabel) gets one beside the label (see AddSupplyLabels).  Power pins aren't drawn: a part whose VCC
+//and GND nets have supplies is on those nets as power rails, its power pins hidden and joined to the rails by name,
+//and the supplies on them are on the rails too; a part whose nets don't has implied power (see ApplyPowerRails).  A
+//voltage regulator becomes a supply fed by its input's rail, on its output's (see AddRegulatorSupplies; its output's
+//voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A DS1813 becomes a reset supervisor (see
+//AddSupervisor).  Every supply made rises over KICAD_SCHEM_LOGICIM_RISE_TIME as the simulation starts.  A connector (a board's edge connector) becomes the circuit's pins, one for
 //each net on it that isn't a supply's (see AddBoardPins).  Resistors and resistor networks, capacitors and capacitor
 //networks, inductors, diodes, LEDs, mounting holes, net ties, test points and power flags are left out.  Any other
 //symbol becomes an instance of a placeholder subcircuit made for its library symbol and unit: an empty circuit with a
@@ -149,6 +159,8 @@ protected:
 	CCircuitFonts*						mpcFonts;
 	CKicadSchemLogicimModel				mcModel;
 	CArrayKicadSchemLogicimRegulated	masRegulated;
+	CArrayTemplatePtr<CKicadSchemNet>	mapcRailNets;  //The nets of ICs' power pins, then of regulators.
+	size								muiPartRailNets;  //How many of mapcRailNets are ICs'.
 	CKicadSchemLogicimBuses				mcBuses;
 	CKicadSchemLogicimWiring			mcWiring;
 	CKicadSchemLogicimPlacer			mcPlacer;
@@ -187,7 +199,7 @@ protected:
 	void							AddBoardPinView(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, const char* szName);
 	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
-	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage);
+	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage, CKicadSchemNet* pcFeed);
 	bool							AddLogicParts(SKicadSchemLogicPart* psPart);
 	bool							AddLogic74Block(SKicadSchemLogicPart* psPart);
 	void							AddLogic74BlockView(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions, CComponentView* pcView, bool bUnit);
@@ -205,11 +217,21 @@ protected:
 	CCircuitView*					GetPlaceholderCircuit(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							GetPlaceholderPins(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayChars* paszNames);
 	void							ApplyRegulatedVoltages(void);
+	void							FindRailNets(void);
+	bool							IsRailNet(CKicadSchemNet* pcNet);
+	bool							IsPartRailNet(CKicadSchemNet* pcNet);
+	CKicadSchemNet*					GetPowerPinNet(CKicadSchemSymbol* pcSymbol, bool bGround);
+	void							GetPowerPinNets(CKicadSchemSymbol* pcSymbol, bool bGround, CArrayTemplatePtr<CKicadSchemNet>* papcNets);
+	bool							HasNetSupply(CKicadSchemNet* pcNet);
+	void							AddRegulatorSupplies(void);
+	void							ApplyPowerRails(void);
+	bool							AddSupervisor(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);
 	float32							GetNetRegulatedVoltage(CKicadSchemNet* pcNet);
 	void							RemoveUnconnectedItems(void);
 	bool							IsDrawnTerminal(SKicadSchemLogicimTerminal* psTerminal);
 	bool							IsSubnetDrawn(CKicadSchemSubnet* pcSubnet);
+	bool							IsRailSupply(SKicadSchemLogicimTerminal* psTerminal);
 	void							PlaceAndRoute(void);
 	size							PlaceAndRouteAt(float64 fSpread, size* puiPass);
 	void							ReportProgress(const char* szStage, size uiStep);

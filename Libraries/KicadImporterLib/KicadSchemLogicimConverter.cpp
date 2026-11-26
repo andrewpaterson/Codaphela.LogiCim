@@ -54,6 +54,8 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcProgress = NULL;
 	mcModel.Init();
 	masRegulated.Init();
+	mapcRailNets.Init();
+	muiPartRailNets = 0;
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
 	msCounts.Init();
@@ -73,6 +75,7 @@ void CKicadSchemLogicimConverter::Kill(void)
 	mcPlacer.Kill();
 	mcWiring.Kill();
 	mcBuses.Kill();
+	mapcRailNets.Kill();
 	masRegulated.Kill();
 	mcModel.Kill();
 	mpcBoardSource = NULL;
@@ -144,8 +147,11 @@ bool CKicadSchemLogicimConverter::Build(const char* szTypeName)
 		}
 	}
 	ReportProgress("Making buses", KICAD_SCHEM_IMPORT_STEP_BUSES);
+	FindRailNets();
 	ApplyRegulatedVoltages();
 	AddSupplyLabels();
+	AddRegulatorSupplies();
+	ApplyPowerRails();
 	mcBuses.AddTunnels();
 	mcBuses.AddBuses();
 	RemoveUnconnectedItems();
@@ -330,7 +336,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 		msCounts.uiSkipped++;
 		return true;
 	}
-	if (AddRegulator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
+	if (AddRegulator(pcSymbol, pcLibSymbol) || AddSupervisor(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
 	{
 		return true;
 	}
@@ -350,10 +356,11 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 //////////////////////////////////////////////////////////////////////////
 //
 // A tunnel or supply whose subnet has nothing drawn on it but tunnels and
-// supplies (a supply wired only to parts' power pins, which are left out
-// as the parts have implied power, or a label on a wire to nothing) would
-// be drawn joined to nothing, so it's taken out with its terminal, and so
-// isn't wired.  Bus tunnels are kept: they're on their bus's splitters.
+// supplies (a tunnel wired only to parts' power pins, which aren't drawn,
+// or a label on a wire to nothing) would be drawn joined to nothing, so
+// it's taken out with its terminal, and so isn't wired.  A supply on a
+// power rail is kept: the hidden power pins on the rail join it by name.
+// Bus tunnels are kept: they're on their bus's splitters.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
@@ -371,7 +378,7 @@ void CKicadSchemLogicimConverter::RemoveUnconnectedItems(void)
 	for (i = 0; i < mcModel.NumTerminals(); i++)
 	{
 		psTerminal = mcModel.GetTerminal(i);
-		if (!IsDrawnTerminal(psTerminal) && !IsSubnetDrawn(psTerminal->pcSubnet))
+		if (!IsDrawnTerminal(psTerminal) && !IsSubnetDrawn(psTerminal->pcSubnet) && !IsRailSupply(psTerminal))
 		{
 			aiRemoved.SetValue(psTerminal->uiItem, 1);
 		}
@@ -426,6 +433,17 @@ bool CKicadSchemLogicimConverter::IsSubnetDrawn(CKicadSchemSubnet* pcSubnet)
 		}
 	}
 	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the terminal is a supply's on a power rail (see FindRailNets).
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::IsRailSupply(SKicadSchemLogicimTerminal* psTerminal)
+{
+	return (mcModel.GetItem(psTerminal->uiItem)->eKind == KSLIK_Supply) && IsRailNet(psTerminal->pcSubnet->GetNet());
 }
 
 
