@@ -58,7 +58,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcFamilies = NULL;
 	mbJoinFilters = false;
 	masCapacitors.Init();
-	masSlowRCs.Init();
+	masRCFilters.Init();
 	mcSymbolItems.Init();
 	muiPartRailNets = 0;
 	mpcBoard = NULL;
@@ -81,7 +81,7 @@ void CKicadSchemLogicimConverter::Kill(void)
 	mcWiring.Kill();
 	mcBuses.Kill();
 	mcSymbolItems.Kill();
-	masSlowRCs.Kill();
+	masRCFilters.Kill();
 	masCapacitors.Kill();
 	mapcRailNets.Kill();
 	masRegulated.Kill();
@@ -345,7 +345,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 		msCounts.uiSkipped++;
 		return true;
 	}
-	if (AddRegulator(pcSymbol, pcLibSymbol) || AddSupervisor(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
+	if (AddRegulator(pcSymbol, pcLibSymbol) || AddSupervisor(pcSymbol, pcLibSymbol) || AddAnalogComparator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
 	{
 		return true;
 	}
@@ -497,6 +497,6 @@ CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) const { return mcMod
 SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
 void CKicadSchemLogicimConverter::SetFamilies(CFamilyVoltageConfigurationStore* pcFamilies) { mpcFamilies = pcFamilies; }
 void CKicadSchemLogicimConverter::SetJoinFilters(bool bJoinFilters) { mbJoinFilters = bJoinFilters; }
-size CKicadSchemLogicimConverter::NumSlowRCs(void) const { return masSlowRCs.NumElements(); }
-SKicadSchemLogicimRC* CKicadSchemLogicimConverter::GetSlowRC(size uiIndex) { return masSlowRCs.Get(uiIndex); }
+size CKicadSchemLogicimConverter::NumRCFilters(void) const { return masRCFilters.NumElements(); }
+SKicadSchemLogicimRC* CKicadSchemLogicimConverter::GetRCFilter(size uiIndex) { return masRCFilters.Get(uiIndex); }
 CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }

@@ -1,7 +1,7 @@
 Resistors and RC filters in KiCad imports
 ==========================================
 
-Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Part 1 and part 2's simulation are built (below).  Pull-ups and pull-downs (a resistor
+Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Parts 1 and 2 are built (below).  Pull-ups and pull-downs (a resistor
 with one end on a supply) are a separate plan, PullsPlan.txt: a weak drive in MicroprocessorLib.
 
 
@@ -119,6 +119,19 @@ it); CAnalogComparator (CComparator was already the 74x521's equality comparator
 the MAX9010's 1mV offset.  Schmitt parts: the unsettled band does behave as hysteresis, so a part's family has its
 VT- and VT+ as VIL and VIH (CFamilyVoltageConfigurationStore::GetPart, SchmittThresholds.cpp: 74LVC14, 74LVC1G17,
 74VHCT14), taken at the family's own VCCs.  LogicimLib saves a curve's time constant in a simulation's state.
+
+Built 2026-11-27, steps 11 to 13: CRCFilterView (resistance, capacitance, diode; the time constants worked out, the fast
+way through 25 ohms) and CAnalogComparatorView, in the chooser's Analog library; 74 series views take their part's
+family (CIntegratedCircuitView::GetPartType), so the Schmitt parts read at VT- and VT+ (the table is keyed by the
+importer's part types, "14" and "1G17").  The importer makes each slow RC an RC element from its driven net to its
+load (AddRCFilters), parallel resistors between the same nets one RC (the PS2 Timing's R1 and R2), a diode across it
+(GetKicadSchemDiodeElements: A to K, A1 to K1) its fast way, and a MAX9010 an analog comparator
+(IsKicadSchemComparatorPart, AddAnalogComparator).  Tests: an RC ring oscillator saved mid-curve and loaded
+(TestSimulationState), the Clock Doubler (a 12ns pulse at each edge) and the PS2 Timing (packet pulse held through a
+burst, falling 708us after it, where R3 x C3 crosses VT-) in TestKicadSchemPassives.cpp.  Expected circuits changed:
+Netlist Test (its 500 ohm, 1.5ns into the wiring), LED Display (its 220 ohm segment resistors into the display) and
+Audio Board (its filters) gained RC elements.  Found then: the Clock Doubler's MAX9010 is on 3.3V, under its 4.5V to
+5.5V supply range; the simulation doesn't model that.
 
 
 Questions for the user (put one at a time, recommendation first)

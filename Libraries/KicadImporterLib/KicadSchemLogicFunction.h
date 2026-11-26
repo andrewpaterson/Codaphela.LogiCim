@@ -52,6 +52,9 @@ const char*					KicadSchemLogicFunctionName(EKicadSchemLogicFunction eFunction);
 bool						ParseKicadSchemLogic74Part(const char* szPartNumber, CChars* pszFamily, CChars* pszPartType);
 bool						IsKicadSchemLogicimFamily(const char* szFamily);
 
+//Whether a part number is an analog comparator's on the list of those simulated, as a MAX9010.
+bool						IsKicadSchemComparatorPart(const char* szValue);
+
 
 #endif // __KICAD_SCHEM_LOGIC_FUNCTION_H__
 

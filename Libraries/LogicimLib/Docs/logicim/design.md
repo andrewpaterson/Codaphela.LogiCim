@@ -22,6 +22,7 @@ are MicroprocessorLib's ([Logic Simulation](../libraries/microprocessorlib/logic
 | [`CW65C816View`], [`C65C64View`] | the processors, with their registers and flags shown live |
 | [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies (on at start or not, a rise time, and a regulator's In port and dropout), and a subcircuit's pins |
 | [`CResetSupervisorView`] | a power-on reset supervisor, a DS1813: its RST, its trip voltage and reset time |
+| [`CRCFilterView`], [`CAnalogComparatorView`] | an RC element (a resistor into a capacitor to ground, a diode across the resistor if it has one, its time constant shown; no power) and an analog comparator, a MAX9010 |
 | [`CSplitterView`], [`CTunnelView`], [`CLabelView`] | wiring that makes no component, and text |
 | [`CSubcircuitInstanceView`] | an instance of another circuit of the project |
 
@@ -33,7 +34,9 @@ each view lists its own properties ([`CComponentProperties`]), and a properties 
 that replaces the old one.  [`CComponentView::InitPlaced`] sets up a view placed new, as Logicim's
 `#!text createInitialProperties` does (the LVC family, implicit power, two inputs on a gate, the next free
 reference).  The editor's choosers list what can be placed from the libraries in
-[`LogicimLib/ComponentLibraries.h`].
+[`LogicimLib/ComponentLibraries.h`].  A chip's family is its part's ([`CIntegratedCircuitView::GetPartType`],
+[`CFamilyVoltageConfigurationStore::GetPart`]): a Schmitt trigger 74 series part, a 74LVC14 or 74LVC1G17, reads its
+inputs at its VT- and VT+.
 
 ### Bounding boxes and text
 
@@ -180,14 +183,17 @@ resistor between two nets that aren't supplies (a series termination, a network'
 take the name of its label-named net (the connector's side first, else the driven side's,
 [`CKicadSchemLogicimModel::GetNetName`]).  Not when it makes an RC filter of 1ns or more with what it drives: the
 capacitors drawn from that net to a supply, or else an estimate, each input on the net at its family's input
-capacitance (PropagationTimes.csv's CI) plus 3pF of wiring and 10pF a connector pin; those are left apart and warned
-until RC elements are built (KicadImporterLib's ResistorsPlan.txt, part 2).  A value that can't be read joins, warned.
+capacitance (PropagationTimes.csv's CI) plus 3pF of wiring and 10pF a connector pin; that becomes an RC element from
+the driven side to the other, where the resistor is ([`CKicadSchemLogicimConverter::AddRCFilters`]).  Resistors in
+parallel between the same nets are one RC, and a diode across it (anode to cathode, [`GetKicadSchemDiodeElements`])
+charges its capacitor quickly that way, through 25 ohms.  A value that can't be read joins, warned.
 [`GetKicadSchemResistance`] and [`GetKicadSchemCapacitance`] read every value HCP65/Kicad writes, resistor networks'
 part codes too; [`GetKicadSchemPassiveElements`] pairs a network's pins by name, so a bussed network's common pin
 joins nothing.  A chip whose VCC and GND nets have
 supplies is on those nets as power rails, its power pins hidden ([`CKicadSchemLogicimConverter::ApplyPowerRails`]); a
 voltage regulator becomes a supply on its output's rail, fed from its input's with its part's dropout and start-up
-([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); a DS1813 a reset supervisor; and every supply made rises
+([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); a DS1813 a reset supervisor; a MAX9010 an analog comparator
+([`IsKicadSchemComparatorPart`]'s list); and every supply made rises
 over 1ms as the simulation starts.  A subnet joined to the rest of its net by labels gets a tunnel at
 each label.  A net a label names as a supply gets one supply, as a power symbol would give it, beside the first such
 label on a part of it that's drawn and wired to that part; its labels' tunnels take it to the rest
@@ -225,7 +231,7 @@ board hasn't on one line (`LogiCim --decode`, [The LogiCim Application](app.md#k
 | [`TestLogicimLib/TestComponentSprites.cpp`], [`TestLogicimLib/TestCircuitGrid.cpp`] | the sprite cache and grid tiles draw as painting does |
 | [`TestLogicimLib/TestTraceAutoConnector.cpp`], [`TestLogicimLib/TestCircuitEditor.cpp`] | routing, and editing with undo |
 | [`TestKicadImporterLib/TestKicadSchemLogicim.cpp`] | each converted schematic compared with its expected circuit in Input/Logicim; supply labels; boards on threads and cancelled |
-| [`TestKicadImporterLib/TestKicadSchemPassives.cpp`] | every value form in HCP65/Kicad read; a test sheet's resistors, networks and RCs joined or left apart |
+| [`TestKicadImporterLib/TestKicadSchemPassives.cpp`] | every value form in HCP65/Kicad read; a test sheet's resistors, networks and RCs joined or made RC elements; the Clock Doubler's pulse at each edge, the PS2 Timing's packet pulse held through a burst and let go along R3 x C3 |
 | [`TestKicadImporterLib/TestKicadSchemPower.cpp`] | Power and Reset and the Processor Reset Device imported and powered up: rails, regulators, the DS1813, the reset through R1 |
 | [`TestKicadImporterLib/TestKicadSchemDecode.cpp`] | the decode of a small board (a series resistor, a pull up, a GND label) and of the HCP65 MPU Address Decode board |
 

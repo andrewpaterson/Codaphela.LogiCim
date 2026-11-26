@@ -83,6 +83,19 @@ bool IsKicadSchemCapacitor(CKicadSchemSymbol* pcSymbol)
 
 //////////////////////////////////////////////////////////////////////////
 //
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemDiode(CKicadSchemSymbol* pcSymbol)
+{
+	const char*	szReference;
+
+	szReference = pcSymbol->GetReference();
+	return (szReference != NULL) && (ToUpper(szReference[0]) == 'D') && (szReference[1] >= '0') && (szReference[1] <= '9');
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Three digits from szCode on: two digits and a power of ten ("221" is
 // 220).  NaN if they aren't digits.
 //
@@ -256,3 +269,54 @@ void GetKicadSchemPassiveElements(CKicadSchemFile* pcFile, CKicadSchemNetlist* p
 	apcPins.Kill();
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The sheet's diodes: each anode (a pin named A, or A and a number) with
+// the cathode of the same name but K.  Its value is NaN.
+//
+//////////////////////////////////////////////////////////////////////////
+void GetKicadSchemDiodeElements(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, CArrayKicadSchemPassiveElement* pasElements)
+{
+	size						i;
+	size						j;
+	size						k;
+	CKicadSchemSymbol*			pcSymbol;
+	CKicadSchemLibSymbol*		pcLibSymbol;
+	CKicadSchemLibPin*			pcAnode;
+	CKicadSchemLibPin*			pcCathode;
+	SKicadSchemPassiveElement*	psElement;
+
+	for (i = 0; i < pcFile->NumSymbols(); i++)
+	{
+		pcSymbol = pcFile->GetSymbol(i);
+		pcLibSymbol = pcFile->GetLibSymbol(pcSymbol);
+		if ((pcLibSymbol == NULL) || !IsKicadSchemDiode(pcSymbol))
+		{
+			continue;
+		}
+		for (j = 0; j < pcLibSymbol->NumPins(); j++)
+		{
+			pcAnode = pcLibSymbol->GetPin(j);
+			if (!pcSymbol->IsUnitPin(pcAnode) || (ToUpper(pcAnode->GetName()[0]) != 'A'))
+			{
+				continue;
+			}
+			for (k = 0; k < pcLibSymbol->NumPins(); k++)
+			{
+				pcCathode = pcLibSymbol->GetPin(k);
+				if (pcSymbol->IsUnitPin(pcCathode) && (ToUpper(pcCathode->GetName()[0]) == 'K') && (StringCompare(&pcAnode->GetName()[1], &pcCathode->GetName()[1]) == 0))
+				{
+					psElement = pasElements->Add();
+					psElement->pcSymbol = pcSymbol;
+					psElement->apcPins[0] = pcAnode;
+					psElement->apcPins[1] = pcCathode;
+					psElement->apcNets[0] = GetKicadSchemPinNet(pcNetlist, pcSymbol, pcAnode);
+					psElement->apcNets[1] = GetKicadSchemPinNet(pcNetlist, pcSymbol, pcCathode);
+					psElement->fValue = NoVoltage();
+				}
+			}
+		}
+	}
+}

@@ -22,6 +22,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/StringHelper.h"
 #include "MicroprocessorLib/Voltage.h"
 #include "MicroprocessorLib/FamilyVoltageConfigurationStore.h"
+#include "MicroprocessorLib/RCFilterPins.h"
 #include "LogicimLib/TunnelView.h"
 #include "KicadSchemSupplyNames.h"
 #include "KicadSchemLogicPins.h"
@@ -34,13 +35,13 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 // A series resistor (neither end on a supply; a pull is PullsPlan.txt's)
 // is a chip select or bus line leaving through a termination, the same
 // signal on both sides: it joins its nets into one, unless R x C is
-// KICAD_SCHEM_LOGICIM_SLOW_RC or more, an RC filter, which is kept apart
-// (masSlowRCs) unless filters are joined too (SetJoinFilters, for the
-// decode).  C is the capacitance on the side it charges (see
-// GetLoadSide, GetNetCapacitance).  One whose value can't be read is
-// joined, warned of.  A joined group of nets is named by one of them
-// (NameNetGroups) and the resistor's pins get its tunnels, so it's drawn
-// and wired as one net.
+// KICAD_SCHEM_LOGICIM_SLOW_RC or more, an RC filter, which becomes an RC
+// element (masRCFilters, AddRCFilters) unless filters are joined too
+// (SetJoinFilters, for the decode).  C is the capacitance on the side it
+// charges (see GetLoadSide, GetNetCapacitance).  One whose value can't be
+// read is joined, warned of.  A joined group of nets is named by one of
+// them (NameNetGroups) and the resistor's pins get its tunnels, so it's
+// drawn and wired as one net.
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
@@ -48,11 +49,9 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 	CArrayKicadSchemPassiveElement	asResistors;
 	CArrayKicadSchemPassiveElement	asJoined;
 	SKicadSchemPassiveElement*		psResistor;
-	SKicadSchemLogicimRC*			psRC;
 	size							i;
 	int								iLoad;
 	float64							fCapacitance;
-	CChars							sz;
 
 	for (i = 0; i < mcModel.NumItems(); i++)
 	{
@@ -83,15 +82,7 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 			fCapacitance = GetNetCapacitance(psResistor->apcNets[iLoad]);
 			if (!mbJoinFilters && (psResistor->fValue * fCapacitance >= KICAD_SCHEM_LOGICIM_SLOW_RC))
 			{
-				psRC = masSlowRCs.Add();
-				psRC->sResistor = *psResistor;
-				psRC->iLoad = iLoad;
-				psRC->fCapacitance = fCapacitance;
-				sz.Init();
-				sz.Append((int64)(psResistor->fValue * fCapacitance * 1e9 + 0.5));
-				gcLogger.Warning2(__METHOD__, " Series resistor [", psResistor->pcSymbol->GetReference(), "] makes an RC filter of [", sz.Text(), "ns]: its nets are left apart.", NULL);
-				sz.Kill();
-				msCounts.uiSlowRCs++;
+				AddSlowRC(psResistor, iLoad, fCapacitance);
 				continue;
 			}
 		}
@@ -107,6 +98,7 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 	}
 	asJoined.Kill();
 	asResistors.Kill();
+	AddRCFilters();
 	mcSymbolItems.ReInit();
 }
 
@@ -357,3 +349,100 @@ void CKicadSchemLogicimConverter::AddResistorTunnels(SKicadSchemPassiveElement* 
 	}
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Keeps an RC filter's resistor; one in parallel with a resistor already
+// kept, between the same two nets, is the same filter, its resistance
+// the two in parallel.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddSlowRC(SKicadSchemPassiveElement* psResistor, int iLoad, float64 fCapacitance)
+{
+	size					i;
+	SKicadSchemLogicimRC*	psRC;
+	float64					fOther;
+
+	for (i = 0; i < masRCFilters.NumElements(); i++)
+	{
+		psRC = masRCFilters.Get(i);
+		if (((psRC->sResistor.apcNets[0] == psResistor->apcNets[0]) && (psRC->sResistor.apcNets[1] == psResistor->apcNets[1])) ||
+			((psRC->sResistor.apcNets[0] == psResistor->apcNets[1]) && (psRC->sResistor.apcNets[1] == psResistor->apcNets[0])))
+		{
+			fOther = psRC->sResistor.fValue;
+			psRC->sResistor.fValue = (fOther * psResistor->fValue) / (fOther + psResistor->fValue);
+			return;
+		}
+	}
+	psRC = masRCFilters.Add();
+	psRC->sResistor = *psResistor;
+	psRC->iLoad = iLoad;
+	psRC->fCapacitance = fCapacitance;
+	psRC->eDiode = RCFD_None;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each RC filter as an RC element where its resistor is: its input on the
+// resistor's driving side, its output on the side it charges, a diode
+// across the resistor (GetRCFilterDiode) its fast way.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddRCFilters(void)
+{
+	CArrayKicadSchemPassiveElement	asDiodes;
+	SKicadSchemLogicimRC*			psRC;
+	SKicadSchemPassiveElement*		psResistor;
+	CRCFilterView*					pcView;
+	size							uiItem;
+	size							i;
+
+	asDiodes.Init();
+	GetKicadSchemDiodeElements(mpcFile, mpcNetlist, &asDiodes);
+	for (i = 0; i < masRCFilters.NumElements(); i++)
+	{
+		psRC = masRCFilters.Get(i);
+		psResistor = &psRC->sResistor;
+		psRC->eDiode = GetRCFilterDiode(psRC, &asDiodes);
+		pcView = NewMalloc<CRCFilterView>();
+		pcView->Init(0, 0, ROT_East, psResistor->pcSymbol->GetReference(), (float32)psResistor->fValue, (float32)psRC->fCapacitance, psRC->eDiode);
+		uiItem = mcModel.AddItem(pcView, KSLIK_Part, psResistor->pcSymbol->GetPosition(), NULL, psResistor->pcSymbol);
+		AddPinTerminal(psResistor->pcSymbol, psResistor->apcPins[1 - psRC->iLoad], pcView->GetPortView(RC_FILTER_PIN_IN), uiItem);
+		AddPinTerminal(psResistor->pcSymbol, psResistor->apcPins[psRC->iLoad], pcView->GetPortView(RC_FILTER_PIN_OUT), uiItem);
+		msCounts.uiRCFilters++;
+	}
+	asDiodes.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A diode across the filter's resistor: its anode on the input, it
+// charges the capacitor quickly (rising); on the output, it discharges it
+// quickly (falling).
+//
+//////////////////////////////////////////////////////////////////////////
+ERCFilterDiode CKicadSchemLogicimConverter::GetRCFilterDiode(SKicadSchemLogicimRC* psRC, CArrayKicadSchemPassiveElement* pasDiodes)
+{
+	size						i;
+	SKicadSchemPassiveElement*	psDiode;
+	CKicadSchemNet*				pcIn;
+	CKicadSchemNet*				pcOut;
+
+	pcIn = psRC->sResistor.apcNets[1 - psRC->iLoad];
+	pcOut = psRC->sResistor.apcNets[psRC->iLoad];
+	for (i = 0; i < pasDiodes->NumElements(); i++)
+	{
+		psDiode = pasDiodes->Get(i);
+		if ((psDiode->apcNets[0] == pcIn) && (psDiode->apcNets[1] == pcOut))
+		{
+			return RCFD_Rising;
+		}
+		if ((psDiode->apcNets[0] == pcOut) && (psDiode->apcNets[1] == pcIn))
+		{
+			return RCFD_Falling;
+		}
+	}
+	return RCFD_None;
+}

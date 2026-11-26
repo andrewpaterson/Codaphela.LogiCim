@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <string.h>
 #include "BaseLib/StringHelper.h"
 #include "LogicimLib/Logic74Parts.h"
 #include "KicadSchemLogicFunction.h"
@@ -25,6 +26,11 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 //The families in Logicim's propagation times.
 static const char* gaszKicadSchemLogicimFamilies[] = { "ABT", "AHCT", "ALS", "ALVC", "F", "FCT", "HCT", "LCX", "LS", "LVC", "LVT", "LVX", "VCX", "VHCT" };
+
+
+//The analog comparators simulated (CAnalogComparator), by the start of their part numbers: each has the MAX9010's
+//levels and 5ns delay, from its datasheet, until another part needs its own.
+static const char* gaszKicadSchemComparatorParts[] = { "MAX9010" };
 
 
 struct SKicadSchemLogicPartFunction
@@ -277,3 +283,22 @@ const char* KicadSchemLogicFunctionName(EKicadSchemLogicFunction eFunction)
 	}
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Whether the value ("MAX9010EXT+T") is a comparator's on the list.
+//
+//////////////////////////////////////////////////////////////////////////
+bool IsKicadSchemComparatorPart(const char* szValue)
+{
+	size	i;
+
+	for (i = 0; (szValue != NULL) && (i < sizeof(gaszKicadSchemComparatorParts) / sizeof(const char*)); i++)
+	{
+		if (strncmp(szValue, gaszKicadSchemComparatorParts[i], StrLen(gaszKicadSchemComparatorParts[i])) == 0)
+		{
+			return true;
+		}
+	}
+	return false;
+}

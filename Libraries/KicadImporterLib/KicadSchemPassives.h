@@ -44,12 +44,15 @@ typedef CArrayTemplate<SKicadSchemPassiveElement>	CArrayKicadSchemPassiveElement
 //Resistors and capacitors in a KiCad sheet, by their references' letters ("R1", "RN5"; "C3", "CN2"), and their values
 //as their symbols give them: "4.7KΩ", "220", "16pF", "1μF" and "1µF" (both micro signs), or a part code (a
 //CAY16-221J4LF, 4609X-101-103LF or 4816P-1-222LF resistor network, a CA0612KRX7R9BB100 capacitor network: two digits
-//and a power of ten, in ohms and picofarads).
+//and a power of ten, in ohms and picofarads).  Diodes by "D" ("D1"), each diode an element from its anode, pin A (A1
+//in a pair, as a BAW101's), to its cathode, K (K1).
 bool	IsKicadSchemResistor(CKicadSchemSymbol* pcSymbol);
 bool	IsKicadSchemCapacitor(CKicadSchemSymbol* pcSymbol);
+bool	IsKicadSchemDiode(CKicadSchemSymbol* pcSymbol);
 float64	GetKicadSchemResistance(const char* szValue);
 float64	GetKicadSchemCapacitance(const char* szValue);
 void	GetKicadSchemPassiveElements(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, bool bResistors, CArrayKicadSchemPassiveElement* pasElements);
+void	GetKicadSchemDiodeElements(CKicadSchemFile* pcFile, CKicadSchemNetlist* pcNetlist, CArrayKicadSchemPassiveElement* pasElements);
 CKicadSchemNet*	GetKicadSchemPinNet(CKicadSchemNetlist* pcNetlist, CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin);
 
 

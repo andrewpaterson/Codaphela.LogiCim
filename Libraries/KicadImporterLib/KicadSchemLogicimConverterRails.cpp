@@ -23,6 +23,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "MicroprocessorLib/ResetSupervisor.h"
 #include "LogicimLib/PowerSourceView.h"
 #include "LogicimLib/ResetSupervisorView.h"
+#include "LogicimLib/AnalogComparatorView.h"
 #include "LogicimLib/ComponentPlacement.h"
 #include "KicadSchemSupplyNames.h"
 #include "KicadSchemLogicimConverter.h"
@@ -292,9 +293,6 @@ bool CKicadSchemLogicimConverter::AddSupervisor(CKicadSchemSymbol* pcSymbol, CKi
 	float32					fTripVoltage;
 	CResetSupervisorView*	pcView;
 	size					uiItem;
-	size					i;
-	CKicadSchemLibPin*		pcPin;
-	CChars					szName;
 
 	fTripVoltage = GetKicadSchemSupervisorTripVoltage(pcSymbol->GetValue());
 	if (fTripVoltage == 0.0f)
@@ -304,18 +302,64 @@ bool CKicadSchemLogicimConverter::AddSupervisor(CKicadSchemSymbol* pcSymbol, CKi
 	pcView = NewMalloc<CResetSupervisorView>();
 	pcView->Init(0, 0, ROT_East, pcSymbol->GetReference(), PLACED_FAMILY, false, fTripVoltage, NanosecondsToTime((int64)RESET_SUPERVISOR_RESET_TIME));
 	uiItem = mcModel.AddItem(pcView, KSLIK_Part, pcSymbol->GetPosition(), NULL, pcSymbol);
+	AddNamedPinTerminals(pcSymbol, pcLibSymbol, pcView, uiItem);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A comparator on the list (IsKicadSchemComparatorPart, a MAX9010) as an
+// analog comparator, its IN+, IN- and OUT pins its ports.  False if the
+// symbol isn't one.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CKicadSchemLogicimConverter::AddAnalogComparator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
+{
+	CAnalogComparatorView*	pcView;
+	size					uiItem;
+
+	if (!IsKicadSchemComparatorPart(pcSymbol->GetValue()))
+	{
+		return false;
+	}
+	pcView = NewMalloc<CAnalogComparatorView>();
+	pcView->Init(0, 0, ROT_East, pcSymbol->GetReference(), PLACED_FAMILY, false);
+	uiItem = mcModel.AddItem(pcView, KSLIK_Part, pcSymbol->GetPosition(), NULL, pcSymbol);
+	AddNamedPinTerminals(pcSymbol, pcLibSymbol, pcView, uiItem);
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Each of the symbol's unit's pins whose name, active low marks aside
+// ("~{RST}" is RST), is one of the view's ports, as a terminal of it.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::AddNamedPinTerminals(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, CComponentView* pcView, size uiItem)
+{
+	size				i;
+	CKicadSchemLibPin*	pcPin;
+	CChars				szName;
+	CPortView*			pcPortView;
+
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
 	{
 		pcPin = pcLibSymbol->GetPin(i);
+		if (!pcSymbol->IsUnitPin(pcPin))
+		{
+			continue;
+		}
 		szName.Init(pcPin->GetName());
 		szName.Replace("~{", "");
 		szName.Replace("}", "");
-		if (pcSymbol->IsUnitPin(pcPin) && (StringInsensitiveCompare(szName.Text(), RESET_SUPERVISOR_PIN_RESET) == 0))
+		pcPortView = pcView->GetPortView(szName.Text());
+		if (pcPortView != NULL)
 		{
-			AddPinTerminal(pcSymbol, pcPin, pcView->GetPortView(RESET_SUPERVISOR_PIN_RESET), uiItem);
+			AddPinTerminal(pcSymbol, pcPin, pcPortView, uiItem);
 		}
 		szName.Kill();
 	}
-	return true;
 }
 
