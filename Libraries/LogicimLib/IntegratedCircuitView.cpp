@@ -46,6 +46,8 @@ void CIntegratedCircuitView::Init(int32 x, int32 y, ERotation eRotation, const c
 	mszFamily.Init(szFamily);
 	mbExplicitPowerPorts = bExplicitPowerPorts;
 	mfImpliedVcc = 0;
+	mszVccRail.Init();
+	mszGndRail.Init();
 }
 
 
@@ -55,6 +57,8 @@ void CIntegratedCircuitView::Init(int32 x, int32 y, ERotation eRotation, const c
 //////////////////////////////////////////////////////////////////////////
 void CIntegratedCircuitView::Kill(void)
 {
+	mszGndRail.Kill();
+	mszVccRail.Kill();
 	mszFamily.Kill();
 	CComponentView::Kill();
 }
@@ -73,6 +77,11 @@ void CIntegratedCircuitView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	{
 		pcWriter->Attribute("impliedVCC", mfImpliedVcc);
 	}
+	if (HasPowerRails())
+	{
+		pcWriter->Attribute("vccRail", mszVccRail.Text());
+		pcWriter->Attribute("gndRail", mszGndRail.Text());
+	}
 }
 
 
@@ -89,6 +98,14 @@ bool CIntegratedCircuitView::LoadXMLAfterInit(CMarkupTag* pcTag)
 		return false;
 	}
 	mfImpliedVcc = 0;
+	if (pcTag->GetStringAttribute("vccRail") != NULL)
+	{
+		if (pcTag->GetStringAttribute("gndRail") == NULL)
+		{
+			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] has a vccRail and needs a gndRail.", NULL);
+		}
+		SetPowerRails(pcTag->GetStringAttribute("vccRail"), pcTag->GetStringAttribute("gndRail"));
+	}
 	if (pcTag->GetStringAttribute("impliedVCC") == NULL)
 	{
 		return true;
@@ -104,6 +121,26 @@ bool CIntegratedCircuitView::LoadXMLAfterInit(CMarkupTag* pcTag)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Its power ports, hidden, join the nets of szVccRail and szGndRail
+// rather than its own supply.  Not for an IC whose power ports are
+// explicit, which are wired.  Set once.
+//
+//////////////////////////////////////////////////////////////////////////
+void CIntegratedCircuitView::SetPowerRails(const char* szVccRail, const char* szGndRail)
+{
+	if (mbExplicitPowerPorts || HasPowerRails() || StrEmpty(szVccRail) || StrEmpty(szGndRail))
+	{
+		return;
+	}
+	mszVccRail.Set(szVccRail);
+	mszGndRail.Set(szGndRail);
+	AddHiddenPortView(POWER_PIN_VCC, szVccRail);
+	AddHiddenPortView(POWER_PIN_GND, szGndRail);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void CIntegratedCircuitView::InitAfterProperties(CComponentProperties* pcProperties)
@@ -113,6 +150,10 @@ void CIntegratedCircuitView::InitAfterProperties(CComponentProperties* pcPropert
 	if (mfImpliedVcc < 0)
 	{
 		mfImpliedVcc = 0;
+	}
+	if (!StrEmpty(pcProperties->GetText("vccRail", "")) && !StrEmpty(pcProperties->GetText("gndRail", "")))
+	{
+		SetPowerRails(pcProperties->GetText("vccRail", ""), pcProperties->GetText("gndRail", ""));
 	}
 }
 
@@ -287,7 +328,7 @@ CCircuitComponent* CIntegratedCircuitView::CreateComponent(CViewPath* pcViewPath
 	}
 
 	apcSupplies.Init();
-	if (!mbExplicitPowerPorts)
+	if (!mbExplicitPowerPorts && !HasPowerRails())
 	{
 		if (!PowerImplicitly(pcIntegratedCircuit, pcFamily, &apcSupplies))
 		{
@@ -519,6 +560,9 @@ char* CIntegratedCircuitView::GetFamily(void) { return mszFamily.Text(); }
 bool CIntegratedCircuitView::IsExplicitPowerPorts(void) const { return mbExplicitPowerPorts; }
 CIntegratedCircuitView* CIntegratedCircuitView::GetIntegratedCircuitView(void) { return this; }
 void CIntegratedCircuitView::SetImpliedVcc(float32 fImpliedVcc) { mfImpliedVcc = fImpliedVcc; }
+bool CIntegratedCircuitView::HasPowerRails(void) const { return !mszVccRail.Empty(); }
+char* CIntegratedCircuitView::GetVccRail(void) { return mszVccRail.Text(); }
+char* CIntegratedCircuitView::GetGndRail(void) { return mszGndRail.Text(); }
 float32 CIntegratedCircuitView::GetImpliedVcc(void) const { return mfImpliedVcc; }
 CIntegratedCircuit* CIntegratedCircuitView::GetIntegratedCircuit(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation) { return (CIntegratedCircuit*)GetComponent(pcViewPath, pcCircuitSimulation); }
 
@@ -552,7 +596,7 @@ void CIntegratedCircuitView::AddFamilyProperty(CComponentProperties* pcPropertie
 //////////////////////////////////////////////////////////////////////////
 //
 // Its family and whether its power ports are explicit, as Logicim's
-// StandardIntegratedCircuitProperties.
+// StandardIntegratedCircuitProperties, and its power rails if it has them.
 //
 //////////////////////////////////////////////////////////////////////////
 void CIntegratedCircuitView::AddPowerProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
@@ -560,4 +604,9 @@ void CIntegratedCircuitView::AddPowerProperties(CComponentProperties* pcProperti
 	AddFamilyProperty(pcProperties, psContext);
 	pcProperties->AddBoolean("explicitPowerPorts", mbExplicitPowerPorts);
 	pcProperties->AddFloat("impliedVCC", "V", mfImpliedVcc, 0.0, 100.0);
+	if (HasPowerRails())
+	{
+		pcProperties->AddText("vccRail", mszVccRail.Text());
+		pcProperties->AddText("gndRail", mszGndRail.Text());
+	}
 }

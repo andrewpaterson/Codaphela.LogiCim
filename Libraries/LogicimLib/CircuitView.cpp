@@ -455,6 +455,28 @@ void CCircuitView::CollectPortViews(CArrayPortViewPtr* papcPortViews)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The components' hidden port views, which only the wiring joins.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitView::CollectHiddenPortViews(CArrayPortViewPtr* papcPortViews)
+{
+	size				i;
+	size				j;
+	CComponentView*		pcComponent;
+
+	for (i = 0; i < mapcComponents.NumElements(); i++)
+	{
+		pcComponent = mapcComponents.GetPtr(i);
+		for (j = 0; j < pcComponent->NumHiddenPortViews(); j++)
+		{
+			papcPortViews->Add(pcComponent->GetHiddenPortView(j));
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Makes every component of the circuit, and of the subcircuits in it all
 // the way down, in the circuit simulation for the path, starts the
 // simulation (if bStart) and wires the nets (see CCircuitWiring).  The

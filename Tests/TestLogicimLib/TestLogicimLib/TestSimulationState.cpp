@@ -315,6 +315,115 @@ void TestSimulationStatePowerRamp(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Rails joined by name: a 5V supply on rail 5V rising 0.1V every 100ns, a
+// 3.3V regulator on rail 3.3V fed from rail 5V (a 1.1V dropout), a ground
+// on rail GND, and an inverter whose hidden power is on rails 3.3V and
+// GND, none of them wired.  The inverter has power once the regulator
+// switches on, as 5V passes 4.4V.  The rails survive a save and load.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSimulationStatePowerRails(void)
+{
+	CFamilyVoltageConfigurationStore	cFamilies;
+	Ptr<CCircuitSimulation>				pSimulation;
+	Ptr<CCircuitSimulation>				pLoaded;
+	CCircuitView						cView;
+	CCircuitView						cLoadedView;
+	CViewPaths							cPaths;
+	CViewPath*							pcPath;
+	CViewPath*							pcLoadedPath;
+	CPositivePowerView*					pcSupply;
+	CPositivePowerView*					pcRegulatorView;
+	CGroundView*						pcGround;
+	CInverterView*						pcInverterView;
+	CIntegratedCircuit*					pcInverter;
+	CPowerSource*						pcRegulator;
+	CXMLWriter							cText;
+	CXMLWriter							cLoadedText;
+	CFileUtil							cFileUtil;
+
+	ObjectsInit();
+	CEvent::ResetNextID();
+	CTrace::ResetNextID();
+	cFamilies.Init();
+	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
+
+	pSimulation = OMalloc<CCircuitSimulation>("Rails");
+	ORoot()->Add(pSimulation);
+	cView.Init();
+	cPaths.Init();
+	pcPath = cPaths.AddTop(&cView);
+	pcSupply = NewMalloc<CPositivePowerView>();
+	pcSupply->Init(0, 0, ROT_South, "5V", 5.0f);
+	pcSupply->SetRiseTime(NanosecondsToTime((int64)5000));
+	pcSupply->SetRail("5V");
+	cView.Add(pcSupply);
+	pcRegulatorView = NewMalloc<CPositivePowerView>();
+	pcRegulatorView->Init(20, 0, ROT_South, "3.3V", 3.3f);
+	pcRegulatorView->SetFeed(1.1f);
+	pcRegulatorView->SetFeedRail("5V");
+	pcRegulatorView->SetRail("3.3V");
+	cView.Add(pcRegulatorView);
+	pcGround = NewMalloc<CGroundView>();
+	pcGround->Init(0, 20, ROT_North, "GND");
+	pcGround->SetRail("GND");
+	cView.Add(pcGround);
+	pcInverterView = NewMalloc<CInverterView>();
+	pcInverterView->Init(40, 0, ROT_East, "U1", "LVC", false, 1, 1);
+	pcInverterView->SetPowerRails("3.3V", "GND");
+	cView.Add(pcInverterView);
+	AssertTrue(pcInverterView->HasPowerRails());
+	AssertSize(2, pcInverterView->NumHiddenPortViews());
+	AssertString("3.3V", pcInverterView->GetHiddenPortView((size)0)->GetConnectionName());
+	AssertString("5V", pcRegulatorView->GetFeedRail());
+	AssertTrue(cView.CreateSimulation(pcPath, &pSimulation, &cFamilies));
+
+	pcInverter = pcInverterView->GetIntegratedCircuit(pcPath, &pSimulation);
+	pcRegulator = (CPowerSource*)pcRegulatorView->GetComponent(pcPath, &pSimulation);
+	AssertTrue(pcInverter->GetPins()->GetVoltageCommon()->GetTrace() == pcRegulator->GetPowerOutPort()->GetTrace());
+	AssertTrue(pcRegulator->GetFeedPort()->GetTrace() == ((CPowerSource*)pcSupply->GetComponent(pcPath, &pSimulation))->GetPowerOutPort()->GetTrace());
+	pSimulation->RunToTime(NanosecondsToTime((int64)4250));
+	AssertFalse(pcInverter->IsPowered(pSimulation->GetTime()));
+	pSimulation->RunToTime(NanosecondsToTime((int64)300));
+	AssertTrue(pcRegulator->IsOn());
+	AssertTrue(pcInverter->IsPowered(pSimulation->GetTime()));
+	AssertFloat(3.3f, pcInverter->GetVCC(pSimulation->GetTime()), 3);
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitFile(&cView, "Output" _FS_ "Rails.xml"));
+	pLoaded = OMalloc<CCircuitSimulation>("Rails");
+	ORoot()->Add(pLoaded);
+	cLoadedView.Init();
+	pcLoadedPath = cPaths.AddTop(&cLoadedView);
+	AssertTrue(LoadCircuitFile(&cLoadedView, pcLoadedPath, &pLoaded, &cFamilies, "Output" _FS_ "Rails.xml"));
+	cText.Init();
+	SaveCircuitXML(&cView, &cText);
+	cLoadedText.Init();
+	SaveCircuitXML(&cLoadedView, &cLoadedText);
+	AssertString(cText.GetText(), cLoadedText.GetText());
+	AssertTrue(strstr(cText.GetText(), "vccRail=\"3.3V\" gndRail=\"GND\"") != NULL);
+	AssertTrue(strstr(cText.GetText(), "feedRail=\"5V\"") != NULL);
+	cLoadedText.Kill();
+	cText.Kill();
+
+	cLoadedView.Kill();
+	ORoot()->Remove(pLoaded);
+	pLoaded = NULL;
+	cView.Kill();
+	ORoot()->Remove(pSimulation);
+	pSimulation = NULL;
+	cPaths.Kill();
+	cFamilies.Kill();
+	ObjectsDiscard();
+	ObjectsKill();
+
+	cFileUtil.Delete("Output" _FS_ "Rails.xml");
+	cFileUtil.RemoveDir("Output");
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A file without a simulation starts one afresh.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -1027,6 +1136,7 @@ void TestSimulationState(void)
 	TestSimulationStateStates();
 	TestSimulationStateRingRoundTrip();
 	TestSimulationStatePowerRamp();
+	TestSimulationStatePowerRails();
 	TestSimulationStateW65C816Core();
 	TestSimulationState65C64Core();
 	TestSimulationStateW65C816RoundTrip();

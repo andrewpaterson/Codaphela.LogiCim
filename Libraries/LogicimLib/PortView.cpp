@@ -59,6 +59,8 @@ void CPortView::Init(CComponentView* pcOwner, CArrayChars* paszPortNames, int32 
 	masClockNotch[1].Init(0, 0);
 	masClockNotch[2].Init(0, 0);
 	mbDrawn = true;
+	mbHidden = false;
+	mszConnectionName.Init();
 	mcPorts.Init();
 	InitComponentSpriteMemo(&msSpriteMemo);
 }
@@ -71,6 +73,7 @@ void CPortView::Init(CComponentView* pcOwner, CArrayChars* paszPortNames, int32 
 void CPortView::Kill(void)
 {
 	mcPorts.Kill();
+	mszConnectionName.Kill();
 	mszText.Kill();
 	maszPortNames.Kill();
 	mpcOwner = NULL;
@@ -98,6 +101,44 @@ void CPortView::SetInverting(ERotation eFacing)
 	msRelativePosition.x += sPortOffset.x;
 	msRelativePosition.y += sPortOffset.y;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Not drawn and with no place: it joins the nets of szConnectionName.
+//
+//////////////////////////////////////////////////////////////////////////
+void CPortView::SetHidden(const char* szConnectionName)
+{
+	mbHidden = true;
+	mbDrawn = false;
+	mszConnectionName.Set(szConnectionName);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The name of the nets it joins besides where it is: its own if it has
+// one (a hidden port's, a regulator's In), else its owner's (a tunnel's,
+// a supply's rail), NULL for none.
+//
+//////////////////////////////////////////////////////////////////////////
+const char* CPortView::GetConnectionName(void)
+{
+	if (!mszConnectionName.Empty())
+	{
+		return mszConnectionName.Text();
+	}
+	return mpcOwner->GetConnectionName();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+bool CPortView::IsHidden(void) const { return mbHidden; }
+void CPortView::SetConnectionName(const char* szConnectionName) { mszConnectionName.Set(szConnectionName); }
 
 
 //////////////////////////////////////////////////////////////////////////

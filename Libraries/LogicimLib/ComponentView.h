@@ -108,6 +108,7 @@ protected:
 	CChars					mszName;
 	CComponentShapes		mcShapes;
 	CArrayPortViewPtr		mapcPortViews;
+	CArrayPortViewPtr		mapcHiddenPortViews;  //Joined by name only, see CPortView::SetHidden.
 	SFloat64Bounds			msBounds;
 	CArrayViewPathComponent	masComponents;
 
@@ -156,6 +157,9 @@ public:
 			CPortView*				AddPortView(CArrayChars* paszPortNames, int32 x, int32 y);
 			size					NumPortViews(void) const;
 			CPortView*				GetPortView(size uiIndex);
+			CPortView*				AddHiddenPortView(const char* szPortName, const char* szConnectionName);
+			size					NumHiddenPortViews(void) const;
+			CPortView*				GetHiddenPortView(size uiIndex);
 			CPortView*				GetPortView(const char* szPortName);
 
 			void					CalculateBounds(void);

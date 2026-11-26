@@ -74,7 +74,8 @@ typedef CArrayTemplate<SWiringNodeNet>	CArrayWiringNodeNet;
 //view of the pin inside its subcircuit, are joined into nets, each a bus as wide as its widest port view.  Then the
 //bits of the nets that components join (a splitter joins each bit of its bus to a bit of one of its ends) are
 //joined, and each set of joined bits gets one trace.  So a signal through a subcircuit's pin is one trace on both
-//sides of it.
+//sides of it.  A hidden port view (a chip's power pin on its named rail, see CPortView::SetHidden) joins only the port
+//views of its connection name: the rail's tunnels and supplies, and the other chips' pins on it.
 //
 //Rewire wires a running simulation again after its circuits have been edited.  The simulation must be of the path's
 //circuit only: traces in it that end up with no ports and no wire are removed.

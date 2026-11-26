@@ -702,6 +702,7 @@ CComponentView* CLogic74UnitView::NewNextUnit(void)
 	pcNext->Init(msPosition.x, msPosition.y, meRotation, mszName.Text(), mszFamily.Text(), mbExplicitPowerPorts, mszPartType.Text(), miUnit + 1, miPinSpacing);
 	pcNext->SetMirrored(mbMirrored);
 	pcNext->SetImpliedVcc(mfImpliedVcc);
+	pcNext->SetPowerRails(mszVccRail.Text(), mszGndRail.Text());
 	return pcNext;
 }
 

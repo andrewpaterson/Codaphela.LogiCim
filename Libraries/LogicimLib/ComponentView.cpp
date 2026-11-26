@@ -45,6 +45,7 @@ void CComponentView::Init(int32 x, int32 y, ERotation eRotation, const char* szN
 	mszName.Init(szName);
 	mcShapes.Init();
 	mapcPortViews.Init();
+	mapcHiddenPortViews.Init();
 	msBounds.Init();
 	masComponents.Init();
 }
@@ -66,6 +67,12 @@ void CComponentView::Kill(void)
 		SafeKill(pcPortView);
 	}
 	mapcPortViews.Kill();
+	for (i = 0; i < mapcHiddenPortViews.NumElements(); i++)
+	{
+		pcPortView = mapcHiddenPortViews.GetPtr(i);
+		SafeKill(pcPortView);
+	}
+	mapcHiddenPortViews.Kill();
 	mcShapes.Kill();
 	mszName.Kill();
 	for (i = 0; i < masComponents.NumElements(); i++)
@@ -475,6 +482,10 @@ bool CComponentView::PostCreateComponent(CViewPath* pcViewPath, CCircuitSimulati
 	{
 		bResult &= mapcPortViews.GetPtr(i)->Connect(pcViewPath, pcCircuitSimulation, pcComponent);
 	}
+	for (i = 0; i < mapcHiddenPortViews.NumElements(); i++)
+	{
+		bResult &= mapcHiddenPortViews.GetPtr(i)->Connect(pcViewPath, pcCircuitSimulation, pcComponent);
+	}
 	return bResult;
 }
 
@@ -493,6 +504,10 @@ void CComponentView::DisconnectComponent(CViewPath* pcViewPath, CCircuitSimulati
 	for (i = 0; i < mapcPortViews.NumElements(); i++)
 	{
 		mapcPortViews.GetPtr(i)->Disconnect(pcViewPath, pcCircuitSimulation);
+	}
+	for (i = 0; i < mapcHiddenPortViews.NumElements(); i++)
+	{
+		mapcHiddenPortViews.GetPtr(i)->Disconnect(pcViewPath, pcCircuitSimulation);
 	}
 	psComponent = FindComponent(pcViewPath, pcCircuitSimulation, &uiIndex);
 	if (psComponent != NULL)
@@ -719,12 +734,38 @@ CPortView* CComponentView::AddPortView(CArrayChars* paszPortNames, int32 x, int3
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A port view for szPortName that isn't drawn and joins the nets named
+// szConnectionName, as a chip's hidden power pin joins its rail.
+//
+//////////////////////////////////////////////////////////////////////////
+CPortView* CComponentView::AddHiddenPortView(const char* szPortName, const char* szConnectionName)
+{
+	CPortView*	pcPortView;
+
+	pcPortView = NewMalloc<CPortView>();
+	pcPortView->Init(this, szPortName, 0, 0);
+	pcPortView->SetHidden(szConnectionName);
+	mapcHiddenPortViews.Add(pcPortView);
+	return pcPortView;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 size CComponentView::NumPortViews(void) const
 {
 	return mapcPortViews.NumElements();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+size CComponentView::NumHiddenPortViews(void) const { return mapcHiddenPortViews.NumElements(); }
+CPortView* CComponentView::GetHiddenPortView(size uiIndex) { return mapcHiddenPortViews.SafeGetPtr(uiIndex); }
 
 
 //////////////////////////////////////////////////////////////////////////

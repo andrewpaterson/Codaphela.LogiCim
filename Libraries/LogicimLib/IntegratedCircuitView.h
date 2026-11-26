@@ -47,6 +47,10 @@ struct SPortViewCreator
 //implied Vcc, if it has one, otherwise the family's default (TTL) voltage, when it's made.  A KiCad import gives the
 //ICs a voltage regulator powers its voltage.  Explicit power ports are drawn as a VCC port on the left of the
 //bounding box and a GND port on the right, each with a grid unit of line to the shapes.
+//
+//An IC can have power rails instead of its own supply (SetPowerRails): its power ports stay hidden and join the nets
+//of the rails' names, as tunnels of those names would (see CPortView::SetHidden), so it is powered by the rail's
+//supply and ramps, switches and drops with it.  A KiCad import gives each IC the nets its power pins are on.
 //What every IC is saved with: its placement and its family.  The strings point into the tag they were read from.
 struct SIntegratedCircuitXML
 {
@@ -66,6 +70,8 @@ protected:
 	CChars		mszFamily;
 	bool		mbExplicitPowerPorts;
 	float32		mfImpliedVcc;  //Volts of the IC's own supply.  0 for the family's default.
+	CChars		mszVccRail;  //Empty for its own supply.
+	CChars		mszGndRail;
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, const char* szFamily, bool bExplicitPowerPorts);
@@ -80,6 +86,10 @@ public:
 			bool					IsExplicitPowerPorts(void) const;
 			void					SetImpliedVcc(float32 fImpliedVcc);
 			float32					GetImpliedVcc(void) const;
+			void					SetPowerRails(const char* szVccRail, const char* szGndRail);
+			bool					HasPowerRails(void) const;
+			char*					GetVccRail(void);
+			char*					GetGndRail(void);
 	static	bool					LoadIntegratedCircuitXML(CMarkupTag* pcTag, SIntegratedCircuitXML* psIntegratedCircuit);
 	virtual bool					LoadXML(CMarkupTag* pcTag);
 	virtual bool					InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);

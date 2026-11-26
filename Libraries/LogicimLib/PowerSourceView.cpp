@@ -41,6 +41,54 @@ void CPowerSourceView::Init(int32 x, int32 y, ERotation eRotation, const char* s
 	miRiseTime = 0;
 	mbOnAtStart = true;
 	mfDropout = -1.0f;
+	mszRail.Init();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceView::Kill(void)
+{
+	mszRail.Kill();
+	CComponentView::Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rail it is on, which it joins wherever it is; NULL for none.
+//
+//////////////////////////////////////////////////////////////////////////
+const char* CPowerSourceView::GetConnectionName(void)
+{
+	return mszRail.Empty() ? NULL : mszRail.Text();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceView::SetRail(const char* szRail)
+{
+	mszRail.Set(szRail);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Its name, and its rail if it is on one.
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceView::GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
+{
+	CComponentView::GetProperties(pcProperties, psContext);
+	if (!mszRail.Empty())
+	{
+		pcProperties->AddText("rail", mszRail.Text());
+	}
 }
 
 
@@ -119,19 +167,27 @@ void CPowerSourceView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	{
 		pcWriter->Attribute("dropout", mfDropout);
 	}
+	if (!mszRail.Empty())
+	{
+		pcWriter->Attribute("rail", mszRail.Text());
+	}
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The attributes SaveXMLAttributes writes, each optional; after Init.
+// The attributes SaveXMLAttributes writes, each optional.
 //
 //////////////////////////////////////////////////////////////////////////
-bool CPowerSourceView::LoadXMLPower(CMarkupTag* pcTag)
+bool CPowerSourceView::LoadXMLAfterInit(CMarkupTag* pcTag)
 {
 	float64	fRiseTime;
 	bool	bOnAtStart;
 
+	if (!CComponentView::LoadXMLAfterInit(pcTag))
+	{
+		return false;
+	}
 	if (pcTag->GetFloat64Attribute("riseTime", &fRiseTime))
 	{
 		if (!(fRiseTime >= 0))
@@ -144,7 +200,26 @@ bool CPowerSourceView::LoadXMLPower(CMarkupTag* pcTag)
 	{
 		mbOnAtStart = bOnAtStart;
 	}
+	if (pcTag->GetStringAttribute("rail") != NULL)
+	{
+		SetRail(pcTag->GetStringAttribute("rail"));
+	}
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rise time in milliseconds and whether it is on at start, for a
+// view that lists them (CPositivePowerView).
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceView::InitAfterProperties(CComponentProperties* pcProperties)
+{
+	CComponentView::InitAfterProperties(pcProperties);
+	SetRiseTime(NanosecondsToTime(pcProperties->GetFloat("riseTime", TimeToNanoseconds(miRiseTime) / 1000000.0) * 1000000.0));
+	SetOnAtStart(pcProperties->GetBoolean("onAtStart", mbOnAtStart));
+	SetRail(pcProperties->GetText("rail", mszRail.Text()));
 }
 
 
@@ -205,7 +280,7 @@ bool CGroundView::LoadXML(CMarkupTag* pcTag)
 		return false;
 	}
 	Init(x, y, eRotation, szName);
-	return LoadXMLPower(pcTag);
+	return true;
 }
 
 
@@ -264,6 +339,85 @@ void CPositivePowerView::SetFeed(float32 fDropout)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The rail its In port joins wherever it is.  After SetFeed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CPositivePowerView::SetFeedRail(const char* szFeedRail)
+{
+	CPortView*	pcIn;
+
+	pcIn = GetPortView(POWER_PIN_FEED);
+	if (pcIn != NULL)
+	{
+		pcIn->SetConnectionName(szFeedRail);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rail its In port joins, NULL for none.
+//
+//////////////////////////////////////////////////////////////////////////
+const char* CPositivePowerView::GetFeedRail(void)
+{
+	CPortView*	pcIn;
+
+	pcIn = GetPortView(POWER_PIN_FEED);
+	if (pcIn == NULL)
+	{
+		return NULL;
+	}
+	return pcIn->GetConnectionName();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A supply's attributes, and a regulator's dropout.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CPositivePowerView::LoadXMLAfterInit(CMarkupTag* pcTag)
+{
+	float32	fDropout;
+
+	if (!CPowerSourceView::LoadXMLAfterInit(pcTag))
+	{
+		return false;
+	}
+	if (pcTag->GetFloat32Attribute("dropout", &fDropout))
+	{
+		if (!(fDropout >= 0))
+		{
+			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a dropout of 0 or more.", NULL);
+		}
+		SetFeed(fDropout);
+		if (pcTag->GetStringAttribute("feedRail") != NULL)
+		{
+			SetFeedRail(pcTag->GetStringAttribute("feedRail"));
+		}
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPositivePowerView::InitAfterProperties(CComponentProperties* pcProperties)
+{
+	CPowerSourceView::InitAfterProperties(pcProperties);
+	if (pcProperties->GetBoolean("fed", false))
+	{
+		SetFeed((float32)pcProperties->GetFloat("dropout", 0.0));
+		SetFeedRail(pcProperties->GetText("feedRail", ""));
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // The voltage is written in its trace colour.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -302,6 +456,10 @@ void CPositivePowerView::SaveXMLAttributes(CXMLWriter* pcWriter)
 {
 	CPowerSourceView::SaveXMLAttributes(pcWriter);
 	pcWriter->Attribute("voltage", mfVoltage);
+	if (IsFed() && (GetFeedRail() != NULL))
+	{
+		pcWriter->Attribute("feedRail", GetFeedRail());
+	}
 }
 
 
@@ -317,7 +475,6 @@ bool CPositivePowerView::LoadXML(CMarkupTag* pcTag)
 	ERotation	eRotation;
 	char*		szName;
 	float32		fVoltage;
-	float32		fDropout;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName))
 	{
@@ -328,15 +485,7 @@ bool CPositivePowerView::LoadXML(CMarkupTag* pcTag)
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a voltage above 0.", NULL);
 	}
 	Init(x, y, eRotation, szName, fVoltage);
-	if (pcTag->GetFloat32Attribute("dropout", &fDropout))
-	{
-		if (!(fDropout >= 0))
-		{
-			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a dropout of 0 or more.", NULL);
-		}
-		SetFeed(fDropout);
-	}
-	return LoadXMLPower(pcTag);
+	return true;
 }
 
 
@@ -368,12 +517,16 @@ bool CGroundView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CCom
 //////////////////////////////////////////////////////////////////////////
 void CPositivePowerView::GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
-	CComponentView::GetProperties(pcProperties, psContext);
+	CPowerSourceView::GetProperties(pcProperties, psContext);
 	pcProperties->AddFloat("voltage", "V", mfVoltage, 0.0, 100.0);
 	pcProperties->AddFloat("riseTime", "ms", TimeToNanoseconds(miRiseTime) / 1000000.0, 0.0, 1000.0);
 	pcProperties->AddBoolean("onAtStart", mbOnAtStart);
 	pcProperties->AddBoolean("fed", IsFed());
 	pcProperties->AddFloat("dropout", "V", IsFed() ? mfDropout : 0.0, 0.0, 100.0);
+	if (IsFed() && (GetFeedRail() != NULL))
+	{
+		pcProperties->AddText("feedRail", GetFeedRail());
+	}
 }
 
 
@@ -396,11 +549,5 @@ bool CPositivePowerView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCirc
 bool CPositivePowerView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
 	Init(x, y, eRotation, pcProperties->GetText("name", ""), (float32)pcProperties->GetFloat("voltage", mfVoltage));
-	SetRiseTime(NanosecondsToTime(pcProperties->GetFloat("riseTime", 0.0) * 1000000.0));
-	SetOnAtStart(pcProperties->GetBoolean("onAtStart", true));
-	if (pcProperties->GetBoolean("fed", false))
-	{
-		SetFeed((float32)pcProperties->GetFloat("dropout", 0.0));
-	}
 	return true;
 }

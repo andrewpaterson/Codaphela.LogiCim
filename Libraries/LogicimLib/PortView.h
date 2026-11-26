@@ -47,6 +47,10 @@ class CCircuitSimulation;
 //pins).  The dot on the port is coloured by the voltage the ports see.  A port view that's only a place to connect
 //(a tunnel's end, with no ports) isn't drawn.  Its ports are kept for each view path and circuit simulation its
 //owner has made a component in, as Logicim's.
+//
+//A hidden port view (SetHidden), as a chip's power pin on its named rail, isn't drawn and has no place: it joins the
+//nets of its connection name only, as a tunnel of that name would.  Its owner keeps it apart from its other port
+//views (CComponentView::AddHiddenPortView), so only the wiring sees it.
 class CPortView
 {
 protected:
@@ -60,6 +64,8 @@ protected:
 	bool				mbClock;
 	SFloat64Vec2		masClockNotch[3];
 	bool				mbDrawn;
+	bool				mbHidden;
+	CChars				mszConnectionName;  //Empty for its owner's.
 	CViewPathPointers<CPort>	mcPorts;
 	SComponentSpriteMemo	msSpriteMemo;  //With a sprite cache the port is drawn from a sprite shared by every port like it.
 
@@ -72,6 +78,10 @@ public:
 	void				SetClock(ERotation eFacing);
 	void				SetText(const char* szText);
 	void				SetDrawn(bool bDrawn);
+	void				SetHidden(const char* szConnectionName);
+	void				SetConnectionName(const char* szConnectionName);
+	bool				IsHidden(void) const;
+	const char*			GetConnectionName(void);
 	void				Rotate(ERotation eRotation);
 
 	bool				Connect(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CCircuitComponent* pcComponent);

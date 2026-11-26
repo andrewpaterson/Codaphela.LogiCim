@@ -264,6 +264,7 @@ bool CCircuitWiring::AddLevels(CViewPath* pcViewPath, int iParent, CCircuitInsta
 	psLevel->iParent = iParent;
 	psLevel->pcInstanceView = pcInstanceView;
 	pcCircuit->CollectPortViews(&psLevel->apcPortViews);
+	pcCircuit->CollectHiddenPortViews(&psLevel->apcPortViews);
 
 	bResult = true;
 	for (i = 0; i < pcCircuit->NumComponents(); i++)
@@ -331,14 +332,14 @@ void CCircuitWiring::JoinLevel(SWiringLevel* psLevel)
 		{
 			continue;
 		}
-		for (j = 0; j < uiTraces; j++)
+		for (j = 0; (j < uiTraces) && !pcPortView->IsHidden(); j++)
 		{
 			if (!IsDetached(pcCircuit->GetTrace(j)) && pcCircuit->GetTrace(j)->Contains(pcPortView->GetGridPosition()))
 			{
 				mcParents.JoinToFirst((size)iFirst + uiTraces + i, (size)iFirst + j);
 			}
 		}
-		szName = pcPortView->GetOwner()->GetConnectionName();
+		szName = pcPortView->GetConnectionName();
 		for (j = i + 1; j < papcPortViews->NumElements(); j++)
 		{
 			pcOtherPortView = papcPortViews->GetPtr(j);
@@ -346,13 +347,13 @@ void CCircuitWiring::JoinLevel(SWiringLevel* psLevel)
 			{
 				continue;
 			}
-			if (pcOtherPortView->GetGridPosition() == pcPortView->GetGridPosition())
+			if (!pcPortView->IsHidden() && !pcOtherPortView->IsHidden() && (pcOtherPortView->GetGridPosition() == pcPortView->GetGridPosition()))
 			{
 				mcParents.JoinToFirst((size)iFirst + uiTraces + i, (size)iFirst + uiTraces + j);
 			}
 			else if (szName != NULL)
 			{
-				szOtherName = pcOtherPortView->GetOwner()->GetConnectionName();
+				szOtherName = pcOtherPortView->GetConnectionName();
 				if ((szOtherName != NULL) && (StringCompare(szName, szOtherName) == 0))
 				{
 					mcParents.JoinToFirst((size)iFirst + uiTraces + i, (size)iFirst + uiTraces + j);
