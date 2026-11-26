@@ -30,6 +30,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlipFlopView.h"
 #include "CounterView.h"
 #include "ClockView.h"
+#include "ResetSupervisorView.h"
 #include "LabelView.h"
 #include "TunnelView.h"
 #include "W65C816View.h"
@@ -90,6 +91,7 @@ SComponentViewType gasComponentViewTypes[] =
 	{ "DTypeFlipFlop", NewComponentViewOfClass<CDTypeFlipFlopView> },
 	{ "Counter", NewComponentViewOfClass<CCounterView> },
 	{ "Clock", NewComponentViewOfClass<CClockView> },
+	{ "ResetSupervisor", NewComponentViewOfClass<CResetSupervisorView> },
 	{ "PositivePower", NewComponentViewOfClass<CPositivePowerView> },
 	{ "Pin", NewComponentViewOfClass<CPinView> },
 	{ "W65C816", NewComponentViewOfClass<CW65C816View> },

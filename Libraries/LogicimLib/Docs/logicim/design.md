@@ -21,6 +21,7 @@ are MicroprocessorLib's ([Logic Simulation](../libraries/microprocessorlib/logic
 | [`CDTypeFlipFlopView`], [`CCounterView`], [`CClockView`], [`CConstantView`], [`CProbeView`], [`COscilloscopeView`] | Logicim's chips and instruments |
 | [`CW65C816View`], [`C65C64View`] | the processors, with their registers and flags shown live |
 | [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies (on at start or not, a rise time, and a regulator's In port and dropout), and a subcircuit's pins |
+| [`CResetSupervisorView`] | a power-on reset supervisor, a DS1813: its RST, its trip voltage and reset time |
 | [`CSplitterView`], [`CTunnelView`], [`CLabelView`] | wiring that makes no component, and text |
 | [`CSubcircuitInstanceView`] | an instance of another circuit of the project |
 

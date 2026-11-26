@@ -32,6 +32,8 @@
 #include "LogicimLib/ValueView.h"
 #include "LogicimLib/TunnelView.h"
 #include "LogicimLib/PowerSourceView.h"
+#include "LogicimLib/ResetSupervisorView.h"
+#include "MicroprocessorLib/ResetSupervisor.h"
 #include "MicroprocessorLib/W65C816Chip.h"
 #include "MicroprocessorLib/W65C816InstructionFactory.h"
 #include "MicroprocessorLib/65C64Chip.h"
@@ -317,9 +319,11 @@ void TestSimulationStatePowerRamp(void)
 //
 // Rails joined by name: a 5V supply on rail 5V rising 0.1V every 100ns, a
 // 3.3V regulator on rail 3.3V fed from rail 5V (a 1.1V dropout), a ground
-// on rail GND, and an inverter whose hidden power is on rails 3.3V and
-// GND, none of them wired.  The inverter has power once the regulator
-// switches on, as 5V passes 4.4V.  The rails survive a save and load.
+// on rail GND, an inverter whose hidden power is on rails 3.3V and GND,
+// and a DS1813 on rails 5V and GND with a 1us reset time, none of them
+// wired.  The inverter has power once the regulator switches on, as 5V
+// passes 4.4V; the DS1813 lets reset go 1us after 5V passes 4.35V.  The
+// rails survive a save and load.
 //
 //////////////////////////////////////////////////////////////////////////
 void TestSimulationStatePowerRails(void)
@@ -337,6 +341,9 @@ void TestSimulationStatePowerRails(void)
 	CGroundView*						pcGround;
 	CInverterView*						pcInverterView;
 	CIntegratedCircuit*					pcInverter;
+	CResetSupervisorView*				pcSupervisorView;
+	CResetSupervisor*					pcSupervisor;
+	float32								fResistance;
 	CPowerSource*						pcRegulator;
 	CXMLWriter							cText;
 	CXMLWriter							cLoadedText;
@@ -372,6 +379,10 @@ void TestSimulationStatePowerRails(void)
 	pcInverterView->Init(40, 0, ROT_East, "U1", "LVC", false, 1, 1);
 	pcInverterView->SetPowerRails("3.3V", "GND");
 	cView.Add(pcInverterView);
+	pcSupervisorView = NewMalloc<CResetSupervisorView>();
+	pcSupervisorView->Init(40, 10, ROT_East, "IC3", "LVC", false, RESET_SUPERVISOR_TRIP_VOLTAGE, NanosecondsToTime((int64)1000));
+	pcSupervisorView->SetPowerRails("5V", "GND");
+	cView.Add(pcSupervisorView);
 	AssertTrue(pcInverterView->HasPowerRails());
 	AssertSize(2, pcInverterView->NumHiddenPortViews());
 	AssertString("3.3V", pcInverterView->GetHiddenPortView((size)0)->GetConnectionName());
@@ -388,6 +399,14 @@ void TestSimulationStatePowerRails(void)
 	AssertTrue(pcRegulator->IsOn());
 	AssertTrue(pcInverter->IsPowered(pSimulation->GetTime()));
 	AssertFloat(3.3f, pcInverter->GetVCC(pSimulation->GetTime()), 3);
+	pcSupervisor = (CResetSupervisor*)pcSupervisorView->GetIntegratedCircuit(pcPath, &pSimulation);
+	AssertTrue(pcSupervisor->IsAsserting());
+	AssertTrue(pSimulation->IsPoweringUp());
+	pSimulation->GetTimeline()->Run();
+	AssertFalse(pcSupervisor->IsAsserting());
+	AssertFalse(pSimulation->IsPoweringUp());
+	AssertFloat(5.0f, pcSupervisor->GetResetSupervisorPins()->GetReset()->GetDrive(pSimulation->GetTime(), &fResistance), 3);
+	AssertFloat(RESET_SUPERVISOR_PULL_UP, fResistance, 1);
 
 	cFileUtil.MakeDir("Output");
 	AssertTrue(SaveCircuitFile(&cView, "Output" _FS_ "Rails.xml"));

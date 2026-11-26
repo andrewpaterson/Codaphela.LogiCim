@@ -26,6 +26,7 @@
     <ClCompile Include="CircuitGrid.cpp" />
     <ClCompile Include="CircuitPainter.cpp" />
     <ClCompile Include="ClockView.cpp" />
+    <ClCompile Include="ResetSupervisorView.cpp" />
     <ClCompile Include="LabelView.cpp" />
     <ClCompile Include="TunnelView.cpp" />
     <ClCompile Include="W65C816View.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="CircuitGrid.h" />
     <ClInclude Include="CircuitPainter.h" />
     <ClInclude Include="ClockView.h" />
+    <ClInclude Include="ResetSupervisorView.h" />
     <ClInclude Include="LabelView.h" />
     <ClInclude Include="TunnelView.h" />
     <ClInclude Include="W65C816View.h" />
