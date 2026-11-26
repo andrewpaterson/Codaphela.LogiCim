@@ -63,6 +63,9 @@
     <ClCompile Include="KicadSchemLogicimCounts.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
+    <ClCompile Include="KicadSchemLogicimDecode.cpp">
+      <Filter>Source\Logicim</Filter>
+    </ClCompile>
     <ClCompile Include="KicadSchemSupplyNames.cpp">
       <Filter>Source\Logicim</Filter>
     </ClCompile>
@@ -90,6 +93,9 @@
       <Filter>Source\Logicim</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemLogicimCounts.h">
+      <Filter>Source\Logicim</Filter>
+    </ClInclude>
+    <ClInclude Include="KicadSchemLogicimDecode.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>
     <ClInclude Include="KicadSchemLogicimBuses.h">

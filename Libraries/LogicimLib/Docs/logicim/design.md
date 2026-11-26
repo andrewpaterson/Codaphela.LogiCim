@@ -174,6 +174,16 @@ the caller's thread; laying each out is nearly all the time and touches only its
 thread pool, and the result is the same file byte for byte whichever finishes first.  An import can be cancelled
 and tells a [`CKicadSchemImportProgress`] its steps.
 
+[`CKicadSchemLogicimDecode`] reads a board's address decode by simulating it.  The sheet's circuit is built but not
+laid out: its components are moved apart and wired by the netlist instead, a tunnel named as its net on each port the
+converter made for a pin, label or supply.  A resistor between two nets that aren't supplies joins them (a chip
+select leaves a board through a series resistor), and a net named as a supply is driven at its voltage (an input tied
+low by a GND label has no power symbol for the converter to make).  The board's pins on nets that only inputs read
+are driven, those named A and a number as the address and the rest as modes, through every combination, and the
+pins on nets a part drives are read once it settles; an output neither high nor low is an error.  Each output's
+active addresses are written as ranges, a range repeating through address lines the board hasn't on one line
+(`LogiCim --decode`, [The LogiCim Application](app.md#kicad-import)).
+
 ## Tests
 
 | Test | Covers |
@@ -184,6 +194,7 @@ and tells a [`CKicadSchemImportProgress`] its steps.
 | [`TestLogicimLib/TestComponentSprites.cpp`], [`TestLogicimLib/TestCircuitGrid.cpp`] | the sprite cache and grid tiles draw as painting does |
 | [`TestLogicimLib/TestTraceAutoConnector.cpp`], [`TestLogicimLib/TestCircuitEditor.cpp`] | routing, and editing with undo |
 | [`TestKicadImporterLib/TestKicadSchemLogicim.cpp`] | each converted schematic compared with its expected circuit in Input/Logicim; boards on threads and cancelled |
+| [`TestKicadImporterLib/TestKicadSchemDecode.cpp`] | the decode of a small board (a series resistor, a pull up, a GND label) and of the HCP65 MPU Address Decode board |
 
 The reference images of the first views were checked against Java Logicim's own renders when they were made
 (2026-10-24): positions match, text sits about a pixel lower and a few hinted widths differ.

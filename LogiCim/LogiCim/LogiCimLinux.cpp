@@ -18,17 +18,44 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <stdio.h>
+#include <string.h>
 #include "BaseLib/GlobalMemory.h"
 #include "StandardLib/Objects.h"
 #include "X11Lib/X11WindowFactory.h"
 #include "X11Lib/X11Input.h"
+#include "KicadImporterLib/KicadSchemLogicimDecode.h"
 #include "LogicimApp.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// LogiCim's window on Linux.  Run from the LogiCim directory, the
-// resources and WinInputLib's XML are found relative to it.
+// LogiCim --decode <board.kicad_sch>: the board's address decode, a line
+// for each range of addresses a chip select is active over in each mode
+// (see CKicadSchemLogicimDecode), with no window.
+//
+//////////////////////////////////////////////////////////////////////////
+static bool PrintLogicimDecode(const char* szSchematic)
+{
+	CChars	szRanges;
+	bool	bResult;
+
+	szRanges.Init();
+	bResult = DecodeKicadSchemFile(szSchematic, "Resources/PropagationTimes.csv", "Resources/Fonts", &szRanges);
+	if (bResult)
+	{
+		fputs(szRanges.Text(), stdout);
+	}
+	szRanges.Kill();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// LogiCim's window on Linux, or its decode (--decode).  Run from the
+// LogiCim directory, the resources and WinInputLib's XML are found
+// relative to it.
 //
 //////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -37,6 +64,11 @@ int main(int argc, char* argv[])
 
 	InitLogicimGlobals();
 
+	if ((argc == 3) && (strcmp(argv[1], "--decode") == 0))
+	{
+		bResult = PrintLogicimDecode(argv[2]);
+	}
+	else
 	{
 		Ptr<CX11WindowFactory>		pNativeFactory;
 		CX11Input					cX11Input;

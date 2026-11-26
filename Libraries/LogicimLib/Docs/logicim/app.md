@@ -94,6 +94,11 @@ An import builds its boards' circuits on the window's thread, then lays them out
 step it is on; its Cancel gives the import up, each circuit stopping at its next step, and leaves the project as it
 was.
 
+`#!text LogiCim --decode <board.kicad_sch>` (on Linux, run from `LogiCim/LogiCim` for its resources) opens no
+window: it simulates the board's address decode ([`CKicadSchemLogicimDecode`], see
+[KiCad import](design.md#kicad-import)) and prints each chip select's address ranges in each mode, a line each.  The
+website's build checks the HCP65's memory map pages against the HCP65 MPU Address Decode board's.
+
 ## Checks
 
 [`LogiCim/Checks/LogicimChecks.py`] runs LogiCim with steps in `#!text LOGICIM_CHECK` ([`CLogicimApp::Check`]),
