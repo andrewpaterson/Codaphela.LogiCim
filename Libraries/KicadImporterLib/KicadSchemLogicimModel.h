@@ -158,6 +158,9 @@ typedef CArrayTemplate<SKicadSchemLogicimConnection>	CArrayKicadSchemLogicimConn
 
 //What the converter has made so far: the circuit, its items (the Logicim components), their terminals (the ports
 //standing for KiCad's pins, labels and supplies on each subnet) and the connections to be wired between terminals.
+//
+//It keeps the groups of nets series resistors join (JoinNets), each named by one of its nets (SetGroupNet): a joined
+//net's tunnels all have the group's name (GetNetName), so the wiring joins it as one net.
 class CKicadSchemLogicimModel
 {
 protected:
@@ -169,6 +172,8 @@ protected:
 	CHashMapTemplate<CPortView*, size>										mcPortTerminals;    //A port to its first terminal.
 	CHashMapTemplate<CComponentView*, size>									mcViewItems;        //A view to its item.
 	CHashMapString<size>					mcBoardPins;        //A board pin's name to its item.
+	CHashMapTemplate<CKicadSchemNet*, CKicadSchemNet*>	mcNetGroups;     //A joined net to another of its group, the group's first not in it.
+	CHashMapTemplate<CKicadSchemNet*, CKicadSchemNet*>	mcGroupNames;    //A group's first net to the net that names it.
 
 	void							LinkItem(size uiItem);
 	void							LinkTerminal(size uiTerminal);
@@ -180,6 +185,11 @@ public:
 	void							Kill(void);
 
 	void							SetCircuit(CCircuitView* pcCircuit);
+	void							JoinNets(CKicadSchemNet* pcNet, CKicadSchemNet* pcOther);
+	CKicadSchemNet*					GetGroup(CKicadSchemNet* pcNet);
+	void							SetGroupNet(CKicadSchemNet* pcNet, CKicadSchemNet* pcNamingNet);
+	CKicadSchemNet*					GetGroupNet(CKicadSchemNet* pcNet);
+	const char*						GetNetName(CKicadSchemNet* pcNet);
 	CCircuitView*					GetCircuit(void) const;
 
 	size							AddItem(CComponentView* pcView, EKicadSchemLogicimItemKind eKind, SFloat64Vec2* psKicadPosition, CPortView* pcAnchor, CKicadSchemSymbol* pcSymbol);

@@ -31,6 +31,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "LogicimLib/TunnelView.h"
 #include "LogicimLib/CircuitFonts.h"
 #include "KicadSchemSupplyNames.h"
+#include "KicadSchemLogicPins.h"
 #include "KicadSchemLogicimDecode.h"
 
 
@@ -39,41 +40,6 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 //The widest address decoded: every address is walked, so this many bits is 256M addresses a mode.
 #define KICAD_SCHEM_DECODE_MAX_WIDTH	28
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Whether the symbol is a resistor or a resistor network ("R1", "RN5"),
-// by its reference's letters.
-//
-//////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemResistor(CKicadSchemSymbol* pcSymbol)
-{
-	const char*	szReference;
-	size		i;
-
-	szReference = pcSymbol->GetReference();
-	if ((szReference == NULL) || ((szReference[0] != 'R') && (szReference[0] != 'r')))
-	{
-		return false;
-	}
-	i = ((szReference[1] == 'N') || (szReference[1] == 'n')) ? 2 : 1;
-	return (szReference[i] >= '0') && (szReference[i] <= '9');
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The net a symbol's pin is on, NULL for none.
-//
-//////////////////////////////////////////////////////////////////////////
-static CKicadSchemNet* GetKicadSchemPinNet(CKicadSchemNetlist* pcNetlist, CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin)
-{
-	CKicadSchemSubnet*	pcSubnet;
-
-	pcSubnet = pcNetlist->GetPinSubnet(pcSymbol, pcPin);
-	return (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL;
-}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,17 +69,6 @@ static int GetKicadSchemAddressBit(const char* szName)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Whether a pin of this type drives its net.
-//
-//////////////////////////////////////////////////////////////////////////
-static bool IsKicadSchemDrivingPin(EKicadSchemPinType eType)
-{
-	return (eType == KSPT_Output) || (eType == KSPT_TriState) || (eType == KSPT_OpenCollector) || (eType == KSPT_OpenEmitter);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // pcFonts are the converter's; pcFamilies give the parts their voltages.
 // Neither is held.
 //
@@ -126,10 +81,11 @@ void CKicadSchemLogicimDecode::Init(CKicadSchemFile* pcFile, CKicadSchemNetlist*
 	mpcFamilies = pcFamilies;
 	mcCircuits.Init();
 	mcConverter.Init(pcFile, pcNetlist, &mcCircuits, pcFonts);
+	mcConverter.SetFamilies(pcFamilies);
+	mcConverter.SetJoinFilters(true);
 	mcPaths.Init();
 	mpcPath = NULL;
 	mpSimulation = NULL;
-	mcNetGroups.Init();
 	masAddresses.Init();
 	masModes.Init();
 	masOutputs.Init();
@@ -155,7 +111,6 @@ void CKicadSchemLogicimDecode::Kill(void)
 	masOutputs.Kill();
 	masModes.Kill();
 	masAddresses.Kill();
-	mcNetGroups.Kill();
 	mcConverter.Kill();
 	mcCircuits.Kill();
 	if (mpSimulation.IsNotNull())
@@ -183,7 +138,6 @@ bool CKicadSchemLogicimDecode::Decode(const char* szTypeName, CChars* pszDest)
 	{
 		return false;
 	}
-	JoinSeriesResistors();
 	AddNetTunnels();
 	if (!Simulate())
 	{
@@ -240,61 +194,6 @@ bool CKicadSchemLogicimDecode::Build(const char* szTypeName)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The nets a resistor joins, unless one is a supply's: a chip select
-// leaving a board through a series resistor is the same signal on both
-// sides, but a pull up isn't its supply.  The pins of one resistor in a
-// network have the same name ("R1" on pins 1 and 8).
-//
-//////////////////////////////////////////////////////////////////////////
-void CKicadSchemLogicimDecode::JoinSeriesResistors(void)
-{
-	size					i;
-	size					j;
-	size					k;
-	CKicadSchemSymbol*		pcSymbol;
-	CKicadSchemLibSymbol*	pcLibSymbol;
-	CKicadSchemLibPin*		pcPin;
-	CKicadSchemLibPin*		pcOther;
-	CKicadSchemNet*			pcNet;
-	CKicadSchemNet*			pcOtherNet;
-
-	mcNetGroups.AddNum(mpcNetlist->NumNets());
-	for (i = 0; i < mpcFile->NumSymbols(); i++)
-	{
-		pcSymbol = mpcFile->GetSymbol(i);
-		pcLibSymbol = mpcFile->GetLibSymbol(pcSymbol);
-		if ((pcLibSymbol == NULL) || !IsKicadSchemResistor(pcSymbol))
-		{
-			continue;
-		}
-		for (j = 0; j < pcLibSymbol->NumPins(); j++)
-		{
-			pcPin = pcLibSymbol->GetPin(j);
-			pcNet = GetKicadSchemPinNet(mpcNetlist, pcSymbol, pcPin);
-			if (!pcSymbol->IsUnitPin(pcPin) || (pcNet == NULL) || IsKicadSchemPowerNetName(pcNet->GetName()))
-			{
-				continue;
-			}
-			for (k = j + 1; k < pcLibSymbol->NumPins(); k++)
-			{
-				pcOther = pcLibSymbol->GetPin(k);
-				if (!pcSymbol->IsUnitPin(pcOther) || (StringCompare(pcPin->GetName(), pcOther->GetName()) != 0))
-				{
-					continue;
-				}
-				pcOtherNet = GetKicadSchemPinNet(mpcNetlist, pcSymbol, pcOther);
-				if ((pcOtherNet != NULL) && !IsKicadSchemPowerNetName(pcOtherNet->GetName()))
-				{
-					mcNetGroups.Join(GetNetGroup(pcNet), GetNetGroup(pcOtherNet));
-				}
-			}
-		}
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Every component moved apart, and a tunnel named as its net's group on
 // each port the converter made for the net, so the wiring joins the
 // ports of a net by name (see CCircuitWiring) where it would have joined
@@ -330,7 +229,7 @@ void CKicadSchemLogicimDecode::AddNetTunnels(void)
 		}
 		sPosition = psTerminal->pcPortView->GetGridPosition();
 		pcTunnel = NewMalloc<CTunnelView>();
-		pcTunnel->Init(sPosition.x, sPosition.y, ROT_East, GetGroupNet(GetNetGroup(pcNet))->GetName(), false, mpcFonts);
+		pcTunnel->Init(sPosition.x, sPosition.y, ROT_East, pcModel->GetNetName(pcNet), false, mpcFonts);
 		pcCircuit->Add(pcTunnel);
 	}
 }
@@ -392,14 +291,14 @@ bool CKicadSchemLogicimDecode::FindPins(void)
 	for (i = 0; i < mpcNetlist->NumNets(); i++)
 	{
 		pcNet = mpcNetlist->GetNet(i);
-		uiGroup = mcNetGroups.Find(i);
+		uiGroup = GetNetGroup(pcNet);
 		for (j = 0; j < pcNet->NumSubnets(); j++)
 		{
 			pcSubnet = pcNet->GetSubnet(j);
 			for (k = 0; k < pcSubnet->NumPins(); k++)
 			{
 				psPin = pcSubnet->GetPin(k);
-				if (IsKicadSchemDrivingPin(psPin->pcPin->GetType()))
+				if (IsKicadSchemOutputPinType(psPin->pcPin->GetType()))
 				{
 					aiDriven.SetValue(uiGroup, 1);
 				}
@@ -907,24 +806,13 @@ size CKicadSchemLogicimDecode::FindNet(CKicadSchemNet* pcNet)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The group of nets joined by series resistors the net is in: the index
-// of the group's first net.
+// The group of nets joined by series resistors the net is in (see
+// CKicadSchemLogicimModel::JoinNets): the index of the net naming it.
 //
 //////////////////////////////////////////////////////////////////////////
 size CKicadSchemLogicimDecode::GetNetGroup(CKicadSchemNet* pcNet)
 {
-	return mcNetGroups.Find(FindNet(pcNet));
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The net that names a group: its tunnels are named as it.
-//
-//////////////////////////////////////////////////////////////////////////
-CKicadSchemNet* CKicadSchemLogicimDecode::GetGroupNet(size uiGroup)
-{
-	return mpcNetlist->GetNet(uiGroup);
+	return FindNet(mcConverter.GetModel()->GetGroupNet(pcNet));
 }
 
 

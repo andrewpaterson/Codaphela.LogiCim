@@ -174,7 +174,17 @@ KicadImporterLib makes LogiCim circuits from KiCad schematics read by CommonLibr
 [`CKicadSchemLogicimConverter`] makes one sheet's circuit: a real 74 series part becomes a 74 series package or units
 as KiCad draws it, any other 74 series gate or flip flop generic ones, a power symbol a supply, a board's edge
 connector the circuit's pins, and any other symbol an instance of an empty placeholder circuit with its pins, to be
-filled in later.  Passives, power flags, test points and the like are left out.  A chip whose VCC and GND nets have
+filled in later.  Power flags, test points and the like are left out, and resistors and capacitors aren't drawn.  A
+resistor between two nets that aren't supplies (a series termination, a network's element) joins them into one net
+([`CKicadSchemLogicimConverter::JoinSeriesResistors`]): its labels' tunnels and one at each of the resistor's pins
+take the name of its label-named net (the connector's side first, else the driven side's,
+[`CKicadSchemLogicimModel::GetNetName`]).  Not when it makes an RC filter of 1ns or more with what it drives: the
+capacitors drawn from that net to a supply, or else an estimate, each input on the net at its family's input
+capacitance (PropagationTimes.csv's CI) plus 3pF of wiring and 10pF a connector pin; those are left apart and warned
+until RC elements are built (KicadImporterLib's ResistorsPlan.txt, part 2).  A value that can't be read joins, warned.
+[`GetKicadSchemResistance`] and [`GetKicadSchemCapacitance`] read every value HCP65/Kicad writes, resistor networks'
+part codes too; [`GetKicadSchemPassiveElements`] pairs a network's pins by name, so a bussed network's common pin
+joins nothing.  A chip whose VCC and GND nets have
 supplies is on those nets as power rails, its power pins hidden ([`CKicadSchemLogicimConverter::ApplyPowerRails`]); a
 voltage regulator becomes a supply on its output's rail, fed from its input's with its part's dropout and start-up
 ([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); a DS1813 a reset supervisor; and every supply made rises
@@ -196,8 +206,9 @@ and tells a [`CKicadSchemImportProgress`] its steps.
 
 [`CKicadSchemLogicimDecode`] reads a board's address decode by simulating it.  The sheet's circuit is built but not
 laid out: its components are moved apart and wired by the netlist instead, a tunnel named as its net on each port the
-converter made for a pin, label or supply.  A resistor between two nets that aren't supplies joins them (a chip
-select leaves a board through a series resistor), though the converter leaves resistors out.  Its supplies are the
+converter made for a pin, label or supply, by the converter's joins, RC filters joined too
+([`CKicadSchemLogicimConverter::SetJoinFilters`]: a chip select leaves a board through a series resistor, and the
+decode reads logic, not timing).  Its supplies are the
 converter's, power symbols' and supply labels' (a GND label ties the board's unused '138 enables low).  The board's
 pins on nets that only inputs read are driven, those named A and a number as the address and the rest as modes,
 through every combination, and the pins on nets a part drives are read once it settles; an output neither high nor
@@ -214,6 +225,8 @@ board hasn't on one line (`LogiCim --decode`, [The LogiCim Application](app.md#k
 | [`TestLogicimLib/TestComponentSprites.cpp`], [`TestLogicimLib/TestCircuitGrid.cpp`] | the sprite cache and grid tiles draw as painting does |
 | [`TestLogicimLib/TestTraceAutoConnector.cpp`], [`TestLogicimLib/TestCircuitEditor.cpp`] | routing, and editing with undo |
 | [`TestKicadImporterLib/TestKicadSchemLogicim.cpp`] | each converted schematic compared with its expected circuit in Input/Logicim; supply labels; boards on threads and cancelled |
+| [`TestKicadImporterLib/TestKicadSchemPassives.cpp`] | every value form in HCP65/Kicad read; a test sheet's resistors, networks and RCs joined or left apart |
+| [`TestKicadImporterLib/TestKicadSchemPower.cpp`] | Power and Reset and the Processor Reset Device imported and powered up: rails, regulators, the DS1813, the reset through R1 |
 | [`TestKicadImporterLib/TestKicadSchemDecode.cpp`] | the decode of a small board (a series resistor, a pull up, a GND label) and of the HCP65 MPU Address Decode board |
 
 The reference images of the first views were checked against Java Logicim's own renders when they were made

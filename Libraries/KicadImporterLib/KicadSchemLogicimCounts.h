@@ -32,7 +32,10 @@ struct SKicadSchemLogicimCounts
 	size	uiBoards;				//Instances of boards drawn as symbols.
 	size	uiBoardPins;			//The circuit's pins, for its connectors' nets.
 	size	uiPowers;				//Grounds and positive supplies.
-	size	uiRegulators;			//Voltage regulators (not drawn).
+	size	uiRegulators;			//Voltage regulators.
+	size	uiSeriesResistors;		//Series resistors joining their nets.
+	size	uiSlowRCs;				//Series resistors that are RC filters, not joined (see JoinSeriesResistors).
+	size	uiUnreadResistors;		//Series resistors whose value couldn't be read, joined.
 	size	uiTunnels;				//Labels' and buses' tunnels.
 	size	uiSplitters;			//Buses' splitters.
 	size	uiSkipped;				//Symbols left out: passive parts, mechanical symbols and power flags.

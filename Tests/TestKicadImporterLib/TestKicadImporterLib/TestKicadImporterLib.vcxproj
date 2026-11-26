@@ -229,6 +229,10 @@
     <ClCompile Include="TestKicadSchemLogicim.cpp" />
     <ClCompile Include="TestKicadSchemDecode.cpp" />
     <ClCompile Include="TestKicadSchemPower.cpp" />
+    <ClCompile Include="TestKicadSchemPassives.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestKicadSchemBoard.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\CommonLibraries\Libraries\BaseLib\BaseLib.vcxproj">

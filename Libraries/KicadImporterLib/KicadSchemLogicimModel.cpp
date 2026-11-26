@@ -44,6 +44,8 @@ void CKicadSchemLogicimModel::Init(void)
 	mcPortTerminals.Init();
 	mcViewItems.Init();
 	mcBoardPins.Init();
+	mcNetGroups.Init();
+	mcGroupNames.Init();
 }
 
 
@@ -54,6 +56,8 @@ void CKicadSchemLogicimModel::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimModel::Kill(void)
 {
+	mcGroupNames.Kill();
+	mcNetGroups.Kill();
 	mcBoardPins.Kill();
 	mcViewItems.Kill();
 	mcPortTerminals.Kill();
@@ -73,6 +77,89 @@ void CKicadSchemLogicimModel::Kill(void)
 void CKicadSchemLogicimModel::SetCircuit(CCircuitView* pcCircuit)
 {
 	mpcCircuit = pcCircuit;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The group of joined nets the net is in, as one of them: the net itself
+// if it's joined to nothing.
+//
+//////////////////////////////////////////////////////////////////////////
+CKicadSchemNet* CKicadSchemLogicimModel::GetGroup(CKicadSchemNet* pcNet)
+{
+	CKicadSchemNet**	ppcNext;
+
+	for (;;)
+	{
+		ppcNext = mcNetGroups.Get(&pcNet);
+		if (ppcNext == NULL)
+		{
+			return pcNet;
+		}
+		pcNet = *ppcNext;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The two nets are one, as a series resistor joins them.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::JoinNets(CKicadSchemNet* pcNet, CKicadSchemNet* pcOther)
+{
+	CKicadSchemNet*	pcGroup;
+	CKicadSchemNet*	pcOtherGroup;
+
+	pcGroup = GetGroup(pcNet);
+	pcOtherGroup = GetGroup(pcOther);
+	if (pcGroup != pcOtherGroup)
+	{
+		mcNetGroups.Put(&pcOtherGroup, &pcGroup);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The net whose name names pcNet's group.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimModel::SetGroupNet(CKicadSchemNet* pcNet, CKicadSchemNet* pcNamingNet)
+{
+	CKicadSchemNet*	pcGroup;
+
+	pcGroup = GetGroup(pcNet);
+	mcGroupNames.Put(&pcGroup, &pcNamingNet);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The net that names pcNet's group: pcNet itself if it's joined to
+// nothing.
+//
+//////////////////////////////////////////////////////////////////////////
+CKicadSchemNet* CKicadSchemLogicimModel::GetGroupNet(CKicadSchemNet* pcNet)
+{
+	CKicadSchemNet*		pcGroup;
+	CKicadSchemNet**	ppcNamingNet;
+
+	pcGroup = GetGroup(pcNet);
+	ppcNamingNet = mcGroupNames.Get(&pcGroup);
+	return (ppcNamingNet != NULL) ? *ppcNamingNet : pcGroup;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The name the net's tunnels have: its group's.
+//
+//////////////////////////////////////////////////////////////////////////
+const char* CKicadSchemLogicimModel::GetNetName(CKicadSchemNet* pcNet)
+{
+	return GetGroupNet(pcNet)->GetName();
 }
 
 

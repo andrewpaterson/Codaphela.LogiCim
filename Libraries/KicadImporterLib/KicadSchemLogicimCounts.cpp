@@ -35,6 +35,9 @@ void SKicadSchemLogicimCounts::Init(void)
 	uiBoardPins = 0;
 	uiPowers = 0;
 	uiRegulators = 0;
+	uiSeriesResistors = 0;
+	uiSlowRCs = 0;
+	uiUnreadResistors = 0;
 	uiTunnels = 0;
 	uiSplitters = 0;
 	uiSkipped = 0;

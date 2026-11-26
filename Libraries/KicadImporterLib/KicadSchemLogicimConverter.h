@@ -30,6 +30,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "KicadSchemLogicPins.h"
 #include "KicadSchemLogicimModel.h"
 #include "KicadSchemLogicimCounts.h"
+#include "KicadSchemPassives.h"
 #include "KicadSchemLogicimBuses.h"
 #include "KicadSchemLogicimWiring.h"
 #include "KicadSchemLogicimPlacer.h"
@@ -93,6 +94,28 @@ struct SKicadSchemLogicimRegulated
 };
 
 
+//A series resistor that's an RC filter, not a wire (see JoinSeriesResistors): R x C of KICAD_SCHEM_LOGICIM_SLOW_RC or
+//more, C the capacitance on its load's side (apcNets[iLoad]), the side it charges.
+struct SKicadSchemLogicimRC
+{
+	SKicadSchemPassiveElement	sResistor;
+	int							iLoad;
+	float64						fCapacitance;  //Farads.
+};
+
+
+typedef CArrayTemplate<SKicadSchemLogicimRC>	CArrayKicadSchemLogicimRC;
+
+
+//Where a series resistor stops being a wire: R x C of 1ns (ResistorsPlan.txt, question 1).  Where no capacitor is drawn
+//its load is estimated: each input at its family's capacitance (KICAD_SCHEM_LOGICIM_INPUT_CAPACITANCE when not known),
+//the net's wiring and each connector pin on it, standing for the backplane and the boards beyond (question 6).
+#define KICAD_SCHEM_LOGICIM_SLOW_RC						1e-9
+#define KICAD_SCHEM_LOGICIM_INPUT_CAPACITANCE			5e-12
+#define KICAD_SCHEM_LOGICIM_WIRING_CAPACITANCE			3e-12
+#define KICAD_SCHEM_LOGICIM_CONNECTOR_CAPACITANCE		10e-12
+
+
 //How long an imported supply takes to rise as the simulation starts: a regulator charging the 100uF on its output.
 #define KICAD_SCHEM_LOGICIM_RISE_TIME		1000000  //Nanoseconds.
 
@@ -113,7 +136,8 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //and GND nets have supplies is on those nets as power rails, its power pins hidden and joined to the rails by name,
 //and the supplies on them are on the rails too; a part whose nets don't has implied power (see ApplyPowerRails).  A
 //voltage regulator becomes a supply fed by its input's rail, on its output's (see AddRegulatorSupplies; its output's
-//voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A DS1813 becomes a reset supervisor (see
+//voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A series resistor (neither end on a supply)
+//joins its two nets into one, unless it's an RC filter (see JoinSeriesResistors).  A DS1813 becomes a reset supervisor (see
 //AddSupervisor).  Every supply made rises over KICAD_SCHEM_LOGICIM_RISE_TIME as the simulation starts.  A connector (a board's edge connector) becomes the circuit's pins, one for
 //each net on it that isn't a supply's (see AddBoardPins).  Resistors and resistor networks, capacitors and capacitor
 //networks, inductors, diodes, LEDs, mounting holes, net ties, test points and power flags are left out.  Any other
@@ -158,6 +182,11 @@ protected:
 	CCircuitViews*						mpcCircuits;
 	CCircuitFonts*						mpcFonts;
 	CKicadSchemLogicimModel				mcModel;
+	CFamilyVoltageConfigurationStore*	mpcFamilies;  //For inputs' capacitance; NULL for the default's.
+	bool								mbJoinFilters;  //Join RC filters too, for logic without timing (the decode).
+	CArrayKicadSchemPassiveElement		masCapacitors;
+	CArrayKicadSchemLogicimRC			masSlowRCs;
+	CHashMapTemplate<CKicadSchemSymbol*, size>	mcSymbolItems;  //A symbol to its first item, while resistors are joined.
 	CArrayKicadSchemLogicimRegulated	masRegulated;
 	CArrayTemplatePtr<CKicadSchemNet>	mapcRailNets;  //The nets of ICs' power pins, then of regulators.
 	size								muiPartRailNets;  //How many of mapcRailNets are ICs'.
@@ -183,6 +212,10 @@ public:
 
 	CCircuitView*					GetCircuit(void) const;
 	SKicadSchemLogicimCounts*		GetCounts(void);
+	void							SetFamilies(CFamilyVoltageConfigurationStore* pcFamilies);
+	void							SetJoinFilters(bool bJoinFilters);
+	size							NumSlowRCs(void) const;
+	SKicadSchemLogicimRC*			GetSlowRC(size uiIndex);
 	CKicadSchemLogicimModel*		GetModel(void);
 
 protected:
@@ -226,6 +259,15 @@ protected:
 	void							AddRegulatorSupplies(void);
 	void							ApplyPowerRails(void);
 	bool							AddSupervisor(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
+	void							JoinSeriesResistors(void);
+	bool							IsSupplyNet(CKicadSchemNet* pcNet);
+	bool							IsNetDriven(CKicadSchemNet* pcNet);
+	bool							HasNetConnector(CKicadSchemNet* pcNet);
+	float64							GetNetCapacitance(CKicadSchemNet* pcNet);
+	float64							GetPinCapacitance(SKicadSchemNetPin* psPin);
+	int								GetLoadSide(SKicadSchemPassiveElement* psResistor);
+	void							NameNetGroups(CArrayKicadSchemPassiveElement* pasJoined);
+	void							AddResistorTunnels(SKicadSchemPassiveElement* psResistor);
 	float32							GetRegulatedVoltage(CKicadSchemSymbol* pcSymbol);
 	float32							GetNetRegulatedVoltage(CKicadSchemNet* pcNet);
 	void							RemoveUnconnectedItems(void);

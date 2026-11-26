@@ -30,9 +30,11 @@
     <ClCompile Include="KicadSchemLogicimConverterLogic.cpp" />
     <ClCompile Include="KicadSchemLogicimConverterSupplies.cpp" />
     <ClCompile Include="KicadSchemLogicimConverterRails.cpp" />
+    <ClCompile Include="KicadSchemLogicimConverterResistors.cpp" />
     <ClCompile Include="KicadSchemLogicimCounts.cpp" />
     <ClCompile Include="KicadSchemLogicimDecode.cpp" />
     <ClCompile Include="KicadSchemSupplyNames.cpp" />
+    <ClCompile Include="KicadSchemPassives.cpp" />
     <ClCompile Include="KicadSchemLogicPins.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +50,7 @@
     <ClInclude Include="KicadSchemLogicimWiring.h" />
     <ClInclude Include="KicadSchemLogicimPlacer.h" />
     <ClInclude Include="KicadSchemSupplyNames.h" />
+    <ClInclude Include="KicadSchemPassives.h" />
     <ClInclude Include="KicadSchemLogicPins.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

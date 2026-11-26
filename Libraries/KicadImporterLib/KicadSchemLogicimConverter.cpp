@@ -55,6 +55,11 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mcModel.Init();
 	masRegulated.Init();
 	mapcRailNets.Init();
+	mpcFamilies = NULL;
+	mbJoinFilters = false;
+	masCapacitors.Init();
+	masSlowRCs.Init();
+	mcSymbolItems.Init();
 	muiPartRailNets = 0;
 	mpcBoard = NULL;
 	mpcBoardSource = NULL;
@@ -75,6 +80,9 @@ void CKicadSchemLogicimConverter::Kill(void)
 	mcPlacer.Kill();
 	mcWiring.Kill();
 	mcBuses.Kill();
+	mcSymbolItems.Kill();
+	masSlowRCs.Kill();
+	masCapacitors.Kill();
 	mapcRailNets.Kill();
 	masRegulated.Kill();
 	mcModel.Kill();
@@ -148,6 +156,7 @@ bool CKicadSchemLogicimConverter::Build(const char* szTypeName)
 	}
 	ReportProgress("Making buses", KICAD_SCHEM_IMPORT_STEP_BUSES);
 	FindRailNets();
+	JoinSeriesResistors();
 	ApplyRegulatedVoltages();
 	AddSupplyLabels();
 	AddRegulatorSupplies();
@@ -486,4 +495,8 @@ void CKicadSchemLogicimConverter::AddPinTerminal(CKicadSchemSymbol* pcSymbol, CK
 //////////////////////////////////////////////////////////////////////////
 CCircuitView* CKicadSchemLogicimConverter::GetCircuit(void) const { return mcModel.GetCircuit(); }
 SKicadSchemLogicimCounts* CKicadSchemLogicimConverter::GetCounts(void) { return &msCounts; }
+void CKicadSchemLogicimConverter::SetFamilies(CFamilyVoltageConfigurationStore* pcFamilies) { mpcFamilies = pcFamilies; }
+void CKicadSchemLogicimConverter::SetJoinFilters(bool bJoinFilters) { mbJoinFilters = bJoinFilters; }
+size CKicadSchemLogicimConverter::NumSlowRCs(void) const { return masSlowRCs.NumElements(); }
+SKicadSchemLogicimRC* CKicadSchemLogicimConverter::GetSlowRC(size uiIndex) { return masSlowRCs.Get(uiIndex); }
 CKicadSchemLogicimModel* CKicadSchemLogicimConverter::GetModel(void) { return &mcModel; }

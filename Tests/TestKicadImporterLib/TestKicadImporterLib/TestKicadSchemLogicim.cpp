@@ -355,8 +355,9 @@ void AssertKicadSchemLogicimWired(CKicadSchemLogicimConverter* pcConverter)
 		psTerminal = pcModel->GetTerminal(i);
 		iGroup = (int)cParents.Find(uiTraces + apcPorts.Find(psTerminal->pcPortView));
 
-		//Nothing of another net, bit for bit (a bus's own terminals are many nets).
-		pcNet = psTerminal->pcSubnet->GetNet();
+		//Nothing of another net, bit for bit (a bus's own terminals are many nets); nets series resistors join are
+		//one, their group's.
+		pcNet = pcModel->GetGroup(psTerminal->pcSubnet->GetNet());
 		iBit = (int)cBits.Find((size)iGroup * KICAD_SCHEM_LOGICIM_TEST_BITS);
 		if (!psTerminal->bBus)
 		{

@@ -978,7 +978,7 @@ void CKicadSchemLogicimBuses::AddTunnels(void)
 					continue;
 				}
 				pcTunnel = NewMalloc<CTunnelView>();
-				pcTunnel->Init(0, 0, GetKicadSchemRotation(ROT_East, pcLabel->GetAngle()), pcNet->GetName(), false, mpcFonts);
+				pcTunnel->Init(0, 0, GetKicadSchemRotation(ROT_East, pcLabel->GetAngle()), mpcModel->GetNetName(pcNet), false, mpcFonts);
 				uiItem = mpcModel->AddItem(pcTunnel, KSLIK_Tunnel, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), NULL);
 				mpcModel->AddTerminal(pcSubnet, pcLabel->GetPosition(), pcTunnel->GetPortView((size)0), uiItem);
 				mpsCounts->uiTunnels++;

@@ -237,6 +237,7 @@ void CKicadSchemBoardImporter::Init(CCircuitViews* pcCircuits, CCircuitFonts* pc
 	mpcCircuits = pcCircuits;
 	mpcFonts = pcFonts;
 	mpcVariables = pcVariables;
+	mpcFamilies = NULL;
 	mapcBoards.Init();
 	mpcProgress = NULL;
 	mpcJobs = NULL;
@@ -267,6 +268,16 @@ void CKicadSchemBoardImporter::SetProgress(CKicadSchemImportProgress* pcProgress
 void CKicadSchemBoardImporter::SetJobs(CJobs* pcJobs)
 {
 	mpcJobs = pcJobs;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemBoardImporter::SetFamilies(CFamilyVoltageConfigurationStore* pcFamilies)
+{
+	mpcFamilies = pcFamilies;
 }
 
 
@@ -515,6 +526,7 @@ CKicadSchemBoard* CKicadSchemBoardImporter::Convert(const char* szFullPath)
 	psConversion->cNetlist.Init(&psConversion->cFile);
 	bResult = bResult && psConversion->cNetlist.Build();
 	psConversion->cConverter.Init(&psConversion->cFile, &psConversion->cNetlist, mpcCircuits, mpcFonts);
+	psConversion->cConverter.SetFamilies(mpcFamilies);
 	psConversion->cConverter.SetBoards(pcBoard, this);
 	psConversion->cConverter.SetProgress(mpcProgress);
 	psConversion->cConverter.SetStop(&miStop);

@@ -336,6 +336,7 @@ bool CLogicimCircuit::BeginImportKicadSchematic(const char* szFilename, CKicadSc
 	mpsImport->cImporter.Init(&mpsImport->cCircuits, mpEditor->GetFonts(), &mpsImport->cVariables);
 	mpsImport->cImporter.SetProgress(pcProgress);
 	mpsImport->cImporter.SetJobs(mpcJobs);
+	mpsImport->cImporter.SetFamilies(&mcFamilies);
 	bResult = mpsImport->cImporter.Begin(szFilename);
 	if (!bResult)
 	{

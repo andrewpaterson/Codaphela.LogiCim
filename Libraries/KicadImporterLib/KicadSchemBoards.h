@@ -138,6 +138,7 @@ protected:
 	CCircuitViews*						mpcCircuits;
 	CCircuitFonts*						mpcFonts;
 	CKicadPathVariables*				mpcVariables;
+	CFamilyVoltageConfigurationStore*	mpcFamilies;  //For the converters' estimates, NULL for their defaults.
 	CArrayTemplatePtr<CKicadSchemBoard>	mapcBoards;
 	CKicadSchemImportProgress*			mpcProgress;  //Told each board's steps, NULL for none.
 	CJobs*								mpcJobs;  //What lays the circuits out, NULL for the caller's thread.
@@ -150,6 +151,7 @@ public:
 	void				Kill(void);
 	void				SetProgress(CKicadSchemImportProgress* pcProgress);
 	void				SetJobs(CJobs* pcJobs);  //They outlive the import.
+	void				SetFamilies(CFamilyVoltageConfigurationStore* pcFamilies);  //They outlive the import.
 
 	CCircuitView*		Import(const char* szSchematic);
 	bool				Begin(const char* szSchematic);

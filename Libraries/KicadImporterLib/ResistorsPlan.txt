@@ -1,7 +1,7 @@
 Resistors and RC filters in KiCad imports
 ==========================================
 
-Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Nothing is built.  Pull-ups and pull-downs (a resistor
+Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Part 1 is built (below).  Pull-ups and pull-downs (a resistor
 with one end on a supply) are a separate plan, PullsPlan.txt: a weak drive in MicroprocessorLib.
 
 
@@ -65,6 +65,15 @@ Part 1: fast series resistors become wires (KicadImporterLib)
 6. Tests: a sheet with an R, an isolated network, a bussed network, a fast RC (22 ohm, 10pF: joined) and a slow one
    (1k, 1nF: apart, warned); the expected circuits regenerated and their differences checked (only nets joined);
    TestKicadImporterLib; the website's decode check (22 rows, no differences).
+
+Built 2026-11-26, steps 1 to 6: KicadSchemPassives (the values, the elements; the 4816P networks and bare ohms
+("220") found by the survey too, and a capacitance needs its multiplier, so a part number isn't read as farads),
+CKicadSchemLogicimConverter::JoinSeriesResistors with CKicadSchemLogicimModel's net groups, the decode on the
+converter's joins (SetJoinFilters), TestKicadSchemPassives.cpp on a generated test sheet (Input/Passives.kicad_sch),
+the Processor Reset Device's reset through R1 (TestKicadSchemPower.cpp).  Of the expected circuits only Triple MPU
+Clock Generator changed: its six CAY16 terminations joined, the series side's labels taking the driven side's
+names.  The 220 ohm terminations into a connector (2 to 14ns) and the Audio boards' RCs are left apart, warned,
+for part 2.
 
 
 Part 2: slow RCs become delay elements (MicroprocessorLib, LogicimLib, KicadImporterLib)

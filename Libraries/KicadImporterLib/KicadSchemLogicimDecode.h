@@ -110,7 +110,6 @@ protected:
 	CViewPaths							mcPaths;
 	CViewPath*							mpcPath;
 	Ptr<CCircuitSimulation>				mpSimulation;
-	CUnionFind							mcNetGroups;  //The nets joined by series resistors, by index in the netlist.
 	CArrayKicadSchemDecodeInput			masAddresses;
 	CArrayKicadSchemDecodeInput			masModes;
 	CArrayKicadSchemDecodeOutput		masOutputs;
@@ -124,7 +123,6 @@ public:
 
 protected:
 	bool	Build(const char* szTypeName);
-	void	JoinSeriesResistors(void);
 	void	AddNetTunnels(void);
 	bool	Simulate(void);
 	bool	FindPins(void);
@@ -142,7 +140,6 @@ protected:
 	void	AppendAddress(int iAddress, CChars* psz);
 	size	FindNet(CKicadSchemNet* pcNet);
 	size	GetNetGroup(CKicadSchemNet* pcNet);
-	CKicadSchemNet*	GetGroupNet(size uiGroup);
 	CTrace*	GetPortTrace(CPortView* pcPortView);
 };
 
