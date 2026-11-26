@@ -307,6 +307,18 @@
       <Project>{d42e3a40-2620-4520-bea0-ce1f3e064e08}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Checks\LogicimChecks.py" />
+    <None Include="..\Checks\Nested.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Tools\ConvertLogicimIcons.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DanglingWire.xml" />
+    <None Include="FlipFlop.xml" />
+    <None Include="FlipFlopClose.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
