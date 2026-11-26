@@ -1,0 +1,11 @@
+# Resources
+
+What LogiCim loads at run time from its folder's `Resources` (`LogicimApp.cpp`): its fonts, its icons and the logic
+families' timings.
+
+| Files | Are | From |
+|---|---|---|
+| `InterVariable.ttf` | Third-party | Inter 4.001 (variable), by Rasmus Andersson, rsms.me/inter, under the SIL Open Font License 1.1. |
+| `Fonts/*.ttf`, `Fonts/LiberationFonts-LICENSE.txt` | Third-party | Liberation Mono and Sans 2.1.5, by Red Hat, github.com/liberationfonts, under the SIL Open Font License 1.1 (the licence beside them). |
+| `Icons/*.png` | Generated | `python3 Tools/ConvertLogicimIcons.py <Logicim>/res/icons LogiCim/Resources/Icons`, run in `LogiCim/LogiCim`: Logicim's KiCad style icons, recoloured for IntelliJ IDEA's dark theme. |
+| `PropagationTimes.csv` | Source | Each logic family's timings and levels, from its maker's datasheet (the Manufacturer column). |
