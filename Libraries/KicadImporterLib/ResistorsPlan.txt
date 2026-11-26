@@ -115,6 +115,7 @@ Questions for the user (put one at a time, recommendation first)
      Decided 2026-11-26 (the user: "The name a label gives it"): as recommended.
   3. Part 2's order: recommended the simulation first (steps 7 to 10, with MicroprocessorLib's tests), then the
      views and the importer.
+     Decided 2026-11-26 (the user): as recommended.
   4. How an RC element and a comparator look in LogiCim: recommended as above (step 11).
   5. Whether a MAX9010-like part is "a comparator" by its symbol's pin names (IN+, IN-, OUT) or by a list of parts.
   6. Where no capacitor is drawn, the capacitance a termination drives: recommended estimated, each input on the net
