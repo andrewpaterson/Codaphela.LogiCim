@@ -83,6 +83,7 @@ public:
 
 	bool				Reset(void);
 	bool				Run(int64 iTimeForward);
+	bool				RunPowerUp(CCircuitSimulation* pcSimulation);
 	bool				Save(const char* szFilename);
 	bool				Load(const char* szFilename);
 	void				SetJobs(CJobs* pcJobs);  //They outlive this.

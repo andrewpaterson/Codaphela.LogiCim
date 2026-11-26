@@ -624,6 +624,11 @@ void CLogicimWindowContent::AddCommands(void)
 	mpCommands->Add("Circuit.LeaveSubcircuit", "Leave Subcircuit", "Alt+Backspace", Ptr<CImageCel>(), this, &CLogicimWindowContent::LeaveSubcircuit);
 	mpCommands->Add("File.ClearRecentProjects", "Clear Recent Projects", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::QueueClearRecentProjects);
 	mpCommands->Add("Window.ResetLayout", "Reset Window Layout", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ResetLayout);
+	mpCommands->Add("Simulation.Power", "Power On/Off", "Control+Shift+P", Ptr<CImageCel>(), this, &CLogicimWindowContent::SwitchPower);
+	mpCommands->Add("Simulation.PowerUpZero", "Power Up at Zero", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::PowerUpZero)->SetCheckedCheck(this, &CLogicimWindowContent::IsPowerUpZero);
+	mpCommands->Add("Simulation.PowerUpRandom", "Power Up Random", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::PowerUpRandom)->SetCheckedCheck(this, &CLogicimWindowContent::IsPowerUpRandom);
+	mpCommands->Add("Simulation.PowerUpHalfSupply", "Power Up at Half Supply", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::PowerUpHalfSupply)->SetCheckedCheck(this, &CLogicimWindowContent::IsPowerUpHalfSupply);
+	mpCommands->Add("Simulation.NextPowerUpSeed", "Next Power-Up Seed", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::NextPowerUpSeed);
 	mpCommands->Add("Window.NewTab", "New Tab", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::NewTab);
 	mpCommands->Add("File.Settings", "Settings...", "Control+Alt+S", Ptr<CImageCel>(), this, &CLogicimWindowContent::RequestSettings);
 	mpCommands->Add("View.Subcircuits", "Subcircuits", "", Ptr<CImageCel>(), this, &CLogicimWindowContent::ShowSubcircuits);
@@ -952,6 +957,37 @@ void CLogicimWindowContent::Tick(int64 iUpdateTimeInMilliseconds)
 	}
 	mbRanLastTick = mbRunning;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The board's power switch: the selected supplies, or all of them (see
+// CCircuitEditor::SwitchPower).
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::SwitchPower(void)
+{
+	if (mpLogicimCircuit->GetEditor()->SwitchPower())
+	{
+		mpWindow->RequestPaint();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// What chips remember as their power comes, the project's setting (see
+// CCircuitViews); it takes effect as the simulation is next reset.  The
+// next seed gives another random power up.
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogicimWindowContent::PowerUpZero(void) { mpLogicimCircuit->GetEditor()->SetPowerUp(PUS_Zero, mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpSeed()); }
+void CLogicimWindowContent::PowerUpRandom(void) { mpLogicimCircuit->GetEditor()->SetPowerUp(PUS_Random, mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpSeed()); }
+void CLogicimWindowContent::PowerUpHalfSupply(void) { mpLogicimCircuit->GetEditor()->SetPowerUp(PUS_HalfSupply, mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpSeed()); }
+void CLogicimWindowContent::NextPowerUpSeed(void) { mpLogicimCircuit->GetEditor()->SetPowerUp(mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpState(), mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpSeed() + 1); }
+bool CLogicimWindowContent::IsPowerUpZero(void) { return mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpState() == PUS_Zero; }
+bool CLogicimWindowContent::IsPowerUpRandom(void) { return mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpState() == PUS_Random; }
+bool CLogicimWindowContent::IsPowerUpHalfSupply(void) { return mpLogicimCircuit->GetEditor()->GetCircuits()->GetPowerUpState() == PUS_HalfSupply; }
 
 
 //////////////////////////////////////////////////////////////////////////

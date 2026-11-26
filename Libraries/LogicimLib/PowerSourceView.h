@@ -23,12 +23,17 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "ComponentView.h"
 
 
-//A view of a fixed voltage supply with one "Power" port, as Logicim's PowerSourceView.
+//A view of a supply with one "Power" port, as Logicim's PowerSourceView.  Its supply (CPowerSource) is on at start
+//unless told otherwise, and rises over its rise time, none by default (at once, as Logicim's).  A positive supply can
+//be fed (a regulator): it then has an "In" port, on its feed, and a dropout.
 class CPowerSourceView : public CComponentView
 {
 CONSTRUCTABLE(CPowerSourceView);
 protected:
 	float32		mfVoltage;
+	int64		miRiseTime;
+	bool		mbOnAtStart;
+	float32		mfDropout;  //Below zero when it isn't fed.
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, float32 fVoltage);
@@ -36,6 +41,16 @@ public:
 	virtual CCircuitComponent*		CreateComponent(CViewPath* pcViewPath, CCircuitSimulation* pcCircuitSimulation, CFamilyVoltageConfigurationStore* pcFamilies);
 	virtual CComponentStateXML*		GetComponentStateXML(void) const;
 			float32					GetVoltage(void) const;
+			void					SetRiseTime(int64 iRiseTime);
+			int64					GetRiseTime(void) const;
+			void					SetOnAtStart(bool bOnAtStart);
+			bool					IsOnAtStart(void) const;
+			bool					IsFed(void) const;
+			float32					GetDropout(void) const;
+
+protected:
+	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
+			bool					LoadXMLPower(CMarkupTag* pcTag);
 };
 
 
@@ -66,6 +81,7 @@ protected:
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, float32 fVoltage);
+			void					SetFeed(float32 fDropout);
 
 	virtual void					Paint(CCircuitPainter* pcPainter);
 

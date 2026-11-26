@@ -26,11 +26,13 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/PortEvent.h"
 #include "MicroprocessorLib/PortOutput.h"
 #include "MicroprocessorLib/Pins.h"
+#include "MicroprocessorLib/PowerSource.h"
 #include "ComponentStateXML.h"
 
 
 CIntegratedCircuitStateXML	gcIntegratedCircuitStateXML;
 CPassiveStateXML			gcPassiveStateXML;
+CPowerSourceStateXML		gcPowerSourceStateXML;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -333,3 +335,55 @@ bool CPassiveStateXML::Load(CMarkupTag* pcComponentTag, CCircuitComponent* pcCom
 	return true;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceStateXML::Save(CXMLWriter* pcWriter, CCircuitComponent* pcComponent)
+{
+	CPowerOutPort*	pcPort;
+
+	pcPort = ((CPowerSource*)pcComponent)->GetPowerOutPort();
+	if (pcPort->IsOn() && !pcPort->HasStep() && (pcPort->GetSwitchVoltage() == pcPort->GetVoltage()))
+	{
+		return;
+	}
+	pcWriter->Begin("Power");
+	pcWriter->Attribute("on", pcPort->IsOn());
+	pcWriter->Attribute("switchTime", pcPort->GetSwitchTime());
+	pcWriter->Attribute("switchVoltage", pcPort->GetSwitchVoltage());
+	pcWriter->End();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The simulation's time is already loaded, so the supply's next step is
+// scheduled from it.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CPowerSourceStateXML::Load(CMarkupTag* pcComponentTag, CCircuitComponent* pcComponent, CArrayPendingEventXML* pasEvents)
+{
+	STagIterator	sIter;
+	CMarkupTag*		pcTag;
+	bool			bOn;
+	int64			iSwitchTime;
+	float32			fSwitchVoltage;
+
+	pcTag = pcComponentTag->GetTag(&sIter);
+	if (pcTag == NULL)
+	{
+		return true;
+	}
+	if (!pcTag->Is("Power") || (pcComponentTag->GetNextTag(&sIter) != NULL))
+	{
+		return gcLogger.Error2(__METHOD__, " Supply [", pcComponent->GetComponentName(), "] keeps only a [Power] element, not [", pcTag->GetName(), "].", NULL);
+	}
+	if (!pcTag->GetBoolAttribute("on", &bOn) || !pcTag->GetInt64Attribute("switchTime", &iSwitchTime) || !pcTag->GetFloat32Attribute("switchVoltage", &fSwitchVoltage))
+	{
+		return gcLogger.Error2(__METHOD__, " [Power] needs a true or false on, a whole number switchTime and a switchVoltage.", NULL);
+	}
+	((CPowerSource*)pcComponent)->GetPowerOutPort()->SetSwitched(pcComponent->GetTimeline(), bOn, iSwitchTime, fSwitchVoltage);
+	return true;
+}

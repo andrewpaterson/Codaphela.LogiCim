@@ -200,12 +200,21 @@ Ptr<CComponent> CLogicimWindowContent::CreateMenuBar(void)
 	ELogicimAction	aeSimulation[] = { LA_NewSimulation, LA_Separator, LA_ResetSimulation, LA_RunSimulation, LA_PauseSimulation, LA_Separator, LA_DefaultSpeed, LA_IncreaseSpeed, LA_DecreaseSpeed };
 	ELogicimAction	aePlace[] = { LA_AddComponent, LA_AddTrace, LA_AddSplitter, LA_AddTunnel, LA_AddConnection, LA_AddPower, LA_AddLabel, LA_AddSubcircuit, LA_Separator, LA_NewSubcircuit };
 	Ptr<CMenuContainer>	pWindowMenu;
+	Ptr<CMenuContainer>	pSimulationMenu;
 
 	mpMenuBar = OMalloc<CMenuBar>(mpWindow, mpTheme);
 	mpMenuBar->AddMenu("File", CreateFileMenu());
 	mpMenuBar->AddMenu("Edit", CreateMenu(aeEdit, sizeof(aeEdit) / sizeof(ELogicimAction)));
 	mpMenuBar->AddMenu("View", CreateViewMenu());
-	mpMenuBar->AddMenu("Simulation", CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction)));
+	pSimulationMenu = CreateMenu(aeSimulation, sizeof(aeSimulation) / sizeof(ELogicimAction));
+	pSimulationMenu->AddSeparator();
+	pSimulationMenu->AddItem(mpCommands->Find("Simulation.Power"));
+	pSimulationMenu->AddSeparator();
+	pSimulationMenu->AddItem(mpCommands->Find("Simulation.PowerUpZero"));
+	pSimulationMenu->AddItem(mpCommands->Find("Simulation.PowerUpRandom"));
+	pSimulationMenu->AddItem(mpCommands->Find("Simulation.PowerUpHalfSupply"));
+	pSimulationMenu->AddItem(mpCommands->Find("Simulation.NextPowerUpSeed"));
+	mpMenuBar->AddMenu("Simulation", pSimulationMenu);
 	mpMenuBar->AddMenu("Place", CreateMenu(aePlace, sizeof(aePlace) / sizeof(ELogicimAction)));
 	pWindowMenu = OMalloc<CMenuContainer>(mpWindow, mpTheme);
 	pWindowMenu->AddItem(mpCommands->Find("Window.NewTab"));

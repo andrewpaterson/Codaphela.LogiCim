@@ -210,6 +210,111 @@ void TestSimulationStateRingRoundTrip(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// A 5V supply rising over 5us, saved 2us in, at 2.0V, loads ramping on
+// from there to 5V as the original does.  A regulator's view has its In
+// port and dropout, and its supply its feed.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSimulationStatePowerRamp(void)
+{
+	CFamilyVoltageConfigurationStore	cFamilies;
+	Ptr<CCircuitSimulation>				pOriginal;
+	Ptr<CCircuitSimulation>				pLoaded;
+	CCircuitView						cOriginalView;
+	CCircuitView						cLoadedView;
+	CViewPaths							cPaths;
+	CViewPath*							pcOriginalPath;
+	CViewPath*							pcLoadedPath;
+	CPositivePowerView*					pcSupplyView;
+	CPositivePowerView*					pcRegulatorView;
+	CPowerSourceView*					pcLoadedSupplyView;
+	CPowerSource*						pcOriginalSupply;
+	CPowerSource*						pcLoadedSupply;
+	CPowerSource*						pcRegulator;
+	CXMLWriter							cOriginalText;
+	CXMLWriter							cLoadedText;
+	CFileUtil							cFileUtil;
+
+	ObjectsInit();
+	CEvent::ResetNextID();
+	CTrace::ResetNextID();
+	cFamilies.Init();
+	AssertTrue(cFamilies.Load("Input" _FS_ "PropagationTimes.csv"));
+
+	pOriginal = OMalloc<CCircuitSimulation>("Power");
+	ORoot()->Add(pOriginal);
+	cOriginalView.Init();
+	cPaths.Init();
+	pcOriginalPath = cPaths.AddTop(&cOriginalView);
+	pcSupplyView = NewMalloc<CPositivePowerView>();
+	pcSupplyView->Init(0, 0, ROT_South, "5V", 5.0f);
+	pcSupplyView->SetRiseTime(NanosecondsToTime((int64)5000));
+	cOriginalView.Add(pcSupplyView);
+	pcRegulatorView = NewMalloc<CPositivePowerView>();
+	pcRegulatorView->Init(10, 0, ROT_South, "3.3V", 3.3f);
+	pcRegulatorView->SetFeed(1.1f);
+	cOriginalView.Add(pcRegulatorView);
+	AssertTrue(pcRegulatorView->IsFed());
+	AssertNotNull(pcRegulatorView->GetPortView(POWER_PIN_FEED));
+	AssertTrue(cOriginalView.CreateSimulation(pcOriginalPath, &pOriginal, &cFamilies));
+	pcOriginalSupply = (CPowerSource*)pcSupplyView->GetComponent(pcOriginalPath, &pOriginal);
+	pcRegulator = (CPowerSource*)pcRegulatorView->GetComponent(pcOriginalPath, &pOriginal);
+	AssertLong(NanosecondsToTime((int64)5000), pcOriginalSupply->GetRiseTime());
+	AssertNotNull(pcRegulator->GetFeedPort());
+	AssertFloat(1.1f, pcRegulator->GetDropout(), 3);
+	pOriginal->RunToTime(NanosecondsToTime((int64)2050));
+	AssertFloat(2.0f, pcOriginalSupply->GetPowerOutPort()->GetVoltageOut(pOriginal->GetTime()), 3);
+	AssertTrue(pOriginal->IsPoweringUp());
+
+	cFileUtil.MakeDir("Output");
+	AssertTrue(SaveCircuitFile(&cOriginalView, pcOriginalPath, &pOriginal, "Output" _FS_ "Power.xml"));
+	pLoaded = OMalloc<CCircuitSimulation>("Power");
+	ORoot()->Add(pLoaded);
+	cLoadedView.Init();
+	pcLoadedPath = cPaths.AddTop(&cLoadedView);
+	AssertTrue(LoadCircuitFile(&cLoadedView, pcLoadedPath, &pLoaded, &cFamilies, "Output" _FS_ "Power.xml"));
+	pcLoadedSupplyView = (CPowerSourceView*)cLoadedView.GetComponent((size)0);
+	AssertLong(NanosecondsToTime((int64)5000), pcLoadedSupplyView->GetRiseTime());
+	AssertTrue(((CPowerSourceView*)cLoadedView.GetComponent(1))->IsFed());
+	AssertFloat(1.1f, ((CPowerSourceView*)cLoadedView.GetComponent(1))->GetDropout(), 3);
+	pcLoadedSupply = (CPowerSource*)pcLoadedSupplyView->GetComponent(pcLoadedPath, &pLoaded);
+	AssertLong(pOriginal->GetTime(), pLoaded->GetTime());
+	AssertFloat(2.0f, pcLoadedSupply->GetPowerOutPort()->GetVoltageOut(pLoaded->GetTime()), 3);
+
+	cOriginalText.Init();
+	SaveCircuitXML(&cOriginalView, pcOriginalPath, &pOriginal, &cOriginalText);
+	cLoadedText.Init();
+	SaveCircuitXML(&cLoadedView, pcLoadedPath, &pLoaded, &cLoadedText);
+	AssertString(cOriginalText.GetText(), cLoadedText.GetText());
+	cLoadedText.Kill();
+	cOriginalText.Kill();
+
+	pOriginal->RunToTime(NanosecondsToTime((int64)1000));
+	pLoaded->RunToTime(NanosecondsToTime((int64)1000));
+	AssertFloat(3.0f, pcLoadedSupply->GetPowerOutPort()->GetVoltageOut(pLoaded->GetTime()), 3);
+	AssertFloat(pcOriginalSupply->GetPowerOutPort()->GetVoltageOut(pOriginal->GetTime()), pcLoadedSupply->GetPowerOutPort()->GetVoltageOut(pLoaded->GetTime()), 3);
+	pLoaded->GetTimeline()->Run();
+	AssertFloat(5.0f, pcLoadedSupply->GetPowerOutPort()->GetVoltageOut(pLoaded->GetTime()), 3);
+	AssertFalse(pLoaded->IsPoweringUp());
+
+	cLoadedView.Kill();
+	ORoot()->Remove(pLoaded);
+	pLoaded = NULL;
+	cOriginalView.Kill();
+	ORoot()->Remove(pOriginal);
+	pOriginal = NULL;
+	cPaths.Kill();
+	cFamilies.Kill();
+	ObjectsDiscard();
+	ObjectsKill();
+
+	cFileUtil.Delete("Output" _FS_ "Power.xml");
+	cFileUtil.RemoveDir("Output");
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // A file without a simulation starts one afresh.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -921,6 +1026,7 @@ void TestSimulationState(void)
 
 	TestSimulationStateStates();
 	TestSimulationStateRingRoundTrip();
+	TestSimulationStatePowerRamp();
 	TestSimulationStateW65C816Core();
 	TestSimulationState65C64Core();
 	TestSimulationStateW65C816RoundTrip();

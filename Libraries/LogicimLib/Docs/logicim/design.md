@@ -20,7 +20,7 @@ are MicroprocessorLib's ([Logic Simulation](../libraries/microprocessorlib/logic
 | [`CLogicBlockView`]'s kinds: [`CRegisterView`], [`CLatchView`], [`CMultiplexerView`], [`CDecoderView`], [`CAdderView`] ... | generic chips drawn as a box of labelled pins |
 | [`CDTypeFlipFlopView`], [`CCounterView`], [`CClockView`], [`CConstantView`], [`CProbeView`], [`COscilloscopeView`] | Logicim's chips and instruments |
 | [`CW65C816View`], [`C65C64View`] | the processors, with their registers and flags shown live |
-| [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies, and a subcircuit's pins |
+| [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies (on at start or not, a rise time, and a regulator's In port and dropout), and a subcircuit's pins |
 | [`CSplitterView`], [`CTunnelView`], [`CLabelView`] | wiring that makes no component, and text |
 | [`CSubcircuitInstanceView`] | an instance of another circuit of the project |
 
@@ -111,12 +111,15 @@ root holding a `#!text <Circuits>` element (a project) or one `#!text <Circuit>`
 [`CComponentView::GetXMLName`] with its properties as attributes; [`CComponentView::LoadXML`] is called on a view
 allocated by [`NewComponentView`] but not initialised, reads the attributes and initialises itself, and a view that
 fails is freed without Kill.  A wire is a `#!text <Trace>`.  An instance loaded knows only its subcircuit's type
-name; the circuits are joined up once all are read.  The editor adds an `#!text <Editor>` element (see below).
+name; the circuits are joined up once all are read.  The editor adds an `#!text <Editor>` element (see below).  A
+project's `#!text <Circuits>` has `#!text powerUp` and `#!text powerUpSeed` attributes when its chips don't power up
+at Zero ([`CCircuitViews::SetPowerUp`]); the editor gives them to each simulation it makes.
 
 A running simulation is saved beside the circuit ([`LogicimLib/SimulationStateXML.h`]): the timeline's times, then
 for each component the state of the component its view made, then the same for each instance's path.  The view
 picks the helper ([`CComponentView::GetComponentStateXML`]): [`CIntegratedCircuitStateXML`] saves a chip's pending
-events and each port's output and events, [`CPassiveStateXML`] nothing.  What a chip remembers it saves itself
+events and each port's output and events, [`CPowerSourceStateXML`] a supply's switch when it isn't simply on, and
+[`CPassiveStateXML`] nothing.  What a chip remembers it saves itself
 ([`CIntegratedCircuit::SaveXML`], in an element [`CIntegratedCircuit::GetStateXMLName`] names), the processors
 their whole core.  Events ([`LogicimLib/EventXML.h`]) are saved with their time and ID, and loaded in time then ID
 order so each time's events run in the order they did.  Wires keep no state: their traces are made again from the

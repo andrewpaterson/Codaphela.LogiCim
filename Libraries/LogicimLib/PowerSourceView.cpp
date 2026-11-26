@@ -23,6 +23,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/PowerSource.h"
 #include "MicroprocessorLib/PowerPinNames.h"
 #include "MicroprocessorLib/Voltage.h"
+#include "MicroprocessorLib/LongTime.h"
 #include "ComponentStateXML.h"
 #include "ComponentPlacement.h"
 #include "PowerSourceView.h"
@@ -37,6 +38,9 @@ void CPowerSourceView::Init(int32 x, int32 y, ERotation eRotation, const char* s
 {
 	CComponentView::Init(x, y, eRotation, szName);
 	mfVoltage = fVoltage;
+	miRiseTime = 0;
+	mbOnAtStart = true;
+	mfDropout = -1.0f;
 }
 
 
@@ -57,6 +61,12 @@ CCircuitComponent* CPowerSourceView::CreateComponent(CViewPath* pcViewPath, CCir
 	}
 
 	pcPowerSource = &OMalloc<CPowerSource>(pcSimulation, mszName.Text(), mfVoltage);
+	pcPowerSource->SetRiseTime(miRiseTime);
+	pcPowerSource->SetOnAtStart(mbOnAtStart);
+	if (IsFed())
+	{
+		pcPowerSource->SetFeed(mfDropout);
+	}
 	if (!PostCreateComponent(pcViewPath, pcCircuitSimulation, pcPowerSource))
 	{
 		return NULL;
@@ -71,7 +81,7 @@ CCircuitComponent* CPowerSourceView::CreateComponent(CViewPath* pcViewPath, CCir
 //////////////////////////////////////////////////////////////////////////
 CComponentStateXML* CPowerSourceView::GetComponentStateXML(void) const
 {
-	return &gcPassiveStateXML;
+	return &gcPowerSourceStateXML;
 }
 
 
@@ -79,9 +89,62 @@ CComponentStateXML* CPowerSourceView::GetComponentStateXML(void) const
 //
 //
 //////////////////////////////////////////////////////////////////////////
-float32 CPowerSourceView::GetVoltage(void) const
+float32 CPowerSourceView::GetVoltage(void) const { return mfVoltage; }
+void CPowerSourceView::SetRiseTime(int64 iRiseTime) { miRiseTime = iRiseTime; }
+int64 CPowerSourceView::GetRiseTime(void) const { return miRiseTime; }
+void CPowerSourceView::SetOnAtStart(bool bOnAtStart) { mbOnAtStart = bOnAtStart; }
+bool CPowerSourceView::IsOnAtStart(void) const { return mbOnAtStart; }
+bool CPowerSourceView::IsFed(void) const { return mfDropout >= 0.0f; }
+float32 CPowerSourceView::GetDropout(void) const { return mfDropout; }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The rise time, in nanoseconds, if it has one, off at start if it is,
+// and the dropout if it is fed.
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceView::SaveXMLAttributes(CXMLWriter* pcWriter)
 {
-	return mfVoltage;
+	CComponentView::SaveXMLAttributes(pcWriter);
+	if (miRiseTime > 0)
+	{
+		pcWriter->Attribute("riseTime", TimeToNanoseconds(miRiseTime));
+	}
+	if (!mbOnAtStart)
+	{
+		pcWriter->Attribute("onAtStart", false);
+	}
+	if (IsFed())
+	{
+		pcWriter->Attribute("dropout", mfDropout);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The attributes SaveXMLAttributes writes, each optional; after Init.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CPowerSourceView::LoadXMLPower(CMarkupTag* pcTag)
+{
+	float64	fRiseTime;
+	bool	bOnAtStart;
+
+	if (pcTag->GetFloat64Attribute("riseTime", &fRiseTime))
+	{
+		if (!(fRiseTime >= 0))
+		{
+			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a riseTime of 0 or more nanoseconds.", NULL);
+		}
+		miRiseTime = NanosecondsToTime(fRiseTime);
+	}
+	if (pcTag->GetBoolAttribute("onAtStart", &bOnAtStart))
+	{
+		mbOnAtStart = bOnAtStart;
+	}
+	return true;
 }
 
 
@@ -142,7 +205,7 @@ bool CGroundView::LoadXML(CMarkupTag* pcTag)
 		return false;
 	}
 	Init(x, y, eRotation, szName);
-	return true;
+	return LoadXMLPower(pcTag);
 }
 
 
@@ -180,6 +243,22 @@ void CPositivePowerView::Init(int32 x, int32 y, ERotation eRotation, const char*
 
 	AddPortView(POWER_PIN_POWER, 1, 0);
 	CalculateBounds();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Makes it a regulator, fed through an "In" port at the back of its box.
+//
+//////////////////////////////////////////////////////////////////////////
+void CPositivePowerView::SetFeed(float32 fDropout)
+{
+	if (!IsFed())
+	{
+		AddPortView(POWER_PIN_FEED, -1, 0);
+		CalculateBounds();
+	}
+	mfDropout = fDropout;
 }
 
 
@@ -238,6 +317,7 @@ bool CPositivePowerView::LoadXML(CMarkupTag* pcTag)
 	ERotation	eRotation;
 	char*		szName;
 	float32		fVoltage;
+	float32		fDropout;
 
 	if (!LoadXMLPlacement(pcTag, &x, &y, &eRotation, &szName))
 	{
@@ -248,7 +328,15 @@ bool CPositivePowerView::LoadXML(CMarkupTag* pcTag)
 		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a voltage above 0.", NULL);
 	}
 	Init(x, y, eRotation, szName, fVoltage);
-	return true;
+	if (pcTag->GetFloat32Attribute("dropout", &fDropout))
+	{
+		if (!(fDropout >= 0))
+		{
+			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a dropout of 0 or more.", NULL);
+		}
+		SetFeed(fDropout);
+	}
+	return LoadXMLPower(pcTag);
 }
 
 
@@ -282,6 +370,10 @@ void CPositivePowerView::GetProperties(CComponentProperties* pcProperties, SComp
 {
 	CComponentView::GetProperties(pcProperties, psContext);
 	pcProperties->AddFloat("voltage", "V", mfVoltage, 0.0, 100.0);
+	pcProperties->AddFloat("riseTime", "ms", TimeToNanoseconds(miRiseTime) / 1000000.0, 0.0, 1000.0);
+	pcProperties->AddBoolean("onAtStart", mbOnAtStart);
+	pcProperties->AddBoolean("fed", IsFed());
+	pcProperties->AddFloat("dropout", "V", IsFed() ? mfDropout : 0.0, 0.0, 100.0);
 }
 
 
@@ -304,5 +396,11 @@ bool CPositivePowerView::InitPlaced(int32 x, int32 y, ERotation eRotation, CCirc
 bool CPositivePowerView::InitFromProperties(int32 x, int32 y, ERotation eRotation, CComponentProperties* pcProperties, SComponentPropertiesContext* psContext)
 {
 	Init(x, y, eRotation, pcProperties->GetText("name", ""), (float32)pcProperties->GetFloat("voltage", mfVoltage));
+	SetRiseTime(NanosecondsToTime(pcProperties->GetFloat("riseTime", 0.0) * 1000000.0));
+	SetOnAtStart(pcProperties->GetBoolean("onAtStart", true));
+	if (pcProperties->GetBoolean("fed", false))
+	{
+		SetFeed((float32)pcProperties->GetFloat("dropout", 0.0));
+	}
 	return true;
 }

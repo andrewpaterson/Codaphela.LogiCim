@@ -1,5 +1,6 @@
 #include "BaseLib/TextFile.h"
 #include <math.h>
+#include <string.h>
 #include "BaseLib/ConstructorCall.h"
 #include "BaseLib/GlobalDataTypesIO.h"
 #include "BaseLib/DataMemory.h"
@@ -20,6 +21,7 @@
 #include "LogicimLib/ClockView.h"
 #include "LogicimLib/BufferView.h"
 #include "LogicimLib/Logic74View.h"
+#include "MicroprocessorLib/PowerSource.h"
 #include "LogicimLib/PowerSourceView.h"
 #include "LogicimLib/ValueView.h"
 #include "LogicimLib/LabelView.h"
@@ -3736,6 +3738,61 @@ void TestCircuitEditorObjects(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The project's power-up state goes to its simulation and is saved on
+// its <Circuits>; Power On/Off with nothing selected switches every
+// positive supply, and with a supply selected only that one.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestCircuitEditorPower(void)
+{
+	SEditorTest				sTest;
+	CCircuitView*			pcMain;
+	CPositivePowerView*		pcFirst;
+	CPositivePowerView*		pcSecond;
+	CPowerSource*			pcFirstSupply;
+	CPowerSource*			pcSecondSupply;
+	CXMLWriter				cWriter;
+
+	sTest.Init();
+	pcMain = sTest.pEditor->AddCircuit("Main");
+	pcFirst = NewMalloc<CPositivePowerView>();
+	pcFirst->Init(0, 0, ROT_South, "5V", 5.0f);
+	pcMain->Add(pcFirst);
+	pcSecond = NewMalloc<CPositivePowerView>();
+	pcSecond->Init(10, 0, ROT_South, "3.3V", 3.3f);
+	pcMain->Add(pcSecond);
+	AssertTrue(sTest.pEditor->Simulate("Main"));
+	AssertInt(PUS_Zero, sTest.pEditor->GetSimulation()->GetPowerUpState());
+
+	sTest.pEditor->SetPowerUp(PUS_Random, 5);
+	AssertInt(PUS_Random, sTest.pEditor->GetCircuits()->GetPowerUpState());
+	AssertInt(PUS_Random, sTest.pEditor->GetSimulation()->GetPowerUpState());
+	AssertInt(5, sTest.pEditor->GetSimulation()->GetPowerUpSeed());
+	cWriter.Init();
+	sTest.pEditor->SaveXML(&cWriter);
+	AssertTrue(strstr(cWriter.GetText(), "<Circuits powerUp=\"Random\" powerUpSeed=\"5\">") != NULL);
+	cWriter.Kill();
+
+	pcFirstSupply = (CPowerSource*)pcFirst->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation());
+	pcSecondSupply = (CPowerSource*)pcSecond->GetComponent(sTest.pEditor->GetViewPath(), sTest.pEditor->GetSimulation());
+	AssertTrue(sTest.pEditor->SwitchPower());
+	AssertFalse(pcFirstSupply->IsOn());
+	AssertFalse(pcSecondSupply->IsOn());
+	AssertTrue(sTest.pEditor->SwitchPower());
+	AssertTrue(pcFirstSupply->IsOn());
+	AssertTrue(pcSecondSupply->IsOn());
+
+	sTest.pEditor->GetSelection()->Add(pcSecond);
+	AssertTrue(sTest.pEditor->SwitchPower());
+	AssertTrue(pcFirstSupply->IsOn());
+	AssertFalse(pcSecondSupply->IsOn());
+
+	sTest.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestCircuitEditor(void)
@@ -3745,6 +3802,7 @@ void TestCircuitEditor(void)
 	DataMemoryInit();
 
 	TestCircuitEditorSelection();
+	TestCircuitEditorPower();
 	TestCircuitEditorPortHover();
 	TestCircuitEditorDrawClockDivider();
 	TestCircuitEditorPlace();

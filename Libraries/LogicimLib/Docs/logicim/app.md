@@ -38,7 +38,15 @@ a subcircuit's keys are the project's, saved with its circuit.  Their keys are g
 commands' keys in the user's Keymap.xml.
 
 A running simulation is stepped every 16 ms by the time since the last tick times the speed, 0.25 simulated
-nanoseconds a millisecond by default, doubled or halved by the speed commands.
+nanoseconds a millisecond by default, doubled or halved by the speed commands.  While it is powering up (a supply ramping, a supervisor
+holding its power-on reset) it runs flat out instead, batches of events a tick, so a board's millisecond ramps and
+150 millisecond reset take seconds rather than hours ([`CLogicimCircuit::RunPowerUp`]).
+
+Simulation, Power On/Off (Ctrl+Shift+P) is the board's power switch: it switches the selected supplies, or every
+supply when none is selected, and they ramp as they would ([`CCircuitEditor::SwitchPower`]).  Power Up at Zero, Random
+and at Half Supply choose what the project's chips remember as their power comes, and Next Power-Up Seed gives another
+random power up; the choice is the project's, saved with it, and takes effect as the simulation is next reset.  New
+projects and imports power up Random.
 
 ## Projects
 
@@ -136,6 +144,8 @@ line).  Where LogiCim differs from the target is in Not done.
 ## Decisions
 
 - An IntelliJ IDEA style C++ version of Logicim's interface on WindowLib (the user, 2026-10-22).
+- Power is switched by a command, Power On/Off, not by clicking a supply: a click selects or moves (the user,
+  2026-11-26, PowerPlan.txt).  Power up runs flat out (the user: "Fast-forward", 2026-11-26).
 - Dialogs are real native windows, with many windows and a modal loop in WindowLib, not overlays inside the window
   (the user, 2026-10-22).
 - Toolbars, status bars and tool tips are WindowLib classes shared with the HCP65 IDE (the user, 2026-11-08).

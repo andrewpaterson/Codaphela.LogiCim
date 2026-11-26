@@ -83,8 +83,19 @@ public:
 };
 
 
+//A supply's state: whether it is on and when it was last switched from what voltage, in a <Power> element, unless
+//it is simply on at its voltage; a supply saved without one is that.  Its next step is scheduled again as it loads.
+class CPowerSourceStateXML : public CComponentStateXML
+{
+public:
+	void	Save(CXMLWriter* pcWriter, CCircuitComponent* pcComponent) override;
+	bool	Load(CMarkupTag* pcComponentTag, CCircuitComponent* pcComponent, CArrayPendingEventXML* pasEvents) override;
+};
+
+
 extern CIntegratedCircuitStateXML	gcIntegratedCircuitStateXML;
 extern CPassiveStateXML				gcPassiveStateXML;
+extern CPowerSourceStateXML			gcPowerSourceStateXML;
 
 
 #endif // __COMPONENT_STATE_XML_H__

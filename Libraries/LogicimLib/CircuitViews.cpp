@@ -22,6 +22,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/PointerFunctions.h"
 #include "BaseLib/Logger.h"
 #include "BaseLib/StringHelper.h"
+#include "MicroprocessorLib/StateXMLFields.h"
 #include "SubcircuitInstanceView.h"
 #include "CircuitViews.h"
 
@@ -34,6 +35,8 @@ void CCircuitViews::Init(void)
 {
 	mapcCircuits.Init();
 	mcViewPaths.Init();
+	mePowerUpState = PUS_Zero;
+	muiPowerUpSeed = 1;
 }
 
 
@@ -171,6 +174,11 @@ void CCircuitViews::SaveXML(CXMLWriter* pcWriter)
 	size	i;
 
 	pcWriter->Begin("Circuits");
+	if (mePowerUpState != PUS_Zero)
+	{
+		pcWriter->Attribute("powerUp", gaszPowerUpStateNames[mePowerUpState]);
+		pcWriter->Attribute("powerUpSeed", (int64)muiPowerUpSeed);
+	}
 	for (i = 0; i < mapcCircuits.NumElements(); i++)
 	{
 		mapcCircuits.GetPtr(i)->SaveXML(pcWriter);
@@ -191,10 +199,21 @@ bool CCircuitViews::LoadXML(CMarkupTag* pcCircuitsTag)
 	CMarkupTag*		pcTag;
 	char*			szTypeName;
 	CCircuitView*	pcCircuit;
+	int				iState;
+	int64			iSeed;
 
 	if (!pcCircuitsTag->Is("Circuits"))
 	{
 		return gcLogger.Error2(__METHOD__, " Expected a [Circuits] element, not [", pcCircuitsTag->GetName(), "].", NULL);
+	}
+	if (pcCircuitsTag->GetStringAttribute("powerUp") != NULL)
+	{
+		iState = LoadStateName(pcCircuitsTag, "powerUp", gaszPowerUpStateNames, POWER_UP_STATES);
+		if ((iState < 0) || !LoadStateInt64(pcCircuitsTag, "powerUpSeed", 0, 0xFFFFFFFFLL, &iSeed))
+		{
+			return false;
+		}
+		SetPowerUp((EPowerUpState)iState, (uint32)iSeed);
 	}
 
 	pcTag = pcCircuitsTag->GetTag(&sIter);
@@ -219,3 +238,33 @@ bool CCircuitViews::LoadXML(CMarkupTag* pcCircuitsTag)
 	return SetInstanceCircuitViews();
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitViews::SetPowerUp(EPowerUpState ePowerUpState, uint32 uiSeed)
+{
+	mePowerUpState = ePowerUpState;
+	muiPowerUpSeed = uiSeed;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Before the simulation starts, so its chips come up as the project says.
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitViews::ApplyPowerUp(CCircuitSimulation* pcSimulation)
+{
+	pcSimulation->SetPowerUpState(mePowerUpState);
+	pcSimulation->SetPowerUpSeed(muiPowerUpSeed);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+EPowerUpState CCircuitViews::GetPowerUpState(void) const { return mePowerUpState; }
+uint32 CCircuitViews::GetPowerUpSeed(void) const { return muiPowerUpSeed; }

@@ -28,7 +28,9 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/LogString.h"
 #include "BaseLib/ArrayElementNotFound.h"
 #include "StandardLib/Objects.h"
+#include "BaseLib/StringHelper.h"
 #include "MicroprocessorLib/CircuitSimulation.h"
+#include "MicroprocessorLib/PowerSource.h"
 #include "CircuitPainter.h"
 #include "CircuitWiring.h"
 #include "CircuitFile.h"
@@ -227,6 +229,7 @@ bool CCircuitEditor::Simulate(const char* szTypeName)
 	mpcViewPath = NULL;
 	mpcCircuit = pcCircuit;
 	mpSimulation = OMalloc<CCircuitSimulation>(szTypeName);
+	mpcCircuits->ApplyPowerUp(&mpSimulation);
 	UpdateHover();
 	if (!mpcCircuit->CreateSimulation(GetViewPath(), &mpSimulation, mpcFamilies, true))
 	{
@@ -237,6 +240,90 @@ bool CCircuitEditor::Simulate(const char* szTypeName)
 		PushUndo(false);
 	}
 	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The project's power-up state and seed, a change to undo; the simulation
+// comes up so the next time it starts (as it is reset).
+//
+//////////////////////////////////////////////////////////////////////////
+void CCircuitEditor::SetPowerUp(EPowerUpState ePowerUpState, uint32 uiSeed)
+{
+	mpcCircuits->SetPowerUp(ePowerUpState, uiSeed);
+	if (mpSimulation.IsNotNull())
+	{
+		mpcCircuits->ApplyPowerUp(&mpSimulation);
+	}
+	PushUndo(false);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The power switch: the selected positive supplies, or every positive
+// supply in the simulation when none is selected, all switched off if
+// any is on, else all on, as they ramp (CPowerSource::Switch).  Returns
+// false if there were none.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CCircuitEditor::SwitchPower(void)
+{
+	CArrayPowerSourcePtr	apcSupplies;
+	size					i;
+	CComponentView*			pcView;
+	CCircuit*				pcCircuit;
+	CPassive*				pcPassive;
+	CPowerSource*			pcSupply;
+	bool					bOn;
+
+	if (mpSimulation.IsNull())
+	{
+		return false;
+	}
+	apcSupplies.Init();
+	for (i = 0; i < mcSelection.NumComponents(); i++)
+	{
+		pcView = mcSelection.GetComponent(i);
+		if (StringCompare(pcView->GetXMLName(), "PositivePower") == 0)
+		{
+			pcSupply = (CPowerSource*)pcView->GetComponent(GetViewPath(), &mpSimulation);
+			if (pcSupply != NULL)
+			{
+				apcSupplies.Add(pcSupply);
+			}
+		}
+	}
+	if (mcSelection.NumComponents() == 0)
+	{
+		pcCircuit = mpSimulation->GetCircuit();
+		for (i = 0; i < pcCircuit->NumPassives(); i++)
+		{
+			pcPassive = pcCircuit->GetPassive(i);
+			if (StringCompare(pcPassive->GetType(), POWER_SOURCE_TYPE) == 0)
+			{
+				pcSupply = (CPowerSource*)pcPassive;
+				if (pcSupply->GetPowerOutPort()->GetVoltage() > 0.0f)
+				{
+					apcSupplies.Add(pcSupply);
+				}
+			}
+		}
+	}
+
+	bOn = true;
+	for (i = 0; i < apcSupplies.NumElements(); i++)
+	{
+		bOn &= !apcSupplies.GetPtr(i)->IsOn();
+	}
+	for (i = 0; i < apcSupplies.NumElements(); i++)
+	{
+		apcSupplies.GetPtr(i)->Switch(mpSimulation->GetTimeline(), bOn);
+	}
+	i = apcSupplies.NumElements();
+	apcSupplies.Kill();
+	return i > 0;
 }
 
 

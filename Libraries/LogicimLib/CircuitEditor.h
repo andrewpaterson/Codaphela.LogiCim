@@ -218,6 +218,8 @@ public:
 
 	CCircuitView*		AddCircuit(const char* szTypeName);
 	bool				Simulate(const char* szTypeName);
+	void				SetPowerUp(EPowerUpState ePowerUpState, uint32 uiSeed);
+	bool				SwitchPower(void);
 
 	void				ButtonPressed(SFloat64Vec2 sPosition);
 	void				ButtonReleased(SFloat64Vec2 sPosition);

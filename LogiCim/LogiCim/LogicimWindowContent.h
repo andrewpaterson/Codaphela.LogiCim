@@ -250,6 +250,14 @@ public:
 	bool				ApplyKeymapEdits(const char* szEdits);
 	bool				ApplyChooserEdits(const char* szEdits);
 	void				ResetLayout(void);
+	void				SwitchPower(void);
+	void				PowerUpZero(void);
+	void				PowerUpRandom(void);
+	void				PowerUpHalfSupply(void);
+	void				NextPowerUpSeed(void);
+	bool				IsPowerUpZero(void);
+	bool				IsPowerUpRandom(void);
+	bool				IsPowerUpHalfSupply(void);
 	Ptr<CDockManager>	GetDock(void) const;
 	bool				PaneClosing(CDockPane* pcPane) override;
 	void				PaneClosed(CDockPane* pcPane) override;

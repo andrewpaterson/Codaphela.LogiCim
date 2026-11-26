@@ -20,6 +20,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __CIRCUIT_VIEWS_H__
 #define __CIRCUIT_VIEWS_H__
+#include "MicroprocessorLib/CircuitSimulation.h"
 #include "CircuitView.h"
 
 
@@ -33,11 +34,17 @@ typedef CArrayTemplatePtr<CCircuitView>	CArrayCircuitViewPtr;
 //SaveXML writes a <Circuits> element holding each circuit's <Circuit type="...">, in the order they were added.
 //LoadXML adds the circuits such an element holds and then gives each instance of a subcircuit in them the circuit
 //of its type (SetInstanceCircuitViews).
+//
+//The project's power-up state (what chips remember as their power comes, EPowerUpState) and its seed are kept here and
+//given to each simulation made of its circuits (ApplyPowerUp).  It is Zero unless set, as every project saved before
+//it was; <Circuits> has powerUp and powerUpSeed attributes when it isn't.
 class CCircuitViews
 {
 protected:
 	CArrayCircuitViewPtr	mapcCircuits;
 	CViewPaths				mcViewPaths;
+	EPowerUpState			mePowerUpState;
+	uint32					muiPowerUpSeed;
 
 public:
 	void			Init(void);
@@ -55,6 +62,11 @@ public:
 
 	void			SaveXML(CXMLWriter* pcWriter);
 	bool			LoadXML(CMarkupTag* pcCircuitsTag);
+
+	void			SetPowerUp(EPowerUpState ePowerUpState, uint32 uiSeed);
+	EPowerUpState	GetPowerUpState(void) const;
+	uint32			GetPowerUpSeed(void) const;
+	void			ApplyPowerUp(CCircuitSimulation* pcSimulation);
 };
 
 

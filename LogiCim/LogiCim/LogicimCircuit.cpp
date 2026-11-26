@@ -40,6 +40,8 @@ struct SLogicimKicadImport
 
 
 #define LOGICIM_MAIN_CIRCUIT		"Main"
+#define LOGICIM_POWER_UP_BATCHES	20  //A tick's batches of events while powering up, between looking whether it still is.
+#define LOGICIM_POWER_UP_EVENTS		1000
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,6 +139,7 @@ bool CLogicimCircuit::Setup(const char* szPropagationTimes, const char* szFontDi
 	}
 
 	mpEditor->AddCircuit(LOGICIM_MAIN_CIRCUIT);
+	mpEditor->GetCircuits()->SetPowerUp(PUS_Random, 1);
 	if (!CreateSimulation())
 	{
 		return false;
@@ -175,17 +178,60 @@ bool CLogicimCircuit::Reset(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // iTimeForward is in Logicim's time units (1/1024 ns).  Nothing runs
-// while an edit is in progress.  Returns true if any events happened, so
-// what the circuit shows may have changed.
+// while an edit is in progress.  While the circuit is powering up (its
+// supplies ramping, its supervisors holding reset) it runs flat out
+// instead, a batch of events a tick, so power up takes seconds rather
+// than the hours its real milliseconds would at the running speed.
+// Returns true if any events happened, so what the circuit shows may
+// have changed.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CLogicimCircuit::Run(int64 iTimeForward)
 {
-	if ((mpEditor->GetSimulation() != NULL) && mpEditor->CanRun())
+	CCircuitSimulation*	pcSimulation;
+
+	pcSimulation = mpEditor->GetSimulation();
+	if ((pcSimulation == NULL) || !mpEditor->CanRun())
 	{
-		return mpEditor->GetSimulation()->RunToTime(iTimeForward);
+		return false;
 	}
-	return false;
+	if (pcSimulation->IsPoweringUp())
+	{
+		return RunPowerUp(pcSimulation);
+	}
+	return pcSimulation->RunToTime(iTimeForward);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Up to LOGICIM_POWER_UP_BATCHES batches of LOGICIM_POWER_UP_EVENTS
+// simultaneous events, until nothing is powering up.
+//
+//////////////////////////////////////////////////////////////////////////
+bool CLogicimCircuit::RunPowerUp(CCircuitSimulation* pcSimulation)
+{
+	int		iBatch;
+	int		iEvent;
+	bool	bAnyRun;
+
+	bAnyRun = false;
+	for (iBatch = 0; iBatch < LOGICIM_POWER_UP_BATCHES; iBatch++)
+	{
+		for (iEvent = 0; iEvent < LOGICIM_POWER_UP_EVENTS; iEvent++)
+		{
+			if (!pcSimulation->RunSimultaneous())
+			{
+				return bAnyRun;
+			}
+			bAnyRun = true;
+		}
+		if (!pcSimulation->IsPoweringUp())
+		{
+			break;
+		}
+	}
+	return bAnyRun;
 }
 
 
@@ -347,6 +393,7 @@ bool CLogicimCircuit::EndImportKicadSchematic(void)
 	}
 
 	pcTop = mpsImport->cImporter.End();
+	mpsImport->cCircuits.SetPowerUp(PUS_Random, 1);
 	bResult = (pcTop != NULL) && LoadCircuits(&mpsImport->cCircuits, pcTop, mpsImport->szFilename.Text());
 	if (bResult)
 	{
@@ -395,6 +442,7 @@ bool CLogicimCircuit::NewProject(void)
 	bool			bResult;
 
 	cCircuits.Init();
+	cCircuits.SetPowerUp(PUS_Random, 1);
 	pcTop = cCircuits.Add(LOGICIM_MAIN_CIRCUIT);
 	bResult = (pcTop != NULL) && LoadCircuits(&cCircuits, pcTop, "New Project");
 	if (bResult)

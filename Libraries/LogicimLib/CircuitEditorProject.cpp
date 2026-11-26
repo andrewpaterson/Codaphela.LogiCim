@@ -483,6 +483,7 @@ bool CCircuitEditor::LoadXML(CMarkupTag* pcRoot, const char* szSource)
 	if (bResult)
 	{
 		pSimulation = OMalloc<CCircuitSimulation>(pcTop->GetTypeName());
+		pcCircuits->ApplyPowerUp(&pSimulation);
 		bResult = LoadCircuitFileSimulation(pcRoot, pcTop, pcCircuits->GetTopPath(pcTop), &pSimulation, mpcFamilies);
 	}
 
