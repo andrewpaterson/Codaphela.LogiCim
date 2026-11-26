@@ -307,6 +307,11 @@
     </ClCompile>
     <Lib />
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="Docs\logicim\index.md" />
+    <None Include="Docs\logicim\design.md" />
+    <None Include="Docs\logicim\app.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

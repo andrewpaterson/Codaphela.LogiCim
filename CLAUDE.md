@@ -5,7 +5,11 @@ WindowLib, and KiCad import.  It needs CommonLibraries checked out beside it (`.
 
 ## Layout
 
-- `LogiCim/`: the app (`LogiCim.sln`), its checks (`Checks/LogicimChecks.py`) and `Navigation.txt`.
+- Design pages: `Libraries/LogicimLib/Docs/logicim` (`index.md`, `design.md`: LogicimLib and KicadImporterLib,
+  `app.md`: the application, its navigation and the WindowLib port's gaps); the website gathers them.  Read them
+  before changing what they cover.
+- `LogiCim/`: the app (`LogiCim.sln`) and its checks (`Checks/LogicimChecks.py`; the `LOGICIM_*` variables are in
+  `app.md`).
 - `Libraries/LogicimLib`: the interface and views (gates, ports, traces, the circuit view) on SupportLib's
   CGeometryMap.  `Libraries/KicadImporterLib`: reads KiCad schematics into circuits.
 - `Tests/TestLogicimLib`, `Tests/TestKicadImporterLib`.

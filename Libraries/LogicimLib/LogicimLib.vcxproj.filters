@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Docs">
+      <UniqueIdentifier>{ea7e73f7-3d92-48d8-bd32-2e85cddc0900}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Docs\logicim">
+      <UniqueIdentifier>{40399a00-7c07-4e4d-85f3-4c342ad4f13d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source">
       <UniqueIdentifier>{d4093398-7a55-5828-ba74-7cf9bba6620e}</UniqueIdentifier>
     </Filter>
@@ -380,5 +386,16 @@
     <ClInclude Include="ComponentProperties.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Docs\logicim\index.md">
+      <Filter>Docs\logicim</Filter>
+    </None>
+    <None Include="Docs\logicim\design.md">
+      <Filter>Docs\logicim</Filter>
+    </None>
+    <None Include="Docs\logicim\app.md">
+      <Filter>Docs\logicim</Filter>
+    </None>
   </ItemGroup>
 </Project>
