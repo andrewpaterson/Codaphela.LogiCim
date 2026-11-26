@@ -68,6 +68,14 @@ bit of its bus to its bit of an end, [`CComponentView::GetBitJoins`]) are joined
 one trace ([`CTrace`]).  A signal through a subcircuit's pin is one trace on both sides.  Both steps are
 union-finds ([`CUnionFind`]).
 
+A chip's power ports are hidden, and it gets its own supply at its implied VCC, unless it is on power rails
+([`CIntegratedCircuitView::SetPowerRails`]): its hidden VCC and GND port views ([`CPortView::SetHidden`]) then join
+only the nets of the rails' names, as tunnels of those names would.  A supply on a rail
+([`CPowerSourceView::SetRail`]) joins its rail's nets wherever it is, as KiCad's power symbols do, and a regulator's
+In port its feed rail's ([`CPositivePowerView::SetFeedRail`]), so imported boards' chips power up from their rails as
+the rails ramp, and a regulator's rail follows its feed (the user: "Hidden power pins join their named rail",
+2026-11-26).
+
 Editing a simulated circuit keeps it running: added views' components are made in every simulation of every path
 through the circuit and started ([`CCircuitView::CreateComponents`]), removed ones taken out
 ([`CCircuitView::DestroyComponent`]), and the simulation wired again ([`CCircuitWiring::Rewire`]), so components
