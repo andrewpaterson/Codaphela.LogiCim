@@ -217,6 +217,9 @@
     </ClCompile>
     <Lib />
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ResistorsPlan.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,0 +1,116 @@
+Resistors and RC filters in KiCad imports
+==========================================
+
+Planned 2026-11-26 (the user: "Plan out 1 and 2 please").  Nothing is built.  Pull-ups and pull-downs (a resistor
+with one end on a supply) are a separate plan, still to write: they need a weak drive in MicroprocessorLib.
+
+
+Why
+---
+
+LogiCim's KiCad importer leaves resistors and capacitors out, so a signal that goes through a resistor stops at it in
+the simulation.  The user uses resistors two ways (2026-11-26): pull-ups and pull-downs, "to give an undriven trace a
+value", and "as the R part of an RC filter to try and remove nanosecond or less glitches and try and smooth a
+transition out slightly".  The decode check (CKicadSchemLogicimDecode) joins series resistors itself; this plan makes
+every import do the right thing for the two kinds of series resistor the HCP65's boards have.
+
+What the boards have (KiCad 10's netlists of the 135 schematics in HCP65/Kicad/Computer, 2026-11-26): about 458
+resistor elements with neither end on a supply, on 30 boards, 248 pulls, 6 between supplies.
+
+  1. Fast: the 20 and 22 ohm networks (CAY16-200/220J4LF) on buses, chip selects and clocks, with 1 to 10pF beside
+     some of them, R x C at most about 0.22ns, a 10-90% rise of at most about 0.5ns.  Faster than the parts around
+     them (74LVC at 3.3V: 1 to 5ns; 74HCT: 12 to 22ns) and than the drivers' own edges.  What they really remove is
+     ringing on a fast edge (series termination), which no logic simulation models.  As a logic wire they are exact.
+     Also here: LED current limiters (the LEDs aren't simulated), the PS/2 lines' 150 ohm resistors, and the Audio
+     DAC's op-amp resistors (the op-amp is a placeholder).
+  2. Slow: RCs that are the circuit's function, R x C of nanoseconds to milliseconds.
+       Clock Doubler: Fast CLK -> 74LVC1G17 (Schmitt buffer) -> Clean Fast CLK -> R1 750 ohm -> C1 16pF (12ns) ->
+         MAX9010 comparator IN-, against IN+ on the 1.6V net (R2/R3 4.7k divider from 3.3V, a supply by its label
+         since 2026-11-26) -> OUT -> 74LVC2G86 XOR with Clean Fast CLK -> 2x Fast CLK: a pulse on every edge.
+       PS2 Timing: ~{Clock} -> R3 4.7k, and D1's diode across it -> RC Packet Pulse, C3 0.1uF (0.47ms) -> a
+         74VHCT14 Schmitt input; Packet Pulse -> R1 || R2 (10k each, 5k) and D1's other diode -> RC Code Pulse,
+         C4 1uF (5ms) -> another 74VHCT14 input.  The diode charges the capacitor at once one way and the resistor
+         lets it go slowly the other: a retriggerable pulse stretcher, which says when a burst of PS/2 clocks ends.
+
+How the simulation already works (MicroprocessorLib, Docs/libraries/microprocessorlib/logic.md): a trace is analog,
+an output slews its trace from one voltage to another over its family's slew time, and every input on the trace
+schedules a transition for when the voltage crosses its threshold (high at or above VIH, low at or below VIL,
+unsettled between, which is ignored).  Time is 1/1024ths of a nanosecond.
+
+
+Part 1: fast series resistors become wires (KicadImporterLib)
+----------------------------------------------------------
+
+1. Values.  A reader of a resistor's and a capacitor's value from its symbol: "22Ω", "10KΩ", "4.7KΩ", "16pF", "1μF",
+   "0.1µF" (both micro signs), and the networks' part codes, CAY16-200J4LF and 4609X-101-103LF (two digits and a
+   power of ten).  Tested on every R, RN and C value in HCP65/Kicad.
+2. Resistor elements.  An R is one element; a network's elements are its pins paired by pin name, as
+   CKicadSchemLogicimDecode::JoinSeriesResistors pairs them (move that pairing into a shared function).  A bussed
+   network (one common pin) has no element whose ends are two signals: its common pin is never joined.
+3. The rule, in CKicadSchemLogicimConverter: an element whose two nets aren't supplies (IsKicadSchemPowerNetName, or
+   a supply label) joins them into one net, unless it makes a slow RC: a capacitor from either of its nets to a
+   supply with R x C of 1ns or more (part 2).  A joined net is drawn as one net: its labels' tunnels share a name
+   (the decode's way); the resistor stays out of the drawing, as now.
+4. Warnings, in the import's report: a series resistor whose value can't be read is joined; a slow RC is left apart
+   until part 2 is built, so the circuit is the same as today there.
+5. The decode uses the converter's joins: JoinSeriesResistors goes, and LogiCim --decode prints what it prints now.
+6. Tests: a sheet with an R, an isolated network, a bussed network, a fast RC (22 ohm, 10pF: joined) and a slow one
+   (1k, 1nF: apart, warned); the expected circuits regenerated and their differences checked (only nets joined);
+   TestKicadImporterLib; the website's decode check (22 rows, no differences).
+
+
+Part 2: slow RCs become delay elements (MicroprocessorLib, LogicimLib, KicadImporterLib)
+---------------------------------------------------------------------------------------
+
+7. An exponential slew (MicroprocessorLib).  Today a slew is a straight line from one voltage to another.  An RC's
+   output is the capacitor's curve: V(t) = Vend + (Vstart - Vend) e^(-t/RC), which never quite arrives.  A slew
+   shape beside the linear one: CSlewEvent's voltage at a time, and the time an input's threshold is crossed,
+   worked out from the curve (t = RC ln((Vstart - Vend) / (Vthreshold - Vend))); "arrived" when within the family's
+   noise of Vend.  A new slew started before an old one crossed an input's threshold drops that input's pending
+   transition: check this is already so for linear slews (a short pulse then changes nothing: the glitch filtering
+   falls out of it), and test it.
+8. An RC element (MicroprocessorLib): a part with an input port and an output port, R x C its time constant for a
+   rise and for a fall (a diode across the resistor makes one of them nearly zero: the charge through the diode).
+   Its input reading the driving trace's level, it slews its output trace along the curve toward that level from
+   wherever the output is now.  An undriven input: the output keeps its voltage (the capacitor holds it).
+9. An analog comparator (MicroprocessorLib): output high while V(IN+) > V(IN-), after its propagation delay (the
+   MAX9010's, from its datasheet).  It reads its inputs' voltages, not their levels; a transition when the slewing
+   input crosses the other's voltage, by the same sum as step 7.  To begin with one input must be a fixed voltage
+   (a supply, as the Clock Doubler's IN+ is); both moving is left until a board needs it.
+10. Schmitt inputs.  The 74x14 and 74x1G17 have hysteresis: rising, they switch at VT+; falling, at VT-.  An input's
+    unsettled band (between VIL and VIH, ignored) already behaves this way: check it on a slow slew, and if it does,
+    a Schmitt part's family uses its datasheet's VT+ as VIH and VT- as VIL (HCP65/Datasheets has the 74VHCT14's and
+    the 74LVC1G17's).  If it doesn't, a Schmitt flag on the input.
+11. LogicimLib: views for the RC element (drawn as a resistor feeding a capacitor to ground, its R, C and diode
+    shown) and the comparator (a triangle with + and -), saved and loaded in a circuit's XML and in a simulation's
+    state, as every other component is.
+12. KicadImporterLib: a slow RC (part 1, step 3) becomes an RC element between the two nets, the capacitor's
+    supply its ground; a diode across the resistor (anode on one net, cathode on the other) sets which way is fast.
+    A comparator symbol (IN+, IN-, OUT; the MAX9010) becomes a comparator.
+13. Tests.  MicroprocessorLib: crossing times worked out by hand for a rise and a fall; a pulse shorter than the
+    crossing time changing nothing; the diode's fast direction; the comparator against a fixed voltage.  LogiCim:
+    the Clock Doubler imported and run with a clock on Fast CLK gives a pulse on 2x Fast CLK at every edge, as wide
+    as R1 x C1 to the comparator's threshold plus the parts' delays; the PS2 Timing with a burst of clocks on Clock
+    holds RC Packet Pulse high through the burst and lets it fall about R3 x C3 x ln(5/VT-) after the last.
+    TestMicroprocessorLib, TestLogicimLib, TestKicadImporterLib; the decode check.
+
+
+Questions for the user (put one at a time, recommendation first)
+------------------------------------------------------------------
+
+  1. Where fast ends and slow begins: recommended 1ns (R x C), below the fastest gate delay on the boards; every
+     termination is under 0.25ns and the slowest RC that matters is 12ns.
+  2. A joined net's name: recommended the name a label gives it (the connector's side if both have labels), else
+     the driven side's.
+  3. Part 2's order: recommended the simulation first (steps 7 to 10, with MicroprocessorLib's tests), then the
+     views and the importer.
+  4. How an RC element and a comparator look in LogiCim: recommended as above (step 11).
+  5. Whether a MAX9010-like part is "a comparator" by its symbol's pin names (IN+, IN-, OUT) or by a list of parts.
+
+
+Order
+-----
+
+Part 1 first: it is small, needs no new simulation, and every import's buses and chip selects then reach where they
+go.  Part 2 after, its MicroprocessorLib steps before the views and the importer.  Pull-ups and pull-downs are the
+next plan.

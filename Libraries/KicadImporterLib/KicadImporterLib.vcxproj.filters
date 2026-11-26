@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Plans">
+      <UniqueIdentifier>{b2d8b224-6962-40af-8b3f-b1385b0519d0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source">
       <UniqueIdentifier>{cb511c71-b8f3-5e9b-a52c-a575cc2e00be}</UniqueIdentifier>
     </Filter>
@@ -113,5 +116,10 @@
     <ClInclude Include="KicadSchemLogicPins.h">
       <Filter>Source\Logicim</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ResistorsPlan.txt">
+      <Filter>Plans</Filter>
+    </None>
   </ItemGroup>
 </Project>
