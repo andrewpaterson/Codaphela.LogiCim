@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#ifdef _WIN32
 #include <windows.h>
 #include "BaseLib/LeakDetector.h"
 #include "BaseLib/GlobalMemory.h"
@@ -65,4 +66,7 @@ int PASCAL WinMain(HINSTANCE hInstance,	HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	LeakDetection();
 	return bResult ? 0 : 1;
 }
+
+
+#endif // _WIN32
 

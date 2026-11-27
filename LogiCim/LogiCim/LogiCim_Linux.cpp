@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#ifdef LINUX_GNU
 #include <stdio.h>
 #include <string.h>
 #include "BaseLib/GlobalMemory.h"
@@ -94,4 +95,7 @@ int main(int argc, char* argv[])
 	KillLogicimGlobals();
 	return bResult ? 0 : 1;
 }
+
+
+#endif // LINUX_GNU
 

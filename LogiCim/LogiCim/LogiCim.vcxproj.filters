@@ -15,7 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LogiCim.cpp">
+    <ClCompile Include="LogiCim_Windows.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogiCim_Linux.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="CircuitCanvas.cpp">

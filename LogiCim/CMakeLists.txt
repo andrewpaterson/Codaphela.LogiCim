@@ -106,9 +106,9 @@ vcxproj_sources(KICADLIB_SOURCES "${KICADLIB_DIR}/KicadLib.vcxproj")
 
 vcxproj_sources(KICADIMPORTERLIB_SOURCES "${KICADIMPORTERLIB_DIR}/KicadImporterLib.vcxproj")
 
-# LogiCim.cpp (WinMain) is Windows only.
+# LogiCim_Windows.cpp (WinMain) is Windows only.
 set(LOGICIM_SOURCES
-	"${LOGICIM_DIR}/LogiCimLinux.cpp"
+	"${LOGICIM_DIR}/LogiCim_Linux.cpp"
 	"${LOGICIM_DIR}/CircuitCanvas.cpp"
 	"${LOGICIM_DIR}/CircuitCanvasDraw.cpp"
 	"${LOGICIM_DIR}/LogicimCircuit.cpp"

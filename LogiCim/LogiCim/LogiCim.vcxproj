@@ -236,7 +236,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="LogiCim.cpp" />
+    <ClCompile Include="LogiCim_Windows.cpp" />
+    <ClCompile Include="LogiCim_Linux.cpp" />
     <ClCompile Include="CircuitCanvas.cpp" />
     <ClCompile Include="CircuitCanvasDraw.cpp" />
     <ClCompile Include="LogicimCircuit.cpp" />
