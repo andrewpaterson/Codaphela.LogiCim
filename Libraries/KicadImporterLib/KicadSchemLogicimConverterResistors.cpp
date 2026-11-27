@@ -88,7 +88,7 @@ void CKicadSchemLogicimConverter::JoinSeriesResistors(void)
 		{
 			continue;
 		}
-		if (!IsVoltage(psResistor->fValue))
+		if (!IsVoltage((float32)psResistor->fValue))
 		{
 			gcLogger.Warning2(__METHOD__, " Series resistor [", psResistor->pcSymbol->GetReference(), "]'s value [", psResistor->pcSymbol->GetValue(), "] can't be read: it joins its nets.", NULL);
 			msCounts.uiUnreadResistors++;
@@ -237,7 +237,7 @@ float64 CKicadSchemLogicimConverter::GetNetCapacitance(CKicadSchemNet* pcNet)
 		psCapacitor = masCapacitors.Get(i);
 		for (j = 0; j < 2; j++)
 		{
-			if ((psCapacitor->apcNets[j] == pcNet) && (psCapacitor->apcNets[1 - j] != NULL) && IsSupplyNet(psCapacitor->apcNets[1 - j]) && IsVoltage(psCapacitor->fValue))
+			if ((psCapacitor->apcNets[j] == pcNet) && (psCapacitor->apcNets[1 - j] != NULL) && IsSupplyNet(psCapacitor->apcNets[1 - j]) && IsVoltage((float32)psCapacitor->fValue))
 			{
 				fCapacitance += psCapacitor->fValue;
 			}
@@ -293,7 +293,7 @@ float64 CKicadSchemLogicimConverter::GetPinCapacitance(SKicadSchemNetPin* psPin)
 	{
 		pcFamily = mpcFamilies->Get(pcIntegratedCircuit->GetFamily());
 		fCapacitance = (pcFamily != NULL) ? pcFamily->GetInputCapacitance() : NoVoltage();
-		if (IsVoltage(fCapacitance))
+		if (IsVoltage((float32)fCapacitance))
 		{
 			return fCapacitance * 1e-12;
 		}

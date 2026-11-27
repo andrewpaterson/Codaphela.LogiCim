@@ -20,6 +20,7 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 ** ------------------------------------------------------------------------ **/
 #include <math.h>
 #include "BaseLib/ConstructorCall.h"
+#include "BaseLib/Numbers.h"
 #include "BaseLib/StringHelper.h"
 #include "BaseLib/Logger.h"
 #include "BaseLib/PointerFunctions.h"
@@ -155,7 +156,7 @@ void CKicadSchemLogicimConverter::AddSupplyLabels(void)
 		}
 
 		//Off the label's wire, so it isn't attached to the pin the label (and its tunnel) may be on.
-		fAngle = pcLabel->GetAngle() * M_PI / 180.0;
+		fAngle = pcLabel->GetAngle() * N_PI_64 / 180.0;
 		sPosition = *pcLabel->GetPosition() + SFloat64Vec2(cos(fAngle), -sin(fAngle)) * (KICAD_SCHEM_LOGICIM_GRID * 2);
 		pcView = NewSupply(pcLabel->GetText(), GetKicadSchemSupplyLabelVoltage(pcLabel->GetText()), pcLabel->GetAngle(), ROT_West, ROT_West);
 		uiItem = mcModel.AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0), NULL);
