@@ -59,6 +59,7 @@ class CFamilyVoltageConfigurationStore;
 //they were added) and then a <Trace> per wire.  LoadXML adds what such an element holds to the circuit
 //view.  Instances of subcircuits in it are loaded without their subcircuits, which are found by type name afterwards
 //(see CCircuitViews).
+//Design page: Docs/logicim/design.md
 class CCircuitView : public CCircuitInstanceView
 {
 protected:

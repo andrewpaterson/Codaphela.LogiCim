@@ -182,6 +182,7 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //All that placing and exploding (LayOut) is nearly all of the time a circuit takes, so it can be stopped (SetStop): a
 //stopped layout finishes the placing or the explosion it is in the middle of (up to a second, for the biggest of the
 //Audio Board's boards), skips the rest and leaves the circuit as far as it got, to be thrown away.
+//Design page: Libraries/LogicimLib/Docs/logicim/design.md
 class CKicadSchemLogicimConverter
 {
 protected:

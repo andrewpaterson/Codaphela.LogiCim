@@ -8,6 +8,8 @@ WindowLib, and KiCad import.  It needs CommonLibraries checked out beside it (`.
 - Design pages: `Libraries/LogicimLib/Docs/logicim` (`index.md`, `design.md`: LogicimLib and KicadImporterLib,
   `app.md`: the application, its navigation and the WindowLib port's gaps); the website gathers them.  Read them
   before changing what they cover.
+- A design page's main classes name it in their headers, one line above the class, `//Design page: Docs/...`
+  (`DocsPlan.txt` G1); a new design page adds it to its own.
 - `LogiCim/`: the app (`LogiCim.sln`) and its checks (`Checks/LogicimChecks.py`; the `LOGICIM_*` variables are in
   `app.md`).
 - `Libraries/LogicimLib`: the interface and views (gates, ports, traces, the circuit view) on SupportLib's

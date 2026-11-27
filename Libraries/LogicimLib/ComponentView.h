@@ -98,6 +98,7 @@ typedef CArrayTemplate<SPortBitJoin>	CArrayPortBitJoin;
 //(a tunnel) joins its port views to those of every view with the same name.  A view can join bits of its port views
 //onto the same traces (GetBitJoins), as a splitter does.  An instance of a subcircuit is a circuit instance view
 //(GetCircuitInstanceView) too: the views of its subcircuit are on the path through it.
+//Design page: Docs/logicim/design.md
 class CComponentView : public CConstructable
 {
 CONSTRUCTABLE(CComponentView);

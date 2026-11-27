@@ -34,6 +34,7 @@ along with Codaphela LogiCim.  If not, see <http://www.gnu.org/licenses/>.
 
 //LogiCim: its window, the window's content and the input that drives it.  RunLogicimApp makes it, adds it to the root,
 //runs it and removes it from the root.
+//Design page: Libraries/LogicimLib/Docs/logicim/app.md
 class CLogicimApp : public CObject
 {
 CONSTRUCTABLE(CLogicimApp);
