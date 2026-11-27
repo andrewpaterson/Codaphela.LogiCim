@@ -35,10 +35,10 @@ void TestKicadSchemPassiveValues(void)
 	AssertDouble(1000.0, GetKicadSchemResistance("4609X-101-102LF"), 6);
 	AssertDouble(1000000.0, GetKicadSchemResistance("4609X-101-105LF"), 6);
 	AssertDouble(47.0, GetKicadSchemResistance("4816P-1-470LF"), 6);
-	AssertFalse(IsVoltage(GetKicadSchemResistance("R_0805")));
-	AssertFalse(IsVoltage(GetKicadSchemResistance("R_Small")));
-	AssertFalse(IsVoltage(GetKicadSchemResistance("ERJ-P06F49R9V")));
-	AssertFalse(IsVoltage(GetKicadSchemResistance(NULL)));
+	AssertFalse(IsVoltage((float32)GetKicadSchemResistance("R_0805")));
+	AssertFalse(IsVoltage((float32)GetKicadSchemResistance("R_Small")));
+	AssertFalse(IsVoltage((float32)GetKicadSchemResistance("ERJ-P06F49R9V")));
+	AssertFalse(IsVoltage((float32)GetKicadSchemResistance(NULL)));
 
 	AssertDouble(5e-12, GetKicadSchemCapacitance("5pF"), 18);
 	AssertDouble(16e-12, GetKicadSchemCapacitance("16pF"), 18);
@@ -49,9 +49,9 @@ void TestKicadSchemPassiveValues(void)
 	AssertDouble(2.2e-6, GetKicadSchemCapacitance("2.2µF"), 12);
 	AssertDouble(1e-3, GetKicadSchemCapacitance("1000μF"), 9);
 	AssertDouble(10e-12, GetKicadSchemCapacitance("CA0612KRX7R9BB100"), 18);
-	AssertFalse(IsVoltage(GetKicadSchemCapacitance("C_0805")));
-	AssertFalse(IsVoltage(GetKicadSchemCapacitance("C_Polarized")));
-	AssertFalse(IsVoltage(GetKicadSchemCapacitance("885012207033")));
+	AssertFalse(IsVoltage((float32)GetKicadSchemCapacitance("C_0805")));
+	AssertFalse(IsVoltage((float32)GetKicadSchemCapacitance("C_Polarized")));
+	AssertFalse(IsVoltage((float32)GetKicadSchemCapacitance("885012207033")));
 }
 
 

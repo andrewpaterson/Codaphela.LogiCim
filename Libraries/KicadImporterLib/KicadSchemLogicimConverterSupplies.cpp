@@ -149,6 +149,7 @@ void CKicadSchemLogicimConverter::AddSupplyLabels(void)
 	for (i = 0; i < mpcNetlist->NumNets(); i++)
 	{
 		pcNet = mpcNetlist->GetNet(i);
+		pcSubnet = NULL;
 		pcLabel = (HasSupply(pcNet) || (GetNetRegulatedVoltage(pcNet) > 0)) ? NULL : FindSupplyLabel(pcNet, &pcSubnet);
 		if (pcLabel == NULL)
 		{
