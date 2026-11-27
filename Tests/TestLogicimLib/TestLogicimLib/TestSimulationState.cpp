@@ -15,6 +15,7 @@
 #include "MicroprocessorLib/LongTime.h"
 #include "MicroprocessorLib/Voltage.h"
 #include "MicroprocessorLib/PowerSource.h"
+#include "MicroprocessorLib/PowerPinNames.h"
 #include "MicroprocessorLib/PowerOutPort.h"
 #include "MicroprocessorLib/LogicPort.h"
 #include "MicroprocessorLib/IntegratedCircuit.h"
@@ -32,6 +33,7 @@
 #include "LogicimLib/ValueView.h"
 #include "LogicimLib/TunnelView.h"
 #include "LogicimLib/PowerSourceView.h"
+#include "LogicimLib/RegulatorView.h"
 #include "LogicimLib/ResetSupervisorView.h"
 #include "LogicimLib/RCFilterView.h"
 #include "LogicimLib/PullView.h"
@@ -258,8 +260,8 @@ void TestSimulationStateRingRoundTrip(void (*fAddViews)(CCircuitView*), int64 iS
 //////////////////////////////////////////////////////////////////////////
 //
 // A 5V supply rising over 5us, saved 2us in, at 2.0V, loads ramping on
-// from there to 5V as the original does.  A regulator's view has its In
-// port and dropout, and its supply its feed.
+// from there to 5V as the original does.  A regulator's view has its IN,
+// OUT and GND ports, dropout and part, and its supply its feed and ground.
 //
 //////////////////////////////////////////////////////////////////////////
 void TestSimulationStatePowerRamp(void)
@@ -273,7 +275,7 @@ void TestSimulationStatePowerRamp(void)
 	CViewPath*							pcOriginalPath;
 	CViewPath*							pcLoadedPath;
 	CPositivePowerView*					pcSupplyView;
-	CPositivePowerView*					pcRegulatorView;
+	CRegulatorView*						pcRegulatorView;
 	CPowerSourceView*					pcLoadedSupplyView;
 	CPowerSource*						pcOriginalSupply;
 	CPowerSource*						pcLoadedSupply;
@@ -297,17 +299,18 @@ void TestSimulationStatePowerRamp(void)
 	pcSupplyView->Init(0, 0, ROT_South, "5V", 5.0f);
 	pcSupplyView->SetRiseTime(NanosecondsToTime((int64)5000));
 	cOriginalView.Add(pcSupplyView);
-	pcRegulatorView = NewMalloc<CPositivePowerView>();
-	pcRegulatorView->Init(10, 0, ROT_South, "3.3V", 3.3f);
-	pcRegulatorView->SetFeed(1.1f);
+	pcRegulatorView = NewMalloc<CRegulatorView>();
+	pcRegulatorView->Init(10, 0, ROT_East, "3.3V", 3.3f, 1.1f, "LD1117S33C");
 	cOriginalView.Add(pcRegulatorView);
-	AssertTrue(pcRegulatorView->IsFed());
 	AssertNotNull(pcRegulatorView->GetPortView(POWER_PIN_FEED));
+	AssertNotNull(pcRegulatorView->GetPortView(POWER_PIN_GND));
+	AssertNotNull(pcRegulatorView->GetPortView(POWER_PIN_POWER));
 	AssertTrue(cOriginalView.CreateSimulation(pcOriginalPath, &pOriginal, &cFamilies));
 	pcOriginalSupply = (CPowerSource*)pcSupplyView->GetComponent(pcOriginalPath, &pOriginal);
 	pcRegulator = (CPowerSource*)pcRegulatorView->GetComponent(pcOriginalPath, &pOriginal);
 	AssertLong(NanosecondsToTime((int64)5000), pcOriginalSupply->GetRiseTime());
 	AssertNotNull(pcRegulator->GetFeedPort());
+	AssertNotNull(pcRegulator->GetGroundPort());
 	AssertFloat(1.1f, pcRegulator->GetDropout(), 3);
 	pOriginal->RunToTime(NanosecondsToTime((int64)2050));
 	AssertFloat(2.0f, pcOriginalSupply->GetPowerOutPort()->GetVoltageOut(pOriginal->GetTime()), 3);
@@ -322,8 +325,9 @@ void TestSimulationStatePowerRamp(void)
 	AssertTrue(LoadCircuitFile(&cLoadedView, pcLoadedPath, &pLoaded, &cFamilies, "Output" _FS_ "Power.xml"));
 	pcLoadedSupplyView = (CPowerSourceView*)cLoadedView.GetComponent((size)0);
 	AssertLong(NanosecondsToTime((int64)5000), pcLoadedSupplyView->GetRiseTime());
-	AssertTrue(((CPowerSourceView*)cLoadedView.GetComponent(1))->IsFed());
-	AssertFloat(1.1f, ((CPowerSourceView*)cLoadedView.GetComponent(1))->GetDropout(), 3);
+	AssertString("Regulator", cLoadedView.GetComponent(1)->GetXMLName());
+	AssertFloat(1.1f, ((CRegulatorView*)cLoadedView.GetComponent(1))->GetDropout(), 3);
+	AssertString("LD1117S33C", ((CRegulatorView*)cLoadedView.GetComponent(1))->GetPart());
 	pcLoadedSupply = (CPowerSource*)pcLoadedSupplyView->GetComponent(pcLoadedPath, &pLoaded);
 	AssertLong(pOriginal->GetTime(), pLoaded->GetTime());
 	AssertFloat(2.0f, pcLoadedSupply->GetPowerOutPort()->GetVoltageOut(pLoaded->GetTime()), 3);
@@ -363,10 +367,10 @@ void TestSimulationStatePowerRamp(void)
 //////////////////////////////////////////////////////////////////////////
 //
 // Rails joined by name: a 5V supply on rail 5V rising 0.1V every 100ns, a
-// 3.3V regulator on rail 3.3V fed from rail 5V (a 1.1V dropout), a ground
-// on rail GND, an inverter whose hidden power is on rails 3.3V and GND,
-// and a DS1813 on rails 5V and GND with a 1us reset time, none of them
-// wired.  The inverter has power once the regulator switches on, as 5V
+// 3.3V regulator on rail 3.3V (a 1.1V dropout), its IN and GND joined to
+// rails 5V and GND by tunnels, a ground on rail GND, an inverter whose
+// hidden power is on rails 3.3V and GND, and a DS1813 on rails 5V and GND
+// with a 1us reset time, none of them wired.  The inverter has power once the regulator switches on, as 5V
 // passes 4.4V; the DS1813 lets reset go 1us after 5V passes 4.35V.  The
 // rails survive a save and load.
 //
@@ -382,8 +386,10 @@ void TestSimulationStatePowerRails(void)
 	CViewPath*							pcPath;
 	CViewPath*							pcLoadedPath;
 	CPositivePowerView*					pcSupply;
-	CPositivePowerView*					pcRegulatorView;
+	CRegulatorView*						pcRegulatorView;
 	CGroundView*						pcGround;
+	CTunnelView*						pcTunnel;
+	SFloat64Bounds						sTunnelBox;
 	CInverterView*						pcInverterView;
 	CIntegratedCircuit*					pcInverter;
 	CResetSupervisorView*				pcSupervisorView;
@@ -410,12 +416,17 @@ void TestSimulationStatePowerRails(void)
 	pcSupply->SetRiseTime(NanosecondsToTime((int64)5000));
 	pcSupply->SetRail("5V");
 	cView.Add(pcSupply);
-	pcRegulatorView = NewMalloc<CPositivePowerView>();
-	pcRegulatorView->Init(20, 0, ROT_South, "3.3V", 3.3f);
-	pcRegulatorView->SetFeed(1.1f);
-	pcRegulatorView->SetFeedRail("5V");
+	pcRegulatorView = NewMalloc<CRegulatorView>();
+	pcRegulatorView->Init(20, 0, ROT_East, "3.3V", 3.3f, 1.1f, "");
 	pcRegulatorView->SetRail("3.3V");
 	cView.Add(pcRegulatorView);
+	sTunnelBox.Init(SFloat64Vec2(0, -0.65), SFloat64Vec2(2, 0.65));
+	pcTunnel = NewMalloc<CTunnelView>();
+	pcTunnel->Init(16, 0, ROT_West, "5V", false, &sTunnelBox);
+	cView.Add(pcTunnel);
+	pcTunnel = NewMalloc<CTunnelView>();
+	pcTunnel->Init(20, 2, ROT_South, "GND", false, &sTunnelBox);
+	cView.Add(pcTunnel);
 	pcGround = NewMalloc<CGroundView>();
 	pcGround->Init(0, 20, ROT_North, "GND");
 	pcGround->SetRail("GND");
@@ -431,13 +442,16 @@ void TestSimulationStatePowerRails(void)
 	AssertTrue(pcInverterView->HasPowerRails());
 	AssertSize(2, pcInverterView->NumHiddenPortViews());
 	AssertString("3.3V", pcInverterView->GetHiddenPortView((size)0)->GetConnectionName());
-	AssertString("5V", pcRegulatorView->GetFeedRail());
+	AssertNull(pcRegulatorView->GetPortView(POWER_PIN_FEED)->GetConnectionName());
+	AssertNull(pcRegulatorView->GetPortView(POWER_PIN_GND)->GetConnectionName());
+	AssertString("3.3V", pcRegulatorView->GetPortView(POWER_PIN_POWER)->GetConnectionName());
 	AssertTrue(cView.CreateSimulation(pcPath, &pSimulation, &cFamilies));
 
 	pcInverter = pcInverterView->GetIntegratedCircuit(pcPath, &pSimulation);
 	pcRegulator = (CPowerSource*)pcRegulatorView->GetComponent(pcPath, &pSimulation);
 	AssertTrue(pcInverter->GetPins()->GetVoltageCommon()->GetTrace() == pcRegulator->GetPowerOutPort()->GetTrace());
 	AssertTrue(pcRegulator->GetFeedPort()->GetTrace() == ((CPowerSource*)pcSupply->GetComponent(pcPath, &pSimulation))->GetPowerOutPort()->GetTrace());
+	AssertTrue(pcRegulator->GetGroundPort()->GetTrace() == ((CPowerSource*)pcGround->GetComponent(pcPath, &pSimulation))->GetPowerOutPort()->GetTrace());
 	pSimulation->RunToTime(NanosecondsToTime((int64)4250));
 	AssertFalse(pcInverter->IsPowered(pSimulation->GetTime()));
 	pSimulation->RunToTime(NanosecondsToTime((int64)300));
@@ -466,7 +480,7 @@ void TestSimulationStatePowerRails(void)
 	SaveCircuitXML(&cLoadedView, &cLoadedText);
 	AssertString(cText.GetText(), cLoadedText.GetText());
 	AssertTrue(strstr(cText.GetText(), "vccRail=\"3.3V\" gndRail=\"GND\"") != NULL);
-	AssertTrue(strstr(cText.GetText(), "feedRail=\"5V\"") != NULL);
+	AssertTrue(strstr(cText.GetText(), "<Regulator name=\"3.3V\"") != NULL);
 	cLoadedText.Kill();
 	cText.Kill();
 

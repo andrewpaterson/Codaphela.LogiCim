@@ -210,7 +210,7 @@ void TestCircuitFileFactory(void)
 	size				i;
 	CComponentView*		pcView;
 
-	AssertSize(37, NumComponentViewTypes());
+	AssertSize(38, NumComponentViewTypes());
 	for (i = 0; i < NumComponentViewTypes(); i++)
 	{
 		pcView = NewComponentView(GetComponentViewXMLName(i));

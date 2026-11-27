@@ -727,12 +727,15 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimElements("Triple MPU Clock Generator", "Logic74Package", 3);
 	AssertKicadSchemLogicimElements("Triple MPU Clock Generator", "Logic74Unit", 14);
 
-	//Its voltage regulators are supplies fed from their inputs' rails: the L7812 from the 18V input's label's supply,
-	//the LD1117S50C and LD1117S33C from the L7812's 12V.  Its DS1813 is a reset supervisor on the 5V rail.
-	AssertKicadSchemLogicimElements("Power and Reset", "PositivePower", 4);
+	//Its voltage regulators are Regulators, their IN and GND wired: the L7812 to the 18V input's label's supply, the
+	//LD1117S50C and LD1117S33C to the L7812's 12V.  The only plain supply is 18V.  Its DS1813 is a reset supervisor on
+	//the 5V rail.
+	AssertKicadSchemLogicimElements("Power and Reset", "PositivePower", 1);
 	AssertKicadSchemLogicimAttributes("Power and Reset", "<PositivePower name=\"18V\"", 1);
-	AssertKicadSchemLogicimAttributes("Power and Reset", "rail=\"12V\" voltage=\"12\" feedRail=\"18V\"", 1);
-	AssertKicadSchemLogicimAttributes("Power and Reset", "feedRail=\"12V\"", 2);
+	AssertKicadSchemLogicimElements("Power and Reset", "Regulator", 3);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "rail=\"12V\" voltage=\"12\" dropout=\"2\" part=\"L7812ACD2T-TR\"", 1);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "part=\"LD1117S", 2);
+	AssertKicadSchemLogicimAttributes("Power and Reset", "feedRail", 0);
 	AssertKicadSchemLogicimAttributes("Power and Reset", "<ResetSupervisor name=\"IC3\"", 1);
 	AssertKicadSchemLogicimAttributes("Power and Reset", "vccRail=\"5V\" gndRail=\"GND\" tripVoltage=\"4.3499999\"", 1);
 
@@ -748,15 +751,15 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimAttributes("Supply Label Test", "<Tunnel name=\"GNDb\"", 2);
 	AssertKicadSchemLogicimAttributes("Supply Label Test", "GND_{A} EN", 0);
 
-	//A regulator is a supply on its output's rail, VCC, wired to the VCC label's tunnel, and rises on its own as nothing
-	//supplies its input.  The IC it powers is on the VCC and GND rails, and the ground, on only the regulator's ground
-	//pin, is made: it's on the GND rail, which the IC's hidden GND pin joins.  The IC still has the regulator's voltage
-	//as its implied Vcc.
+	//A regulator is a Regulator on its output's rail, VCC, wired to the VCC label's tunnel.  Nothing is on its input, so
+	//its IN is wired to nothing and it stays off: its feed isn't implied.  The IC it powers is on the VCC and GND rails,
+	//and the ground, on only the regulator's ground pin, is made: it's on the GND rail, which the IC's hidden GND pin
+	//joins.  The IC still has the regulator's voltage as its implied Vcc.
 	AssertKicadSchemLogicimConverts("Regulator Test", 1, 0, NULL, gszKicadSchemRegulatorTestFile, 1);
-	AssertKicadSchemLogicimElements("Regulator Test", "PositivePower", 1);
-	AssertKicadSchemLogicimAttributes("Regulator Test", "<PositivePower name=\"U1\"", 1);
-	AssertKicadSchemLogicimAttributes("Regulator Test", "rail=\"VCC\" voltage=\"5\"", 1);
-	AssertKicadSchemLogicimAttributes("Regulator Test", "feedRail", 0);
+	AssertKicadSchemLogicimElements("Regulator Test", "PositivePower", 0);
+	AssertKicadSchemLogicimElements("Regulator Test", "Regulator", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Test", "<Regulator name=\"U1\"", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Test", "rail=\"VCC\" voltage=\"5\" dropout=\"1\" part=\"Test5V\"", 1);
 	AssertKicadSchemLogicimElements("Regulator Test", "Ground", 1);
 	AssertKicadSchemLogicimElements("Regulator Test", "Tunnel", 1);
 	AssertKicadSchemLogicimAttributes("Regulator Test", "vccRail=\"VCC\" gndRail=\"GND\"", 1);

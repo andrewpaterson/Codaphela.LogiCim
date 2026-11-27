@@ -48,6 +48,9 @@
     <ClCompile Include="ResetSupervisorView.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
+    <ClCompile Include="RegulatorView.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
     <ClCompile Include="RCFilterView.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
@@ -240,6 +243,9 @@
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="ResetSupervisorView.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="RegulatorView.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
     <ClInclude Include="RCFilterView.h">

@@ -92,7 +92,10 @@ struct SKicadSchemLogicimRegulated
 	float32				fVoltage;
 	CKicadSchemSymbol*	pcSymbol;
 	CKicadSchemLibPin*	pcOutput;
-	CKicadSchemNet*		pcFeed;
+	CKicadSchemLibPin*	pcInput;
+	CKicadSchemNet*		pcFeed;  //The input's net.
+	CKicadSchemLibPin*	pcGroundPin;
+	CKicadSchemNet*		pcGround;  //The ground pin's net.
 };
 
 
@@ -140,10 +143,11 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //IsKicadSchemSupplyLabel) gets one beside the label (see AddSupplyLabels).  Power pins aren't drawn: a part whose VCC
 //and GND nets have supplies is on those nets as power rails, its power pins hidden and joined to the rails by name,
 //and the supplies on them are on the rails too; a part whose nets don't has implied power (see ApplyPowerRails).  A
-//voltage regulator becomes a supply fed by its input's rail, on its output's (see AddRegulatorSupplies; its output's
-//voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A series resistor (neither end on a supply)
-//joins its two nets into one, unless it's an RC filter, which becomes an RC element from its driven net to the other
-//(see JoinSeriesResistors, AddRCFilters); one from a supply to a net something reads is a pull (see AddPulls).  A
+//voltage regulator becomes a Regulator on its output's rail, its input, output and ground pins wired (see
+//AddRegulatorSupplies; its output's voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A series
+//resistor (neither end on a supply) joins its two nets into one, unless it's an RC filter, which becomes an RC element
+//from its driven net to the other (see JoinSeriesResistors, AddRCFilters); one from a supply to a net something reads
+//is a pull (see AddPulls).  A
 //DS1813 becomes a reset supervisor (see AddSupervisor), a comparator on IsKicadSchemComparatorPart's list an analog
 //comparator (see AddAnalogComparator).  Every supply made rises over KICAD_SCHEM_LOGICIM_RISE_TIME as the simulation
 //starts.  A connector (a board's edge connector) becomes the circuit's pins, one for each net on it that isn't a
@@ -241,7 +245,7 @@ protected:
 	void							AddBoardPinView(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, const char* szName);
 	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
-	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage, CKicadSchemNet* pcFeed);
+	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage, CKicadSchemLibPin* pcInput, CKicadSchemLibPin* pcGroundPin);
 	bool							AddLogicParts(SKicadSchemLogicPart* psPart);
 	bool							AddLogic74Block(SKicadSchemLogicPart* psPart);
 	void							AddLogic74BlockView(SKicadSchemLogicPart* psPart, CArrayTemplatePtr<CKicadSchemLibPin>* papcPins, CArrayFloat64Vec2* pasPositions, CComponentView* pcView, bool bUnit);

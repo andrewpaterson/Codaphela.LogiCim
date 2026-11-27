@@ -119,7 +119,7 @@ void CPortView::SetHidden(const char* szConnectionName)
 //////////////////////////////////////////////////////////////////////////
 //
 // The name of the nets it joins besides where it is: its own if it has
-// one (a hidden port's, a regulator's In), else its owner's (a tunnel's,
+// one (a hidden port's, a regulator's OUT), else its owner's (a tunnel's,
 // a supply's rail), NULL for none.
 //
 //////////////////////////////////////////////////////////////////////////

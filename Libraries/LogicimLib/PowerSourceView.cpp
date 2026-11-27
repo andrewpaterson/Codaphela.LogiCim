@@ -40,7 +40,6 @@ void CPowerSourceView::Init(int32 x, int32 y, ERotation eRotation, const char* s
 	mfVoltage = fVoltage;
 	miRiseTime = 0;
 	mbOnAtStart = true;
-	mfDropout = -1.0f;
 	mszRail.Init();
 }
 
@@ -79,6 +78,17 @@ void CPowerSourceView::SetRail(const char* szRail)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// The rail it is on, NULL for none.
+//
+//////////////////////////////////////////////////////////////////////////
+const char* CPowerSourceView::GetRail(void)
+{
+	return mszRail.Empty() ? NULL : mszRail.Text();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Its name, and its rail if it is on one.
 //
 //////////////////////////////////////////////////////////////////////////
@@ -111,15 +121,22 @@ CCircuitComponent* CPowerSourceView::CreateComponent(CViewPath* pcViewPath, CCir
 	pcPowerSource = &OMalloc<CPowerSource>(pcSimulation, mszName.Text(), mfVoltage);
 	pcPowerSource->SetRiseTime(miRiseTime);
 	pcPowerSource->SetOnAtStart(mbOnAtStart);
-	if (IsFed())
-	{
-		pcPowerSource->SetFeed(mfDropout);
-	}
+	InitPowerSource(pcPowerSource);
 	if (!PostCreateComponent(pcViewPath, pcCircuitSimulation, pcPowerSource))
 	{
 		return NULL;
 	}
 	return pcPowerSource;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A plain supply needs nothing more before its ports are connected.
+//
+//////////////////////////////////////////////////////////////////////////
+void CPowerSourceView::InitPowerSource(CPowerSource* pcPowerSource)
+{
 }
 
 
@@ -142,14 +159,12 @@ void CPowerSourceView::SetRiseTime(int64 iRiseTime) { miRiseTime = iRiseTime; }
 int64 CPowerSourceView::GetRiseTime(void) const { return miRiseTime; }
 void CPowerSourceView::SetOnAtStart(bool bOnAtStart) { mbOnAtStart = bOnAtStart; }
 bool CPowerSourceView::IsOnAtStart(void) const { return mbOnAtStart; }
-bool CPowerSourceView::IsFed(void) const { return mfDropout >= 0.0f; }
-float32 CPowerSourceView::GetDropout(void) const { return mfDropout; }
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The rise time, in nanoseconds, if it has one, off at start if it is,
-// and the dropout if it is fed.
+// The rise time, in nanoseconds, if it has one, and off at start if it
+// is.
 //
 //////////////////////////////////////////////////////////////////////////
 void CPowerSourceView::SaveXMLAttributes(CXMLWriter* pcWriter)
@@ -162,10 +177,6 @@ void CPowerSourceView::SaveXMLAttributes(CXMLWriter* pcWriter)
 	if (!mbOnAtStart)
 	{
 		pcWriter->Attribute("onAtStart", false);
-	}
-	if (IsFed())
-	{
-		pcWriter->Attribute("dropout", mfDropout);
 	}
 	if (!mszRail.Empty())
 	{
@@ -323,96 +334,21 @@ void CPositivePowerView::Init(int32 x, int32 y, ERotation eRotation, const char*
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Makes it a regulator, fed through an "In" port at the back of its box.
-//
-//////////////////////////////////////////////////////////////////////////
-void CPositivePowerView::SetFeed(float32 fDropout)
-{
-	if (!IsFed())
-	{
-		AddPortView(POWER_PIN_FEED, -1, 0);
-		CalculateBounds();
-	}
-	mfDropout = fDropout;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The rail its In port joins wherever it is.  After SetFeed.
-//
-//////////////////////////////////////////////////////////////////////////
-void CPositivePowerView::SetFeedRail(const char* szFeedRail)
-{
-	CPortView*	pcIn;
-
-	pcIn = GetPortView(POWER_PIN_FEED);
-	if (pcIn != NULL)
-	{
-		pcIn->SetConnectionName(szFeedRail);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// The rail its In port joins, NULL for none.
-//
-//////////////////////////////////////////////////////////////////////////
-const char* CPositivePowerView::GetFeedRail(void)
-{
-	CPortView*	pcIn;
-
-	pcIn = GetPortView(POWER_PIN_FEED);
-	if (pcIn == NULL)
-	{
-		return NULL;
-	}
-	return pcIn->GetConnectionName();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// A supply's attributes, and a regulator's dropout.
+// A supply's attributes.  A supply fed through an In port is a Regulator
+// now, wired to its feed: a file from before that is refused.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CPositivePowerView::LoadXMLAfterInit(CMarkupTag* pcTag)
 {
-	float32	fDropout;
-
 	if (!CPowerSourceView::LoadXMLAfterInit(pcTag))
 	{
 		return false;
 	}
-	if (pcTag->GetFloat32Attribute("dropout", &fDropout))
+	if ((pcTag->GetStringAttribute("dropout") != NULL) || (pcTag->GetStringAttribute("feedRail") != NULL))
 	{
-		if (!(fDropout >= 0))
-		{
-			return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] needs a dropout of 0 or more.", NULL);
-		}
-		SetFeed(fDropout);
-		if (pcTag->GetStringAttribute("feedRail") != NULL)
-		{
-			SetFeedRail(pcTag->GetStringAttribute("feedRail"));
-		}
+		return gcLogger.Error2(__METHOD__, " [", pcTag->GetName(), "] is fed: a fed supply is a Regulator, with its In and GND wired.  Import it again.", NULL);
 	}
 	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CPositivePowerView::InitAfterProperties(CComponentProperties* pcProperties)
-{
-	CPowerSourceView::InitAfterProperties(pcProperties);
-	if (pcProperties->GetBoolean("fed", false))
-	{
-		SetFeed((float32)pcProperties->GetFloat("dropout", 0.0));
-		SetFeedRail(pcProperties->GetText("feedRail", ""));
-	}
 }
 
 
@@ -456,10 +392,6 @@ void CPositivePowerView::SaveXMLAttributes(CXMLWriter* pcWriter)
 {
 	CPowerSourceView::SaveXMLAttributes(pcWriter);
 	pcWriter->Attribute("voltage", mfVoltage);
-	if (IsFed() && (GetFeedRail() != NULL))
-	{
-		pcWriter->Attribute("feedRail", GetFeedRail());
-	}
 }
 
 
@@ -521,12 +453,6 @@ void CPositivePowerView::GetProperties(CComponentProperties* pcProperties, SComp
 	pcProperties->AddFloat("voltage", "V", mfVoltage, 0.0, 100.0);
 	pcProperties->AddFloat("riseTime", "ms", TimeToNanoseconds(miRiseTime) / 1000000.0, 0.0, 1000.0);
 	pcProperties->AddBoolean("onAtStart", mbOnAtStart);
-	pcProperties->AddBoolean("fed", IsFed());
-	pcProperties->AddFloat("dropout", "V", IsFed() ? mfDropout : 0.0, 0.0, 100.0);
-	if (IsFed() && (GetFeedRail() != NULL))
-	{
-		pcProperties->AddText("feedRail", GetFeedRail());
-	}
 }
 
 

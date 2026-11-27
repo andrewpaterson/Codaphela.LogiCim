@@ -42,6 +42,8 @@ void TestKicadSchemPowerAndReset(void)
 	AssertNotNull(pc12V->GetFeedPort());
 	AssertTrue(pc12V->GetFeedPort()->GetTrace() == pc18V->GetPowerOutPort()->GetTrace());
 	AssertTrue(pc5V->GetFeedPort()->GetTrace() == pc12V->GetPowerOutPort()->GetTrace());
+	AssertNotNull(pc12V->GetGroundPort()->GetTrace());
+	AssertTrue(pc5V->GetGroundPort()->GetTrace() == pc12V->GetGroundPort()->GetTrace());
 	AssertTrue(pcSupervisor->GetPins()->GetVoltageCommon()->GetTrace() == pc5V->GetPowerOutPort()->GetTrace());
 	AssertTrue(sBoard.pSimulation->IsPoweringUp());
 	AssertFloat(0.0f, sBoard.Voltage(pc18V), 3);

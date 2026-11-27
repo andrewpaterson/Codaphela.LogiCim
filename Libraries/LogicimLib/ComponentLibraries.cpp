@@ -93,6 +93,7 @@ static SComponentLibraryEntry gasPower[] =
 {
 	{ "PositivePower", "Positive Power", "A supply at a fixed voltage.", "power supply vcc voltage" },
 	{ "Ground", "Ground", "A supply at 0V.", "ground gnd 0v power" },
+	{ "Regulator", "Regulator", "A supply made from the one wired to its IN, while its GND is at 0V.", "regulator ldo voltage power supply" },
 	{ "ResetSupervisor", "Reset Supervisor", "Holds reset low until its supply is good, as a DS1813.", "reset supervisor power on ds1813 brown out" },
 	{ "Pull", "Pull", "A resistor to a supply or ground: holds a line nothing drives at its level.", "pull up down resistor weak" },
 };

@@ -41,6 +41,7 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "OscilloscopeView.h"
 #include "SplitterView.h"
 #include "SubcircuitInstanceView.h"
+#include "RegulatorView.h"
 #include "ComponentViewFactory.h"
 
 
@@ -99,6 +100,7 @@ SComponentViewType gasComponentViewTypes[] =
 	{ "AnalogComparator", NewComponentViewOfClass<CAnalogComparatorView> },
 	{ "Pull", NewComponentViewOfClass<CPullView> },
 	{ "PositivePower", NewComponentViewOfClass<CPositivePowerView> },
+	{ "Regulator", NewComponentViewOfClass<CRegulatorView> },
 	{ "Pin", NewComponentViewOfClass<CPinView> },
 	{ "W65C816", NewComponentViewOfClass<CW65C816View> },
 	{ "MPU65C64", NewComponentViewOfClass<C65C64View> },

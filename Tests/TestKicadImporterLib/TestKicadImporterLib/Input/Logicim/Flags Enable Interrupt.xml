@@ -44,14 +44,16 @@
       <Logic74Unit name="IC3" x="245" y="89" rotation="East" family="LVC" explicitPowerPorts="false" impliedVCC="3.29999995" vccRail="3.3V" gndRail="GND" partType="04" unit="D" pinSpacing="2"/>
       <Ground name="GND" x="71" y="186" rotation="West" rail="GND"/>
       <PositivePower name="5V" x="72" y="219" rotation="West" riseTime="1000000" rail="5V" voltage="5"/>
-      <PositivePower name="IC5" x="99" y="213" rotation="South" riseTime="200000" dropout="0.300000012" rail="3.3V" voltage="3.29999995" feedRail="5V"/>
+      <Regulator name="IC5" x="99" y="213" rotation="East" riseTime="200000" rail="3.3V" voltage="3.29999995" dropout="0.300000012" part="AP7365-33WG-7"/>
       <Tunnel name="GND" x="113" y="195" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="99" y="215" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="40" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="293" y="38" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="GND" x="55" y="127" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="304" y="30" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="305" y="160" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
       <Tunnel name="Interrupt" x="65" y="182" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="5.5250000000000004" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="81" y="213" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="289" y="153" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="80" y="128" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F5" x="65" y="214" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -67,7 +69,7 @@
       <Tunnel name="F2" x="78" y="136" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F2" x="65" y="234" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F2" x="295" y="161" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
-      <Tunnel name="3.3V" x="140" y="214" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="140" y="213" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="3.3V" x="292" y="32" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
       <Tunnel name="F4" x="289" y="157" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="F4" x="65" y="219" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
@@ -200,6 +202,7 @@
       <Trace x0="49" y0="116" x1="44" y1="116"/>
       <Trace x0="49" y0="118" x1="49" y1="116"/>
       <Trace x0="48" y0="118" x1="49" y1="118"/>
+      <Trace x0="81" y0="213" x1="95" y1="213"/>
       <Trace x0="297" y0="157" x1="297" y1="156"/>
       <Trace x0="291" y0="157" x1="297" y1="157"/>
       <Trace x0="291" y0="153" x1="291" y1="157"/>
@@ -262,15 +265,12 @@
       <Trace x0="327" y0="168" x1="326" y1="168"/>
       <Trace x0="71" y0="136" x1="71" y1="124"/>
       <Trace x0="78" y0="136" x1="71" y1="136"/>
+      <Trace x0="140" y0="213" x1="103" y1="213"/>
       <Trace x0="35" y0="113" x1="52" y1="113"/>
       <Trace x0="35" y0="131" x1="35" y1="113"/>
       <Trace x0="41" y0="131" x1="35" y1="131"/>
       <Trace x0="41" y0="134" x1="41" y1="131"/>
       <Trace x0="40" y0="134" x1="41" y1="134"/>
-      <Trace x0="99" y0="215" x1="99" y1="214"/>
-      <Trace x0="120" y0="215" x1="99" y1="215"/>
-      <Trace x0="120" y0="214" x1="120" y1="215"/>
-      <Trace x0="140" y0="214" x1="120" y1="214"/>
       <Trace x0="72" y0="127" x1="72" y1="122"/>
       <Trace x0="69" y0="127" x1="72" y1="127"/>
       <Trace x0="69" y0="140" x1="69" y1="127"/>

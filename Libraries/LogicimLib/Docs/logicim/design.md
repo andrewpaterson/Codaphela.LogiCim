@@ -20,7 +20,8 @@ are MicroprocessorLib's ([Logic Simulation](../libraries/microprocessorlib/logic
 | [`CLogicBlockView`]'s kinds: [`CRegisterView`], [`CLatchView`], [`CMultiplexerView`], [`CDecoderView`], [`CAdderView`] ... | generic chips drawn as a box of labelled pins |
 | [`CDTypeFlipFlopView`], [`CCounterView`], [`CClockView`], [`CConstantView`], [`CProbeView`], [`COscilloscopeView`] | Logicim's chips and instruments |
 | [`CW65C816View`], [`C65C64View`] | the processors, with their registers and flags shown live |
-| [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies (on at start or not, a rise time, and a regulator's In port and dropout), and a subcircuit's pins |
+| [`CPositivePowerView`], [`CGroundView`], [`CPinView`] | supplies (on at start or not, a rise time), and a subcircuit's pins |
+| [`CRegulatorView`] | a voltage regulator: a three pin box, an upside down tombstone, its IN, OUT and GND wired like any chip's pins, its voltage, dropout and part |
 | [`CResetSupervisorView`] | a power-on reset supervisor, a DS1813: its RST, its trip voltage and reset time |
 | [`CPullView`] | a pull-up or pull-down: a resistor to a supply bar or a ground symbol, on a rail or with a supply of its own, its net's capacitance carried for its release curve; a trace only pulls hold is drawn fainter |
 | [`CRCFilterView`], [`CAnalogComparatorView`] | an RC element (a resistor into a capacitor to ground, a diode across the resistor if it has one, its time constant shown; no power) and an analog comparator, a MAX9010 |
@@ -76,10 +77,12 @@ union-finds ([`CUnionFind`]).
 A chip's power ports are hidden, and it gets its own supply at its implied VCC, unless it is on power rails
 ([`CIntegratedCircuitView::SetPowerRails`]): its hidden VCC and GND port views ([`CPortView::SetHidden`]) then join
 only the nets of the rails' names, as tunnels of those names would.  A supply on a rail
-([`CPowerSourceView::SetRail`]) joins its rail's nets wherever it is, as KiCad's power symbols do, and a regulator's
-In port its feed rail's ([`CPositivePowerView::SetFeedRail`]), so imported boards' chips power up from their rails as
-the rails ramp, and a regulator's rail follows its feed (the user: "Hidden power pins join their named rail",
-2026-11-26).
+([`CPowerSourceView::SetRail`]) joins its rail's nets wherever it is, as KiCad's power symbols do, so imported boards'
+chips power up from their rails as the rails ramp (the user: "Hidden power pins join their named rail", 2026-11-26).
+Only a regulator's OUT is on its rail: its IN and GND join only what they are wired to, and it is on while its GND is
+at 0V and its IN is at its voltage plus its dropout, so where its power comes from is always drawn (the user:
+"regulators should not have hidden / implied pins, the power source they're connected to must be obvious",
+2026-11-27).
 
 Editing a simulated circuit keeps it running: added views' components are made in every simulation of every path
 through the circuit and started ([`CCircuitView::CreateComponents`]), removed ones taken out
@@ -196,8 +199,9 @@ which joins no signals; a network numbered only (a CA0612 capacitor array) pairs
 [`GetKicadSchemResistance`] and [`GetKicadSchemCapacitance`] read every value HCP65/Kicad writes, resistor networks'
 part codes too; [`GetKicadSchemPassiveElements`] pairs an isolated network's pins by name.  A chip whose VCC and GND nets have
 supplies is on those nets as power rails, its power pins hidden ([`CKicadSchemLogicimConverter::ApplyPowerRails`]); a
-voltage regulator becomes a supply on its output's rail, fed from its input's with its part's dropout and start-up
-([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); a DS1813 a reset supervisor; a MAX9010 an analog comparator
+voltage regulator becomes a Regulator on its output's rail, its IN, OUT and GND wired to what its pins are on, with
+its part's dropout and start-up ([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); one with nothing on its input
+stays off; a DS1813 a reset supervisor; a MAX9010 an analog comparator
 ([`IsKicadSchemComparatorPart`]'s list); and every supply made rises
 over 1ms as the simulation starts.  A subnet joined to the rest of its net by labels gets a tunnel at
 each label.  A net a label names as a supply gets one supply, as a power symbol would give it, beside the first such

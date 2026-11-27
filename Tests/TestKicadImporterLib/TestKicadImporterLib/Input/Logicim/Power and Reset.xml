@@ -42,15 +42,18 @@
       <Pull name="R1" x="53" y="71" rotation="East" resistance="4700" direction="Up" rail="5V" capacitance="28"/>
       <Ground name="GND" x="13" y="48" rotation="East" rail="GND"/>
       <PositivePower name="18V" x="101" y="32" rotation="West" riseTime="1000000" rail="18V" voltage="18"/>
-      <PositivePower name="IC1" x="109" y="32" rotation="South" riseTime="1000000" dropout="2" rail="12V" voltage="12" feedRail="18V"/>
-      <PositivePower name="IC2" x="150" y="32" rotation="South" riseTime="1000000" dropout="1.10000002" rail="5V" voltage="5" feedRail="12V"/>
-      <PositivePower name="IC5" x="149" y="55" rotation="South" riseTime="1000000" dropout="1.10000002" rail="3.3V" voltage="3.29999995" feedRail="12V"/>
+      <Regulator name="IC1" x="109" y="32" rotation="East" riseTime="1000000" rail="12V" voltage="12" dropout="2" part="L7812ACD2T-TR"/>
+      <Regulator name="IC2" x="150" y="32" rotation="East" riseTime="1000000" rail="5V" voltage="5" dropout="1.10000002" part="LD1117S50C"/>
+      <Regulator name="IC5" x="149" y="55" rotation="East" riseTime="1000000" rail="3.3V" voltage="3.29999995" dropout="1.10000002" part="LD1117S33C"/>
       <Tunnel name="GND" x="22" y="42" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="142" y="61" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="106" y="38" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
+      <Tunnel name="GND" x="143" y="38" rotation="South" doubleSided="false" left="0" top="-0.65000000000000002" right="3.4249999999999998" bottom="0.65000000000000002"/>
       <Tunnel name="~{Reset} SW" x="46" y="48" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
       <Tunnel name="~{Reset} SW" x="29" y="133" rotation="West" doubleSided="false" left="0" top="-0.82857142857142851" right="6.1035714285714286" bottom="0.82857142857142851"/>
-      <Tunnel name="3.3V" x="172" y="56" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
-      <Tunnel name="12V" x="137" y="33" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.8249999999999997" bottom="0.65000000000000002"/>
-      <Tunnel name="5V" x="189" y="33" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
+      <Tunnel name="3.3V" x="172" y="55" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="3.125" bottom="0.65000000000000002"/>
+      <Tunnel name="12V" x="137" y="32" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.8249999999999997" bottom="0.65000000000000002"/>
+      <Tunnel name="5V" x="189" y="32" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="2.2250000000000001" bottom="0.65000000000000002"/>
       <Tunnel name="18V Source" x="44" y="31" rotation="East" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="18V Source" x="29" y="143" rotation="West" doubleSided="false" left="0" top="-0.65000000000000002" right="6.8250000000000011" bottom="0.65000000000000002"/>
       <Tunnel name="~{Reset}_{3.3V}" x="123" y="63" rotation="East" doubleSided="false" left="0" top="-0.82857142857142851" right="5.6035714285714286" bottom="0.82857142857142851"/>
@@ -67,38 +70,50 @@
       <Trace x0="15" y0="47" x1="16" y1="47"/>
       <Trace x0="15" y0="48" x1="15" y1="47"/>
       <Trace x0="13" y0="48" x1="15" y1="48"/>
+      <Trace x0="99" y0="32" x1="100" y1="32"/>
+      <Trace x0="99" y0="30" x1="99" y1="32"/>
+      <Trace x0="104" y0="30" x1="99" y1="30"/>
+      <Trace x0="104" y0="32" x1="104" y1="30"/>
+      <Trace x0="105" y0="32" x1="104" y1="32"/>
+      <Trace x0="109" y0="35" x1="109" y1="34"/>
+      <Trace x0="106" y0="35" x1="109" y1="35"/>
+      <Trace x0="106" y0="38" x1="106" y1="35"/>
+      <Trace x0="136" y0="32" x1="137" y1="32"/>
+      <Trace x0="136" y0="33" x1="136" y1="32"/>
+      <Trace x0="143" y0="33" x1="136" y1="33"/>
+      <Trace x0="143" y0="32" x1="143" y1="33"/>
+      <Trace x0="146" y0="32" x1="143" y1="32"/>
       <Trace x0="15" y0="43" x1="15" y1="47"/>
       <Trace x0="23" y0="43" x1="15" y1="43"/>
       <Trace x0="23" y0="42" x1="23" y1="43"/>
       <Trace x0="22" y0="42" x1="23" y1="42"/>
+      <Trace x0="149" y0="58" x1="149" y1="57"/>
+      <Trace x0="142" y0="58" x1="149" y1="58"/>
+      <Trace x0="142" y0="61" x1="142" y1="58"/>
+      <Trace x0="150" y0="35" x1="150" y1="34"/>
+      <Trace x0="143" y0="35" x1="150" y1="35"/>
+      <Trace x0="143" y0="38" x1="143" y1="35"/>
       <Trace x0="15" y0="49" x1="15" y1="48"/>
       <Trace x0="16" y0="49" x1="15" y1="49"/>
       <Trace x0="123" y0="63" x1="110" y1="63"/>
       <Trace x0="89" y0="63" x1="76" y1="63"/>
+      <Trace x0="172" y0="55" x1="153" y1="55"/>
       <Trace x0="88" y0="62" x1="88" y1="63"/>
       <Trace x0="101" y0="62" x1="88" y1="62"/>
       <Trace x0="101" y0="63" x1="101" y1="62"/>
       <Trace x0="108" y0="63" x1="101" y1="63"/>
-      <Trace x0="149" y0="57" x1="149" y1="56"/>
-      <Trace x0="161" y0="57" x1="149" y1="57"/>
-      <Trace x0="161" y0="56" x1="161" y1="57"/>
-      <Trace x0="172" y0="56" x1="161" y1="56"/>
+      <Trace x0="137" y0="32" x1="113" y1="32"/>
       <Trace x0="73" y0="63" x1="74" y1="63"/>
       <Trace x0="73" y0="71" x1="73" y1="63"/>
       <Trace x0="55" y0="71" x1="73" y1="71"/>
-      <Trace x0="109" y0="34" x1="109" y1="33"/>
-      <Trace x0="123" y0="34" x1="109" y1="34"/>
-      <Trace x0="123" y0="33" x1="123" y1="34"/>
-      <Trace x0="137" y0="33" x1="123" y1="33"/>
+      <Trace x0="140" y0="55" x1="140" y1="33"/>
+      <Trace x0="145" y0="55" x1="140" y1="55"/>
       <Trace x0="79" y0="31" x1="78" y1="31"/>
       <Trace x0="79" y0="28" x1="79" y1="31"/>
       <Trace x0="43" y0="28" x1="79" y1="28"/>
       <Trace x0="43" y0="31" x1="43" y1="28"/>
       <Trace x0="44" y0="31" x1="43" y1="31"/>
-      <Trace x0="150" y0="34" x1="150" y1="33"/>
-      <Trace x0="170" y0="34" x1="150" y1="34"/>
-      <Trace x0="170" y0="33" x1="170" y1="34"/>
-      <Trace x0="189" y0="33" x1="170" y1="33"/>
+      <Trace x0="189" y0="32" x1="154" y1="32"/>
       <Trace x0="60" y0="63" x1="73" y1="63"/>
       <Trace x0="60" y0="47" x1="60" y1="63"/>
       <Trace x0="45" y0="47" x1="60" y1="47"/>

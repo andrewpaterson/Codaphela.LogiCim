@@ -20,16 +20,16 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __POWER_SOURCE_VIEW_H__
 #define __POWER_SOURCE_VIEW_H__
+#include "MicroprocessorLib/PowerSource.h"
 #include "ComponentView.h"
 
 
 //A view of a supply with one "Power" port, as Logicim's PowerSourceView.  Its supply (CPowerSource) is on at start
-//unless told otherwise, and rises over its rise time, none by default (at once, as Logicim's).  A positive supply can
-//be fed (a regulator): it then has an "In" port, on its feed, and a dropout.
+//unless told otherwise, and rises over its rise time, none by default (at once, as Logicim's).  A regulator
+//(CRegulatorView) is a supply fed through In and GND ports that are wired, never implied.
 //
 //A supply on a rail (SetRail) joins the nets of the rail's name wherever it is, as KiCad's power symbols do, so the
-//ICs whose hidden power ports are on the rail (CIntegratedCircuitView::SetPowerRails) are powered by it; a
-//regulator's In port joins its feed rail's nets the same way.
+//ICs whose hidden power ports are on the rail (CIntegratedCircuitView::SetPowerRails) are powered by it.
 class CPowerSourceView : public CComponentView
 {
 CONSTRUCTABLE(CPowerSourceView);
@@ -37,7 +37,6 @@ protected:
 	float32		mfVoltage;
 	int64		miRiseTime;
 	bool		mbOnAtStart;
-	float32		mfDropout;  //Below zero when it isn't fed.
 	CChars		mszRail;  //Empty when it is on no rail.
 
 public:
@@ -50,17 +49,17 @@ public:
 			int64					GetRiseTime(void) const;
 			void					SetOnAtStart(bool bOnAtStart);
 			bool					IsOnAtStart(void) const;
-			bool					IsFed(void) const;
-			float32					GetDropout(void) const;
 	virtual bool					LoadXMLAfterInit(CMarkupTag* pcTag);
 	virtual void					InitAfterProperties(CComponentProperties* pcProperties);
 	virtual void					Kill(void);
 	virtual const char*				GetConnectionName(void);
 	virtual void					GetProperties(CComponentProperties* pcProperties, SComponentPropertiesContext* psContext);
-			void					SetRail(const char* szRail);
+	virtual void					SetRail(const char* szRail);
+			const char*				GetRail(void);
 
 protected:
 	virtual	void					SaveXMLAttributes(CXMLWriter* pcWriter);
+	virtual void					InitPowerSource(CPowerSource* pcPowerSource);
 };
 
 
@@ -91,11 +90,7 @@ protected:
 
 public:
 			void					Init(int32 x, int32 y, ERotation eRotation, const char* szName, float32 fVoltage);
-			void					SetFeed(float32 fDropout);
-			void					SetFeedRail(const char* szFeedRail);
-			const char*				GetFeedRail(void);
 	virtual bool					LoadXMLAfterInit(CMarkupTag* pcTag);
-	virtual void					InitAfterProperties(CComponentProperties* pcProperties);
 
 	virtual void					Paint(CCircuitPainter* pcPainter);
 

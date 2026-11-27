@@ -21,7 +21,9 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 #include "BaseLib/StringHelper.h"
 #include "MicroprocessorLib/LongTime.h"
 #include "MicroprocessorLib/ResetSupervisor.h"
+#include "MicroprocessorLib/PowerPinNames.h"
 #include "LogicimLib/PowerSourceView.h"
+#include "LogicimLib/RegulatorView.h"
 #include "LogicimLib/ResetSupervisorView.h"
 #include "LogicimLib/AnalogComparatorView.h"
 #include "LogicimLib/ComponentPlacement.h"
@@ -100,7 +102,7 @@ CKicadSchemNet* CKicadSchemLogicimConverter::GetPowerPinNet(CKicadSchemSymbol* p
 //////////////////////////////////////////////////////////////////////////
 //
 // The power rails: the nets the parts' power pins are on and the nets of
-// the regulators' inputs and outputs.  Their subnets count as drawn
+// the regulators' inputs, outputs and grounds.  Their subnets count as drawn
 // (IsSubnetDrawn), so their supplies are made, as the hidden power pins
 // on them need.
 //
@@ -110,7 +112,7 @@ void CKicadSchemLogicimConverter::FindRailNets(void)
 	size						i;
 	SKicadSchemLogicimItem*		psItem;
 	CIntegratedCircuitView*		pcIntegratedCircuit;
-	CKicadSchemNet*				apcNets[2];
+	CKicadSchemNet*				apcNets[3];
 	size						j;
 
 	for (i = 0; i < mcModel.NumItems(); i++)
@@ -136,7 +138,8 @@ void CKicadSchemLogicimConverter::FindRailNets(void)
 	{
 		apcNets[0] = masRegulated.Get(i)->pcNet;
 		apcNets[1] = masRegulated.Get(i)->pcFeed;
-		for (j = 0; j < 2; j++)
+		apcNets[2] = masRegulated.Get(i)->pcGround;
+		for (j = 0; j < 3; j++)
 		{
 			if ((apcNets[j] != NULL) && !IsRailNet(apcNets[j]))
 			{
@@ -185,13 +188,13 @@ bool CKicadSchemLogicimConverter::HasNetSupply(CKicadSchemNet* pcNet)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Each regulator a supply on its output's rail, at its symbol, wired to
-// what's drawn on the output, unless a power symbol already supplies it.
-// A regulator with outputs on more than one net (a tab on its own) is one
-// supply, on the net a part's power pin is on if one is.  It's fed from
-// its input's rail if a supply is on that, with its part's dropout and
-// rise time (see GetKicadSchemRegulatorPart); otherwise it rises on its
-// own.
+// Each regulator a Regulator on its output's rail, at its symbol, its OUT,
+// IN and GND wired to what's drawn on its output, input and ground pins,
+// unless a power symbol already supplies its output.  Nothing is implied:
+// a regulator whose input or ground has no supply stays off.  A
+// regulator with outputs on more than one net (a tab on its own) is one
+// Regulator, on the net a part's power pin is on if one is.  Its dropout
+// and rise time are its part's (see GetKicadSchemRegulatorPart).
 //
 //////////////////////////////////////////////////////////////////////////
 void CKicadSchemLogicimConverter::AddRegulatorSupplies(void)
@@ -200,7 +203,7 @@ void CKicadSchemLogicimConverter::AddRegulatorSupplies(void)
 	size							j;
 	SKicadSchemLogicimRegulated*	psRegulated;
 	SKicadSchemLogicimRegulated*	psOther;
-	CPositivePowerView*				pcView;
+	CRegulatorView*					pcView;
 	SKicadSchemRegulatorPart*		psPart;
 	size							uiItem;
 	bool							bDone;
@@ -223,16 +226,14 @@ void CKicadSchemLogicimConverter::AddRegulatorSupplies(void)
 			continue;
 		}
 		psPart = GetKicadSchemRegulatorPart(psRegulated->pcSymbol->GetValue());
-		pcView = (CPositivePowerView*)NewSupply(psRegulated->pcSymbol->GetReference(), psRegulated->fVoltage, psRegulated->pcSymbol->GetAngle(), ROT_North, ROT_South);
+		pcView = NewMalloc<CRegulatorView>();
+		pcView->Init(0, 0, ROT_East, psRegulated->pcSymbol->GetReference(), psRegulated->fVoltage, psPart->fDropout, psRegulated->pcSymbol->GetValue());
 		pcView->SetRiseTime(NanosecondsToTime(psPart->iRiseNanoseconds));
 		pcView->SetRail(psRegulated->pcNet->GetName());
-		if ((psRegulated->pcFeed != NULL) && (psRegulated->pcFeed != psRegulated->pcNet) && HasNetSupply(psRegulated->pcFeed))
-		{
-			pcView->SetFeed(psPart->fDropout);
-			pcView->SetFeedRail(psRegulated->pcFeed->GetName());
-		}
 		uiItem = mcModel.AddItem(pcView, KSLIK_Part, psRegulated->pcSymbol->GetPosition(), NULL, psRegulated->pcSymbol);
-		AddPinTerminal(psRegulated->pcSymbol, psRegulated->pcOutput, pcView->GetPortView((size)0), uiItem);
+		AddPinTerminal(psRegulated->pcSymbol, psRegulated->pcOutput, pcView->GetPortView(POWER_PIN_POWER), uiItem);
+		AddPinTerminal(psRegulated->pcSymbol, psRegulated->pcInput, pcView->GetPortView(POWER_PIN_FEED), uiItem);
+		AddPinTerminal(psRegulated->pcSymbol, psRegulated->pcGroundPin, pcView->GetPortView(POWER_PIN_GND), uiItem);
 	}
 }
 

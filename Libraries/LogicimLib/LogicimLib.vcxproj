@@ -27,6 +27,7 @@
     <ClCompile Include="CircuitPainter.cpp" />
     <ClCompile Include="ClockView.cpp" />
     <ClCompile Include="ResetSupervisorView.cpp" />
+    <ClCompile Include="RegulatorView.cpp" />
     <ClCompile Include="RCFilterView.cpp" />
     <ClCompile Include="AnalogComparatorView.cpp" />
     <ClCompile Include="PullView.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="CircuitPainter.h" />
     <ClInclude Include="ClockView.h" />
     <ClInclude Include="ResetSupervisorView.h" />
+    <ClInclude Include="RegulatorView.h" />
     <ClInclude Include="RCFilterView.h" />
     <ClInclude Include="AnalogComparatorView.h" />
     <ClInclude Include="PullView.h" />
