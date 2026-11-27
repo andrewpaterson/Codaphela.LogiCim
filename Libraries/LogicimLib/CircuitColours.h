@@ -25,11 +25,16 @@ along with Codaphela LogicimLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "MicroprocessorLib/Port.h"
 
 
-#define NUM_VOLTAGE_COLOURS		71
+#define NUM_VOLTAGE_COLOURS		201  //0V to 20V in tenths of a volt.
+#define NUM_SHORT_COLOURS		71  //0V to 7V in tenths of a volt.
+#define MAX_COLOURED_VOLTAGE	20.0f
+#define MAX_COLOURED_SHORT		7.0f
 
 
-//The colours a circuit is drawn in, as Logicim's Colours.  Voltages from 0 to 7 volts are coloured in tenths of a
-//volt; anything outside that is an error.  InitLogicim matches Logicim's light editor, InitDark sits on the IntelliJ
+//The colours a circuit is drawn in, as Logicim's Colours.  Voltages from 0 to 20 volts are coloured in tenths of a
+//volt: logic levels as Logicim's up to 5V, then light green stretching to yellow at 18V (the boards' 12V and 18V
+//rails), then turning slightly pink at 20V; anything outside that is an error.  A short's colour stops at 7V, so a
+//short between logic levels looks bad, as it is.  InitLogicim matches Logicim's light editor, InitDark sits on the IntelliJ
 //dark editor.
 class CCircuitColours
 {
@@ -40,7 +45,7 @@ public:
 	ARGB32	msTraceUndriven;
 	ARGB32	msTraceError;
 	ARGB32	masVoltage[NUM_VOLTAGE_COLOURS];
-	ARGB32	masShort[NUM_VOLTAGE_COLOURS];
+	ARGB32	masShort[NUM_SHORT_COLOURS];
 	ARGB32	msShapeBorder;
 	ARGB32	msShapeFill;
 	ARGB32	msDarkShapeFill;

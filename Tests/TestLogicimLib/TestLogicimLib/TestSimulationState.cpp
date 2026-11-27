@@ -1312,6 +1312,36 @@ void TestSimulationStateW65C816RoundTrip(void)
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Voltages are coloured up to 20V: 5V as before, 12V and 18V (the boards'
+// rails) as voltages, yellow at 18V, slightly pink at 20V and an error
+// beyond it or below 0V.  A short's colour stops at 7V.
+//
+//////////////////////////////////////////////////////////////////////////
+void TestSimulationStateVoltageColours(void)
+{
+	CCircuitColours	cColours;
+	uint32			auiColour[4];
+
+	cColours.InitDark();
+	AssertTrue(cColours.GetColourForVoltage(5.0f) == Set32BitColour((uint8)100, (uint8)255, (uint8)100));
+	AssertTrue(cColours.GetColourForVoltage(18.0f) == Set32BitColour((uint8)255, (uint8)253, (uint8)75));
+	AssertTrue(cColours.GetColourForVoltage(20.0f) == Set32BitColour((uint8)255, (uint8)190, (uint8)150));
+	AssertFalse(cColours.GetColourForVoltage(12.0f) == cColours.msTraceError);
+	AssertFalse(cColours.GetColourForVoltage(12.0f) == cColours.GetColourForVoltage(18.0f));
+	Get32BitColour(&auiColour[0], &auiColour[1], &auiColour[2], &auiColour[3], cColours.GetColourForVoltage(7.0f));
+	AssertTrue(auiColour[0] < 255);
+	AssertTrue(cColours.GetColourForVoltage(20.5f) == cColours.msTraceError);
+	AssertTrue(cColours.GetColourForVoltage(-0.5f) == cColours.msTraceError);
+	AssertTrue(cColours.GetTraceVoltage(12.0f) == cColours.GetColourForVoltage(12.0f));
+	AssertFalse(cColours.GetTraceShort(3.3f) == cColours.msTraceError);
+	AssertTrue(cColours.GetTraceShort(7.5f) == cColours.msTraceError);
+	AssertTrue(cColours.GetTraceShort(12.0f) == cColours.msTraceError);
+	cColours.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
 //
 //////////////////////////////////////////////////////////////////////////
 void TestSimulationState(void)
@@ -1326,6 +1356,7 @@ void TestSimulationState(void)
 	TestSimulationStatePowerRamp();
 	TestSimulationStatePowerRails();
 	TestSimulationStatePulls();
+	TestSimulationStateVoltageColours();
 	TestSimulationStateW65C816Core();
 	TestSimulationState65C64Core();
 	TestSimulationStateW65C816RoundTrip();

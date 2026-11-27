@@ -38,7 +38,8 @@ void CCircuitColours::InitLogicim(void)
 
 	GenerateGradient(masVoltage, Set32BitColour((uint8)0, (uint8)50, (uint8)0), 0, Set32BitColour((uint8)0, (uint8)180, (uint8)0), 33);
 	GenerateGradient(masVoltage, Set32BitColour((uint8)0, (uint8)180, (uint8)0), 33, Set32BitColour((uint8)100, (uint8)255, (uint8)100), 50);
-	GenerateGradient(masVoltage, Set32BitColour((uint8)100, (uint8)255, (uint8)100), 50, Set32BitColour((uint8)255, (uint8)253, (uint8)75), 70);
+	GenerateGradient(masVoltage, Set32BitColour((uint8)100, (uint8)255, (uint8)100), 50, Set32BitColour((uint8)255, (uint8)253, (uint8)75), 180);
+	GenerateGradient(masVoltage, Set32BitColour((uint8)255, (uint8)253, (uint8)75), 180, Set32BitColour((uint8)255, (uint8)190, (uint8)150), 200);
 	GenerateGradient(masShort, Set32BitColour((uint8)0, (uint8)0, (uint8)0), 0, Set32BitColour((uint8)200, (uint8)0, (uint8)0), 33);
 	GenerateGradient(masShort, Set32BitColour((uint8)200, (uint8)0, (uint8)0), 33, Set32BitColour((uint8)255, (uint8)255, (uint8)100), 50);
 	GenerateGradient(masShort, Set32BitColour((uint8)255, (uint8)255, (uint8)100), 50, Set32BitColour((uint8)255, (uint8)255, (uint8)200), 70);
@@ -74,7 +75,8 @@ void CCircuitColours::InitDark(void)
 
 	GenerateGradient(masVoltage, Set32BitColour((uint8)30, (uint8)95, (uint8)30), 0, Set32BitColour((uint8)0, (uint8)180, (uint8)0), 33);
 	GenerateGradient(masVoltage, Set32BitColour((uint8)0, (uint8)180, (uint8)0), 33, Set32BitColour((uint8)100, (uint8)255, (uint8)100), 50);
-	GenerateGradient(masVoltage, Set32BitColour((uint8)100, (uint8)255, (uint8)100), 50, Set32BitColour((uint8)255, (uint8)253, (uint8)75), 70);
+	GenerateGradient(masVoltage, Set32BitColour((uint8)100, (uint8)255, (uint8)100), 50, Set32BitColour((uint8)255, (uint8)253, (uint8)75), 180);
+	GenerateGradient(masVoltage, Set32BitColour((uint8)255, (uint8)253, (uint8)75), 180, Set32BitColour((uint8)255, (uint8)190, (uint8)150), 200);
 	GenerateGradient(masShort, Set32BitColour((uint8)0, (uint8)0, (uint8)0), 0, Set32BitColour((uint8)200, (uint8)0, (uint8)0), 33);
 	GenerateGradient(masShort, Set32BitColour((uint8)200, (uint8)0, (uint8)0), 33, Set32BitColour((uint8)255, (uint8)255, (uint8)100), 50);
 	GenerateGradient(masShort, Set32BitColour((uint8)255, (uint8)255, (uint8)100), 50, Set32BitColour((uint8)255, (uint8)255, (uint8)200), 70);
@@ -159,14 +161,14 @@ ARGB32 CCircuitColours::GetTraceShort(float32 fShortVoltage)
 {
 	int		iIndex;
 
-	if ((fShortVoltage > 7.0f) || (fShortVoltage <= 0.0f))
+	if ((fShortVoltage > MAX_COLOURED_SHORT) || (fShortVoltage <= 0.0f))
 	{
 		return msTraceError;
 	}
 	iIndex = (int)(fShortVoltage * 10);
-	if (iIndex >= NUM_VOLTAGE_COLOURS)
+	if (iIndex >= NUM_SHORT_COLOURS)
 	{
-		iIndex = NUM_VOLTAGE_COLOURS - 1;
+		iIndex = NUM_SHORT_COLOURS - 1;
 	}
 	return masShort[iIndex];
 }
@@ -178,7 +180,7 @@ ARGB32 CCircuitColours::GetTraceShort(float32 fShortVoltage)
 //////////////////////////////////////////////////////////////////////////
 ARGB32 CCircuitColours::GetColourForVoltage(float32 fVoltage)
 {
-	if ((fVoltage < 0.0f) || (fVoltage > 7.0f))
+	if ((fVoltage < 0.0f) || (fVoltage > MAX_COLOURED_VOLTAGE))
 	{
 		return msTraceError;
 	}

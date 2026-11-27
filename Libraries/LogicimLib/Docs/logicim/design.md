@@ -100,7 +100,7 @@ a [`CGeometryMap`], text as glyph sprites into a [`CSpriteMap`] blitted over it.
 | [`CCircuitViewport`] | Where the grid is on the screen: a grid unit is ten pixels at zoom one, grid 0, 0 in the centre, zoom 0.2 to 6.  Screen points are pixel centres and aren't rounded to whole pixels as Logicim's are. |
 | [`CComponentShapes`] | A view's shapes in its own grid space, facing East: lines, polygons, arcs, circles and text, changed through their index. |
 | [`CCircuitPainter`] | Turns and moves the shapes ([`CCircuitPainter::SetTransform`]), puts them through the viewport into the maps; arcs are flattened to 0.1 pixel. |
-| [`CCircuitColours`] | Logicim's colours: voltages 0 to 7 volts in tenths, the background and grid.  [`CCircuitColours::InitLogicim`] is Logicim's light editor, [`CCircuitColours::InitDark`] (the application's) sits on IntelliJ's dark editor. |
+| [`CCircuitColours`] | Logicim's colours: voltages 0 to 20 volts in tenths (Logicim's to 5V, then stretched to yellow at 18V for the boards' 12V and 18V rails, slightly pink at 20V; a short's colour stops at 7V), the background and grid.  [`CCircuitColours::InitLogicim`] is Logicim's light editor, [`CCircuitColours::InitDark`] (the application's) sits on IntelliJ's dark editor. |
 | [`CCircuitFonts`] | Liberation Sans regular and bold and Liberation Mono, Logicim's faces, as SupportLib font families: each size and turn rasterised when first drawn. |
 | [`CCircuitGrid`] | Logicim's point grid as tiles of one row of dots each, pixel for pixel as drawing the dots. |
 | [`CComponentSpriteCache`] | Components' shapes rasterised once and blitted after. |
