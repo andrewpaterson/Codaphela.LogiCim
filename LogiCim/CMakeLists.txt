@@ -15,18 +15,9 @@
 # Library source lists are read from the .vcxproj files so Visual Studio stays
 # the source of truth.
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 project(LogiCim CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Debug)
-endif()
-
-option(BASELIB_ASAN "Build with AddressSanitizer and LeakSanitizer" OFF)
 
 # This solution is in the LogiCim repository (with LogicimLib and KicadImporterLib), which is beside CommonLibraries.
 get_filename_component(LOGICIM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
@@ -45,47 +36,7 @@ set(KICADLIB_DIR "${COMMON_DIR}/KicadLib")
 set(KICADIMPORTERLIB_DIR "${LOGICIM_ROOT}/Libraries/KicadImporterLib")
 set(LOGICIM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/LogiCim")
 
-
-# Reads <ClCompile Include="..."/> entries from a .vcxproj and resolves them
-# against the files on disk case-insensitively (Windows paths are not
-# case-sensitive).  Files named in EXCLUDE (paths relative to the project,
-# any case) are left out.
-function(vcxproj_sources OUT_VAR VCXPROJ)
-	cmake_parse_arguments(ARG "" "" "EXCLUDE" ${ARGN})
-	get_filename_component(PROJ_DIR "${VCXPROJ}" DIRECTORY)
-
-	# Re-run the configure step when Visual Studio adds or removes files.
-	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${VCXPROJ}")
-
-	file(GLOB_RECURSE DISK_FILES RELATIVE "${PROJ_DIR}" "${PROJ_DIR}/*.cpp" "${PROJ_DIR}/*.c")
-	foreach(DISK_FILE ${DISK_FILES})
-		string(TOLOWER "${DISK_FILE}" KEY)
-		set("DISK_${KEY}" "${DISK_FILE}")
-	endforeach()
-
-	set(EXCLUDED "")
-	foreach(EXCLUDE_FILE ${ARG_EXCLUDE})
-		string(TOLOWER "${EXCLUDE_FILE}" KEY)
-		list(APPEND EXCLUDED "${KEY}")
-	endforeach()
-
-	file(STRINGS "${VCXPROJ}" LINES REGEX "<ClCompile Include=\"[^\"]+\"")
-	set(SOURCES "")
-	foreach(LINE ${LINES})
-		string(REGEX REPLACE ".*<ClCompile Include=\"([^\"]+)\".*" "\\1" SOURCE "${LINE}")
-		string(REPLACE "\\" "/" SOURCE "${SOURCE}")
-		string(TOLOWER "${SOURCE}" KEY)
-		if(KEY IN_LIST EXCLUDED)
-			continue()
-		endif()
-		if(NOT DEFINED "DISK_${KEY}")
-			message(FATAL_ERROR "${VCXPROJ} lists ${SOURCE} but it was not found on disk")
-		endif()
-		list(APPEND SOURCES "${PROJ_DIR}/${DISK_${KEY}}")
-	endforeach()
-
-	set(${OUT_VAR} ${SOURCES} PARENT_SCOPE)
-endfunction()
+include("${COMMON_DIR}/../CMake/Codaphela.cmake")
 
 
 vcxproj_sources(BASELIB_SOURCES "${BASELIB_DIR}/BaseLib.vcxproj")
@@ -106,59 +57,10 @@ vcxproj_sources(KICADLIB_SOURCES "${KICADLIB_DIR}/KicadLib.vcxproj")
 
 vcxproj_sources(KICADIMPORTERLIB_SOURCES "${KICADIMPORTERLIB_DIR}/KicadImporterLib.vcxproj")
 
-# LogiCim_Windows.cpp (WinMain) is Windows only.
-set(LOGICIM_SOURCES
-	"${LOGICIM_DIR}/LogiCim_Linux.cpp"
-	"${LOGICIM_DIR}/CircuitCanvas.cpp"
-	"${LOGICIM_DIR}/CircuitCanvasDraw.cpp"
-	"${LOGICIM_DIR}/LogicimCircuit.cpp"
-	"${LOGICIM_DIR}/LogicimComponentChooser.cpp"
-	"${LOGICIM_DIR}/LogicimSettings.cpp"
-	"${LOGICIM_DIR}/LogicimGoTo.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContentTabs.cpp"
-	"${LOGICIM_DIR}/LogicimNavigationHistory.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContentTrees.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContentNavigation.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContent.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContentLayout.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContentDialogs.cpp"
-	"${LOGICIM_DIR}/LogicimWindowContentSubcircuits.cpp"
-	"${LOGICIM_DIR}/LogicimWindowData.cpp"
-	"${LOGICIM_DIR}/LogicimWindowTick.cpp"
-	"${LOGICIM_DIR}/LogicimApp.cpp"
-)
+vcxproj_sources(LOGICIM_SOURCES "${LOGICIM_DIR}/LogiCim.vcxproj")
 
 
-# Matches the Visual Studio configurations, except BREAK_ON_ERROR and
-# BREAK_ON_WARNING: on Linux BREAK() raises SIGTRAP, which kills the test run
-# when no debugger is attached.
-add_library(baselib_options INTERFACE)
-target_include_directories(baselib_options INTERFACE "${COMMON_DIR}" "${LOGICIM_ROOT}/Libraries")
-target_compile_definitions(baselib_options INTERFACE
-	LINUX_GNU
-	$<$<CONFIG:Debug>:_DEBUG>
-	$<$<CONFIG:Debug>:DEBUG>
-	$<$<NOT:$<CONFIG:Debug>>:NDEBUG>
-)
-# -fno-strict-aliasing: MSVC never optimises on the strict aliasing rule and the
-# code relies on that (e.g. (CUnknown**)&pcTyped), so optimised builds break without it.
-# -fno-exceptions: /EHs-c-, as the Visual Studio configurations have it.  Nothing built here throws or catches.
-# -Wno-ignored-attributes: g++ drops ALIGN_64 when int64/uint64/float64 is a
-# template argument.  Templates that store such a type by value use MSVC_ALIGN
-# instead (see PrimitiveTypes.h), so the warning only reports the drop.
-# -Wno-write-strings: string literals are passed as char* throughout; MSVC allows it.
-# -Wno-multichar: chunk and file IDs are multi-character constants like 'ABCD'.
-# -Wno-class-memaccess: the containers memcpy objects with constructors on purpose.
-# -Wno-overloaded-virtual: subclasses overload virtuals with other argument types
-# (e.g. Save(CObjectWriter*) hides CUnknown::Save(CFileWriter*)) on purpose.
-# -Wno-comment: ASCII diagrams in comments end lines with a backslash.
-# -Wno-unused-parameter: virtual overrides and callbacks often ignore parameters.
-target_compile_options(baselib_options INTERFACE -m64 -fno-strict-aliasing -fno-exceptions -Wall -Wextra -Wno-ignored-attributes -Wno-write-strings -Wno-multichar -Wno-class-memaccess -Wno-overloaded-virtual -Wno-comment -Wno-unused-parameter)
-target_link_options(baselib_options INTERFACE -m64)
-if(BASELIB_ASAN)
-	target_compile_options(baselib_options INTERFACE -fsanitize=address -fno-omit-frame-pointer)
-	target_link_options(baselib_options INTERFACE -fsanitize=address)
-endif()
+codaphela_options(ONLY_64 "${COMMON_DIR}" "${LOGICIM_ROOT}/Libraries")
 
 
 # CMutex uses pthreads on Linux.
