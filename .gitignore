@@ -20,3 +20,7 @@ Log.txt
 /Tests/TestLogicimLib/TestLogicimLib/Output/
 /Tests/TestKicadImporterLib/TestKicadImporterLib/Output/
 *.layout.user
+
+# The HCP65 IDE's own files for whoever opened the solution: what is open and chosen, and their settings.
+*.hcp65workspace
+*.hcp65user
