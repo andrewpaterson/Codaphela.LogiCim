@@ -54,6 +54,7 @@ void CKicadSchemLogicimConverter::Init(CKicadSchemFile* pcFile, CKicadSchemNetli
 	mpcProgress = NULL;
 	mcModel.Init();
 	masRegulated.Init();
+	mapcRegulators.Init();
 	mapcRailNets.Init();
 	mpcFamilies = NULL;
 	mbJoinFilters = false;
@@ -84,6 +85,7 @@ void CKicadSchemLogicimConverter::Kill(void)
 	masRCFilters.Kill();
 	masCapacitors.Kill();
 	mapcRailNets.Kill();
+	mapcRegulators.Kill();
 	masRegulated.Kill();
 	mcModel.Kill();
 	mpcBoardSource = NULL;
@@ -147,6 +149,7 @@ bool CKicadSchemLogicimConverter::Build(const char* szTypeName)
 	mcModel.SetCircuit(pcCircuit);
 
 	ReportProgress("Making parts", KICAD_SCHEM_IMPORT_STEP_PARTS);
+	FindRegulators();
 	for (i = 0; i < mpcFile->NumSymbols(); i++)
 	{
 		if (!AddSymbol(mpcFile->GetSymbol(i)))
@@ -345,7 +348,7 @@ bool CKicadSchemLogicimConverter::AddSymbol(CKicadSchemSymbol* pcSymbol)
 		msCounts.uiSkipped++;
 		return true;
 	}
-	if (AddRegulator(pcSymbol, pcLibSymbol) || AddSupervisor(pcSymbol, pcLibSymbol) || AddAnalogComparator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
+	if ((mapcRegulators.Find(pcSymbol) != ARRAY_ELEMENT_NOT_FOUND) || AddSupervisor(pcSymbol, pcLibSymbol) || AddAnalogComparator(pcSymbol, pcLibSymbol) || AddBoardPins(pcSymbol, pcLibSymbol) || AddBoard(pcSymbol, pcLibSymbol))
 	{
 		return true;
 	}

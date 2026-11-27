@@ -44,8 +44,33 @@ along with Codaphela KicadImporterLib.  If not, see <http://www.gnu.org/licenses
 
 //////////////////////////////////////////////////////////////////////////
 //
-// A ground or positive supply with its port on the power symbol's pin.
-// Power flags are left out.
+// Every regulator's output nets (AddRegulator), before any other symbol
+// is made, so a power symbol knows if it's on a regulator's output.
+//
+//////////////////////////////////////////////////////////////////////////
+void CKicadSchemLogicimConverter::FindRegulators(void)
+{
+	size					i;
+	CKicadSchemSymbol*		pcSymbol;
+	CKicadSchemLibSymbol*	pcLibSymbol;
+
+	for (i = 0; i < mpcFile->NumSymbols(); i++)
+	{
+		pcSymbol = mpcFile->GetSymbol(i);
+		pcLibSymbol = mpcFile->GetLibSymbol(pcSymbol);
+		if ((pcLibSymbol != NULL) && !pcLibSymbol->IsPower() && !IsKicadSchemSkippedSymbol(pcSymbol) && AddRegulator(pcSymbol, pcLibSymbol))
+		{
+			mapcRegulators.Add(pcSymbol);
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// A ground or positive supply with its port on the power symbol's pin, or
+// a tunnel of its net's name if a regulator drives the net: the power
+// symbol only names the regulator's output.  Power flags are left out.
 //
 //////////////////////////////////////////////////////////////////////////
 bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol)
@@ -56,6 +81,9 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 	CComponentView*			pcView;
 	SFloat64Vec2			sPosition;
 	size					uiItem;
+	CKicadSchemSubnet*		pcSubnet;
+	CKicadSchemNet*			pcNet;
+	CTunnelView*			pcTunnel;
 
 	pcPin = NULL;
 	for (i = 0; i < pcLibSymbol->NumPins(); i++)
@@ -73,8 +101,20 @@ bool CKicadSchemLogicimConverter::AddPower(CKicadSchemSymbol* pcSymbol, CKicadSc
 		return true;
 	}
 
-	pcView = NewSupply(szName, IsKicadSchemGroundName(szName) ? 0.0f : GetKicadSchemSupplyVoltage(szName), pcSymbol->GetAngle(), ROT_North, ROT_South);
 	mpcFile->GetPinPosition(&sPosition, pcSymbol, pcPin);
+	pcSubnet = mpcNetlist->GetPinSubnet(pcSymbol, pcPin);
+	pcNet = (pcSubnet != NULL) ? pcSubnet->GetNet() : NULL;
+	if ((pcNet != NULL) && (GetNetRegulatedVoltage(pcNet) > 0))
+	{
+		pcTunnel = NewMalloc<CTunnelView>();
+		pcTunnel->Init(0, 0, GetKicadSchemRotation(ROT_North, pcSymbol->GetAngle()), pcNet->GetName(), false, mpcFonts);
+		uiItem = mcModel.AddItem(pcTunnel, KSLIK_Tunnel, &sPosition, pcTunnel->GetPortView((size)0), pcSymbol);
+		AddPinTerminal(pcSymbol, pcPin, pcTunnel->GetPortView((size)0), uiItem);
+		msCounts.uiTunnels++;
+		return true;
+	}
+
+	pcView = NewSupply(szName, IsKicadSchemGroundName(szName) ? 0.0f : GetKicadSchemSupplyVoltage(szName), pcSymbol->GetAngle(), ROT_North, ROT_South);
 	uiItem = mcModel.AddItem(pcView, KSLIK_Supply, &sPosition, pcView->GetPortView((size)0), pcSymbol);
 	AddPinTerminal(pcSymbol, pcPin, pcView->GetPortView((size)0), uiItem);
 	msCounts.uiPowers++;

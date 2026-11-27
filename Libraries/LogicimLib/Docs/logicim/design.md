@@ -201,7 +201,8 @@ part codes too; [`GetKicadSchemPassiveElements`] pairs an isolated network's pin
 supplies is on those nets as power rails, its power pins hidden ([`CKicadSchemLogicimConverter::ApplyPowerRails`]); a
 voltage regulator becomes a Regulator on its output's rail, its IN, OUT and GND wired to what its pins are on, with
 its part's dropout and start-up ([`CKicadSchemLogicimConverter::AddRegulatorSupplies`]); one with nothing on its input
-stays off; a DS1813 a reset supervisor; a MAX9010 an analog comparator
+stays off, and a power symbol on its output is a tunnel naming the net, not a second supply
+([`CKicadSchemLogicimConverter::FindRegulators`]); a DS1813 a reset supervisor; a MAX9010 an analog comparator
 ([`IsKicadSchemComparatorPart`]'s list); and every supply made rises
 over 1ms as the simulation starts.  A subnet joined to the rest of its net by labels gets a tunnel at
 each label.  A net a label names as a supply gets one supply, as a power symbol would give it, beside the first such

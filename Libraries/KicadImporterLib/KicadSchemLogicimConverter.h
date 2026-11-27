@@ -144,10 +144,11 @@ typedef CArrayTemplate<SKicadSchemLogicimRegulated>		CArrayKicadSchemLogicimRegu
 //and GND nets have supplies is on those nets as power rails, its power pins hidden and joined to the rails by name,
 //and the supplies on them are on the rails too; a part whose nets don't has implied power (see ApplyPowerRails).  A
 //voltage regulator becomes a Regulator on its output's rail, its input, output and ground pins wired (see
-//AddRegulatorSupplies; its output's voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  A series
-//resistor (neither end on a supply) joins its two nets into one, unless it's an RC filter, which becomes an RC element
-//from its driven net to the other (see JoinSeriesResistors, AddRCFilters); one from a supply to a net something reads
-//is a pull (see AddPulls).  A
+//AddRegulatorSupplies; its output's voltage is still each IC's implied Vcc, see ApplyRegulatedVoltages).  Regulators
+//are found before anything else (FindRegulators), so a power symbol on a regulator's output becomes a tunnel of its
+//net's name, not a supply: the regulator is the net's only supply.  A series resistor (neither end on a supply)
+//joins its two nets into one, unless it's an RC filter, which becomes an RC element from its driven net to the other
+//(see JoinSeriesResistors, AddRCFilters); one from a supply to a net something reads is a pull (see AddPulls).  A
 //DS1813 becomes a reset supervisor (see AddSupervisor), a comparator on IsKicadSchemComparatorPart's list an analog
 //comparator (see AddAnalogComparator).  Every supply made rises over KICAD_SCHEM_LOGICIM_RISE_TIME as the simulation
 //starts.  A connector (a board's edge connector) becomes the circuit's pins, one for each net on it that isn't a
@@ -201,6 +202,7 @@ protected:
 	CArrayKicadSchemLogicimRC			masRCFilters;
 	CHashMapTemplate<CKicadSchemSymbol*, size>	mcSymbolItems;  //A symbol to its first item, while resistors are joined.
 	CArrayKicadSchemLogicimRegulated	masRegulated;
+	CArrayTemplatePtr<CKicadSchemSymbol>	mapcRegulators;  //The symbols FindRegulators made regulators.
 	CArrayTemplatePtr<CKicadSchemNet>	mapcRailNets;  //The nets of ICs' power pins, then of regulators.
 	size								muiPartRailNets;  //How many of mapcRailNets are ICs'.
 	CKicadSchemLogicimBuses				mcBuses;
@@ -244,6 +246,7 @@ protected:
 	void							JoinBoardPin(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, size uiItem);
 	void							AddBoardPinView(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, CKicadSchemBoardConnector* pcConnector, const char* szName);
 	ERotation						GetBoardPinFacing(CKicadSchemSymbol* pcSymbol, CKicadSchemLibPin* pcPin, SFloat64Vec2* psOuter);
+	void							FindRegulators(void);
 	bool							AddRegulator(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol);
 	void							AddRegulatedNets(CKicadSchemSymbol* pcSymbol, CKicadSchemLibSymbol* pcLibSymbol, float32 fVoltage, CKicadSchemLibPin* pcInput, CKicadSchemLibPin* pcGroundPin);
 	bool							AddLogicParts(SKicadSchemLogicPart* psPart);

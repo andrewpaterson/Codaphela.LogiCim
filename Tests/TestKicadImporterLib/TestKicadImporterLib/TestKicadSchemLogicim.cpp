@@ -652,6 +652,29 @@ char gszKicadSchemRegulatorTestFile[] =
 	")\n";
 
 
+//A 5V regulator drawn as KiCad schematics often have it: a +12V power symbol on its input, a +5V power symbol on its
+//output and a ground on its ground pin.
+char gszKicadSchemRegulatorPowerSymbolsTestFile[] =
+	"(kicad_sch (version 20250114) (generator \"eeschema\") (uuid \"root\") (paper \"A4\")\n"
+	"	(lib_symbols\n"
+	"		(symbol \"Regulator_Linear:L7805\" (property \"Reference\" \"U\") (property \"Value\" \"L7805\")\n"
+	"			(symbol \"L7805_1_1\"\n"
+	"				(pin power_in line (at -7.62 0 0) (length 2.54) (name \"IN\") (number \"1\"))\n"
+	"				(pin power_out line (at 7.62 0 180) (length 2.54) (name \"OUT\") (number \"3\"))\n"
+	"				(pin power_in line (at 0 -7.62 90) (length 2.54) (name \"GND\") (number \"2\"))))\n"
+	"		(symbol \"power:+12V\" (power) (property \"Reference\" \"#PWR\") (property \"Value\" \"+12V\")\n"
+	"			(symbol \"+12V_1_1\" (pin power_in line (at 0 0 90) (length 0) (hide yes) (name \"+12V\") (number \"1\"))))\n"
+	"		(symbol \"power:+5V\" (power) (property \"Reference\" \"#PWR\") (property \"Value\" \"+5V\")\n"
+	"			(symbol \"+5V_1_1\" (pin power_in line (at 0 0 90) (length 0) (hide yes) (name \"+5V\") (number \"1\"))))\n"
+	"		(symbol \"power:GND\" (power) (property \"Reference\" \"#PWR\") (property \"Value\" \"GND\")\n"
+	"			(symbol \"GND_1_1\" (pin power_in line (at 0 0 270) (length 0) (hide yes) (name \"GND\") (number \"1\")))))\n"
+	"	(symbol (lib_id \"Regulator_Linear:L7805\") (at 50.8 50.8 0) (unit 1) (uuid \"u1\") (property \"Reference\" \"U1\") (property \"Value\" \"L7805\"))\n"
+	"	(symbol (lib_id \"power:+12V\") (at 43.18 50.8 0) (unit 1) (uuid \"p1\") (property \"Reference\" \"#PWR01\") (property \"Value\" \"+12V\"))\n"
+	"	(symbol (lib_id \"power:+5V\") (at 58.42 50.8 0) (unit 1) (uuid \"p2\") (property \"Reference\" \"#PWR02\") (property \"Value\" \"+5V\"))\n"
+	"	(symbol (lib_id \"power:GND\") (at 50.8 58.42 0) (unit 1) (uuid \"p3\") (property \"Reference\" \"#PWR03\") (property \"Value\" \"GND\"))\n"
+	")\n";
+
+
 //Gates with their inputs tied by labels: U1's to 5V and GNDb, U2's to GNDb and GND_{OUT1}, U3's to VCCIO and U4's to
 //GND_{A} EN.  5V, GND_{OUT1} and VCCIO are supplies; GNDb (a net of two parts, joined by tunnels) and GND_{A} EN
 //aren't.
@@ -764,6 +787,17 @@ void TestKicadSchemLogicimConvert(void)
 	AssertKicadSchemLogicimElements("Regulator Test", "Tunnel", 1);
 	AssertKicadSchemLogicimAttributes("Regulator Test", "vccRail=\"VCC\" gndRail=\"GND\"", 1);
 	AssertKicadSchemLogicimAttributes("Regulator Test", "impliedVCC=\"5", 1);
+
+	//A power symbol on a regulator's output only names it: it's a tunnel, and the Regulator, its IN wired to the +12V
+	//power symbol's supply and its GND to the ground, is the net's only supply.
+	AssertKicadSchemLogicimConverts("Regulator Power Symbols Test", 0, 0, NULL, gszKicadSchemRegulatorPowerSymbolsTestFile, 2);
+	AssertKicadSchemLogicimElements("Regulator Power Symbols Test", "Regulator", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Power Symbols Test", "<Regulator name=\"U1\"", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Power Symbols Test", "rail=\"+5V\" voltage=\"5\"", 1);
+	AssertKicadSchemLogicimElements("Regulator Power Symbols Test", "PositivePower", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Power Symbols Test", "<PositivePower name=\"+12V\"", 1);
+	AssertKicadSchemLogicimElements("Regulator Power Symbols Test", "Ground", 1);
+	AssertKicadSchemLogicimAttributes("Regulator Power Symbols Test", "<Tunnel name=\"+5V\"", 1);
 }
 
 
