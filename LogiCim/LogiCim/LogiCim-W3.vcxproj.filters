@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Circuits">
+      <UniqueIdentifier>{00049379-fcd0-469c-929d-a671723f6b9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{e0848355-320b-45f3-a517-2bb7ad476cee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Checks">
+      <UniqueIdentifier>{2f3df4f7-a5b3-4882-8eb6-234bc1ea8469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{2f88dc1f-58bb-480c-b6e6-e563eb3c0579}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LogiCim_Windows.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogiCim_Linux.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitCanvas.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="CircuitCanvasDraw.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimCircuit.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimComponentChooser.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimGoTo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentTabs.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimNavigationHistory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentTrees.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentNavigation.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentSubcircuits.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentDialogs.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowContentLayout.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowData.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimApp.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicimWindowTick.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CircuitCanvas.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CircuitCanvasDraw.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimCircuit.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimComponentChooser.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimSettings.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimGoTo.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimNavigationHistory.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowContent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowContentInternal.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowData.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimApp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicimWindowTick.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Checks\LogicimChecks.py">
+      <Filter>Checks</Filter>
+    </None>
+    <None Include="..\Checks\Nested.xml">
+      <Filter>Checks</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Tools\ConvertLogicimIcons.py">
+      <Filter>Tools</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DanglingWire.xml">
+      <Filter>Circuits</Filter>
+    </None>
+    <None Include="FlipFlop.xml">
+      <Filter>Circuits</Filter>
+    </None>
+    <None Include="FlipFlopClose.xml">
+      <Filter>Circuits</Filter>
+    </None>
+  </ItemGroup>
+</Project>
